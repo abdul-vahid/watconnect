@@ -1,0 +1,43 @@
+//import 'package:http/http.dart' as http;
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:whatsapp/services/api_service.dart';
+import '../core/models/base_list_view_model.dart';
+import '../models/file_model/file_model.dart';
+import '../utils/app_constants.dart';
+import '../utils/app_utils.dart';
+
+class FileUploadVm extends BaseListViewModel {
+  @override
+  BuildContext context;
+  FileUploadVm(this.context);
+
+  Future<dynamic> addFiles(
+    File image,
+    String? parentId,
+    FileModel addFileModel,
+  ) async {
+    if (parentId == null || parentId.isEmpty) {
+      debugPrint("Error: Parent ID is null or empty.");
+      return;
+    }
+
+    if (image.path.isEmpty) {
+      debugPrint("Error: Image file is null or empty.");
+      return;
+    }
+
+    final APIService apiService = APIService();
+    var token = await AppUtils.getToken() ?? "";
+
+    String url = AppUtils.getUrl("${AppConstants.imagesend}/$parentId");
+
+    debugPrint("Uploading file to: $url");
+
+    // var result = await _apiService.uploadImage(image, url, addFileModel, token);
+
+    // debugPrint("File upload response: $result");
+    // return result;
+  }
+}

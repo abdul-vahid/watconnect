@@ -1,0 +1,138 @@
+/// Environment variables and shared app constants.
+abstract class SharedPrefsConstants {
+  static const String accessTokenKey = "access_token";
+  static const String refreshTokenKey = "refresh_token";
+  static const String sessionTimeKey = "session_time";
+  static const String profileUrlKey = "profile_url";
+  static const String mobileNoKey = "mobile_no";
+  static const String nameKey = "name";
+  static const String userKey = "user";
+  static const String accountKey = "account";
+  static const String userDecodedTokenKey = "decoded_token_key";
+}
+
+abstract class ResultStatus {
+  static const String completed = "Completed";
+  static const String inProgress = "In Progress";
+}
+
+abstract class ProfileConstants {
+  static const String firstNameLabel = "First Name";
+  static const String lastNameLabel = "Last Name";
+  static const String mobileLabel = "Mobile Number";
+  static const String dobLabel = "Date of Birth";
+  static const String genderLabel = "Gender";
+  static const String stateLabel = "State";
+  static const String cityLabel = "City";
+
+  static const String firstNameHint = "Enter First Name";
+  static const String lastNameHint = "Enter Last Name";
+  static const String mobileHint = "Enter Mobile Number";
+  static const String dobHint = "MM-DD-YYYY";
+  static const String genderHint = "Gender";
+  static const String stateHint = "State";
+  static const String cityHint = "City";
+}
+
+//
+abstract class AppConstants {
+  static const String channelId = "spark";
+  static const String channelName = "Spark";
+  static const String channelDescription = " Spark";
+  static const String baseUrl = "https://sandbox.watconnect.com/swp";
+
+  static const bool kDebugMode = true;
+  // ==================Login Api==================
+
+  static const String loginAPIPath = '/api/auth/login';
+
+  // ==================Lead Api===================
+  static const String leadcountagentAPIPath =
+      '/api/reports/byname/lead_count_by_agent';
+  static const String leadsmonthAPIPath =
+      '/api/reports/byname/month_wise_lead_report';
+  static const String leadCountAPIPath = '/api/whatsapp/common/leadcount';
+  static const String leadAPIPath = '/api/leads';
+
+  // =========================Campaign Api==============================
+  static const String campaignCountAPIPath =
+      '/api/whatsapp/common/campaignstatus';
+  static const String campaignAPIPath =
+      '/api/whatsapp/campaign?whatsapp_setting_number';
+  static const String updateCampaignAPIPath = '/api/whatsapp/campaign';
+  static const String updateCampaignAPIPathid = '/api/whatsapp/campaign';
+  static const String campaignChartAPIPath =
+      '/api/whatsapp/common/campaignstatus';
+
+  // =========================Whatsapp setting Api==============================
+  static const String whatsAppSettingAPIPath = '/api/whatsapp_setting';
+
+  // =========================Templete Api==============================
+  // static const String approvedtemplate =
+  //     "/api/webhook_template/approved/template?whatsapp_setting_number";
+  static const String templeteAPIPath =
+      '/api/webhook_template/alltemplate?whatsapp_setting_number';
+  static const String approvedtemplateapi =
+      '/api/webhook_template/approved/template?whatsapp_setting_number';
+  static const String templetesend =
+      "/api/webhook_template/message?whatsapp_setting_number";
+
+  static const String historycreate = "/api/whatsapp/message/history";
+  static const String createtemplet = "/api/whatsapp/message/template";
+// ================home page api============================
+
+  static const String templatehomepage =
+      "/api/webhook_template/approved/template?whatsapp_setting_number";
+  // =========================Auto response  Api==============================
+  static const String autoResponseAPIPath = '/api/whatsapp/common/autoresponse';
+
+  // =========================Account Api===================
+  static const String accountAPIPath = '/api/accounts';
+
+  // =========================Contact Api===================
+  static const String contactAPIPath = '/api/contacts';
+
+// =================Message Api=======================
+  static const String singlemsgdelete = "/api/whatsapp/historydeletebyid";
+  static const String deletchathistory =
+      "/api/whatsapp/history/{leadnumber}?whatsapp_setting_number={whatsapp_setting_number}";
+  static const String Messagesendmeta =
+      '/api/webhook_template/single/message?whatsapp_setting_number';
+  static const String Messagehistory =
+      '/api/whatsapp/message/history/{leadnumber}?whatsapp_setting_number={whatsapp_setting_number}';
+  static const String Messagesendmobile = "/api/whatsapp/message/history";
+  static const String marksreadmsg =
+      "/api/whatsapp/chat/mark_as_read?whatsapp_setting_number=";
+  static const String messageHistoryAPIPath =
+      '/api/whatsapp/message/history/download';
+  static const String unreadcountpath =
+      '/api/whatsapp/chat/unread_count?whatsapp_setting_number=';
+
+  static const String imagesend =
+      "/api/webhook_template/documentId?whatsapp_setting_number=";
+  static const String imagesendhistoy = "/api/whatsapp/files?id";
+// ======================Task Api====================
+  static const String taskAPIPath = '/api/tasks';
+
+// ===================User api====================
+  static const String userDataAPIPath = '/api/auth/users';
+  static const String addUserAPIPath = '/api/auth/createuser';
+  static const String userPasswordAPIPath = '/api/auth';
+  static const String getUserAPIPath = '/api/auth/getuser';
+  static const String updateUserAPIPath = '/api/auth';
+// =========================profile Api====================
+  static const String profilePictureUpdateAPIPath =
+      '/apis/profile_picture_update';
+  static const String studentProfileAPIPath = '/apis/student';
+  static const String updateProfilePictureAPIPath = '/api/auth/?id/profile';
+
+// ============================================================================
+  // static const String meetingAPIPath = '/api/tasks/meetings/today';
+  static const String signupAPIPath = '/apis/auth/register';
+  static const String publicPath = '/spark/public';
+  static const String otpVerificationAPIPath = '/apis/verification';
+  static const String appUrlPath = 'https://www.google.com/';
+  static const String changePasswordAPIPath = '/apis/auth/forget_password';
+// =========================group Api=========================
+  static const String groupAPIPath = '/api/whatsapp/groups?status=';
+}

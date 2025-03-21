@@ -1,0 +1,2 @@
+D:/latest_backup_wp/whatsapp/android/app/.cxx/Debug/3q5e1p19/arm64-v8a/CMakeFiles/edit_cache.dir
+D:/latest_backup_wp/whatsapp/android/app/.cxx/Debug/3q5e1p19/arm64-v8a/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,482 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+//import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/views/view/edit_profile_view.dart';
+
+import '../../models/get_user.dart';
+import '../../models/user_model/user_model.dart';
+import '../../utils/app_color.dart';
+import '../../utils/app_constants.dart';
+import '../../utils/app_utils.dart';
+// ignore: unused_import
+import '../../utils/enum.dart';
+import '../../view_models/get_user_vm.dart';
+import '../../view_models/user_data_list_vm.dart' show UserDataListViewModel;
+import '../../view_models/user_list_vm.dart';
+
+class ProfileView extends StatefulWidget {
+  GetUser? user;
+  ProfileView({super.key, this.user});
+
+  @override
+  State<ProfileView> createState() => _ProfileViewState();
+}
+
+class _ProfileViewState extends State<ProfileView> {
+  late NotchBottomBarController _controller;
+  String? profileUrl;
+  UserModel? userModel;
+  GetUser? user;
+  GetUserViewModel? userVm;
+  bool isRefresh = false;
+  File? selectedImage;
+  String base64Image = "";
+  String? fName;
+  String? lName;
+  String? email;
+  String? phone;
+  String? id;
+
+  Future<String> chooseImage(type) async {
+    XFile? image;
+    if (type == "camera") {
+      image = await ImagePicker()
+          .pickImage(source: ImageSource.camera, imageQuality: 10);
+    } else {
+      image = await ImagePicker()
+          .pickImage(source: ImageSource.gallery, imageQuality: 25);
+    }
+
+    if (image != null) {
+      setState(() {
+        selectedImage = File(image!.path);
+        base64Image = base64Encode(selectedImage!.readAsBytesSync());
+      });
+    }
+
+    return base64Image;
+  }
+
+  void getProfileData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userModel = AppUtils.getSessionUser(prefs);
+    });
+  }
+
+  @override
+  void initState() {
+    // bottomnavigationbar animated
+    _controller = NotchBottomBarController();
+    Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
+    SharedPreferences.getInstance().then((prefs) {
+      var userModel = AppUtils.getSessionUser(prefs);
+      userModel ?? AppUtils.logout(context);
+    });
+
+    getProfileData();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    userVm = Provider.of<GetUserViewModel>(context);
+    for (var viewModel in userVm!.viewModels) {
+      GetUser model = viewModel.model;
+      id = model.id ?? "";
+      fName = model.firstname ?? "";
+      lName = model.lastname ?? "";
+      email = model.email ?? "";
+      phone = model.phone ?? "";
+    }
+
+    AppUtils.currentContext = context;
+    return Scaffold(
+      // appBar: AppBar(
+
+      //   // leading: IconButton(
+      //   //   icon: const Icon(Icons.arrow_back,
+      //   //       color: Color.fromARGB(255, 255, 255, 255)),
+      //   //   onPressed: () => Navigator.of(context).pop(),
+      //   // ),
+      //   automaticallyImplyLeading: false,
+      //   title: Text('My Profile',
+      //       style: GoogleFonts.montserrat(
+      //           color: const Color.fromARGB(255, 255, 255, 255))),
+      //   centerTitle: true,
+      //   elevation: 0,
+      //   // backgroundColor: AppColor.appBarColor,
+      // ),
+
+      appBar: AppUtils.getappbar(
+        // actions: PopupMenuButtonState(),
+        automaticallyImplyLeading: false,
+        title: "My Profile",
+      ),
+      body: RefreshIndicator(
+        onRefresh: _pullRefresh,
+        child: AppUtils.getAppBody(userVm!, _getBody),
+      ),
+      // bottomNavigationBar: AppUtils.buildAnimatedNotchBottomBar(context)
+    );
+  }
+
+  Future<void> _pullRefresh() async {
+    userVm?.viewModels.clear();
+    Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
+    userVm = Provider.of<GetUserViewModel>(context, listen: false);
+    isRefresh = true;
+    return Future<void>.delayed(const Duration(seconds: 2));
+  }
+
+  Widget _getBody() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: AppColor.navBarIconColor,
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(70),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  spreadRadius: 8,
+                  blurRadius: 7,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            height: 250,
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Center(
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 60,
+                        backgroundColor: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.all(0),
+                          child: ClipOval(
+                            child: FadeInImage.assetNetwork(
+                              placeholder: "assets/images/loading.gif",
+                              image: userModel?.logourl ?? "",
+                              fit: BoxFit.cover,
+                              height: 100,
+                              width: 100,
+                              imageErrorBuilder: (context, error, stackTrace) {
+                                return Image.network(
+                                  'https://sandbox.watconnect.com/public/demo/users/${userModel?.id}',
+                                  fit: BoxFit.cover,
+                                  height: 100,
+                                  width: 100,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              width: 4,
+                              color: Theme.of(context).scaffoldBackgroundColor,
+                            ),
+                            color: AppColor.navBarIconColor,
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              uploadImage();
+                            },
+                            child: const Icon(
+                              Icons.edit,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Center(
+                  child: Text(
+                    userModel?.username ?? "",
+                    style: const TextStyle(
+                        fontSize: 20,
+                        color: Color.fromARGB(255, 255, 255, 255)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 23),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    spreadRadius: 2,
+                    blurRadius: 7,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: AppColor.navBarIconColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
+                    ),
+                    width: double.infinity,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(left: 10.0),
+                          child: Text(
+                            'Contact Information',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert,
+                              size: 23, color: Colors.white),
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EditProfileView(
+                                    id: id,
+                                    user: user,
+                                    firstName: fName,
+                                    lastName: lName,
+                                    email: email,
+                                    phone: phone,
+                                  ),
+                                ),
+                              );
+                            }
+                            // else if (value == 'delete') {
+                            //   _showDeleteDialog();
+                            // }
+                          },
+                          itemBuilder: (BuildContext context) {
+                            return [
+                              const PopupMenuItem<String>(
+                                value: 'edit',
+                                child: Text('Edit'),
+                              ),
+                              // const PopupMenuItem<String>(
+                              //   value: 'delete',
+                              //   child: Text('Delete'),
+                              // ),
+                            ];
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      getRow("First Name", fName),
+                      const Divider(),
+                      getRow("Last Name", lName),
+                      const Divider(),
+                      getRow("Email", email),
+                      const Divider(),
+                      getRow("Phone", phone),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showDeleteDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white, // Background color of the dialog
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(15), // Rounded corners for the dialog
+          ),
+
+          content: Column(
+            mainAxisSize: MainAxisSize.min, // Let the content size fit
+            children: [
+              const Text(
+                'Are you sure you want to delete this campaign?',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 15),
+              const Divider(),
+              const SizedBox(height: 15),
+              // Optional: Custom button text styling
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.grey,
+                      backgroundColor:
+                          Colors.grey[200], // Button background color for 'No'
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'No',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  const SizedBox(width: 20),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: AppColor.navBarIconColor,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Yes',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    onPressed: () {
+                      _deleteUser();
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _deleteUser() {
+    // Implement the delete functionality here
+    String? userId;
+    UserDataListViewModel(context).deleteUser(userId).then((value) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User deleted successfully.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context); // Go back to the previous screen after delete
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error deleting user.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
+  }
+
+  Padding getRow(String label, String? value) {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Label section
+          Expanded(
+            flex: 1,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          // Value section (right-aligned)
+          Expanded(
+            flex: 1,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                value ?? '-',
+                textAlign: TextAlign.right,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void uploadImage() async {
+    AppUtils.onLoading(context, "Please Wait...");
+    String selectedImage = await chooseImage("Gallery");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (selectedImage.isNotEmpty) {
+      UserListViewModel()
+          .updateProfilePicture((userModel?.logourl)!, selectedImage)
+          .then((records) {
+        setState(() {
+          prefs.setString(SharedPrefsConstants.userKey, (userModel?.toJson())!);
+          profileUrl = AppUtils.getImageUrl(records);
+        });
+        Timer(const Duration(seconds: 1), (() {
+          Navigator.pop(context);
+        }));
+      }).catchError((onError) {
+        Navigator.pop(context);
+        List<String> errorMessages = AppUtils.getErrorMessages(onError);
+        AppUtils.getAlert(context, errorMessages, title: "Error Alert");
+      });
+    } else {
+      Navigator.pop(context);
+    }
+  }
+}
