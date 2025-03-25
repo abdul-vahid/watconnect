@@ -12,18 +12,21 @@ class GetUser extends BaseModel {
   bool? isactive;
   String? managerid;
   String? managername;
+  String? whatsapp_number;
+  String? whatsapp_settings;
 
-  GetUser({
-    this.id,
-    this.email,
-    this.firstname,
-    this.lastname,
-    this.userrole,
-    this.phone,
-    this.isactive,
-    this.managerid,
-    this.managername,
-  });
+  GetUser(
+      {this.id,
+      this.email,
+      this.firstname,
+      this.lastname,
+      this.userrole,
+      this.phone,
+      this.isactive,
+      this.managerid,
+      this.managername,
+      this.whatsapp_number,
+      this.whatsapp_settings});
 
   factory GetUser.fromMap(Map<String, dynamic> data) => GetUser(
         id: data['id']?.toString(),
@@ -32,9 +35,11 @@ class GetUser extends BaseModel {
         lastname: data['lastname']?.toString(),
         userrole: data['userrole']?.toString(),
         phone: data['phone']?.toString(),
+        whatsapp_number: data['whatsapp_number']?.toString(),
         isactive: data['isactive']?.toString().contains("true"),
         managerid: data['managerid']?.toString(),
         managername: data['managername']?.toString(),
+        whatsapp_settings: data['whatsapp_settings']?.toString(),
       );
   @override
   GetUser fromMap(Map<String, dynamic> data) {
@@ -51,6 +56,7 @@ class GetUser extends BaseModel {
         if (phone != null) 'phone': phone,
         if (isactive != null) 'isactive': isactive,
         if (managerid != null) 'managerid': managerid,
+        if (whatsapp_number != null) 'whatsapp_number': whatsapp_number,
         if (managername != null) 'managername': managername,
       };
 

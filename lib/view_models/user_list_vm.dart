@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
 
 // ignore: unused_import
 import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
 //import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/app_constants.dart';
@@ -52,8 +55,76 @@ class UserListViewModel extends BaseListViewModel {
       String userId, String profilePicture) async {
     String url = AppUtils.getUrl(AppConstants.profilePictureUpdateAPIPath);
     Map<String, String> requestData = {'id': userId, 'body': profilePicture};
+    log("update body and url::: ${requestData}  ,  ${url}");
     var records = await post(url: url, body: jsonEncode(requestData));
     return records["records"]['profile_url'];
+  }
+
+  Future<void> uploadFile(File file, String staffRecord, String api) async {
+    try {
+      var url = Uri.parse(api);
+      var token = await AppUtils.getToken();
+
+      if (token == null || token.isEmpty) {
+        print("Error: Token is missing.");
+        return;
+      }
+
+      var request = http.MultipartRequest("PUT", url);
+
+      // Attach file
+      var multipartFile = await http.MultipartFile.fromPath("file", file.path);
+      request.files.add(multipartFile);
+
+      print("staffRecord:>>::>>>:: ${staffRecord}");
+      String jsonString = jsonEncode(staffRecord);
+
+      String formattedString = "\"$jsonString\"";
+      print("staffRecord::: ${formattedString}");
+      String correctedJson =
+          formattedString.replaceAll("\"{", "{").replaceAll("}\"", "}");
+
+      request.fields["staffRecord"] = correctedJson;
+
+      // Set headers
+      request.headers.addAll({
+        "Authorization": token,
+        "Content-Type": "multipart/form-data",
+      });
+
+      debug("Request URL: $url");
+
+      debug("Request Fields: ${request.fields}");
+      debug("Request Files: ${request.files}");
+
+      // ✅ Print Request Details
+      print("🔹 API URL: $api");
+      print("🔹 Headers: ${request.headers}");
+      print("🔹 Form Data:");
+      request.fields.forEach((key, value) {
+        print("   - $key: $value");
+      });
+      print(
+          "🔹 Attached File: ${multipartFile.filename} (${multipartFile.length} bytes)");
+
+      // Send the request
+      var response = await request.send();
+
+      // Print raw response
+      print("🔹 Response Status: ${response.statusCode}");
+
+      // Get response body
+      var responseBody = await response.stream.bytesToString();
+      print("🔹 Response Body: $responseBody");
+
+      if (response.statusCode == 200) {
+        print("✅ File uploaded successfully!");
+      } else {
+        print("❌ Upload failed: ${response.statusCode} - $responseBody");
+      }
+    } catch (e) {
+      print("❌ Error: $e");
+    }
   }
 
   Future<dynamic> changePasword(String mobileNo, String password) async {
