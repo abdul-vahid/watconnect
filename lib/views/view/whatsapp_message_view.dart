@@ -1604,13 +1604,11 @@
 //   }
 // }
 
-import 'package:flutter_html/flutter_html.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -1620,7 +1618,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart' show Provider;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/models/lead_model.dart';
-import 'package:whatsapp/models/ms_model/message_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
@@ -1683,16 +1680,9 @@ class _ChatScreenState extends State<ChatScreen> {
   List<dynamic> tempateCategory = ['UTILITY', 'MARKETING', 'AUTHENTICATION'];
   String? selectedTemplateName;
   TempleteListViewModel? templateVM;
-  final List<String> imageUrls = [
-    'https://i.pinimg.com/564x/51/7b/07/517b07bfac2232980597368f36fc06c5.jpg',
-    'https://www.w3schools.com/w3images/rocks.jpg',
-    'https://www.w3schools.com/w3images/fjords.jpg',
-    'https://www.w3schools.com/w3images/mountains.jpg',
-    'https://www.w3schools.com/w3images/lights.jpg',
-  ];
+
   bool showLoader = false;
   String userName = "";
-  TextEditingController _templateController = TextEditingController();
   @override
   void initState() {
     _fetchTemplates();
@@ -2413,9 +2403,32 @@ class _ChatScreenState extends State<ChatScreen> {
                 String formattedTime = DateFormat('hh:mm a').format(now);
 
                 DateTime utcTime = allMessages[index].createddate;
-                DateTime istTime =
+                DateTime istTimee =
                     utcTime.add(const Duration(hours: 5, minutes: 30));
-                formattedTime = DateFormat('hh:mm a').format(istTime);
+                formattedTime = DateFormat('hh:mm a').format(istTimee);
+                bool isSameDay(DateTime? dateA, DateTime? dateB) {
+                  return dateA?.year == dateB?.year &&
+                      dateA?.month == dateB?.month &&
+                      dateA?.day == dateB?.day;
+                }
+
+                // DateTime now = DateTime.now();
+
+                String dayLabel = '';
+                if (isSameDay(istTimee, now)) {
+                  dayLabel = 'Today';
+                } else if (isSameDay(
+                    istTimee, now.subtract(const Duration(days: 1)))) {
+                  dayLabel = 'Yesterday';
+                } else {
+                  dayLabel = DateFormat('EEEE').format(istTimee);
+                }
+                String formattedTimee = DateFormat('hh:mm a').format(istTimee);
+
+                String finalFormattedTime = '$dayLabel, $formattedTimee';
+                print("finalFormattedTime=>$finalFormattedTime");
+                // print("dayLabel$dayLabel");
+                print(finalFormattedTime);
                 String title = allMessages[index].title ?? "";
                 String msghistoryid = allMessages[index].id;
                 print("sjdhjshdjas=>$msghistoryid");

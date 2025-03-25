@@ -796,7 +796,7 @@ class _Forms extends State<LeadAddView> {
         country: _selectedCountry,
         zipcode: _zipcode,
         description: _description,
-        amount: _amount,
+        // amount: _amount,
       );
       print("lelelelelel;eelelle=>>>${leadModel.toMap()}");
       AppUtils.onLoading(context, "Updating, please wait...");

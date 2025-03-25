@@ -117,56 +117,13 @@ class _LeadDetailViewState extends State<LeadDetailView> {
         ),
         //-----------End Code of Icon Bar Showing-------------
       ),
-      // body: Stack(
-      //   children: [
-      //     _isLoading ? Container() : _pageBody(model),
-      //     if (_isLoading)
-      //       Positioned.fill(
-      //         child: BackdropFilter(
-      //           filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 1.0),
-      //           child: Container(
-      //             color: Colors.white.withOpacity(0.2),
-      //             child: Center(
-      //               child: LoadingAnimationWidget.flickr(
-      //                 leftDotColor: AppColor.cardsColor,
-      //                 rightDotColor: AppColor.navBarIconColor,
-      //                 size: 40,
-      //               ),
-      //             ),
-      //           ),
-      //         ),
-      //       ),
-      //   ],
-      // ),
       body: _pageBody(model),
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: AppColor.navBarIconColor,
-      //   shape: const CircleBorder(),
-      //   elevation: 9,
-      //   onPressed: () {
-      //     Navigator.push(
-      //       context,
-      //       MaterialPageRoute(
-      //         builder: (context) => ChatScreen(
-      //           leadName:
-      //               '${model.firstname?.isNotEmpty == true ? model.firstname : ""} ${model.lastname?.isNotEmpty == true ? model.lastname : ""}'
-      //                   .trim(),
-      //           model: model,
-      //         ),
-      //       ),
-      //     );
-      //   },
-      //   highlightElevation: 15,
-      //   child: const Icon(
-      //     FontAwesomeIcons.whatsapp,
-      //     size: 25,
-      //     color: Colors.white,
-      //   ),
-      // ),
     );
   }
 
   Widget _pageBody(model) {
+    // print("widget.model?.createdbyname${widget.model?.ownername}");
+
     print("model$model");
     return Container(
       color: Colors.white38,
@@ -260,8 +217,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                           recordRow(
                               "Payment Terms", widget.model?.paymentterms),
                           const Divider(),
-                          recordRow(
-                              "Assigned User", widget.model?.createdbyname),
+                          recordRow("Assigned User", widget.model?.ownername),
                           const Divider(),
                           recordRow("Company", widget.model?.company),
                           const Divider(),

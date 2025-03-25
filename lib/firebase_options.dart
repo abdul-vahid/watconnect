@@ -64,7 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '949174804898',
     projectId: 'whatsap-4ba75',
     storageBucket: 'whatsap-4ba75.firebasestorage.app',
-    iosBundleId: 'com.example.whatsapp',
+    iosBundleId: 'com.wat.connect',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -73,7 +73,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '949174804898',
     projectId: 'whatsap-4ba75',
     storageBucket: 'whatsap-4ba75.firebasestorage.app',
-    iosBundleId: 'com.example.whatsapp',
+    iosBundleId: 'com.wat.connect',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

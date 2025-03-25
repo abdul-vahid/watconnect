@@ -426,6 +426,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import '../../view_models/campaign_count_vm.dart';
 import '../../view_models/templete_list_vm.dart';
@@ -570,7 +571,7 @@ class _WhtsapphoneState extends State<Whtsapphone> {
                       margin: const EdgeInsets.symmetric(vertical: 8.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        color: isSelected ? Colors.green : Colors.white,
+                        color: isSelected ? AppColor.cardsColor : Colors.white,
                       ),
                       child: ListTile(
                         title: Text(

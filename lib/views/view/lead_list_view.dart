@@ -342,7 +342,7 @@ class _LeadListViewState extends State<LeadListView> {
   Future<void> _pullRefresh() async {
     leads?.viewModels.clear();
     Provider.of<LeadListViewModel>(context, listen: false).fetch();
-    // leads = Provider.of<LeadListViewModel>(context, listen: false);
+
     Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number);
     Provider.of<LeadListViewModel>(context, listen: false).fetch();
@@ -704,6 +704,7 @@ class _LeadListViewState extends State<LeadListView> {
     return Dismissible(
       key: UniqueKey(),
       onDismissed: (direction) {
+        print("model=>${model.toMap()}");
         if (model.whatsapp_number != null) {
           _marksread(model.whatsapp_number ?? "");
 

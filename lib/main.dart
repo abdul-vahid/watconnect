@@ -90,7 +90,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'WhatsApp',
+        title: 'Watconnect',
         theme: ThemeData(
           textTheme: GoogleFonts.kohSantepheapTextTheme(),
           primaryColor: AppColor.navBarIconColor,
