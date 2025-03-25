@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/views/view/templete_list_view.dart';
 import 'package:whatsapp/views/view/whatsap_setting_view.dart';
+import 'package:whatsapp/views/widgets/bottomnavigatonbar.dart';
 import '../../models/user_model/user_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
@@ -55,11 +56,10 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
               // decoration: BoxDecoration(color: AppColor.navBarIconColor),
               child: Center(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.all(8.0), // Adjust padding as needed
+                  padding: const EdgeInsets.all(8.0),
                   child: Image.asset(
                     'assets/images/whatsapp.png',
-                    fit: BoxFit.contain, // Or use BoxFit.scaleDown
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
@@ -81,7 +81,7 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => HomeView()),
+                MaterialPageRoute(builder: (context) => FooterNavbarPage()),
               );
             },
           ),

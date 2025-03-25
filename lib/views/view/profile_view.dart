@@ -44,7 +44,10 @@ class _ProfileViewState extends State<ProfileView> {
   String? phone;
   String? id;
 
-  Future<String> chooseImage(type) async {
+  String? contactName;
+  String? userRole;
+
+  Future<File?> chooseImage(type) async {
     XFile? image;
     if (type == "camera") {
       image = await ImagePicker()
@@ -61,13 +64,15 @@ class _ProfileViewState extends State<ProfileView> {
       });
     }
 
-    return base64Image;
+    return selectedImage;
   }
 
   void getProfileData() async {
     final prefs = await SharedPreferences.getInstance();
+
     setState(() {
       userModel = AppUtils.getSessionUser(prefs);
+      print("logourl::: ${userModel?.logourl ?? ""}");
     });
   }
 
@@ -89,13 +94,19 @@ class _ProfileViewState extends State<ProfileView> {
   Widget build(BuildContext context) {
     userVm = Provider.of<GetUserViewModel>(context);
     for (var viewModel in userVm!.viewModels) {
+      print("viewModel.model:::>>>>> ${viewModel.model}");
       GetUser model = viewModel.model;
+      user = model;
       id = model.id ?? "";
       fName = model.firstname ?? "";
       lName = model.lastname ?? "";
       email = model.email ?? "";
       phone = model.phone ?? "";
+      print(
+          "viewModel.model:::>>>>> ${model.whatsapp_number}   ${model.whatsapp_settings}");
     }
+
+    // String profileImg= userModel?.logourl ?? "";
 
     AppUtils.currentContext = context;
     return Scaffold(
@@ -137,6 +148,12 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _getBody() {
+    print("this func call when refresh");
+
+    print("logourl::: ${userModel?.logourl ?? ""}");
+    print(
+        "'https://sandbox.watconnect.com/public/demo/users/${userModel?.id}',");
+    // getProfileData();
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -455,26 +472,41 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   void uploadImage() async {
-    AppUtils.onLoading(context, "Please Wait...");
-    String selectedImage = await chooseImage("Gallery");
+    var userMap = user?.toJson();
+    print("userLLL >>> ${userMap}");
+    Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
+    // AppUtils.onLoading(context, "Please Wait...");
+    var selectedImage = await chooseImage("Gallery");
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    if (selectedImage.isNotEmpty) {
+    if (selectedImage != null) {
+      var url =
+          "https://sandbox.watconnect.com/swp/api/auth/${user?.id ?? ""}/profile";
+
       UserListViewModel()
-          .updateProfilePicture((userModel?.logourl)!, selectedImage)
-          .then((records) {
-        setState(() {
-          prefs.setString(SharedPrefsConstants.userKey, (userModel?.toJson())!);
-          profileUrl = AppUtils.getImageUrl(records);
-        });
-        Timer(const Duration(seconds: 1), (() {
-          Navigator.pop(context);
-        }));
-      }).catchError((onError) {
-        Navigator.pop(context);
-        List<String> errorMessages = AppUtils.getErrorMessages(onError);
-        AppUtils.getAlert(context, errorMessages, title: "Error Alert");
+          .uploadFile(selectedImage, userMap.toString(), url)
+          .then((value) async {
+        await AppUtils.getToken();
+        getProfileData();
+      }).catchError((error) {
+        print("Error uploading file: $error");
       });
+
+      // UserListViewModel()
+      //     .updateProfilePicture((userModel?.logourl)!, selectedImage)
+      //     .then((records) {
+      //   setState(() {
+      //     prefs.setString(SharedPrefsConstants.userKey, (userModel?.toJson())!);
+      //     profileUrl = AppUtils.getImageUrl(records);
+      //   });
+      //   Timer(const Duration(seconds: 1), (() {
+      //     Navigator.pop(context);
+      //   }));
+      // }).catchError((onError) {
+      //   Navigator.pop(context);
+      //   List<String> errorMessages = AppUtils.getErrorMessages(onError);
+      //   AppUtils.getAlert(context, errorMessages, title: "Error Alert");
+      // });
     } else {
       Navigator.pop(context);
     }

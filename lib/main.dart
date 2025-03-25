@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // import 'package:flutter_downloader/flutter_downloader.dart';
@@ -33,17 +34,17 @@ void main() async {
 
   await Firebase.initializeApp();
   FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-  // FirebaseMessaging messaging = FirebaseMessaging.instance;
-  // NotificationSettings settings = await messaging.requestPermission();
-  // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-  //   print('User granted permission');
-  // } else {
-  //   print('User declined or has not accepted permission');
-  // }
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  NotificationSettings settings = await messaging.requestPermission();
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    print('User granted permission');
+  } else {
+    print('User declined or has not accepted permission');
+  }
 
-  // // Get FCM Token
-  // final fcmtoken = await FirebaseMessaging.instance.getToken();
-  // print("FCM Token: $fcmtoken");
+  // Get FCM Token
+  final fcmtoken = await FirebaseMessaging.instance.getToken();
+  print("FCM Token: $fcmtoken");
 
   // Send FCM token to server if needed
   // For example, send it to your server for later use
