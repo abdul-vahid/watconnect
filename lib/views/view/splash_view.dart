@@ -49,6 +49,7 @@ class _SplashViewState extends State<SplashView> {
   //     }
   //   });
   // }
+
   void _isLoggedIn() {
     SharedPreferences.getInstance().then((prefs) {
       if (prefs.containsKey(SharedPrefsConstants.userKey)) {

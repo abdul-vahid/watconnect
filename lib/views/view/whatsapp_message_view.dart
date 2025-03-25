@@ -2439,7 +2439,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 }
 
                 return GestureDetector(
-                  onLongPress: () => _showSimpleDialog(),
+                  onLongPress: () => _showSimpleDialog(allMessages[index].id),
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 5),
                     padding: const EdgeInsets.all(8),
@@ -3652,7 +3652,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Future<void> _showSimpleDialog() async {
+  Future<void> _showSimpleDialog(id) async {
     await showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -3670,8 +3670,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   children: [
                     ElevatedButton(
                       onPressed: () {
-                        print("mmms=>${msghistoryid}");
-                        singlemsgdelete(msghistoryid);
+                        print("mmms=>${id}");
+                        singlemsgdelete(id);
                         Navigator.of(context).pop();
                       },
                       child: const Text(
