@@ -1,44 +1,76 @@
 import 'dart:convert';
 
-import 'example.dart';
-
 class Component {
-	String? type;
-	String? text;
-	bool? addSecurityRecommendation;
-	Example? example;
+  String? type;
+  String? text;
+  List<Button>? buttons;
+  Example? example;
 
-	Component({
-		this.type, 
-		this.text, 
-		this.addSecurityRecommendation, 
-		this.example, 
-	});
+  Component({this.type, this.text, this.buttons, this.example});
 
-	factory Component.fromMap(Map<String, dynamic> data) => Component(
-				type: data['type'] as String?,
-				text: data['text'] as String?,
-				addSecurityRecommendation: data['add_security_recommendation'] as bool?,
-				example: data['example'] == null
-						? null
-						: Example.fromMap(data['example'] as Map<String, dynamic>),
-			);
+  factory Component.fromMap(Map<String, dynamic> data) => Component(
+        type: data['type'] as String?,
+        text: data['text'] as String?,
+        buttons: (data['buttons'] as List<dynamic>?)
+            ?.map((e) => Button.fromMap(e as Map<String, dynamic>))
+            .toList(),
+        example: data['example'] != null
+            ? Example.fromMap(data['example'] as Map<String, dynamic>)
+            : null,
+      );
 
-	Map<String, dynamic> toMap() => {
-				'type': type,
-				'text': text,
-				'add_security_recommendation': addSecurityRecommendation,
-				'example': example?.toMap(),
-			};
+  Map<String, dynamic> toMap() => {
+        'type': type,
+        'text': text,
+        'buttons': buttons?.map((e) => e.toMap()).toList(),
+        'example': example?.toMap(),
+      };
 
-  /// `dart:convert`
-  ///
-  /// Parses the string and returns the resulting Json object as [Component].
-	factory Component.fromJson(String data) {
-		return Component.fromMap(json.decode(data) as Map<String, dynamic>);
-	}
-  /// `dart:convert`
-  ///
-  /// Converts [Component] to a JSON string.
-	String toJson() => json.encode(toMap());
+  @override
+  String toString() {
+    return 'Component(type: $type, text: $text, buttons: $buttons, example: $example)';
+  }
+}
+
+class Example {
+  List<String>? headerHandle;
+  List<List<String>>? bodyText;
+
+  Example({this.headerHandle, this.bodyText});
+
+  factory Example.fromMap(Map<String, dynamic> data) => Example(
+        headerHandle:
+            (data['header_handle'] as List?)?.map((e) => e as String).toList(),
+        bodyText: (data['body_text'] as List?)
+            ?.map((e) => (e as List).map((x) => x as String).toList())
+            .toList(),
+      );
+
+  Map<String, dynamic> toMap() => {
+        'header_handle': headerHandle,
+        'body_text': bodyText,
+      };
+}
+
+class Button {
+  String? type;
+  String? text;
+  String? phoneNumber;
+  String? url;
+
+  Button({this.type, this.text, this.phoneNumber, this.url});
+
+  factory Button.fromMap(Map<String, dynamic> data) => Button(
+        type: data['type'] as String?,
+        text: data['text'] as String?,
+        phoneNumber: data['phone_number'] as String?,
+        url: data['url'] as String?,
+      );
+
+  Map<String, dynamic> toMap() => {
+        'type': type,
+        'text': text,
+        'phone_number': phoneNumber,
+        'url': url,
+      };
 }

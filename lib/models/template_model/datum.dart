@@ -1,6 +1,5 @@
 import 'dart:convert';
-
-import 'component.dart';
+import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 
 class Datum {
   String? name;
@@ -25,24 +24,31 @@ class Datum {
     this.subCategory,
   });
 
-  factory Datum.fromMap(Map<String, dynamic> data) => Datum(
-        name: data['name'] as String?,
-        parameterFormat: data['parameter_format'] as String?,
-        // components: (data['components'] as List<dynamic>?)
-        //     ?.map((e) => Component.fromMap(e as Map<String, dynamic>))
-        //     .toList(),
-        language: data['language'] as String?,
-        status: data['status'] as String?,
-        category: data['category'] as String?,
-        id: data['id'] as String?,
-        messageSendTtlSeconds: data['message_send_ttl_seconds'] as int?,
-        subCategory: data['sub_category'] as String?,
-      );
+  /// ✅ **Fix: Parse `components` properly**
+  factory Datum.fromMap(Map<String, dynamic> data) {
+    print("Parsing Datum: ${data['name']}");
+
+    return Datum(
+      name: data['name'] as String?,
+      parameterFormat: data['parameter_format'] as String?,
+      components: (data['components'] != null)
+          ? (data['components'] as List)
+              .map((e) => Component.fromMap(e as Map<String, dynamic>))
+              .toList()
+          : [],
+      language: data['language'] as String?,
+      status: data['status'] as String?,
+      category: data['category'] as String?,
+      id: data['id'] as String?,
+      messageSendTtlSeconds: data['message_send_ttl_seconds'] as int?,
+      subCategory: data['sub_category'] as String?,
+    );
+  }
 
   Map<String, dynamic> toMap() => {
         'name': name,
         'parameter_format': parameterFormat,
-        // 'components': components?.map((e) => e.toMap()).toList(),
+        'components': components?.map((e) => e.toMap()).toList(),
         'language': language,
         'status': status,
         'category': category,
@@ -51,15 +57,14 @@ class Datum {
         'sub_category': subCategory,
       };
 
-  /// `dart:convert`
-  ///
-  /// Parses the string and returns the resulting Json object as [Datum].
   factory Datum.fromJson(String data) {
     return Datum.fromMap(json.decode(data) as Map<String, dynamic>);
   }
 
-  /// `dart:convert`
-  ///
-  /// Converts [Datum] to a JSON string.
   String toJson() => json.encode(toMap());
+
+  @override
+  String toString() {
+    return 'Datum(name: $name, parameterFormat: $parameterFormat, language: $language, status: $status, category: $category, id: $id, messageSendTtlSeconds: $messageSendTtlSeconds, subCategory: $subCategory, components: $components)';
+  }
 }

@@ -1619,6 +1619,8 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart' show Provider;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
+import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
 import 'package:whatsapp/models/lead_model.dart';
 import 'package:whatsapp/models/ms_model/message_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
@@ -2074,7 +2076,6 @@ class _ChatScreenState extends State<ChatScreen> {
       "messaging_product": "whatsapp",
       "to": leadnumber,
       "type": "template",
-      "category": "MARKETING",
       "template": {
         "name": templateToSend,
         "language": {"code": "en"},
@@ -2124,8 +2125,11 @@ class _ChatScreenState extends State<ChatScreen> {
       "file_id": null,
       "is_read": true,
       "business_number": number,
-      "message_id": templetmsgid
+      "message_id": templetmsgid,
+      "id": currentTemplate.id
     };
+
+    print("body before sending::: ${msghistorydata}");
     mstemp.semdtempmsghistory(msghistorydata: msghistorydata).then(
         (value) => {print("semdtempmsghistorysemdtempmsghistory=>$value")});
   }
@@ -2375,7 +2379,7 @@ class _ChatScreenState extends State<ChatScreen> {
           "status": "Outgoing",
           "recordtypename": "lead",
           "file_id": fileid,
-          "business_number": "919530444240",
+          "business_number": number,
           "is_read": true
         };
         print("\x1B[33mdsdsfsdfsd${imagehistorydata}\x1B[0m");
@@ -2528,22 +2532,81 @@ class _ChatScreenState extends State<ChatScreen> {
                                   vertical: 8,
                                   horizontal: 12,
                                 ),
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(8),
                                     topRight: Radius.circular(8),
                                     bottomLeft: Radius.circular(8),
                                     bottomRight: Radius.circular(0),
                                   ),
-                                  color: Color(0xff221B41),
+                                  color: allMessages[index].status == "Outgoing"
+                                      ? const Color(0xff594EBA)
+                                      : const Color(0xff221B41),
                                 ),
-                                child: Text(
-                                  '${allMessages[index].templateName ?? ""} ${allMessages[index].headerBody ?? ""}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: Colors.white,
-                                  ),
+                                child: Column(
+                                  children: [
+                                    RichText(
+                                      text: TextSpan(
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Colors
+                                              .white, // Default text color
+                                        ),
+                                        children: [
+                                          if (allMessages[index].headerBody !=
+                                              null)
+                                            TextSpan(
+                                              text:
+                                                  '${capitalize(allMessages[index].headerBody!)}\n', // Capitalize first letter
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          if (allMessages[index].templateName !=
+                                              null)
+                                            TextSpan(
+                                              text:
+                                                  '${allMessages[index].templateName}\n',
+                                              style: const TextStyle(
+                                                  // Slightly heavier for emphasis
+                                                  ),
+                                            ),
+                                          if (allMessages[index].footer != null)
+                                            TextSpan(
+                                              text: allMessages[index].footer,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.normal,
+                                                fontSize: 12,
+                                                color: Colors
+                                                    .grey, // Lighter color for footer
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (allMessages[index].status == "Outgoing")
+                                      if (allMessages[index].deliveryStatus ==
+                                          "delivered")
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.done_all,
+                                            color: Color.fromARGB(
+                                                255, 255, 255, 255),
+                                          ),
+                                          onPressed: () {},
+                                        ),
+                                    if (allMessages[index].deliveryStatus ==
+                                        "read")
+                                      IconButton(
+                                        icon: const Icon(Icons.done_all,
+                                            color: Colors.green),
+                                        onPressed: () {},
+                                      )
+                                    else
+                                      const SizedBox.shrink(),
+                                  ],
                                 ),
                               )
                             else
@@ -3721,8 +3784,119 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  var currentTemplate;
+  List<Component> components = [];
+
+  Future<void> _setSelectedTemplates() async {
+    TempleteListViewModel templeteViewModel =
+        Provider.of<TempleteListViewModel>(context, listen: false);
+
+    // Check if templeteViewModel is not null and contains viewModels
+    if (templeteViewModel != null && templeteViewModel.viewModels.isNotEmpty) {
+      for (var viewModel in templeteViewModel.viewModels) {
+        var campaignModel = viewModel.model;
+        if (campaignModel?.data != null) {
+          for (var record in campaignModel!.data!) {
+            print("record status:: ${record.status}  ");
+            if (record.status != null) {
+              print("rec name ::${record.name}  ${selectedTemplateName}");
+              if (selectedTemplateName == record.name) {
+                currentTemplate = record;
+
+                print(
+                    "current template::::: ${currentTemplate}  ${currentTemplate.name}");
+                print(
+                    "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}");
+                components = currentTemplate.components;
+                print(
+                    "Component info:: ${components.length}  ${components[0]}   ${components[1]}");
+
+                components.map((e) {
+                  print(
+                      "capononets ::: ${e.text}   ${e.type}  ${e.buttons}  ${e.example?.headerHandle} ${e.example?.bodyText}");
+                });
+
+                return;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   void gtcategorybytemplate() {
     print(templateNames);
+  }
+
+  Future<void> _sendTemplateSheet() {
+    return showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      enableDrag: false,
+      elevation: 1,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SingleChildScrollView(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.all(15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Review Templete",
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () => Navigator.pop(context),
+                          child: const Icon(
+                            Icons.highlight_remove_outlined,
+                            color: AppColor.navBarIconColor,
+                            size: 25,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(thickness: 1),
+                    const SizedBox(height: 5),
+                    Center(
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                          minimumSize:
+                              MaterialStateProperty.all(const Size(10, 20)),
+                          padding: MaterialStateProperty.all(
+                              const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10)),
+                          backgroundColor: MaterialStateProperty.all(
+                              AppColor.navBarIconColor),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text(
+                          "Send Template",
+                          style: TextStyle(fontSize: 13, color: Colors.white),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _getBootmSheet() {
@@ -3737,82 +3911,6 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            Widget _getToggleBtn() {
-              return Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 3, vertical: 11),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedBtnIdx = 0;
-                          });
-                        },
-                        child: const Text("Marketting"),
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: selectedBtnIdx == 0
-                              ? Colors.white
-                              : AppColor.navBarIconColor,
-                          backgroundColor: selectedBtnIdx == 0
-                              ? AppColor.navBarIconColor
-                              : Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // ===================> Template Category Button <=============================>
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedBtnIdx = 1;
-                          });
-                        },
-                        child: const Text("Authentication"),
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: selectedBtnIdx == 1
-                              ? Colors.white
-                              : AppColor.navBarIconColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          backgroundColor: selectedBtnIdx == 1
-                              ? AppColor.navBarIconColor
-                              : Colors.white,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedBtnIdx = 2;
-                          });
-                        },
-                        child: const Text("Utility"),
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: selectedBtnIdx == 2
-                              ? Colors.white
-                              : AppColor.navBarIconColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          backgroundColor: selectedBtnIdx == 2
-                              ? AppColor.navBarIconColor
-                              : Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-
             return SingleChildScrollView(
               child: Container(
                 width: MediaQuery.of(context).size.width,
@@ -3843,7 +3941,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     const Divider(thickness: 1),
                     const SizedBox(height: 5),
-                    _getToggleBtn(),
+                    // _getToggleBtn(),
                     AppUtils.getDropdown(
                       'Select Category',
                       data: tempateCategory,
@@ -3892,6 +3990,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             }
                           }
                         });
+
+                        _setSelectedTemplates();
                       },
                       value: selectedTemplateName,
                     ),
@@ -3928,5 +4028,10 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       },
     );
+  }
+
+  String capitalize(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
   }
 }
