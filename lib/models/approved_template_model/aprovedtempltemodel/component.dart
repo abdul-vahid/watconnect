@@ -3,14 +3,16 @@ import 'dart:convert';
 class Component {
   String? type;
   String? text;
+  String? format;
   List<Button>? buttons;
   Example? example;
 
-  Component({this.type, this.text, this.buttons, this.example});
+  Component({this.type, this.text, this.format, this.buttons, this.example});
 
   factory Component.fromMap(Map<String, dynamic> data) => Component(
         type: data['type'] as String?,
         text: data['text'] as String?,
+        format: data['format'] as String?,
         buttons: (data['buttons'] as List<dynamic>?)
             ?.map((e) => Button.fromMap(e as Map<String, dynamic>))
             .toList(),
@@ -22,13 +24,14 @@ class Component {
   Map<String, dynamic> toMap() => {
         'type': type,
         'text': text,
+        'format': format,
         'buttons': buttons?.map((e) => e.toMap()).toList(),
         'example': example?.toMap(),
       };
 
   @override
   String toString() {
-    return 'Component(type: $type, text: $text, buttons: $buttons, example: $example)';
+    return 'Component(type: $type, text: $text, format: $format,buttons: $buttons, example: $example)';
   }
 }
 

@@ -132,7 +132,7 @@ class BaseListViewModel extends ChangeNotifier {
       String jsonKey = "records"}) async {
     try {
       var r = await BaseService().post(url: url, body: body);
-      print("rrrrrrrrrrrr=>$r");
+      print("rrrrrrrrrrrr=>$r    api>>> ${url}");
       return r;
     } on UnauthorisedException {
       await _refreshToken(url, jsonKey);
