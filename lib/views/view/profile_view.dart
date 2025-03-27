@@ -77,7 +77,6 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   void initState() {
-    // bottomnavigationbar animated
     _controller = NotchBottomBarController();
     Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
     SharedPreferences.getInstance().then((prefs) {
@@ -105,28 +104,9 @@ class _ProfileViewState extends State<ProfileView> {
           "viewModel.model:::>>>>> ${model.whatsapp_number}   ${model.whatsapp_settings}");
     }
 
-    // String profileImg= userModel?.logourl ?? "";
-
     AppUtils.currentContext = context;
     return Scaffold(
-      // appBar: AppBar(
-
-      //   // leading: IconButton(
-      //   //   icon: const Icon(Icons.arrow_back,
-      //   //       color: Color.fromARGB(255, 255, 255, 255)),
-      //   //   onPressed: () => Navigator.of(context).pop(),
-      //   // ),
-      //   automaticallyImplyLeading: false,
-      //   title: Text('My Profile',
-      //       style: GoogleFonts.montserrat(
-      //           color: const Color.fromARGB(255, 255, 255, 255))),
-      //   centerTitle: true,
-      //   elevation: 0,
-      //   // backgroundColor: AppColor.appBarColor,
-      // ),
-
       appBar: AppUtils.getappbar(
-        // actions: PopupMenuButtonState(),
         automaticallyImplyLeading: false,
         title: "My Profile",
       ),
@@ -134,7 +114,6 @@ class _ProfileViewState extends State<ProfileView> {
         onRefresh: _pullRefresh,
         child: AppUtils.getAppBody(userVm!, _getBody),
       ),
-      // bottomNavigationBar: AppUtils.buildAnimatedNotchBottomBar(context)
     );
   }
 
@@ -152,7 +131,7 @@ class _ProfileViewState extends State<ProfileView> {
     print("logourl::: ${userModel?.logourl ?? ""}");
     print(
         "'https://sandbox.watconnect.com/public/demo/users/${userModel?.id}',");
-    // getProfileData();
+
     return SingleChildScrollView(
       child: Column(
         children: [

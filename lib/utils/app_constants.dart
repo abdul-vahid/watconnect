@@ -102,6 +102,9 @@ abstract class AppConstants {
   static const String Messagehistory =
       '/api/whatsapp/message/history/{leadnumber}?whatsapp_setting_number={whatsapp_setting_number}';
   static const String Messagesendmobile = "/api/whatsapp/message/history";
+
+  static const String campaignParam = "/api/whatsapp/campaign/params";
+
   static const String marksreadmsg =
       "/api/whatsapp/chat/mark_as_read?whatsapp_setting_number=";
   static const String messageHistoryAPIPath =

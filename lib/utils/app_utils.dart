@@ -183,8 +183,9 @@ class AppUtils {
       var data = prefs.getString(SharedPrefsConstants.userKey);
       debug("data = $data");
 
+      // debug("data = $data");
       var userModel = UserModel.fromJson(data!);
-      debug("Auth Token === ${userModel.authToken}");
+      // debug("Auth Token === ${userModel.authToken}");
 
       // Decode JWT Token
       Map<String, dynamic> decodedToken =
@@ -199,6 +200,10 @@ class AppUtils {
 
       debug(
           "Decoded Token: ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)}");
+
+      // debug(
+      //     "refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!  ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!}");
+      //var loginModelMap = records.map((item) => UserModel.fromMap(item)).toList();
 
       return userModel.authToken;
     } else {
