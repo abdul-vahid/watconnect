@@ -691,6 +691,8 @@ class _Forms extends State<CampaignAddUpdateView> {
   CampaignModel? campData = CampaignModel();
   File? image;
   // File? image;
+  var campaignvm;
+  bool isRefresh = false;
 
   Future<void> saveNumberData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -803,7 +805,7 @@ class _Forms extends State<CampaignAddUpdateView> {
               color: Color.fromARGB(255, 255, 255, 255)),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        automaticallyImplyLeading: true,
+        // automaticallyImplyLeading: true,
         centerTitle: true,
         elevation: 2,
         backgroundColor: AppColor.navBarIconColor,
@@ -815,7 +817,64 @@ class _Forms extends State<CampaignAddUpdateView> {
               fontWeight: FontWeight.bold),
         ),
       ),
-      body: _pageBody(),
+      body: RefreshIndicator(
+        onRefresh: _pullRefresh,
+        child: AppUtils.getAppBody(_getaccountData!, _pageBody),
+      ),
+      bottomNavigationBar: Container(
+        // decoration: InputDecoration(border: Border.all(12)),
+        height: 49,
+        color: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Row(
+          children: [
+            // First button (Submit/Update)
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.cardsColor,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                onPressed: isEdit ? updateData : onButtonPressed,
+                child: Text(
+                  isEdit ? "Update" : "Submit",
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 10), // Space between buttons
+
+            // Second button (Cancel)
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  side: const BorderSide(
+                    width: 1.0,
+                    color: Colors.black,
+                  ),
+                ),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -841,7 +900,13 @@ class _Forms extends State<CampaignAddUpdateView> {
 
     debug("File saved successfully.");
   }
-  // this code use of download file end here
+
+  Future<void> _pullRefresh() async {
+    Provider.of<CampaignViewModel>(context, listen: false).fetchCampaign();
+
+    isRefresh = true;
+    return Future<void>.delayed(const Duration(seconds: 1));
+  }
 
   Widget _pageBody() {
     return SingleChildScrollView(
@@ -1006,6 +1071,7 @@ class _Forms extends State<CampaignAddUpdateView> {
               const SizedBox(height: 5),
 
               MultiSelectDialogField(
+                dialogHeight: 160,
                 items: groupsNameSet
                     .map(
                       (group) => MultiSelectItem<String>(
@@ -1119,47 +1185,47 @@ class _Forms extends State<CampaignAddUpdateView> {
               const SizedBox(height: 15),
 
               //----------This Code Use of Cancel and Submit Button Showing Start Here---------------
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.only(left: 10, right: 10),
-                      side: const BorderSide(
-                        width: 1.0,
-                        color: AppColor.navBarIconColor,
-                      ),
-                    ),
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColor.navBarIconColor,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.navBarIconColor,
-                      padding: const EdgeInsets.only(left: 10, right: 10),
-                    ),
-                    onPressed: isEdit ? updateData : onButtonPressed,
-                    child: Text(
-                      isEdit ? "Update" : "Submit",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.end,
+              //   children: [
+              //     OutlinedButton(
+              //       onPressed: () {
+              //         Navigator.pop(context);
+              //       },
+              //       style: OutlinedButton.styleFrom(
+              //         padding: const EdgeInsets.only(left: 10, right: 10),
+              //         side: const BorderSide(
+              //           width: 1.0,
+              //           color: AppColor.navBarIconColor,
+              //         ),
+              //       ),
+              //       child: Text(
+              //         'Cancel',
+              //         style: TextStyle(
+              //           fontSize: 14,
+              //           fontWeight: FontWeight.w500,
+              //           color: AppColor.navBarIconColor,
+              //         ),
+              //       ),
+              //     ),
+              //     const SizedBox(width: 10),
+              //     // ElevatedButton(
+              //     //   style: ElevatedButton.styleFrom(
+              //     //     backgroundColor: AppColor.navBarIconColor,
+              //     //     padding: const EdgeInsets.only(left: 10, right: 10),
+              //     //   ),
+              //     //   onPressed: isEdit ? updateData : onButtonPressed,
+              //     //   child: Text(
+              //     //     isEdit ? "Update" : "Submit",
+              //     //     style: TextStyle(
+              //     //       color: Colors.white,
+              //     //       fontSize: 14,
+              //     //       fontWeight: FontWeight.w600,
+              //     //     ),
+              //     //   ),
+              //     // ),
+              //   ],
+              // ),
               //----------End Code of Cancel and Submit Button Showing Start Here---------------
             ],
           ),
@@ -1253,30 +1319,29 @@ class _Forms extends State<CampaignAddUpdateView> {
           .updateCampaign(id, camp)
           .then((value) {
         debug('campaignUpdate==$value');
-      });
-      Navigator.pop(context);
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Your record has been updated please pull to refresh '),
-          duration: Duration(seconds: 3),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MultiProvider(
-            providers: [
-              ChangeNotifierProvider(
-                create: (_) => CampaignViewModel(context),
-              ),
-            ],
-            child: const CampaignListView(),
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MultiProvider(
+              providers: [
+                ChangeNotifierProvider(
+                  create: (_) => CampaignViewModel(context),
+                ),
+              ],
+              child: const CampaignListView(),
+            ),
           ),
-        ),
-        (Route<dynamic> route) => route.isFirst,
-      );
+        );
+      });
+
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text('Your record has been updated please pull to refresh '),
+      //     duration: Duration(seconds: 3),
+      //     backgroundColor: Colors.green,
+      //   ),
+      // );
     }
   }
 }

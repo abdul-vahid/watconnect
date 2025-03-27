@@ -337,11 +337,9 @@
 // }
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart' show GoogleFonts;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/user_model/user_model.dart';
-import '../../utils/app_color.dart' show AppColor;
 import '../../utils/app_constants.dart';
 import '../../utils/app_utils.dart' show AppUtils;
 import '../../view_models/user_list_vm.dart';
@@ -605,7 +603,7 @@ class _LoginViewState extends State<LoginView> {
         }
         if (records.isNotEmpty) {
           var userModel = records[0].model as UserModel;
-          print("userModel::: ${userModel.success}   ${records[0].model}");
+          // print("userModel::: ${userModel.success}   ${records[0].model}");
           {
             AppUtils.onLoading(context, "Logging You, please wait...");
 
@@ -617,6 +615,7 @@ class _LoginViewState extends State<LoginView> {
                 prefs.setString(
                     SharedPrefsConstants.userKey, userModel.toJson());
               });
+              AppUtils.getToken();
               Navigator.pop(context);
               Navigator.pushAndRemoveUntil(
                   context,
@@ -640,47 +639,46 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
-  TextFormField getTextFormField(
-    String hintText, {
-    controller,
-    void Function(String?)? onSaved,
-    void Function(String)? onChanged,
-    void Function()? onTap,
-    bool obscureText = false,
-    bool readOnly = false,
-    String? initialValue,
-    int? maxLines = 1,
-    InputDecoration? decoration = const InputDecoration(),
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      keyboardType: keyboardType,
-      onSaved: onSaved,
-      onTap: onTap,
-      obscureText: obscureText,
-      controller: controller,
-      readOnly: readOnly,
-      maxLines: maxLines,
-      onChanged: onChanged,
-      initialValue: initialValue,
-      decoration: InputDecoration(
-        contentPadding: const EdgeInsets.fromLTRB(5.0, 10.0, 5.0, 10.0),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: AppColor.navBarIconColor),
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderSide:
-              const BorderSide(color: Colors.grey), // Default border color
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        hintText: hintText,
-        hintStyle: GoogleFonts.montserrat(fontSize: 14),
-      ),
-      validator: validator,
-    );
-  }
+  // TextFormField getTextFormField(
+  //   String hintText, {
+  //   controller,
+  //   void Function(String?)? onSaved,
+  //   void Function(String)? onChanged,
+  //   void Function()? onTap,
+  //   bool obscureText = false,
+  //   bool readOnly = false,
+  //   String? initialValue,
+  //   int? maxLines = 1,
+  //   InputDecoration? decoration = const InputDecoration(),
+  //   TextInputType? keyboardType,
+  //   String? Function(String?)? validator,
+  // }) {
+  //   return TextFormField(
+  //     keyboardType: keyboardType,
+  //     onSaved: onSaved,
+  //     onTap: onTap,
+  //     obscureText: obscureText,
+  //     controller: controller,
+  //     readOnly: readOnly,
+  //     maxLines: maxLines,
+  //     onChanged: onChanged,
+  //     initialValue: initialValue,
+  //     decoration: InputDecoration(
+  //       contentPadding: const EdgeInsets.fromLTRB(5.0, 10.0, 5.0, 10.0),
+  //       focusedBorder: OutlineInputBorder(
+  //         borderSide: const BorderSide(color: AppColor.navBarIconColor),
+  //         borderRadius: BorderRadius.circular(8.0),
+  //       ),
+  //       enabledBorder: OutlineInputBorder(
+  //         borderSide: const BorderSide(color: Colors.grey),
+  //         borderRadius: BorderRadius.circular(8.0),
+  //       ),
+  //       hintText: hintText,
+  //       hintStyle: GoogleFonts.montserrat(fontSize: 14),
+  //     ),
+  //     validator: validator,
+  //   );
+  // }
 
   Widget _buildCircleIcon(IconData icon) {
     return Container(

@@ -13,7 +13,6 @@ import 'package:whatsapp/views/view/edit_profile_view.dart';
 import '../../models/get_user.dart';
 import '../../models/user_model/user_model.dart';
 import '../../utils/app_color.dart';
-import '../../utils/app_constants.dart';
 import '../../utils/app_utils.dart';
 // ignore: unused_import
 import '../../utils/enum.dart';
@@ -301,7 +300,10 @@ class _ProfileViewState extends State<ProfileView> {
                                     phone: phone,
                                   ),
                                 ),
-                              );
+                              ).then((value) => Provider.of<GetUserViewModel>(
+                                      context,
+                                      listen: false)
+                                  .fetchUser());
                             }
                             // else if (value == 'delete') {
                             //   _showDeleteDialog();

@@ -14,6 +14,7 @@ import '../views/view/login_view.dart';
 import 'function_lib.dart';
 
 class AppUtils {
+  late UserModel userModelObjj;
   static bool isLoggedout = false;
   static int notificationCount = 0;
   static BuildContext? currentContext;
@@ -79,6 +80,7 @@ class AppUtils {
           borderSide: const BorderSide(color: Colors.grey, width: 1),
           borderRadius: BorderRadius.circular(8),
         ),
+        border: OutlineInputBorder(),
       ),
       value: value,
       isExpanded: true,
@@ -135,6 +137,11 @@ class AppUtils {
           borderSide: const BorderSide(color: Colors.grey),
           borderRadius: BorderRadius.circular(8.0),
         ),
+        // errorBorder: OutlineInputBorder(
+        //   borderSide: const BorderSide(color: Color.fromARGB(255, 209, 0, 0)),
+        //   borderRadius: BorderRadius.circular(8.0),
+        // ),
+        border: OutlineInputBorder(),
         hintText: hintText,
         // hintStyle: tserrat(fontSize: 14),
       ),
@@ -175,25 +182,27 @@ class AppUtils {
     if (prefs.containsKey(SharedPrefsConstants.userKey)) {
       var data = prefs.getString(SharedPrefsConstants.userKey);
       debug("data = $data");
+
       var userModel = UserModel.fromJson(data!);
       debug("Auth Token === ${userModel.authToken}");
 
+      // Decode JWT Token
       Map<String, dynamic> decodedToken =
           JwtDecoder.decode(userModel.authToken!);
       var userModelObj = UserModel.fromMap(decodedToken);
 
-      debug('getValue from map= ${userModelObj.username}');
-      // SharedPreferences pref = await SharedPreferences.getInstance();
+      debug('Username from token = ${userModelObj.username}');
+      debug('userroel from token = ${userModelObj.userrole}');
+
       await prefs.setString(
           SharedPrefsConstants.userDecodedTokenKey, userModelObj.toJson());
 
       debug(
-          "refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!  ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!}");
-      //var loginModelMap = records.map((item) => UserModel.fromMap(item)).toList();
+          "Decoded Token: ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)}");
 
       return userModel.authToken;
     } else {
-      return "";
+      return null;
     }
   }
 
@@ -203,7 +212,10 @@ class AppUtils {
 
   static UserModel? getSessionUser(SharedPreferences prefs) {
     if (prefs.containsKey(SharedPrefsConstants.userDecodedTokenKey)) {
-      //debug(prefs.getString(SharedPrefsConstants.userKey));
+      debug(
+          "adsssssssssssssssssss${prefs.getString(SharedPrefsConstants.userKey)}");
+      print(
+          "addddddddd${jsonDecode(prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!)}");
       return UserModel.fromMap(jsonDecode(
           prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!));
     }

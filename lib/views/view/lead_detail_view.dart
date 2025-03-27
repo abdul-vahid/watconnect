@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 import 'package:whatsapp/view_models/lead_list_vm.dart';
@@ -101,20 +102,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
               color: Color.fromARGB(255, 255, 255, 255)),
         ),
         //-----------This Code Use of Icon Bar Showing Start Here------------
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(20.0),
-          child: Container(
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  width: 1.8,
-                  color: Color.fromARGB(255, 0, 0, 0),
-                ),
-              ),
-            ),
-            padding: const EdgeInsets.only(top: 12, bottom: 15),
-          ),
-        ),
+
         //-----------End Code of Icon Bar Showing-------------
       ),
       body: _pageBody(model),
@@ -122,6 +110,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
   }
 
   Widget _pageBody(model) {
+    print("widget.model?.whatsapp_number${widget.model?.whatsapp_number}");
     // print("widget.model?.createdbyname${widget.model?.ownername}");
 
     print("model$model");
@@ -366,7 +355,6 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                     ),
                     onPressed: () {
                       _deleteUser();
-                      Navigator.of(context).pop();
                     },
                   ),
                 ],
@@ -402,10 +390,11 @@ class _LeadDetailViewState extends State<LeadDetailView> {
 
   void _navigateToEdit() {
     Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LeadAddView(model: widget.model),
-      ),
-    );
+            context,
+            MaterialPageRoute(
+              builder: (context) => LeadAddView(model: widget.model),
+            ))
+        .then((value) =>
+            Provider.of<LeadListViewModel>(context, listen: false).fetch());
   }
 }

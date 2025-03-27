@@ -511,6 +511,7 @@ class _WhtsapphoneState extends State<Whtsapphone> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Hides the back arrow
         title: const Center(
           child: Text(
             "Phone Selection",

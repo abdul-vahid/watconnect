@@ -2,7 +2,7 @@
 xmlns:tools="http://schemas.android.com/tools
     <application
         android:name="androidx.multidex.MultiDexApplication"
-        android:label="whatsapp"
+        android:label="watconnect"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
         android:theme="@style/LaunchTheme"

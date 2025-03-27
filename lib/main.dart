@@ -19,6 +19,8 @@ import 'package:whatsapp/view_models/message_history_vm.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/view_models/user_data_list_vm.dart';
+import 'firebase_options.dart';
+import 'services/notifications/local_notification_service.dart';
 import 'view_models/agent_list_vm.dart';
 import 'view_models/campaign_vm.dart';
 import 'view_models/chart_list_vm.dart';
@@ -32,19 +34,20 @@ import 'views/view/splash_view.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp();
-  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  NotificationSettings settings = await messaging.requestPermission();
-  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    print('User granted permission');
-  } else {
-    print('User declined or has not accepted permission');
-  }
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  LocalNotificationService.initialize();
+  // FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  // FirebaseMessaging messaging = FirebaseMessaging.instance;
+  // NotificationSettings settings = await messaging.requestPermission();
+  // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+  //   print('User granted permission');
+  // } else {
+  //   print('User declined or has not accepted permission');
+  // }
 
-  // Get FCM Token
-  final fcmtoken = await FirebaseMessaging.instance.getToken();
-  print("FCM Token: $fcmtoken");
+  // // Get FCM Token
+  // final fcmtoken = await FirebaseMessaging.instance.getToken();
+  // print("FCM Token: $fcmtoken");
 
   // Send FCM token to server if needed
   // For example, send it to your server for later use

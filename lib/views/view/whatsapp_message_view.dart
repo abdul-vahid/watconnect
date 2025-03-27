@@ -1749,7 +1749,6 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         title: GestureDetector(
           onTap: () {
-            // Show the profile dialog when the CircleAvatar is tapped
             _showProfileDialog(context);
           },
           child: Row(
@@ -1762,7 +1761,9 @@ class _ChatScreenState extends State<ChatScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  widget.leadName ?? "", // Display the lead name if available
+                  (widget.leadName?.isNotEmpty ?? false)
+                      ? widget.leadName!
+                      : "No Name Available",
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
@@ -1770,14 +1771,22 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(
               Icons.more_vert,
               color: Colors.white,
             ),
-            onPressed: () {
-              _showDeleteDialog(); // Show the delete dialog when tapped
+            onSelected: (String value) {
+              if (value == 'delete') {
+                _showDeleteDialog(); // Show the delete dialog when 'Delete' is selected
+              }
             },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'delete',
+                child: Text('Delete'),
+              ),
+            ],
           ),
         ],
       ),
@@ -1966,7 +1975,7 @@ class _ChatScreenState extends State<ChatScreen> {
     late MessageViewModel ms = MessageViewModel(context);
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
-
+    print("numbernumbernumber${number}");
     if (number == null || number.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -1993,14 +2002,14 @@ class _ChatScreenState extends State<ChatScreen> {
       "message_template_id": null,
       "whatsapp_number": leadnumber,
       "message": text,
-      // "status": "Outgoing",
+      "status": "Outgoing",
       "recordtypename": "lead",
       "file_id": null,
       "is_read": true,
       "business_number": number,
-      // "message_id": messageid
+      "message_id": messageid
     };
-
+    print("msgmobilebody${msgmobilebody}");
     ms.sendMessage(number: number, addmsModel: addmsModel).then((value) {
       print("valueee=>$value");
       if (value.isNotEmpty) {
@@ -2019,6 +2028,8 @@ class _ChatScreenState extends State<ChatScreen> {
             });
           }
         });
+
+        ms.Fetchmsghistorydata(leadnumber: leadnumber, number: number);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Message sent successfully'),
@@ -2064,7 +2075,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "messaging_product": "whatsapp",
       "to": leadnumber,
       "type": "template",
-      "category": "MARKETING",
+      // "category": "MARKETING",
       "template": {
         "name": templateToSend,
         "language": {"code": "en"},
@@ -2095,7 +2106,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "example_body_text": {"sendToAdmin": false},
       "footer": "thanks regards",
       "buttons": [],
-      "business_number": "919530444240"
+      "business_number": number
     };
     mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) => {
           templeteidmessage = value['id'],
@@ -2193,7 +2204,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final pickedFile = await FilePicker.platform.pickFiles(
       allowMultiple: false,
       type: FileType.custom,
-      allowedExtensions: ["jpg", 'png', 'pdf'],
+      allowedExtensions: ["jpg", 'png', 'pdf', 'html', 'mp4', 'mov', 'avi'],
     );
     if (pickedFile != null) {
       file = pickedFile.files.first;
@@ -2227,8 +2238,85 @@ class _ChatScreenState extends State<ChatScreen> {
       imagesend(type);
     } else if (type == "document" || type == "pdf") {
       documetsend(type);
+    } else if (type == "video") {
+      print("SAdddddddddddddddddddddd");
+      videosend(type);
     } else {
       debugPrint("Unsupported file type: $type");
+    }
+  }
+
+  void videosend(type) async {
+    print("woking....");
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+    if (image != null) {
+      print("image=>$image");
+      String? response = await messageViewModel.uploadvideo(image!, number);
+      if (response != null) {
+        print("type===>$type");
+        debugPrint('video sedn video sendResponse: $response');
+        var jsonResponse = jsonDecode(response);
+        String? doucmentid = jsonResponse['id'];
+        debugPrint('video sedn video send File ID: $doucmentid');
+        Map<String, dynamic> imagebody = {
+          "messaging_product": "whatsapp",
+          "recipient_type": "individual",
+          "to": widget.model.whatsapp_number,
+          "type": type,
+          type: {"id": doucmentid, "caption": "document"}
+        };
+        String? responseimage = await messageViewModel
+            .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
+            .then((value) {
+          print("video sedn video send send value----->$value");
+          return null;
+        });
+
+        String? leadid = widget.model.id;
+        print("video sedn video send sned lead id=>$leadid");
+
+        String? sendimagedatabase = await messageViewModel
+            .uploadFiledb(image!, number, leadid)
+            .then((value) {
+          print("video sedn video send send----upload dididi->$value");
+
+          Map<String, dynamic> response = jsonDecode(value);
+
+          fileid = response['records']?[0]['id'];
+
+          print("ID: $fileid");
+          return null;
+        });
+        debug("widget.leadNamewidget.leadName${widget.leadName}");
+        Map<String, dynamic> imagehistorydata = {
+          "parent_id": leadid,
+          "name": widget.leadName,
+          "message_template_id": null,
+          "whatsapp_number": widget.wpnumber,
+          "message": "",
+          "status": "Outgoing",
+          "recordtypename": "lead",
+          "file_id": fileid,
+          "business_number": number,
+          "is_read": true
+        };
+        print("\x1B[33mdsdsfsdfsd$imagehistorydata\x1B[0m");
+
+        print("fileidfileid$fileid");
+        String? sendhistoryimage = await messageViewModel
+            .sendimagehistory(
+          msghistorydata: imagehistorydata,
+        )
+            .then((value) {
+          print("\x1B[32msendhistoryimagesendhistoryimage$value\x1B[0m");
+          return null;
+        });
+      } else {
+        debugPrint('Image upload failed or response was null');
+      }
+    } else {
+      debugPrint('No image selected');
     }
   }
 
@@ -2261,6 +2349,7 @@ class _ChatScreenState extends State<ChatScreen> {
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
             .then((value) {
           print("value----->$value");
+          return null;
         });
 
         String? leadid = widget.model.id;
@@ -2276,6 +2365,7 @@ class _ChatScreenState extends State<ChatScreen> {
           fileid = response['records']?[0]['id'];
 
           print("ID: $fileid");
+          return null;
         });
 
         Map<String, dynamic> imagehistorydata = {
@@ -2299,6 +2389,7 @@ class _ChatScreenState extends State<ChatScreen> {
         )
             .then((value) {
           print("\x1B[32msendhistoryimagesendhistoryimage${value}\x1B[0m");
+          return null;
         });
       } else {
         debugPrint('Image upload failed or response was null');
@@ -2339,6 +2430,7 @@ class _ChatScreenState extends State<ChatScreen> {
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
             .then((value) {
           print("document send value----->$value");
+          return null;
         });
 
         String? leadid = widget.model.id;
@@ -2354,6 +2446,7 @@ class _ChatScreenState extends State<ChatScreen> {
           fileid = response['records']?[0]['id'];
 
           print("ID: $fileid");
+          return null;
         });
         debug("widget.leadNamewidget.leadName${widget.leadName}");
         Map<String, dynamic> imagehistorydata = {
@@ -2365,7 +2458,7 @@ class _ChatScreenState extends State<ChatScreen> {
           "status": "Outgoing",
           "recordtypename": "lead",
           "file_id": fileid,
-          "business_number": "919530444240",
+          "business_number": number,
           "is_read": true
         };
         print("\x1B[33mdsdsfsdfsd${imagehistorydata}\x1B[0m");
@@ -2377,6 +2470,7 @@ class _ChatScreenState extends State<ChatScreen> {
         )
             .then((value) {
           print("\x1B[32msendhistoryimagesendhistoryimage${value}\x1B[0m");
+          return null;
         });
       } else {
         debugPrint('Image upload failed or response was null');
@@ -2423,15 +2517,16 @@ class _ChatScreenState extends State<ChatScreen> {
                 } else {
                   dayLabel = DateFormat('EEEE').format(istTimee);
                 }
-                String formattedTimee = DateFormat('hh:mm a').format(istTimee);
+                // String formattedTimee = DateFormat('hh:mm a').format(istTimee);
 
-                String finalFormattedTime = '$dayLabel, $formattedTimee';
-                print("finalFormattedTime=>$finalFormattedTime");
-                // print("dayLabel$dayLabel");
-                print(finalFormattedTime);
+                // String finalFormattedTime = '$dayLabel, $formattedTimee';
+                String finalFormattedTime = '$dayLabel';
+                // print("finalFormattedTime=>$finalFormattedTime");
+
+                // print(finalFormattedTime);
                 String title = allMessages[index].title ?? "";
                 String msghistoryid = allMessages[index].id;
-                print("sjdhjshdjas=>$msghistoryid");
+                // print("sjdhjshdjas=>$msghistoryid");
                 String imageUrl = "";
                 if (title.isNotEmpty) {
                   imageUrl =
@@ -2442,14 +2537,28 @@ class _ChatScreenState extends State<ChatScreen> {
                   onLongPress: () => _showSimpleDialog(allMessages[index].id),
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 5),
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(1),
                     child: Align(
                       alignment: _getAlignment(allMessages[index].status),
                       child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(2.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            if (index == 0)
+                              Align(
+                                alignment: Alignment.topCenter,
+                                child: Text(
+                                  finalFormattedTime,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              )
+                            else
+                              const SizedBox.shrink(),
                             Text(
                               allMessages[index].status == "Incoming"
                                   ? allMessages[index].name
@@ -2528,6 +2637,19 @@ class _ChatScreenState extends State<ChatScreen> {
                                               size: 16,
                                             ),
                                           ),
+                                      if (allMessages[index].erormessage !=
+                                              null &&
+                                          allMessages[index]
+                                              .erormessage
+                                              .isNotEmpty)
+                                        Text(
+                                          allMessages[index].erormessage,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10,
+                                            color: Colors.red,
+                                          ),
+                                        ),
                                     ],
                                   ),
                                 ),
@@ -3630,19 +3752,38 @@ class _ChatScreenState extends State<ChatScreen> {
                             if (image != null) {
                               String fileExtension =
                                   path.extension(image!.path).toLowerCase();
-                              print("sssdds=>$fileExtension");
+                              print("File Extension: $fileExtension");
+
                               if (fileExtension == '.jpg' ||
-                                  fileExtension == '.jpeg' ||
-                                  fileExtension == '.png') {
-                                print("sjhshh");
+                                  fileExtension == '.jpeg') {
+                                print("🖼 Sending Image...");
                                 filesend("image");
+                              } else if (fileExtension == '.mp4' ||
+                                  fileExtension == '.avi' ||
+                                  fileExtension == '.mov') {
+                                print("🎥 Sending Video...");
+                                filesend("video");
+                              } else if (fileExtension == '.html' ||
+                                  fileExtension == '.txt') {
+                                print("🎥 Sending text document...");
+                                filesend("document");
                               } else {
+                                print("📄 Sending Document...");
                                 filesend("document");
                               }
-                            } else {
+                            } else if (_controller.text.trim().isNotEmpty) {
+                              showLoader = false;
                               messagesendd(_controller.text);
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                      content: Text(
+                                "please Type Message",
+                                selectionColor: Colors.amber,
+                              )));
+                              print(
+                                  "⚠ No file or text entered. Doing nothing.");
                             }
-
                             _controller.clear();
                             setState(() {});
                           },
@@ -3685,8 +3826,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     ElevatedButton(
                       style: ButtonStyle(
                         minimumSize:
-                            MaterialStateProperty.all(const Size(10, 20)),
-                        padding: MaterialStateProperty.all(
+                            WidgetStateProperty.all(const Size(10, 20)),
+                        padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 10)),
                       ),
@@ -3716,7 +3857,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Provider.of<TempleteListViewModel>(context, listen: false);
 
     // Check if templeteViewModel is not null and contains viewModels
-    if (templeteViewModel != null && templeteViewModel.viewModels.isNotEmpty) {
+    if (templeteViewModel.viewModels.isNotEmpty) {
       for (var viewModel in templeteViewModel.viewModels) {
         var campaignModel = viewModel.model;
         if (campaignModel?.data != null) {
@@ -3912,12 +4053,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: ElevatedButton(
                         style: ButtonStyle(
                           minimumSize:
-                              MaterialStateProperty.all(const Size(10, 20)),
-                          padding: MaterialStateProperty.all(
+                              WidgetStateProperty.all(const Size(10, 20)),
+                          padding: WidgetStateProperty.all(
                               const EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 10)),
-                          backgroundColor: MaterialStateProperty.all(
-                              AppColor.navBarIconColor),
+                          backgroundColor:
+                              WidgetStateProperty.all(AppColor.navBarIconColor),
                         ),
                         onPressed: () {
                           String templateToSend =

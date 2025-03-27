@@ -291,7 +291,7 @@ class _UserDetailView extends State<UserDetailView> {
                           const Divider(),
                           getRow('Username', widget.model?.username ?? ''),
                           const Divider(),
-                          getRow('Phone', widget.model?.phone ?? ''),
+                          getRow('Phone', widget.model?.whatsappNumber ?? ''),
                           const Divider(),
                           getRow('First Name', widget.model?.firstname ?? ''),
                           const Divider(),

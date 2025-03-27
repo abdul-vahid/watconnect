@@ -155,27 +155,80 @@ class _Forms extends State<LeadAddView> {
       userMap[model1.id] = model1.username;
       debug('user=====${model1.id}');
     }
+
     userData = userMap.values.toList();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back,
-              color: Color.fromARGB(255, 255, 255, 255)),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        automaticallyImplyLeading: true,
         centerTitle: true,
         elevation: 2,
-        // backgroundColor: AppColor.appBarColor,
         title: Text(
           isEdit ? "Edit Lead" : "Add New Lead",
           style: const TextStyle(
-              color: Color.fromARGB(255, 255, 255, 255),
-              fontSize: 20,
-              fontWeight: FontWeight.bold),
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: _pageBody(),
+      bottomNavigationBar: Container(
+        // decoration: InputDecoration(border: Border.all(12)),
+        height: 49,
+        color: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: Row(
+          children: [
+            // First button (Submit/Update)
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.cardsColor,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                onPressed: isEdit ? updateData : onButtonPressed,
+                child: Text(
+                  isEdit ? "Update" : "Submit",
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 10), // Space between buttons
+
+            // Second button (Cancel)
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  side: const BorderSide(
+                    width: 1.0,
+                    color: Colors.black,
+                  ),
+                ),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -221,6 +274,7 @@ class _Forms extends State<LeadAddView> {
                       ],
                     ),
                     const SizedBox(height: 23),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -276,7 +330,6 @@ class _Forms extends State<LeadAddView> {
                     ),
                     const SizedBox(height: 10),
 
-// Row with Phone and Email in 2 Columns
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -296,7 +349,7 @@ class _Forms extends State<LeadAddView> {
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter phone number';
-                                  } else if (value.length != 10) {
+                                  } else if (value.length != 12) {
                                     return 'Phone number must be 10 digits';
                                   } else if (!RegExp(r'^[0-9]+$')
                                       .hasMatch(value)) {
@@ -308,7 +361,7 @@ class _Forms extends State<LeadAddView> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 10), // Space between the columns
+                        const SizedBox(width: 10),
 
                         // Email Field
                         Expanded(
@@ -355,6 +408,7 @@ class _Forms extends State<LeadAddView> {
                           _asignStaff = value;
                         });
                       },
+
                       validator: (value) =>
                           value == null ? 'Please Provide User' : null,
                       data: userData,
@@ -660,48 +714,7 @@ class _Forms extends State<LeadAddView> {
               ),
 
               //----------This Code Use of Cancel and Submit Button Showing Start Here---------------
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.only(left: 10, right: 10),
-                      side: const BorderSide(
-                        width: 1.0,
-                        color: AppColor.navBarIconColor,
-                      ),
-                    ),
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColor.navBarIconColor,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColor.navBarIconColor,
-                      padding: const EdgeInsets.only(left: 10, right: 10),
-                    ),
-                    onPressed: isEdit ? updateData : onButtonPressed,
-                    child: Text(
-                      isEdit ? "Update" : "Submit",
-                      style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
+
               //----------End Code of Cancel and Submit Button Showing Start Here---------------
             ],
           ),
@@ -746,6 +759,7 @@ class _Forms extends State<LeadAddView> {
       _getleadData?.addlead(addleadModel).then((value) {
         debug("value#### $value");
         Navigator.pop(context);
+        Navigator.pop(context);
         if (value.isNotEmpty) {
           debug("value#### $value");
           Navigator.push(
@@ -768,7 +782,58 @@ class _Forms extends State<LeadAddView> {
     }
   }
 
+  // Future<void> updateData() async {
+  //   if (_addleadFormKey.currentState!.validate()) {
+  //     _addleadFormKey.currentState!.save();
+
+  //     var id = widget.model?.id;
+  //     debug('idmodel====$id');
+  //     LeadModel leadModel = LeadModel(
+  //       id: id,
+  //       firstname: _firstname,
+  //       lastname: _lastname,
+  //       email: _email,
+  //       whatsapp_number: _whatsapnumber,
+  //       city: _city,
+  //       company: _company,
+  //       leadsource: _leadsource,
+  //       leadstatus: _leadstatus,
+  //       salutation: _salutation,
+  //       industry: _industry,
+  //       title: _title,
+  //       ownername: _asignStaff,
+  //       // ownerid: "c3c74964-d091-4fa3-8d9e-fa041d9c0d40",
+  //       paymentmodel: _payment,
+  //       paymentterms: _paymentterm,
+  //       street: _street,
+  //       state: _selectedState,
+  //       country: _selectedCountry,
+  //       zipcode: _zipcode,
+  //       description: _description,
+  //       // amount: _amount,
+  //     );
+  //     print("lelelelelel;eelelle=>>>${leadModel.toMap()}");
+  //     AppUtils.onLoading(context, "Updating, please wait...");
+  //     Provider.of<LeadListViewModel>(context, listen: false)
+  //         .update(id, leadModel);
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(
+  //           builder: (context) => MultiProvider(
+  //                 providers: [
+  //                   ChangeNotifierProvider(
+  //                       create: (_) => LeadListViewModel(context))
+  //                 ],
+  //                 child: const LeadListView(),
+  //               )),
+  //     );
+  //   }
+  // }
+
   Future<void> updateData() async {
+    var userId;
+    userId = userMap.keys
+        .firstWhere((k) => userMap[k] == _asignStaff, orElse: () => null);
     if (_addleadFormKey.currentState!.validate()) {
       _addleadFormKey.currentState!.save();
 
@@ -788,7 +853,7 @@ class _Forms extends State<LeadAddView> {
         industry: _industry,
         title: _title,
         ownername: _asignStaff,
-        // ownerid: "c3c74964-d091-4fa3-8d9e-fa041d9c0d40",
+        ownerid: userId,
         paymentmodel: _payment,
         paymentterms: _paymentterm,
         street: _street,
@@ -801,18 +866,32 @@ class _Forms extends State<LeadAddView> {
       print("lelelelelel;eelelle=>>>${leadModel.toMap()}");
       AppUtils.onLoading(context, "Updating, please wait...");
       Provider.of<LeadListViewModel>(context, listen: false)
-          .update(id, leadModel);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => MultiProvider(
-                  providers: [
-                    ChangeNotifierProvider(
-                        create: (_) => LeadListViewModel(context))
-                  ],
-                  child: const LeadListView(),
-                )),
-      );
+          .update(id, leadModel)
+          .then((value) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => MultiProvider(
+                    providers: [
+                      ChangeNotifierProvider(
+                          create: (_) => LeadListViewModel(context))
+                    ],
+                    child: const LeadListView(),
+                  )),
+        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(
+        //     content: Text('Your record has been updated.'),
+        //     duration: Duration(seconds: 3),
+        //     backgroundColor: Colors.green,
+        //   ),
+        // );
+      }).catchError((error, stackTrace) {
+        List<String> errorMessages = AppUtils.getErrorMessages(error);
+        Navigator.pop(context);
+
+        AppUtils.getAlert(context, errorMessages, title: "Error Alert");
+      });
     }
   }
 }

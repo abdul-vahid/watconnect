@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
+import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
 import '../../models/lead_model.dart';
@@ -21,8 +22,7 @@ class LeadListView extends StatefulWidget {
 }
 
 class _LeadListViewState extends State<LeadListView> {
-  final List<String> _paymentterms = [];
-  final List<String> _user = [];
+  final List<String> _leadfilter = [];
   List<LeadModel> leadss = [];
   TextEditingController textController = TextEditingController();
   var leadlistvm;
@@ -98,7 +98,7 @@ class _LeadListViewState extends State<LeadListView> {
   Widget build(BuildContext context) {
     if (leadlistvm != null) {
       for (var viewModel in leadlistvm!.viewModels) {
-        _paymentterms.add(viewModel.model.leadstatus);
+        _leadfilter.add(viewModel.model.leadstatus);
       }
     }
 
@@ -229,7 +229,7 @@ class _LeadListViewState extends State<LeadListView> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            List<String> uniquePaymentTerms = _paymentterms.toSet().toList();
+            List<String> uniquePaymentTerms = _leadfilter.toSet().toList();
 
             return Container(
               height: 220,
@@ -273,14 +273,33 @@ class _LeadListViewState extends State<LeadListView> {
 
                     // Payment Term Dropdown
                     Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.black,
+                          width: 0.2,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       child: DropdownButtonFormField<String>(
                         hint: const Text('Select Leads Status'),
-                        items: uniquePaymentTerms.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        items: [
+                          DropdownMenuItem(
+                            value: 'Working - Contacted',
+                            child: Text('Working - Contacted'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Open - Not Contacted',
+                            child: Text('Open - Not Contacted'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Closed - Converted',
+                            child: Text('Closed - Converted'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Closed - Not Converted',
+                            child: Text('Closed - Not Converted'),
+                          ),
+                        ],
                         onChanged: (String? newValue) {
                           setState(() {
                             selectlead = newValue;
@@ -289,28 +308,57 @@ class _LeadListViewState extends State<LeadListView> {
                         value: selectlead,
                       ),
                     ),
+
+                    // Container(
+                    //   decoration: BoxDecoration(
+                    //     border: Border.all(
+                    //       color: Colors.black,
+                    //       width: 0.2,
+                    //     ),
+                    //     borderRadius: BorderRadius.circular(8),
+                    //   ),
+                    //   child: DropdownButtonFormField<String>(
+                    //     hint: const Text('Select Leads Status'),
+                    //     items: uniquePaymentTerms.map((String value) {
+                    //       return DropdownMenuItem<String>(
+                    //         value: value,
+                    //         child: Text(value),
+                    //       );
+                    //     }).toList(),
+                    //     onChanged: (String? newValue) {
+                    //       setState(() {
+                    //         selectlead = newValue;
+                    //       });
+                    //     },
+                    //     value: selectlead,
+                    //   ),
+                    // ),
                     const SizedBox(height: 24),
 
-                    ElevatedButton(
-                      onPressed: () {
-                        // Navigator.of(context).pop();
-                        filterLeads(selectlead);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.navBarIconColor,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            filterLeads(selectlead);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Filters',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Apply Filters',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -636,11 +684,25 @@ class _LeadListViewState extends State<LeadListView> {
     for (var viewModel in leadModelList) {
       LeadModel model = viewModel;
 
+      // var unreadRecord = unreadCountVm?.viewModels.firstWhere(
+      //   (unreadModel) =>
+      //       unreadModel.model.records?.any(
+      //           (record) => record.whatsappNumber == model.whatsapp_number) ??
+      //       false,
+      //   orElse: () => null,
+      // );
       var unreadRecord = unreadCountVm?.viewModels.firstWhere(
-        (unreadModel) =>
-            unreadModel.model.records?.any(
-                (record) => record.whatsappNumber == model.whatsapp_number) ??
-            false,
+        (unreadModel) {
+          // Check if model is UnreadMsgModel
+          if (unreadModel.model is UnreadMsgModel) {
+            var unreadMsgModel = unreadModel.model as UnreadMsgModel;
+            return unreadMsgModel.records?.any(
+                  (record) => record.whatsappNumber == model.whatsapp_number,
+                ) ??
+                false;
+          }
+          return false;
+        },
         orElse: () => null,
       );
 
@@ -712,7 +774,12 @@ class _LeadListViewState extends State<LeadListView> {
             context,
             MaterialPageRoute(
               builder: (context) => ChatScreen(
-                leadName: '${model.firstname}  ${model.lastname}  ',
+                leadName:
+                    (model.firstname != null && model.firstname!.isNotEmpty)
+                        ? '${model.firstname} ${model.lastname ?? ""}'
+                        : (model.lastname != null && model.lastname!.isNotEmpty)
+                            ? model.lastname!
+                            : "No Name Available",
                 wpnumber: model.whatsapp_number ?? "",
                 model: model,
               ),
@@ -769,94 +836,223 @@ class _LeadListViewState extends State<LeadListView> {
                 ),
               );
             },
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number : ''}",
-                          style: const TextStyle(
-                            fontSize: 12,
-                          ),
-                        ),
-                        Text(
-                          "${model.email?.isNotEmpty == true ? model.email : ''}",
-                          style: const TextStyle(
-                            fontSize: 12,
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(100),
-                              color: Colors.lightBlue.withOpacity(0.7)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: Text(
-                              "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
-                              style: const TextStyle(
-                                  fontSize: 10, color: Colors.white),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 4,
-                        ),
-                      ],
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: AppColor.navBarIconColor,
+                  child: Text(
+                    "${model.firstname?.isNotEmpty == true ? model.firstname![0].toUpperCase() : '?'}",
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                ),
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(width: 10),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => LeadDetailView(
-                                model: model,
-                              ),
-                            ),
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.black45,
+                      Text(
+                        "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
                         ),
-                        iconSize: 22,
-                        tooltip: 'Details',
                       ),
-                      if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
-                        badges.Badge(
-                          badgeContent: Text(
-                            unreadMsgCount,
+                      Text(
+                        "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number : ''}",
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Text(
+                        "${model.email?.isNotEmpty == true ? model.email : ''}",
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(100),
+                          color: Colors.lightBlue.withOpacity(0.7),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Text(
+                            "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
                             style: const TextStyle(
+                              fontSize: 10,
                               color: Colors.white,
                             ),
                           ),
-                        )
-                      else
-                        const SizedBox.shrink(),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
                     ],
                   ),
-                ],
-              ),
+                ),
+                // Arrow and Badge
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
+                      badges.Badge(
+                        badgeContent: Text(
+                          unreadMsgCount,
+                          style: const TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    else
+                      const SizedBox.shrink(),
+                    // IconButton(
+                    //   onPressed: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => LeadDetailView(
+                    //           model: model,
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    //   icon: const Icon(
+                    //     Icons.arrow_forward_ios,
+                    //     color: Colors.black45,
+                    //   ),
+                    //   iconSize: 22,
+                    //   tooltip: 'Details',
+                    // ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
       ),
+
+      // child: Container(
+      //   decoration: BoxDecoration(
+      //     color: Colors.white,
+      //     borderRadius: BorderRadius.circular(10),
+      //     border: Border(
+      //       left: BorderSide(
+      //         color: statusColor,
+      //         width: 5,
+      //       ),
+      //     ),
+      //     boxShadow: [
+      //       BoxShadow(
+      //         color: Colors.black.withOpacity(0.1),
+      //         blurRadius: 5,
+      //         spreadRadius: 3,
+      //         offset: const Offset(2, 4),
+      //       ),
+      //     ],
+      //   ),
+      //   margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      //   child: Padding(
+      //     padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
+      //     child: InkWell(
+      //       onTap: () {
+      //         Navigator.push(
+      //           context,
+      //           MaterialPageRoute(
+      //             builder: (context) => LeadDetailView(
+      //               model: model,
+      //             ),
+      //           ),
+      //         );
+      //       },
+      //       child: ListTile(
+      //         contentPadding: EdgeInsets.zero,
+      //         title: Row(
+      //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //           children: [
+      //             Expanded(
+      //               child: Column(
+      //                 crossAxisAlignment: CrossAxisAlignment.start,
+      //                 children: [
+      //                   Text(
+      //                     "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
+      //                     style: const TextStyle(
+      //                       fontSize: 14,
+      //                       fontWeight: FontWeight.bold,
+      //                     ),
+      //                   ),
+      //                   Text(
+      //                     "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number : ''}",
+      //                     style: const TextStyle(
+      //                       fontSize: 12,
+      //                     ),
+      //                   ),
+      //                   Text(
+      //                     "${model.email?.isNotEmpty == true ? model.email : ''}",
+      //                     style: const TextStyle(
+      //                       fontSize: 12,
+      //                     ),
+      //                   ),
+      //                   Container(
+      //                     decoration: BoxDecoration(
+      //                         borderRadius: BorderRadius.circular(100),
+      //                         color: Colors.lightBlue.withOpacity(0.7)),
+      //                     child: Padding(
+      //                       padding: const EdgeInsets.all(2.0),
+      //                       child: Text(
+      //                         "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
+      //                         style: const TextStyle(
+      //                             fontSize: 10, color: Colors.white),
+      //                       ),
+      //                     ),
+      //                   ),
+      //                   const SizedBox(
+      //                     height: 4,
+      //                   ),
+      //                 ],
+      //               ),
+      //             ),
+      //             Row(
+      //               mainAxisAlignment: MainAxisAlignment.end,
+      //               children: [
+      //                 const SizedBox(width: 10),
+      //                 IconButton(
+      //                   onPressed: () {
+      //                     Navigator.push(
+      //                       context,
+      //                       MaterialPageRoute(
+      //                         builder: (context) => LeadDetailView(
+      //                           model: model,
+      //                         ),
+      //                       ),
+      //                     );
+      //                   },
+      //                   icon: const Icon(
+      //                     Icons.arrow_forward_ios,
+      //                     color: Colors.black45,
+      //                   ),
+      //                   iconSize: 22,
+      //                   tooltip: 'Details',
+      //                 ),
+      //                 if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
+      //                   badges.Badge(
+      //                     badgeContent: Text(
+      //                       unreadMsgCount,
+      //                       style: const TextStyle(
+      //                         color: Colors.white,
+      //                       ),
+      //                     ),
+      //                   )
+      //                 else
+      //                   const SizedBox.shrink(),
+      //               ],
+      //             ),
+      //           ],
+      //         ),
+      //       ),
+      //     ),
+      //   ),
+      // ),
     );
   }
 

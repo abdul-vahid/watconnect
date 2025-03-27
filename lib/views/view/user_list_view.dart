@@ -518,7 +518,7 @@ class _UserListView extends State<UserListView> {
         ),
         centerTitle: true,
         elevation: 0,
-        automaticallyImplyLeading: true,
+        automaticallyImplyLeading: false,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50.0),
           child: Container(
@@ -619,7 +619,7 @@ class _UserListView extends State<UserListView> {
         List<String> uniqUserRoles = _paymentterms.toSet().toList();
 
         return Container(
-          height: 220,
+          height: 200,
           width: double.infinity,
           decoration: const BoxDecoration(
             color: Colors.white,
@@ -657,12 +657,19 @@ class _UserListView extends State<UserListView> {
                 ),
                 const SizedBox(height: 16),
                 Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.black,
+                      width: 0.2,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   child: StatefulBuilder(
                     builder: (context, setState) {
                       return DropdownButton<String>(
                         hint: Text(
                           selectedRole ?? 'Select Role',
-                          style: TextStyle(color: Colors.black),
+                          style: const TextStyle(color: Colors.black),
                         ),
                         items: uniqUserRoles.map((String value) {
                           return DropdownMenuItem<String>(
@@ -673,53 +680,60 @@ class _UserListView extends State<UserListView> {
                         onChanged: (selectedValue) {
                           setState(() {
                             selectedRole = selectedValue;
-                            print("selectedRole:: ${selectedRole}");
+                            print("selectedRole:: $selectedRole");
                           });
                         },
                         isExpanded: true,
                         icon: const Icon(
                           Icons.arrow_drop_down,
-                          color: Color.fromARGB(255, 255, 255, 255),
+                          color: Colors.black, // Ensure icon is visible
                         ),
+                        underline:
+                            SizedBox(), // Removes default dropdown underline
                       );
                     },
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    allUsers.clear();
-                    for (var viewModel in userlistvm.viewModels) {
-                      UserDataModel productmodel = viewModel.model;
-                      if (selectedRole == null) {
-                        allUsers.add(productmodel);
-                      } else {
-                        if (productmodel.userrole?.toLowerCase() ==
-                            selectedRole?.toLowerCase()) {
-                          allUsers.add(productmodel);
-                          setState(() {});
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.end, // Align to the right
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        allUsers.clear();
+                        for (var viewModel in userlistvm.viewModels) {
+                          UserDataModel productmodel = viewModel.model;
+                          if (selectedRole == null) {
+                            allUsers.add(productmodel);
+                          } else {
+                            if (productmodel.userrole?.toLowerCase() ==
+                                selectedRole?.toLowerCase()) {
+                              allUsers.add(productmodel);
+                              setState(() {});
+                            }
+                          }
                         }
-                      }
-                    }
-                    setState(() {});
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColor
-                        .navBarIconColor, // Set the background color here
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                        setState(() {});
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.cardsColor,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        'Apply Filters',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'Apply Filters',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
-                  ),
-                )
+                  ],
+                ),
               ],
             ),
           ),

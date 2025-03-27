@@ -9,6 +9,7 @@ abstract class SharedPrefsConstants {
   static const String userKey = "user";
   static const String accountKey = "account";
   static const String userDecodedTokenKey = "decoded_token_key";
+  static const String userrolekey = "userrole";
 }
 
 abstract class ResultStatus {

@@ -206,7 +206,7 @@ class _EditProfileView extends State<EditProfileView> {
   Future<void> updateData() async {
     if (_profileFormKey.currentState!.validate()) {
       _profileFormKey.currentState!.save();
-      AppUtils.onLoading(context, "Updating, please wait...");
+      // AppUtils.onLoading(context, "Updating, please wait...");
       var id = widget.id;
       //debug('userid=====$id');
       GetUser updateUser = GetUser(
@@ -218,18 +218,26 @@ class _EditProfileView extends State<EditProfileView> {
         //id: id
         // accountname: _selectedaccountname,
       );
+      print("aahahah=>${updateUser}");
+      AppUtils.onLoading(context, "Updating, please wait...");
 
       Provider.of<GetUserViewModel>(context, listen: false)
-          .updateProfile(id, updateUser);
-      Navigator.pop(context);
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Your Profile has been update please pull to refresh '),
-          duration: Duration(seconds: 3),
-          backgroundColor: Colors.green,
-        ),
-      );
+          .updateProfile(id, updateUser)
+          .then((value) {
+        Navigator.pop(context);
+        Navigator.pop(context);
+        // Navigator.pop(context);
+        // Navigator.pushReplacement(
+        //     context, MaterialPageRoute(builder: (_) => ProfileView()));
+      });
+
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text('Your Profile has been update please pull to refresh '),
+      //     duration: Duration(seconds: 3),
+      //     backgroundColor: Colors.green,
+      //   ),
+      // );
     }
   }
 }
