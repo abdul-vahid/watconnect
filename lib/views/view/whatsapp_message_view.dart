@@ -166,7 +166,6 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         title: GestureDetector(
           onTap: () {
-            // Show the profile dialog when the CircleAvatar is tapped
             _showProfileDialog(context);
           },
           child: Row(
@@ -179,7 +178,7 @@ class _ChatScreenState extends State<ChatScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  widget.leadName ?? "", // Display the lead name if available
+                  widget.leadName ?? "",
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
@@ -193,7 +192,7 @@ class _ChatScreenState extends State<ChatScreen> {
               color: Colors.white,
             ),
             onPressed: () {
-              _showDeleteDialog(); // Show the delete dialog when tapped
+              _showDeleteDialog();
             },
           ),
         ],
@@ -227,7 +226,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-// Profile dialog function
   void _showProfileDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -237,7 +235,6 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Display profile image
                 const Center(
                   child: CircleAvatar(
                     radius: 50,
@@ -247,7 +244,6 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Name
                 Center(
                   child: Text(
                     widget.leadName ?? "No Name Provided",
@@ -476,7 +472,6 @@ class _ChatScreenState extends State<ChatScreen> {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
-    // Send templete meta
     Map<String, dynamic> templateBody = {
       "messaging_product": "whatsapp",
       "to": leadnumber,
@@ -492,7 +487,6 @@ class _ChatScreenState extends State<ChatScreen> {
     };
     print("templetete body=>$templateBody");
 
-// create templete in meta
     Map<String, dynamic> createtemp = {
       "id": null,
       "name": templateToSend,
@@ -537,13 +531,9 @@ class _ChatScreenState extends State<ChatScreen> {
       print("body before sending::: ${msghistorydata}");
       mstemp.semdtempmsghistory(msghistorydata: msghistorydata).then(
           (value) => {print("semdtempmsghistorysemdtempmsghistory=>$value")});
-
-      // templetmsgid = value['messages'][0]['id'];
     });
 
     print("temmplet msg::::: id==========>$templeteidmessage");
-
-// create history
   }
 
   Future<void> _pullRefresh() async {
@@ -982,15 +972,14 @@ class _ChatScreenState extends State<ChatScreen> {
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14,
-                                          color: Colors
-                                              .white, // Default text color
+                                          color: Colors.white,
                                         ),
                                         children: [
                                           if (allMessages[index].headerBody !=
                                               null)
                                             TextSpan(
                                               text:
-                                                  '${capitalize(allMessages[index].headerBody!)}\n', // Capitalize first letter
+                                                  '${capitalize(allMessages[index].headerBody!)}\n',
                                               style: const TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -1011,8 +1000,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.normal,
                                                 fontSize: 12,
-                                                color: Colors
-                                                    .grey, // Lighter color for footer
+                                                color: Colors.grey,
                                               ),
                                             ),
                                         ],
@@ -1186,7 +1174,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                         final filePath =
                                             '${dir.path}/${fileName}';
 
-                                        // Download file
                                         final response =
                                             await http.get(Uri.parse(imageUrl));
 
@@ -1198,7 +1185,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                           print(
                                               "File downloaded to: $filePath");
 
-                                          // Open the file
                                           OpenFile.open(filePath);
                                         }
                                       } catch (e) {
@@ -1292,28 +1278,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                                             ),
                                                           ],
                                                         ),
-                                                      // if (allMessages[index]
-                                                      //         .deliveryStatus ==
-                                                      //     "sent")
-                                                      //   Row(
-                                                      //     mainAxisAlignment:
-                                                      //         MainAxisAlignment
-                                                      //             .end,
-                                                      //     children: [
-                                                      //       IconButton(
-                                                      //         icon: const Icon(
-                                                      //           Icons.check,
-                                                      //           color: Color
-                                                      //               .fromARGB(
-                                                      //                   255,
-                                                      //                   255,
-                                                      //                   255,
-                                                      //                   255),
-                                                      //         ),
-                                                      //         onPressed: () {},
-                                                      //       ),
-                                                      //     ],
-                                                      //   ),
                                                       if (allMessages[index]
                                                               .deliveryStatus ==
                                                           "read")
@@ -1769,9 +1733,6 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 );
               }),
-          // child: ListView(
-          //   children: _getMessageHistory(),
-          // ),
         ),
         _buildMessageInputArea(),
       ],
@@ -1858,8 +1819,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8.0),
                               image: DecorationImage(
-                                image: FileImage(
-                                    image!), // Assuming 'image' is a File object
+                                image: FileImage(image!),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -1984,7 +1944,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                 horizontal: 20, vertical: 10)),
                       ),
                       onPressed: () {
-                        // singlemsgdelete();
                         Navigator.of(context).pop();
                       },
                       child: const Text(
@@ -2034,7 +1993,6 @@ class _ChatScreenState extends State<ChatScreen> {
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
 
-    // Check if templeteViewModel is not null and contains viewModels
     if (templeteViewModel != null && templeteViewModel.viewModels.isNotEmpty) {
       for (var viewModel in templeteViewModel.viewModels) {
         var campaignModel = viewModel.model;
@@ -2096,7 +2054,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     print("selectedHeader.format>>>> ${selectedHeader.format}");
-    // print("selectedHeader.format>>>> ${selectedButtons.buttons.length}");
+
     final regex = RegExp(r'\{\{\d+\}\}');
 
     int count = regex.allMatches(text).length;
@@ -2116,8 +2074,7 @@ class _ChatScreenState extends State<ChatScreen> {
               height: MediaQuery.of(context).size.height * .80,
               child: SingleChildScrollView(
                 child: Padding(
-                  padding:
-                      MediaQuery.of(context).viewInsets, // Adjusts for keyboard
+                  padding: MediaQuery.of(context).viewInsets,
                   child: Container(
                     width: MediaQuery.of(context).size.width,
                     padding: const EdgeInsets.all(15),
@@ -2147,8 +2104,6 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                         const Divider(thickness: 1),
                         const SizedBox(height: 5),
-
-                        // ✅ Move TextFields into Column to avoid layout issues
                         Column(
                           children: List.generate(count, (index) {
                             return Padding(
@@ -2165,7 +2120,6 @@ class _ChatScreenState extends State<ChatScreen> {
                             );
                           }),
                         ),
-
                         Card(
                           elevation: 5,
                           color: Color(0xffE3FFC9).withOpacity(0.5),
@@ -2176,7 +2130,6 @@ class _ChatScreenState extends State<ChatScreen> {
                               children: [
                                 if (selectedHeader != null &&
                                     selectedHeader.format == "IMAGE")
-                                  // Image.network(""),
                                   imgToShow.isEmpty
                                       ? Container(
                                           height: 80,
@@ -2247,8 +2200,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       child: Text(
                                         "Send on login user WhatsApp number also",
                                         maxLines: 2,
-                                        overflow: TextOverflow
-                                            .ellipsis, // Ensures proper truncation
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     )
                                   ],
@@ -2257,7 +2209,6 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 10),
                         Center(
                           child: ElevatedButton(
@@ -2269,6 +2220,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             onPressed: () async {
                               Map<String, String> bodyTextParams = {};
                               List compoTextParams = [];
+                              List numberedCampParam = [];
 
                               bool anyEmpty = controllers
                                   .any((controller) => controller.text.isEmpty);
@@ -2281,7 +2233,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               File? imageFile;
                               if (imgToShow.isNotEmpty) {}
                               image = await urlToFile(imgToShow);
-                              // image = imgToShow;
+
                               String docId = await getDocId();
 
                               for (int i = 0; i < controllers.length; i++) {
@@ -2292,19 +2244,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                   "text": controllers[i].text
                                 };
                                 compoTextParams.add(body);
+                                numberedCampParam.add(bodyTextParams);
                               }
 
-                              // Creating the final map
-                              // Map<String, dynamic> requestBody = {
-                              //   "campaign_id": null,
-                              //   "body_text_params": bodyTextParams,
-                              //   "msg_history_id":
-                              //       "d85f8f49-f846-4be4-a74d-5c6f6c5d4911",
-                              //   "file_id": null,
-                              //   "whatsapp_number_admin": "7590889022"
-                              // };
-
-                              // print("Generated Map: $requestBody");
                               String templateToSend = selectedTemplateName ??
                                   _templateController.text;
                               print(
@@ -2318,11 +2260,13 @@ class _ChatScreenState extends State<ChatScreen> {
                                   }
                                 ];
 
-                                sendParamsApiCall(templateToSend,
-                                    compoTextParams, isChecked, parameter);
+                                sendParamsApiCall(
+                                    templateToSend,
+                                    compoTextParams,
+                                    isChecked,
+                                    parameter,
+                                    bodyTextParams);
                               }
-
-                              // templetesendd(templateToSend, compoTextParams);
                             },
                             child: const Text(
                               "Send Template",
@@ -2386,7 +2330,6 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     const Divider(thickness: 1),
                     const SizedBox(height: 5),
-                    // _getToggleBtn(),
                     AppUtils.getDropdown(
                       'Select Category',
                       data: tempateCategory,
@@ -2490,14 +2433,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> sendParamsApiCall(String templateToSend, List compoTextParams,
-      bool sendOnLoginNum, List params) async {
+      bool sendOnLoginNum, List params, Map campaignParam) async {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
     late MessageViewModel mstemp = MessageViewModel(context);
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
-    log("message/template----------------------------------------------------");
+
     Map<String, dynamic> createtemp = {
       "id": null,
       "name": templateToSend,
@@ -2506,12 +2449,11 @@ class _ChatScreenState extends State<ChatScreen> {
       "header": "TEXT",
       "header_body": "template header",
       "message_body": templateToSend,
-      "example_body_text": {"sendToAdmin": false},
+      "example_body_text": {"sendToAdmin": sendOnLoginNum},
       "footer": selectedFooter.text,
       "buttons": [],
       "business_number": number
     };
-    log("message/template body------------$createtemp{}");
 
     mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) => {
           templeteidmessage = value['id'],
@@ -2519,7 +2461,6 @@ class _ChatScreenState extends State<ChatScreen> {
           print("ccretae objetctt resposne= > $value")
         });
 
-    log("template/message?whatsapp_setting_number-------------");
     var leadnumber = widget.wpnumber;
     Map<String, dynamic> templateBody = {
       "messaging_product": "whatsapp",
@@ -2548,34 +2489,52 @@ class _ChatScreenState extends State<ChatScreen> {
         .then((value) {
       print("value=== templete>$value");
       print("value=== template>${value['messages'][0]['id']}");
+      messageid = value['messages'][0]['id'];
 
-      //  mstemp.sendmsgmobile(msgmobilbody: msgmobilebody).then((value) {
-      //   print("valueee1=>$value");
-      //   if (value['delivery_status'] == "sent") {
-      //     _controller.clear();
+      Map<String, dynamic> msgmobilebody = {
+        "parent_id": widget.model.id,
+        "name": widget.leadName,
+        "message_template_id": templeteidmessage,
+        "whatsapp_number": leadnumber,
+        "message": "",
+        "status": "Outgoing",
+        "recordtypename": "recentlyMessage",
+        "file_id": null,
+        "is_read": true,
+        "business_number": number,
+        "message_id": messageid,
+        "interactive_id": null
+      };
 
-      //     setState(() {
-      //       showLoader = false;
-      //     });
-      //   }
-      // });
+      mstemp.sendmsgmobile(msgmobilbody: msgmobilebody).then((value) {
+        print("valueee1=>$value");
+
+        String msgResId = value['id'];
+
+        Map<String, dynamic> paramBody = {
+          "campaign_id": null,
+          "body_text_params": campaignParam,
+          "msg_history_id": msgResId,
+          "file_id": null,
+          "whatsapp_number_admin": "7590889022"
+        };
+
+        mstemp.sendCampParam(campParambody: paramBody).then((value) {
+          print("sendCampParam>>> ${value}");
+        });
+      });
     });
   }
 
   Future<File?> urlToFile(String imageUrl) async {
     try {
-      // Get the image from the network
       final response = await http.get(Uri.parse(imageUrl));
 
-      // Check if the response is successful
       if (response.statusCode == 200) {
-        // Get the device's temporary directory
         final directory = await getTemporaryDirectory();
 
-        // Create a file path
         final filePath = '${directory.path}/downloaded_image.png';
 
-        // Write the image bytes to the file
         File file = File(filePath);
         await file.writeAsBytes(response.bodyBytes);
 

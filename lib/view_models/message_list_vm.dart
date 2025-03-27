@@ -59,6 +59,18 @@ class MessageViewModel extends BaseListViewModel {
     return result;
   }
 
+  Future<dynamic> sendCampParam({
+    required Map<String, dynamic> campParambody,
+  }) async {
+    print("senjhhhdmsgmobile jjjjjjjjjcalled");
+    String url = AppUtils.getUrl(AppConstants.campaignParam);
+    print("url==mobile send >$url");
+    String body = jsonEncode(campParambody);
+    var result = await post(url: url, body: body);
+    debug('result $result');
+    return result;
+  }
+
   Future<dynamic> sendtemplete({
     String? number,
     required Map<String, dynamic> msgmobilbody,
@@ -110,7 +122,7 @@ class MessageViewModel extends BaseListViewModel {
   Future<dynamic> uploadFile(File file, String? number) async {
     // final APIService _apiService = APIService();
     var token = await AppUtils.getToken();
-    debug("Token2 == $token");
+    // debug("Token2 == $token");
     token ??= "";
     var url = Uri.parse(
         "https://sandbox.watconnect.com/swp/api/webhook_template/documentId?whatsapp_setting_number=$number");

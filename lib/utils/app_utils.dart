@@ -174,9 +174,9 @@ class AppUtils {
 
     if (prefs.containsKey(SharedPrefsConstants.userKey)) {
       var data = prefs.getString(SharedPrefsConstants.userKey);
-      debug("data = $data");
+      // debug("data = $data");
       var userModel = UserModel.fromJson(data!);
-      debug("Auth Token === ${userModel.authToken}");
+      // debug("Auth Token === ${userModel.authToken}");
 
       Map<String, dynamic> decodedToken =
           JwtDecoder.decode(userModel.authToken!);
@@ -187,8 +187,8 @@ class AppUtils {
       await prefs.setString(
           SharedPrefsConstants.userDecodedTokenKey, userModelObj.toJson());
 
-      debug(
-          "refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!  ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!}");
+      // debug(
+      //     "refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!  ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!}");
       //var loginModelMap = records.map((item) => UserModel.fromMap(item)).toList();
 
       return userModel.authToken;

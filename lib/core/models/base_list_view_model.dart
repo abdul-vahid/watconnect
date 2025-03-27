@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 // import 'dart:ffi';
 
 import 'package:flutter/material.dart';
@@ -96,7 +97,7 @@ class BaseListViewModel extends ChangeNotifier {
 
         accessToken = jsonObject["access_token"];
         refreshToken = jsonObject["refresh_token"];
-        debug("Refresh Token == $refreshToken");
+        // debug("Refresh Token == $refreshToken");
 
         await prefs.setString(SharedPrefsConstants.accessTokenKey, accessToken);
         await prefs.setString(
@@ -130,9 +131,11 @@ class BaseListViewModel extends ChangeNotifier {
       {required String url,
       required String body,
       String jsonKey = "records"}) async {
+    log("req body>>${url}>>>>>> ${body}");
+
     try {
       var r = await BaseService().post(url: url, body: body);
-      print("rrrrrrrrrrrr=>$r    api>>> ${url}");
+      log("response=>$r    api>>> ${url}");
       return r;
     } on UnauthorisedException {
       await _refreshToken(url, jsonKey);
