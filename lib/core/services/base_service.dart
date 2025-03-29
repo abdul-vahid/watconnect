@@ -17,9 +17,9 @@ class BaseService {
     var token = await AppUtils.getToken();
     // debug("Token == $token");
     token ??= "";
-    printLongString("body base service send= $body");
+    // printLongString("body base service send= $body");
     final responseJsonData = await _apiService.postResponse(url, body, token);
-    print("rsponse==>$responseJsonData");
+    // print("rsponse==>$responseJsonData");
     return responseJsonData;
   }
 

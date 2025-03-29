@@ -181,7 +181,7 @@ class AppUtils {
 
     if (prefs.containsKey(SharedPrefsConstants.userKey)) {
       var data = prefs.getString(SharedPrefsConstants.userKey);
-      debug("data = $data");
+      // debug("data = $data");
 
       // debug("data = $data");
       var userModel = UserModel.fromJson(data!);
@@ -192,14 +192,14 @@ class AppUtils {
           JwtDecoder.decode(userModel.authToken!);
       var userModelObj = UserModel.fromMap(decodedToken);
 
-      debug('Username from token = ${userModelObj.username}');
-      debug('userroel from token = ${userModelObj.userrole}');
+      // debug('Username from token = ${userModelObj.username}');
+      // debug('userroel from token = ${userModelObj.userrole}');
 
       await prefs.setString(
           SharedPrefsConstants.userDecodedTokenKey, userModelObj.toJson());
 
-      debug(
-          "Decoded Token: ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)}");
+      // debug(
+      //     "Decoded Token: ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)}");
 
       // debug(
       //     "refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!  ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!}");
@@ -217,10 +217,10 @@ class AppUtils {
 
   static UserModel? getSessionUser(SharedPreferences prefs) {
     if (prefs.containsKey(SharedPrefsConstants.userDecodedTokenKey)) {
-      debug(
-          "adsssssssssssssssssss${prefs.getString(SharedPrefsConstants.userKey)}");
-      print(
-          "addddddddd${jsonDecode(prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!)}");
+      // debug(
+      //     "adsssssssssssssssssss${prefs.getString(SharedPrefsConstants.userKey)}");
+      // print(
+      //     "addddddddd${jsonDecode(prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!)}");
       return UserModel.fromMap(jsonDecode(
           prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!));
     }
