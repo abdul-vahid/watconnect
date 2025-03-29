@@ -48,24 +48,24 @@ class _WhatsapSettingViewState extends State<WhatsapSettingView> {
         centerTitle: true,
         elevation: 0,
         automaticallyImplyLeading: false,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(40.0),
-          child: Container(
-            height: 30,
-            width: MediaQuery.of(context).size.width,
-            decoration: const BoxDecoration(
-              boxShadow: [],
-              border: Border(
-                bottom: BorderSide(
-                  width: 1.5,
-                  color: Color.fromARGB(255, 0, 0, 0),
-                ),
-              ),
-            ),
-            padding:
-                const EdgeInsets.only(top: 12, bottom: 12, left: 10, right: 10),
-          ),
-        ),
+        // bottom: PreferredSize(
+        //   preferredSize: const Size.fromHeight(40.0),
+        //   child: Container(
+        //     height: 30,
+        //     width: MediaQuery.of(context).size.width,
+        //     decoration: const BoxDecoration(
+        //       boxShadow: [],
+        //       border: Border(
+        //         bottom: BorderSide(
+        //           width: 1.5,
+        //           color: Color.fromARGB(255, 0, 0, 0),
+        //         ),
+        //       ),
+        //     ),
+        //     padding:
+        //         const EdgeInsets.only(top: 12, bottom: 12, left: 10, right: 10),
+        //   ),
+        // ),
       ),
       body: RefreshIndicator(
         onRefresh: _pullRefresh,
@@ -245,24 +245,6 @@ class _AnotherScreenState extends State<AnotherScreen> {
         centerTitle: true,
         elevation: 0,
         automaticallyImplyLeading: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(30.0),
-          child: Container(
-            height: 30,
-            width: MediaQuery.of(context).size.width,
-            decoration: const BoxDecoration(
-              boxShadow: [],
-              border: Border(
-                bottom: BorderSide(
-                  width: 1.5,
-                  color: Color.fromARGB(255, 0, 0, 0),
-                ),
-              ),
-            ),
-            padding:
-                const EdgeInsets.only(top: 12, bottom: 12, left: 10, right: 10),
-          ),
-        ),
       ),
       body: Material(
         color: Theme.of(context).scaffoldBackgroundColor,
@@ -310,29 +292,6 @@ class _AnotherScreenState extends State<AnotherScreen> {
                       ),
                     ),
                     width: double.infinity,
-                    // child: Padding(
-                    //   padding: const EdgeInsets.all(10.0),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //     children: [
-                    //       Align(
-                    //         alignment: Alignment.centerLeft,
-                    //         child: Padding(
-                    //           padding: const EdgeInsets.only(left: 20.0),
-                    //           child: Text(
-                    //             'Contact Information',
-                    //             style: GoogleFonts.montserrat(
-                    //               fontSize: 20,
-                    //               fontWeight: FontWeight.bold,
-                    //               color: Colors.white,
-                    //             ),
-                    //             textAlign: TextAlign.left,
-                    //           ),
-                    //         ),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(12.0),

@@ -47,6 +47,7 @@ class _ProfileViewState extends State<ProfileView> {
   String? userRole;
 
   Future<File?> chooseImage(type) async {
+    print("working this functio first line");
     XFile? image;
     if (type == "camera") {
       image = await ImagePicker()
@@ -129,8 +130,9 @@ class _ProfileViewState extends State<ProfileView> {
     print("this func call when refresh");
 
     print("logourl::: ${userModel?.logourl ?? ""}");
-    print(
-        "'https://sandbox.watconnect.com/public/demo/users/${userModel?.id}',");
+    // print(
+    //     "'https://sandbox.watconnect.com/public/demo/users/${userModel?.id}',");
+    print("'https://sandbox.watconnect.com/${userModel?.id}',");
 
     return SingleChildScrollView(
       child: Column(
@@ -458,6 +460,7 @@ class _ProfileViewState extends State<ProfileView> {
     Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
     // AppUtils.onLoading(context, "Please Wait...");
     var selectedImage = await chooseImage("Gallery");
+    print("select mage=>$selectedImage");
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (selectedImage != null) {
@@ -467,6 +470,7 @@ class _ProfileViewState extends State<ProfileView> {
       UserListViewModel()
           .uploadFile(selectedImage, userMap.toString(), url)
           .then((value) async {
+        print("wowowoo=>$selectedImage");
         await AppUtils.getToken();
         getProfileData();
       }).catchError((error) {

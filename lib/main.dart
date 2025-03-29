@@ -1,6 +1,4 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // import 'package:flutter_downloader/flutter_downloader.dart';
@@ -17,11 +15,11 @@ import 'package:whatsapp/view_models/campaign_count_vm.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/view_models/message_history_vm.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
+import 'package:whatsapp/view_models/theme_changer.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/view_models/user_data_list_vm.dart';
 import 'firebase_options.dart';
 import 'services/notifications/local_notification_service.dart';
-import 'view_models/agent_list_vm.dart';
 import 'view_models/campaign_vm.dart';
 import 'view_models/chart_list_vm.dart';
 
@@ -85,12 +83,12 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CampaignCountViewModel(context)),
         // ChangeNotifierProvider(create: (_) => ContactListViewModel(context)),
         ChangeNotifierProvider(create: (_) => ChartListViewModel(context)),
-        ChangeNotifierProvider(create: (_) => AgentListViewModel(context)),
         // ChangeNotifierProvider(create: (_) => MeetingListViewModel(context)),
         ChangeNotifierProvider(create: (_) => GetUserViewModel(context)),
         ChangeNotifierProvider(create: (_) => UserDataListViewModel(context)),
         // ChangeNotifierProvider(create: (_) => TaskListViewModel(context)),
         ChangeNotifierProvider(create: (_) => CampaignViewModel(context)),
+        ChangeNotifierProvider(create: (_) => ThemeChanger(context)),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

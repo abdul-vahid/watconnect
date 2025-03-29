@@ -2716,13 +2716,11 @@
 // }
 import 'dart:developer';
 
-import 'package:flutter_html/flutter_html.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -2732,9 +2730,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart' show Provider;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
-import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
 import 'package:whatsapp/models/lead_model.dart';
-import 'package:whatsapp/models/ms_model/message_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
@@ -2802,7 +2798,7 @@ class _ChatScreenState extends State<ChatScreen> {
   var selectedHeader;
   var selectedBody;
   var selectedFooter;
-  dynamic? selectedButtons;
+  dynamic selectedButtons;
 
   TempleteListViewModel? templateVM;
   final List<String> imageUrls = [
@@ -2902,14 +2898,22 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(
               Icons.more_vert,
               color: Colors.white,
             ),
-            onPressed: () {
-              _showDeleteDialog();
+            onSelected: (String value) {
+              if (value == 'Clear Chat') {
+                _showDeleteDialog();
+              }
             },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'Clear Chat',
+                child: Text('Clear Chat'),
+              ),
+            ],
           ),
         ],
       ),
@@ -3207,7 +3211,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "id": null,
       "name": templateToSend,
       "language": "en",
-      "category": "MARKETING",
+      // "category": "MARKETING",
       "header": "TEXT",
       "header_body": "template header",
       "message_body": templateToSend,
@@ -3485,6 +3489,7 @@ class _ChatScreenState extends State<ChatScreen> {
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
             .then((value) {
           print("value----->$value");
+          return null;
         });
 
         String? leadid = widget.model.id;
@@ -3500,6 +3505,7 @@ class _ChatScreenState extends State<ChatScreen> {
           fileid = response['records']?[0]['id'];
 
           print("ID: $fileid");
+          return null;
         });
 
         Map<String, dynamic> imagehistorydata = {
@@ -3523,6 +3529,7 @@ class _ChatScreenState extends State<ChatScreen> {
         )
             .then((value) {
           print("\x1B[32msendhistoryimagesendhistoryimage${value}\x1B[0m");
+          return null;
         });
       } else {
         debugPrint('Image upload failed or response was null');
@@ -3563,6 +3570,7 @@ class _ChatScreenState extends State<ChatScreen> {
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
             .then((value) {
           print("document send value----->$value");
+          return null;
         });
 
         String? leadid = widget.model.id;
@@ -3578,6 +3586,7 @@ class _ChatScreenState extends State<ChatScreen> {
           fileid = response['records']?[0]['id'];
 
           print("ID: $fileid");
+          return null;
         });
         debug("widget.leadNamewidget.leadName${widget.leadName}");
         Map<String, dynamic> imagehistorydata = {
@@ -3601,6 +3610,7 @@ class _ChatScreenState extends State<ChatScreen> {
         )
             .then((value) {
           print("\x1B[32msendhistoryimagesendhistoryimage${value}\x1B[0m");
+          return null;
         });
       } else {
         debugPrint('Image upload failed or response was null');
@@ -3668,7 +3678,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                 // print(finalFormattedTime);
                 String title = allMessages[index].title ?? "";
-                String msghistoryid = allMessages[index].id;
+                msghistoryid = allMessages[index].id;
                 // print("sjdhjshdjas=>$msghistoryid");
                 if (title.isNotEmpty) {
                   imageUrl =
@@ -3779,6 +3789,19 @@ class _ChatScreenState extends State<ChatScreen> {
                                               size: 16,
                                             ),
                                           ),
+                                      if (allMessages[index].erormessage !=
+                                              null &&
+                                          allMessages[index]
+                                              .erormessage
+                                              .isNotEmpty)
+                                        Text(
+                                          allMessages[index].erormessage,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10,
+                                            color: Colors.red,
+                                          ),
+                                        ),
                                     ],
                                   ),
                                 ),
@@ -4799,8 +4822,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     ElevatedButton(
                       style: ButtonStyle(
                         minimumSize:
-                            MaterialStateProperty.all(const Size(10, 20)),
-                        padding: MaterialStateProperty.all(
+                            WidgetStateProperty.all(const Size(10, 20)),
+                        padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 10)),
                       ),
@@ -4829,7 +4852,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Provider.of<TempleteListViewModel>(context, listen: false);
 
     // Check if templeteViewModel is not null and contains viewModels
-    if (templeteViewModel != null && templeteViewModel.viewModels.isNotEmpty) {
+    if (templeteViewModel.viewModels.isNotEmpty) {
       for (var viewModel in templeteViewModel.viewModels) {
         var campaignModel = viewModel.model;
         if (campaignModel?.data != null) {
@@ -4854,7 +4877,7 @@ class _ChatScreenState extends State<ChatScreen> {
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
 
-    if (templeteViewModel != null && templeteViewModel.viewModels.isNotEmpty) {
+    if (templeteViewModel.viewModels.isNotEmpty) {
       for (var viewModel in templeteViewModel.viewModels) {
         var campaignModel = viewModel.model;
         if (campaignModel?.data != null) {
@@ -5248,12 +5271,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: ElevatedButton(
                         style: ButtonStyle(
                           minimumSize:
-                              MaterialStateProperty.all(const Size(10, 20)),
-                          padding: MaterialStateProperty.all(
+                              WidgetStateProperty.all(const Size(10, 20)),
+                          padding: WidgetStateProperty.all(
                               const EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 10)),
-                          backgroundColor: MaterialStateProperty.all(
-                              AppColor.navBarIconColor),
+                          backgroundColor:
+                              WidgetStateProperty.all(AppColor.navBarIconColor),
                         ),
                         onPressed: () {
                           log("all comp info >> >>  ${selectedHeader}  ${selectedBody} ${selectedFooter} ${selectedButtons}}");
@@ -5306,7 +5329,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "id": null,
       "name": templateToSend,
       "language": "en",
-      "category": "MARKETING",
+      // "category": "MARKETING",
       "header": "TEXT",
       "header_body": "template header",
       "message_body": templateToSend,

@@ -24,7 +24,6 @@ import '../../models/unread_msg_model/unread_msg_model.dart';
 import '../../models/whatsapp_setting_model/whatsapp_setting_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/function_lib.dart' show debug;
-import '../../view_models/agent_list_vm.dart';
 import '../../view_models/auto_response_vm.dart';
 import '../../view_models/campaign_chart_vm.dart' show CampaignChartViewModel;
 import '../../view_models/campaign_count_vm.dart';
@@ -52,7 +51,6 @@ class _HomeViewState extends State<HomeView> {
   UnreadCountVm? unreadCountVm;
   // ignore: prefer_typing_uninitialized_variables
   ChartListViewModel? leadListVM;
-  AgentListViewModel? agentListVM;
   LeadCountViewModel? leadCountVM;
   WhatsappSettingViewModel? whatsAppSettingVM;
   AutoResponseViewModel? autoResponseVM;
@@ -139,7 +137,6 @@ class _HomeViewState extends State<HomeView> {
 
     Provider.of<ChartListViewModel>(context, listen: false).fetchLeadsMonth();
     Provider.of<LeadCountViewModel>(context, listen: false).countNewLead();
-    Provider.of<AgentListViewModel>(context, listen: false).fetchCountAgent();
     Provider.of<AutoResponseViewModel>(context, listen: false)
         .autoResponseFetch();
   }
@@ -150,7 +147,6 @@ class _HomeViewState extends State<HomeView> {
 
     leadListVM = Provider.of<ChartListViewModel>(context);
     leadCountVM = Provider.of<LeadCountViewModel>(context);
-    agentListVM = Provider.of<AgentListViewModel>(context);
     whatsAppSettingVM = Provider.of<WhatsappSettingViewModel>(context);
     autoResponseVM = Provider.of<AutoResponseViewModel>(context);
     campaignVM = Provider.of<CampaignCountViewModel>(context);

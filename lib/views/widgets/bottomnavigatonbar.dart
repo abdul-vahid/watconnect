@@ -10,7 +10,6 @@ import 'package:whatsapp/models/user_model/user_model.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 
 import '../../utils/app_color.dart';
-import '../../utils/function_lib.dart';
 import '../../utils/notification_utils.dart';
 import '../view/home_view.dart';
 import '../view/profile_view.dart' show ProfileView;

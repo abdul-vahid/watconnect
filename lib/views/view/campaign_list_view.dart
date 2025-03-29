@@ -353,6 +353,24 @@ class _CampaignListView extends State<CampaignListView> {
       Navigator.pop(context);
     });
   }
+//   String getCampaignStatus(String? startDate, String? endDate) {
+//   if (startDate == null || endDate == null) return "Unknown";
+
+//   DateTime now = DateTime.now();
+//   DateTime start = DateTime.parse(startDate);
+//   DateTime end = DateTime.parse(endDate);
+//   Duration timeLeft = end.difference(now);
+
+//   if (now.isBefore(start)) {
+//     return "Upcoming";
+//   } else if (timeLeft.inSeconds > 3) {
+//     return "Ongoing";
+//   } else if (timeLeft.inSeconds > 0) {
+//     return "${timeLeft.inSeconds}";  // Countdown: 3, 2, 1
+//   } else {
+//     return "Completed";
+//   }
+// }
 
   Widget _pageBody() {
     return Column(
@@ -427,6 +445,16 @@ class _CampaignListView extends State<CampaignListView> {
                                       color: Colors.black,
                                     ),
                                   ),
+                                  // Text(
+                                  //   getCampaignStatus(
+                                  //       allCampaigns[index].startDate,
+                                  //       allCampaigns[index].endDate),
+                                  //   style: const TextStyle(
+                                  //     fontSize: 14,
+                                  //     fontWeight: FontWeight.bold,
+                                  //     color: Colors.black,
+                                  //   ),
+                                  // ),
                                 ],
                               ),
                             ),

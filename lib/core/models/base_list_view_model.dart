@@ -48,13 +48,6 @@ class BaseListViewModel extends ChangeNotifier {
           context!, MaterialPageRoute(builder: (context) => const LoginView()));
       status = "Error";
       exception = Exception("UnauthorisedException");
-      /* await _refreshToken(url, jsonKey);
-      final jsonObjectRequest = await BaseService().get(url: url);
-      final records = jsonObjectRequest[jsonKey];
-      //AppUtils.printDebug("Response Data === $records");
-      var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
-      viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
-      status = "Completed"; */
     } on AppException catch (error) {
       status = "Error";
       exception = error;

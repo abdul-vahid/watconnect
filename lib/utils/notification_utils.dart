@@ -1,6 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:whatsapp/views/view/home_view.dart';
 import 'package:whatsapp/views/view/lead_list_view.dart';
 
 import '../services/notifications/local_notification_service.dart';

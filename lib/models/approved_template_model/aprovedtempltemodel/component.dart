@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class Component {
   String? type;
   String? text;
