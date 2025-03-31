@@ -373,11 +373,12 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  void messagesendd(String text) async {
+  Future<void> messagesendd(String text) async {
     print("messagesendd called");
 
-    late TempleteListViewModel tm = TempleteListViewModel(context);
-    late MessageViewModel ms = MessageViewModel(context);
+    TempleteListViewModel tm = TempleteListViewModel(context);
+    MessageViewModel ms = MessageViewModel(context);
+
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
@@ -391,8 +392,10 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       return;
     }
+
     print("wpppp=>${widget.wpnumber}");
     var leadnumber = widget.wpnumber;
+
     Map<String, dynamic> addmsModel = {
       "messaging_product": "whatsapp",
       "recipient_type": "individual",
@@ -415,31 +418,33 @@ class _ChatScreenState extends State<ChatScreen> {
       "message_id": messageid
     };
 
-    ms.sendMessage(number: number, addmsModel: addmsModel).then((value) {
+    try {
+      var value = await ms.sendMessage(number: number, addmsModel: addmsModel);
       print("valueee=>$value");
+
       if (value.isNotEmpty) {
         var messageId = value['messages'];
         print('Message ID: ${messageId[0]['id']}');
         messageid = messageId[0]['id'];
         msgmobilebody['message_id'] = messageid;
 
-        ms.sendmsgmobile(msgmobilbody: msgmobilebody).then((value) {
-          print("valueee1=>$value");
-          if (value['delivery_status'] == "sent") {
-            _controller.clear();
+        var msgValue = await ms.sendmsgmobile(msgmobilbody: msgmobilebody);
+        print("valueee1=>$msgValue");
 
-            setState(() {
-              showLoader = false;
-            });
-          }
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Message sent successfully'),
-            duration: Duration(seconds: 3),
-            backgroundColor: Colors.green,
-          ),
-        );
+        if (msgValue['delivery_status'] == "sent") {
+          _controller.clear();
+          setState(() {
+            showLoader = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Message sent successfully'),
+              duration: Duration(seconds: 3),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -449,8 +454,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         );
       }
-    }).catchError((error) {
-      Navigator.pop(context);
+    } catch (error) {
       print('Error: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -459,9 +463,7 @@ class _ChatScreenState extends State<ChatScreen> {
           backgroundColor: Colors.red,
         ),
       );
-    });
-
-    _pullRefresh();
+    }
   }
 
   void templetesendd(String templateToSend, List? compo) async {
@@ -1923,146 +1925,174 @@ class _ChatScreenState extends State<ChatScreen> {
         " messageViewModel.viewModels.length:::::: ${messageViewModel.viewModels}   ${showLoader} ");
 
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.attach_file),
-            onPressed: _showPicker,
-          ),
-          Expanded(
-            child: Row(
+        padding: const EdgeInsets.all(8.0),
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            return Row(
               children: [
-                image != null && isImageSent == false
-                    ? image.toString().split('.').last.contains('pdf')
-                        ? Container(
-                            width: 50,
-                            height: 50,
-                            margin: const EdgeInsets.only(right: 8.0),
-                            decoration: BoxDecoration(
-                              // color: Colors.blue,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Image.asset(
-                                "assets/images/pdf.png",
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover, // Ensures full coverage
-                              ),
-                            ),
-                          )
-                        : Container(
-                            width: 50,
-                            height: 50,
-                            margin: const EdgeInsets.only(right: 8.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8.0),
-                              image: DecorationImage(
-                                image: FileImage(image!),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          )
-                    : const SizedBox.shrink(),
+                IconButton(
+                  icon: const Icon(Icons.attach_file),
+                  onPressed: _showPicker,
+                ),
                 Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
+                  child: Row(
+                    children: [
+                      image != null && isImageSent == false
+                          ? image.toString().split('.').last.contains('pdf')
+                              ? Container(
+                                  width: 50,
+                                  height: 50,
+                                  margin: const EdgeInsets.only(right: 8.0),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: Image.asset(
+                                      "assets/images/pdf.png",
+                                      width: 50,
+                                      height: 50,
+                                      fit:
+                                          BoxFit.cover, // Ensures full coverage
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  width: 50,
+                                  height: 50,
+                                  margin: const EdgeInsets.only(right: 8.0),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    image: DecorationImage(
+                                      image: FileImage(image!),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                )
+                          : const SizedBox.shrink(),
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          decoration: InputDecoration(
+                            hintText: 'Type a message...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF1F1F1),
+                          ),
+                        ),
                       ),
-                      filled: true,
-                      fillColor: const Color(0xFFF1F1F1),
-                    ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 148, 188, 206),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.code, color: Colors.white),
-              onPressed: () {
-                _getBootmSheet();
-              },
-            ),
-          ),
-          allMessages.length == 0
-              ? SizedBox()
-              : Container(
+                Container(
                   decoration: BoxDecoration(
-                    color: AppColor.cardsColor,
+                    color: const Color.fromARGB(255, 148, 188, 206),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: showLoader
-                      ? Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            height: 30,
-                            width: 30,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          ),
-                        )
-                      : IconButton(
-                          icon: const Icon(Icons.send, color: Colors.white),
-                          onPressed: () async {
-                            print("image$image");
-                            setState(() {
-                              showLoader = true;
-                            });
+                  child: IconButton(
+                    icon: const Icon(Icons.code, color: Colors.white),
+                    onPressed: () {
+                      _getBootmSheet();
+                    },
+                  ),
+                ),
+                allMessages.isEmpty
+                    ? SizedBox()
+                    : Container(
+                        decoration: BoxDecoration(
+                          color: AppColor.cardsColor,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: showLoader
+                            ? Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  height: 30,
+                                  width: 30,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              )
+                            : IconButton(
+                                icon:
+                                    const Icon(Icons.send, color: Colors.white),
+                                onPressed: () async {
+                                  print("image$image");
+                                  setState(() {
+                                    showLoader = true;
+                                  });
 
-                            if (image != null) {
-                              String fileExtension =
-                                  path.extension(image!.path).toLowerCase();
-                              print("File Extension: $fileExtension");
+                                  if (image != null) {
+                                    String fileExtension = path
+                                        .extension(image!.path)
+                                        .toLowerCase();
+                                    print("File Extension: $fileExtension");
 
-                              if (fileExtension == '.jpg' ||
-                                  fileExtension == '.jpeg') {
-                                print("🖼 Sending Image...");
-                                filesend("image");
-                              } else if (fileExtension == '.mp4' ||
-                                  fileExtension == '.avi' ||
-                                  fileExtension == '.mov') {
-                                print("🎥 Sending Video...");
-                                filesend("video");
-                              } else if (fileExtension == '.html' ||
-                                  fileExtension == '.txt') {
-                                print("🎥 Sending text document...");
-                                filesend("document");
-                              } else {
-                                print("📄 Sending Document...");
-                                filesend("document");
-                              }
-                            } else if (_controller.text.trim().isNotEmpty) {
-                              showLoader = false;
-                              messagesendd(_controller.text);
-                            } else {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                      content: Text(
-                                "please Type Message",
-                                selectionColor: Colors.amber,
-                              )));
-                              print(
-                                  "⚠ No file or text entered. Doing nothing.");
-                            }
-                            _controller.clear();
-                            setState(() {});
-                          },
-                        )),
-        ],
-      ),
-    );
+                                    if (fileExtension == '.jpg' ||
+                                        fileExtension == '.jpeg') {
+                                      print("🖼 Sending Image...");
+                                      filesend("image");
+                                    } else if (fileExtension == '.mp4' ||
+                                        fileExtension == '.avi' ||
+                                        fileExtension == '.mov') {
+                                      print("🎥 Sending Video...");
+                                      filesend("video");
+                                    } else if (fileExtension == '.html' ||
+                                        fileExtension == '.txt') {
+                                      print("📄 Sending text document...");
+                                      filesend("document");
+                                    } else {
+                                      print("📄 Sending Document...");
+                                      filesend("document");
+                                    }
+                                  } else if (_controller.text
+                                      .trim()
+                                      .isNotEmpty) {
+                                    setState(() {
+                                      showLoader = false;
+                                    });
+                                    messagesendd(_controller.text)
+                                        .then((onValue) {
+                                      setState(() async {
+                                        var leadnumber = widget.wpnumber;
+                                        final prefs = await SharedPreferences
+                                            .getInstance();
+                                        String? number =
+                                            prefs.getString('phoneNumber');
+                                        print("number=>$number");
+                                        await Provider.of<MessageViewModel>(
+                                                context,
+                                                listen: false)
+                                            .Fetchmsghistorydata(
+                                                leadnumber: leadnumber,
+                                                number: number);
+                                      });
+                                    });
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Please Type a Message",
+                                          selectionColor: Colors.amber,
+                                        ),
+                                      ),
+                                    );
+                                    print(
+                                        "⚠ No file or text entered. Doing nothing.");
+                                  }
+                                  _controller.clear();
+                                  setState(() {});
+                                },
+                              ),
+                      ),
+              ],
+            );
+          },
+        ));
   }
 
   Future<void> _showSimpleDialog() async {
