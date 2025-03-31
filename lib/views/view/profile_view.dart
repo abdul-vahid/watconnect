@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 //import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/views/view/edit_profile_view.dart';
 
 import '../../models/get_user.dart';
@@ -69,8 +71,13 @@ class _ProfileViewState extends State<ProfileView> {
   void getProfileData() async {
     final prefs = await SharedPreferences.getInstance();
 
+    MessageController msgController =
+        Provider.of<MessageController>(context, listen: false);
+
     setState(() {
       userModel = AppUtils.getSessionUser(prefs);
+      msgController.setUsrProfile(
+          "https://sandbox.watconnect.com/public/demo/users/${userModel?.id}");
       print("logourl::: ${userModel?.logourl ?? ""}");
     });
   }
@@ -157,30 +164,44 @@ class _ProfileViewState extends State<ProfileView> {
                 Center(
                   child: Stack(
                     children: [
-                      CircleAvatar(
-                        radius: 60,
-                        backgroundColor: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(0),
-                          child: ClipOval(
-                            child: FadeInImage.assetNetwork(
-                              placeholder: "assets/images/loading.gif",
-                              image: userModel?.logourl ?? "",
-                              fit: BoxFit.cover,
-                              height: 100,
-                              width: 100,
-                              imageErrorBuilder: (context, error, stackTrace) {
-                                return Image.network(
-                                  'https://sandbox.watconnect.com/public/demo/users/${userModel?.id}',
-                                  fit: BoxFit.cover,
-                                  height: 100,
-                                  width: 100,
-                                );
-                              },
+                      Consumer<MessageController>(
+                          builder: (context, ms, child) {
+                        print("ms>>>> ${ms.userProfile}");
+                        return CircleAvatar(
+                          radius: 60,
+                          backgroundColor: Colors.white,
+                          child: Padding(
+                            padding: const EdgeInsets.all(0),
+                            child: ClipOval(
+                              child: CachedNetworkImage(
+                                imageUrl: ms.userProfile,
+                                placeholder: (context, url) =>
+                                    CircularProgressIndicator(),
+                                errorWidget: (context, url, error) =>
+                                    Icon(Icons.error),
+                              ),
+
+                              //  FadeInImage.assetNetwork(
+                              //   placeholder: "assets/images/loading.gif",
+                              //   image: ms.userProfile,
+                              //   fit: BoxFit.cover,
+                              //   height: 100,
+                              //   width: 100,
+                              //   imageErrorBuilder:
+                              //       (context, error, stackTrace) {
+                              //     print("some error> in widget::::${error}");
+                              //     return Image.network(
+                              //       'https://sandbox.watconnect.com/public/demo/users/${userModel?.id}',
+                              //       fit: BoxFit.cover,
+                              //       height: 100,
+                              //       width: 100,
+                              //     );
+                              //   },
+                              // ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      }),
                       Positioned(
                         bottom: 0,
                         right: 0,
@@ -467,8 +488,13 @@ class _ProfileViewState extends State<ProfileView> {
       UserListViewModel()
           .uploadFile(selectedImage, userMap.toString(), url)
           .then((value) async {
+        // print("val>>>> ${value}");
         await AppUtils.getToken();
         getProfileData();
+        MessageController msgController =
+            Provider.of<MessageController>(context, listen: false);
+        msgController.setUsrProfile(
+            "https://sandbox.watconnect.com/public/demo/users/${userModel?.id}");
       }).catchError((error) {
         print("Error uploading file: $error");
       });

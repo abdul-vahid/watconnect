@@ -460,6 +460,8 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       );
     });
+
+    _pullRefresh();
   }
 
   void templetesendd(String templateToSend, List? compo) async {
@@ -2230,6 +2232,7 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
+            _isLoading = false;
             return Container(
               height: MediaQuery.of(context).size.height * .80,
               child: SingleChildScrollView(
@@ -2373,99 +2376,180 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                         const SizedBox(height: 10),
                         Center(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10),
-                              backgroundColor: AppColor.navBarIconColor,
-                            ),
-                            onPressed: () async {
-                              Map<String, String> bodyTextParams = {};
-                              List compoTextParams = [];
-                              List numberedCampParam = [];
+                          child: StatefulBuilder(
+                            builder:
+                                (BuildContext context, StateSetter setState) {
+                              return ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 10),
+                                  backgroundColor: AppColor.navBarIconColor,
+                                ),
+                                onPressed: () async {
+                                  if (_isLoading) return;
 
-                              bool anyEmpty = controllers
-                                  .any((controller) => controller.text.isEmpty);
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
 
-                              if (anyEmpty) {
-                                return;
-                              } else {
-                                print("All fields are filled");
-                              }
-                              File? imageFile;
-                              if (imgToShow.isNotEmpty) {}
+                                  Map<String, String> bodyTextParams = {};
+                                  List compoTextParams = [];
+                                  List numberedCampParam = [];
 
-                              for (int i = 0; i < controllers.length; i++) {
-                                bodyTextParams[(i + 1).toString()] =
-                                    controllers[i].text;
-                                Map body = {
-                                  "type": "text",
-                                  "text": controllers[i].text
-                                };
-                                compoTextParams.add(body);
-                                numberedCampParam.add(bodyTextParams);
-                              }
+                                  bool anyEmpty = controllers.any(
+                                      (controller) => controller.text.isEmpty);
+                                  if (anyEmpty) {
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                    return;
+                                  }
 
-                              String templateToSend = selectedTemplateName ??
-                                  _templateController.text;
+                                  File? imageFile;
+                                  String docId = "";
 
-                              String docId = "";
+                                  for (int i = 0; i < controllers.length; i++) {
+                                    bodyTextParams[(i + 1).toString()] =
+                                        controllers[i].text;
+                                    Map body = {
+                                      "type": "text",
+                                      "text": controllers[i].text
+                                    };
+                                    compoTextParams.add(body);
+                                    numberedCampParam.add(bodyTextParams);
+                                  }
 
-                              if (selectedHeader == null) {
-                                sendTextTemplate(templateToSend,
-                                    compoTextParams, isChecked, bodyTextParams);
-                              }
+                                  String templateToSend =
+                                      selectedTemplateName ??
+                                          _templateController.text;
 
-                              if (selectedHeader.format == "IMAGE" ||
-                                  selectedHeader.format == "VIDEO") {
-                                image = await urlToFile(imgToShow);
+                                  if (selectedHeader == null) {
+                                    await sendTextTemplate(
+                                        templateToSend,
+                                        compoTextParams,
+                                        isChecked,
+                                        bodyTextParams);
+                                    setState(() {
+                                      _isLoading = false;
+                                      image = null;
+                                    });
+                                    return;
+                                  }
 
-                                docId = await getDocId();
-                              }
+                                  if (selectedHeader.format == "IMAGE" ||
+                                      selectedHeader.format == "VIDEO") {
+                                    image = await urlToFile(imgToShow);
+                                    docId = await getDocId();
+                                  }
 
-                              if ((selectedHeader.format == "IMAGE" ||
-                                      selectedHeader.format == "VIDEO") &&
-                                  docId.isNotEmpty) {
-                                List parameter = [];
+                                  if ((selectedHeader.format == "IMAGE" ||
+                                          selectedHeader.format == "VIDEO") &&
+                                      docId.isNotEmpty) {
+                                    List parameter = [
+                                      {
+                                        "type": selectedHeader.format == "IMAGE"
+                                            ? "image"
+                                            : "video",
+                                        if (selectedHeader.format == "IMAGE")
+                                          "image": {"id": docId}
+                                        else
+                                          "video": {"id": docId},
+                                      }
+                                    ];
 
-                                if (selectedHeader.format == "IMAGE" ||
-                                    selectedHeader.format == "VIDEO") {
-                                  parameter = [
-                                    {
-                                      "type": selectedHeader.format == "IMAGE"
-                                          ? "image"
-                                          : "video",
-                                      if (selectedHeader.format == "IMAGE")
-                                        "image": {"id": docId}
-                                      else
-                                        "video": {"id": docId},
-                                    }
-                                  ];
-                                }
-
-                                sendParamsApiCall(
-                                    templateToSend,
-                                    compoTextParams,
-                                    isChecked,
-                                    parameter,
-                                    bodyTextParams,
-                                    imgToShow);
-                              } else if (selectedHeader.format == "DOCUMENT") {
-                                sendDocTemp(
-                                  templateToSend,
-                                  isChecked,
-                                  imgToShow,
-                                );
-                              } else if (selectedHeader.format == "TEXT") {
-                                sendTextTemplate(templateToSend,
-                                    compoTextParams, isChecked, bodyTextParams);
-                              }
+                                    await sendParamsApiCall(
+                                            templateToSend,
+                                            compoTextParams,
+                                            isChecked,
+                                            parameter,
+                                            bodyTextParams,
+                                            imgToShow)
+                                        .then((val) async {
+                                      setState(() async {
+                                        var leadnumber = widget.wpnumber;
+                                        final prefs = await SharedPreferences
+                                            .getInstance();
+                                        String? number =
+                                            prefs.getString('phoneNumber');
+                                        print("number=>$number");
+                                        await Provider.of<MessageViewModel>(
+                                                context,
+                                                listen: false)
+                                            .Fetchmsghistorydata(
+                                                leadnumber: leadnumber,
+                                                number: number)
+                                            .then((onValue) {
+                                          _isLoading = false;
+                                          image = null;
+                                          Navigator.pop(context);
+                                        });
+                                      });
+                                    });
+                                  } else if (selectedHeader.format ==
+                                      "DOCUMENT") {
+                                    await sendDocTemp(templateToSend, isChecked,
+                                            imgToShow)
+                                        .then((value) async {
+                                      setState(() async {
+                                        var leadnumber = widget.wpnumber;
+                                        final prefs = await SharedPreferences
+                                            .getInstance();
+                                        String? number =
+                                            prefs.getString('phoneNumber');
+                                        print("number=>$number");
+                                        await Provider.of<MessageViewModel>(
+                                                context,
+                                                listen: false)
+                                            .Fetchmsghistorydata(
+                                                leadnumber: leadnumber,
+                                                number: number)
+                                            .then((onValue) {
+                                          image = null;
+                                          _isLoading = false;
+                                          Navigator.pop(context);
+                                        });
+                                      });
+                                    });
+                                  } else if (selectedHeader.format == "TEXT") {
+                                    await sendTextTemplate(
+                                            templateToSend,
+                                            compoTextParams,
+                                            isChecked,
+                                            bodyTextParams)
+                                        .then((value) {
+                                      setState(() async {
+                                        _isLoading = false;
+                                        image = null;
+                                        var leadnumber = widget.wpnumber;
+                                        final prefs = await SharedPreferences
+                                            .getInstance();
+                                        String? number =
+                                            prefs.getString('phoneNumber');
+                                        print("number=>$number");
+                                        await Provider.of<MessageViewModel>(
+                                                context,
+                                                listen: false)
+                                            .Fetchmsghistorydata(
+                                                leadnumber: leadnumber,
+                                                number: number)
+                                            .then((onValue) {
+                                          Navigator.pop(context);
+                                        });
+                                      });
+                                    });
+                                  }
+                                },
+                                child: _isLoading
+                                    ? CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                    : Text(
+                                        "Send Template",
+                                        style: TextStyle(
+                                            fontSize: 13, color: Colors.white),
+                                      ),
+                              );
                             },
-                            child: const Text(
-                              "Send Template",
-                              style:
-                                  TextStyle(fontSize: 13, color: Colors.white),
-                            ),
                           ),
                         ),
                       ],
@@ -2627,43 +2711,33 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> sendParamsApiCall(
-      String templateToSend,
-      List compoTextParams,
-      bool sendOnLoginNum,
-      List params,
-      Map campaignParam,
-      String imgToShow) async {
+    String templateToSend,
+    List compoTextParams,
+    bool sendOnLoginNum,
+    List params,
+    Map campaignParam,
+    String imgToShow,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
-    Map exBodyText = {};
-    Map a = {"sendToAdmin": sendOnLoginNum};
-    Map b = campaignParam;
-    if (campaignParam.isNotEmpty) {
-      exBodyText = {...b, ...a};
-    } else {
-      exBodyText = a;
-    }
 
-    late MessageViewModel mstemp = MessageViewModel(context);
+    Map<String, dynamic> exBodyText = {
+      if (campaignParam.isNotEmpty) ...campaignParam,
+      "sendToAdmin": sendOnLoginNum
+    };
+
+    MessageViewModel mstemp = MessageViewModel(context);
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
-    List ba = [];
-    if (selectedButtons != null) {
-      print("list:::: ${selectedButtons.buttons} ");
-      ba = selectedButtons.buttons.map((button) => button.toMap()).toList();
-    }
-    var footer;
-    if (selectedFooter != null) {
-      footer = selectedFooter.text;
-    } else {
-      footer = "";
-    }
+
+    List ba =
+        selectedButtons?.buttons.map((button) => button.toMap()).toList() ?? [];
+    String footer = selectedFooter?.text ?? "";
 
     Map<String, dynamic> createtemp = {
       "id": selectedTemplateId,
       "name": templateToSend,
       "language": selectedLanguage,
-      // "category": "MARKETING",
       "header": selectedHeader.format,
       "header_body": imgToShow.isNotEmpty ? imgToShow : selectedHeader.text,
       "message_body": selectedBody.text,
@@ -2672,13 +2746,16 @@ class _ChatScreenState extends State<ChatScreen> {
       "buttons": ba,
       "business_number": number
     };
-    print("create map>>> ${createtemp}");
 
-    mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) => {
-          templeteidmessage = value['id'],
-          print("temmplet msg id==========>$templeteidmessage"),
-          print("ccretae objetctt resposne= > $value")
-        });
+    print("create map>>> $createtemp");
+
+    // Await template creation
+    var templateResponse =
+        await mstemp.createmsgtemplete(msgmobilbody: createtemp);
+    String templeteidmessage = templateResponse['id'];
+
+    print("temmplet msg id==========> $templeteidmessage");
+    print("create object response=> $templateResponse");
 
     var leadnumber = widget.wpnumber;
     Map<String, dynamic> templateBody = {
@@ -2689,56 +2766,54 @@ class _ChatScreenState extends State<ChatScreen> {
         "name": templateToSend,
         "language": {"code": selectedLanguage},
         "components": [
-          {
-            "type": "header",
-            "parameters": params,
-          },
+          {"type": "header", "parameters": params},
           {"type": "body", "parameters": compoTextParams}
         ]
       }
     };
-    print("templetete body=>$templateBody");
-    mstemp
-        .sendtemplete(number: number, msgmobilbody: templateBody)
-        .then((value) {
-      print("value=== templete>$value");
-      var a = value['messages'][0]["id"] ?? "";
-      // print("value=== template>${value['messages'][0]['id']}");
-      messageid = a;
 
-      Map<String, dynamic> msgmobilebody = {
-        "parent_id": widget.model.id,
-        "name": widget.leadName,
-        "message_template_id": templeteidmessage,
-        "whatsapp_number": leadnumber,
-        "message": "",
-        "status": "Outgoing",
-        "recordtypename": "recentlyMessage",
-        "file_id": null,
-        "is_read": true,
-        "business_number": number,
-        "message_id": messageid,
-        "interactive_id": null
-      };
+    print("template body=>$templateBody");
 
-      mstemp.sendmsgmobile(msgmobilbody: msgmobilebody).then((value) {
-        print("valueee1=>$value");
+    // Await template sending
+    var sendTemplateResponse =
+        await mstemp.sendtemplete(number: number, msgmobilbody: templateBody);
+    String messageid = sendTemplateResponse['messages'][0]["id"] ?? "";
 
-        String msgResId = value['id'];
+    print("value=== template>$sendTemplateResponse");
 
-        Map<String, dynamic> paramBody = {
-          "campaign_id": null,
-          "body_text_params": campaignParam,
-          "msg_history_id": msgResId,
-          "file_id": null,
-          "whatsapp_number_admin": "7590889022"
-        };
+    Map<String, dynamic> msgmobilebody = {
+      "parent_id": widget.model.id,
+      "name": widget.leadName,
+      "message_template_id": templeteidmessage,
+      "whatsapp_number": leadnumber,
+      "message": "",
+      "status": "Outgoing",
+      "recordtypename": "recentlyMessage",
+      "file_id": null,
+      "is_read": true,
+      "business_number": number,
+      "message_id": messageid,
+      "interactive_id": null
+    };
 
-        mstemp.sendCampParam(campParambody: paramBody).then((value) {
-          print("sendCampParam>>> ${value}");
-        });
-      });
-    });
+    // Await message sending
+    var msgMobileResponse =
+        await mstemp.sendmsgmobile(msgmobilbody: msgmobilebody);
+    print("valueee1=>$msgMobileResponse");
+
+    String msgResId = msgMobileResponse['id'];
+
+    Map<String, dynamic> paramBody = {
+      "campaign_id": null,
+      "body_text_params": campaignParam,
+      "msg_history_id": msgResId,
+      "file_id": null,
+      "whatsapp_number_admin": "7590889022"
+    };
+
+    // Await campaign parameter sending
+    var campaignResponse = await mstemp.sendCampParam(campParambody: paramBody);
+    print("sendCampParam>>> $campaignResponse");
   }
 
   Future<File?> urlToFile(String imageUrl) async {
@@ -2817,7 +2892,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
-    late MessageViewModel mstemp = MessageViewModel(context);
+    MessageViewModel mstemp = MessageViewModel(context);
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
 
@@ -2825,7 +2900,6 @@ class _ChatScreenState extends State<ChatScreen> {
       "id": selectedTemplateId,
       "name": tempToSend,
       "language": selectedLanguage,
-      // "category": "MARKETING",
       "header": selectedHeader.format,
       "header_body": docUrl,
       "message_body": selectedBody.text,
@@ -2834,80 +2908,81 @@ class _ChatScreenState extends State<ChatScreen> {
       "buttons": [],
       "business_number": number
     };
-    Map<String, dynamic> url = {"url": docUrl};
-    mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) => {
-          templeteidmessage = value['id'],
-          print("temmplet msg id==========>$templeteidmessage"),
-          print("ccretae objetctt resposne= > $value"),
-          mstemp.sendProxy(fileProxyBody: url, number: number).then((value) {
-            print("send proxy vlue>>>>> ${value}");
 
-            var leadnumber = widget.wpnumber;
-            Map<String, dynamic> templateBody = {
-              "messaging_product": "whatsapp",
-              "to": leadnumber,
-              "type": "template",
-              "template": {
-                "name": tempToSend,
-                "language": {"code": selectedLanguage},
-                "components": [
-                  {
-                    "type": "header",
-                    "parameters": [
-                      {
-                        "type": "document",
-                        "document": {"id": value}
-                      }
-                    ],
-                  },
-                  {"type": "body", "parameters": []}
-                ]
-              }
-            };
-            print("templetete body=>$templateBody");
+    try {
+      var templateResponse =
+          await mstemp.createmsgtemplete(msgmobilbody: createtemp);
+      templeteidmessage = templateResponse['id'];
+      print("Template message ID: $templeteidmessage");
 
-            mstemp
-                .sendtemplete(number: number, msgmobilbody: templateBody)
-                .then((value) {
-              print("value=== templete>$value");
-              print("value=== template>${value['messages'][0]['id']}");
-              messageid = value['messages'][0]['id'];
+      Map<String, dynamic> url = {"url": docUrl};
+      var proxyResponse =
+          await mstemp.sendProxy(fileProxyBody: url, number: number);
+      print("Proxy response: $proxyResponse");
 
-              Map<String, dynamic> msgmobilebody = {
-                "parent_id": widget.model.id,
-                "name": widget.leadName,
-                "message_template_id": templeteidmessage,
-                "whatsapp_number": leadnumber,
-                "message": "",
-                "status": "Outgoing",
-                "recordtypename": "recentlyMessage",
-                "file_id": null,
-                "is_read": true,
-                "business_number": number,
-                "message_id": messageid,
-                "interactive_id": null
-              };
+      var leadnumber = widget.wpnumber;
+      Map<String, dynamic> templateBody = {
+        "messaging_product": "whatsapp",
+        "to": leadnumber,
+        "type": "template",
+        "template": {
+          "name": tempToSend,
+          "language": {"code": selectedLanguage},
+          "components": [
+            {
+              "type": "header",
+              "parameters": [
+                {
+                  "type": "document",
+                  "document": {"id": proxyResponse}
+                }
+              ],
+            },
+            {"type": "body", "parameters": []}
+          ]
+        }
+      };
 
-              mstemp.sendmsgmobile(msgmobilbody: msgmobilebody).then((value) {
-                print("valueee1=>$value");
+      var templateSendResponse =
+          await mstemp.sendtemplete(number: number, msgmobilbody: templateBody);
+      print("Template send response: $templateSendResponse");
 
-                String msgResId = value['id'];
+      messageid = templateSendResponse['messages'][0]['id'];
 
-                Map<String, dynamic> paramBody = {
-                  "campaign_id": null,
-                  // "body_text_params": campaignParam,
-                  "msg_history_id": msgResId,
-                  "file_id": null,
-                  "whatsapp_number_admin": "7590889022"
-                };
+      Map<String, dynamic> msgmobilebody = {
+        "parent_id": widget.model.id,
+        "name": widget.leadName,
+        "message_template_id": templeteidmessage,
+        "whatsapp_number": leadnumber,
+        "message": "",
+        "status": "Outgoing",
+        "recordtypename": "recentlyMessage",
+        "file_id": null,
+        "is_read": true,
+        "business_number": number,
+        "message_id": messageid,
+        "interactive_id": null
+      };
 
-                mstemp.sendCampParam(campParambody: paramBody).then((value) {
-                  print("sendCampParam>>> ${value}");
-                });
-              });
-            });
-          })
-        });
+      var msgMobileResponse =
+          await mstemp.sendmsgmobile(msgmobilbody: msgmobilebody);
+      print("Message mobile response: $msgMobileResponse");
+
+      String msgResId = msgMobileResponse['id'];
+
+      Map<String, dynamic> paramBody = {
+        "campaign_id": null,
+        "msg_history_id": msgResId,
+        "file_id": null,
+        "whatsapp_number_admin": "7590889022"
+      };
+
+      var campParamResponse =
+          await mstemp.sendCampParam(campParambody: paramBody);
+      print("Campaign Param Response: $campParamResponse");
+    } catch (e) {
+      print("Error in sendDocTemp: $e");
+    }
   }
 
   Future<void> sendTextTemplate(

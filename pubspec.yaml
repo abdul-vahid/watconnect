@@ -88,6 +88,7 @@ dependencies:
   open_file: ^3.5.10
   path_provider: ^2.1.5
   flutter_local_notifications: ^19.0.0
+  cached_network_image: ^3.4.1
 
 
   # geocoding: ^3.0.0
