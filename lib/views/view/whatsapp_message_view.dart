@@ -13,6 +13,7 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart' show Provider;
 import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:url_launcher/url_launcher.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/models/lead_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
@@ -911,13 +912,6 @@ class _ChatScreenState extends State<ChatScreen> {
               controller: _scrollController,
               itemCount: allMessages.length,
               itemBuilder: (context, index) {
-                // DateTime now = DateTime.now();
-                // String formattedTime = DateFormat('hh:mm a').format(now);
-
-                // DateTime utcTime = allMessages[index].createddate;
-                // DateTime istTime =
-                //     utcTime.add(const Duration(hours: 5, minutes: 30));
-                // formattedTime = DateFormat('hh:mm a').format(istTime);
                 // String title = allMessages[index].title ?? "";
                 // String msghistoryid = allMessages[index].id;
                 // print("sjdhjshdjas=>$msghistoryid");
@@ -1111,8 +1105,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                             : const Color(0xff221B41),
                                   ),
                                   child: Column(
-                                    mainAxisSize: MainAxisSize
-                                        .min, // Ensure it takes only required height
+                                    mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment: CrossAxisAlignment
                                         .start, // Align text properly
                                     children: [

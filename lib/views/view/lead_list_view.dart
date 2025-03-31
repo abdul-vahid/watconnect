@@ -785,6 +785,9 @@ class _LeadListViewState extends State<LeadListView> {
               ),
             ),
           );
+
+          leads?.viewModels.clear();
+          Provider.of<LeadListViewModel>(context, listen: false).fetch();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

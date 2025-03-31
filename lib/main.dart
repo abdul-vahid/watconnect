@@ -8,6 +8,7 @@ import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
 import 'package:whatsapp/view_models/campaign_chart_vm.dart';
 import 'package:whatsapp/view_models/groups_view_model.dart';
+import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/message_list_vm.dart'
     show MessageViewModel;
 import 'package:whatsapp/view_models/auto_response_vm.dart';
@@ -88,7 +89,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserDataListViewModel(context)),
         // ChangeNotifierProvider(create: (_) => TaskListViewModel(context)),
         ChangeNotifierProvider(create: (_) => CampaignViewModel(context)),
-        ChangeNotifierProvider(create: (_) => ThemeChanger(context)),
+        ChangeNotifierProvider(create: (_) => MessageController())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

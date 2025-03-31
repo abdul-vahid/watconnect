@@ -45,7 +45,7 @@ dependencies:
   syncfusion_flutter_charts: ^28.2.9
   # syncfusion_flutter_charts: ^27.1.58
   font_awesome_flutter: ^10.8.0
-  url_launcher: ^6.1.14
+  url_launcher: ^6.3.1
   syncfusion_flutter_calendar: ^28.2.9
   image_picker: ^1.0.7
   share_plus: ^7.2.2
@@ -88,6 +88,7 @@ dependencies:
   open_file: ^3.5.10
   path_provider: ^2.1.5
   flutter_local_notifications: ^19.0.0
+  cached_network_image: ^3.4.1
 
 
   # geocoding: ^3.0.0
