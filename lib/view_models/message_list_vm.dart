@@ -80,7 +80,20 @@ class MessageViewModel extends BaseListViewModel {
     print("url==mobile templete send >$url");
     String body = jsonEncode(msgmobilbody);
     var result = await post(url: url, body: body);
-    debug('result templete sed $result');
+    // debug('result templete sed $result');
+    return result;
+  }
+
+  Future<dynamic> sendProxy({
+    String? number,
+    required Map<String, dynamic> fileProxyBody,
+  }) async {
+    print("c=templeate snd callled");
+    String url = AppUtils.getUrl('${AppConstants.proxy}=$number');
+    print("url==mobile templete send >$url");
+    String body = jsonEncode(fileProxyBody);
+    var result = await post(url: url, body: body);
+    // debug('result templete sed $result');
     return result;
   }
 
@@ -93,7 +106,7 @@ class MessageViewModel extends BaseListViewModel {
     print("createtempletcreatetemplet >$url");
     String body = jsonEncode(msgmobilbody);
     var result = await post(url: url, body: body);
-    debug('createtempletcreatetempletcreatetemplet $result');
+    // debug('createtempletcreatetempletcreatetemplet $result');
     return result;
   }
 
@@ -151,7 +164,7 @@ class MessageViewModel extends BaseListViewModel {
       "Content-Type": "multipart/form-data",
     });
     debug("Request URL: $url");
-    debug("Request Headers: ${request.headers}");
+    // debug("Request Headers: ${request.headers}");
     debug("Request Fields: ${request.fields}");
     debug("Request Files: ${request.files}");
     var response = await request.send();
@@ -287,7 +300,7 @@ class MessageViewModel extends BaseListViewModel {
     });
 
     debug("Request URL videooooo: $url");
-    debug("Request Headers: ${request.headers}");
+    // debug("Request Headers: ${request.headers}");
     debug("Request Files: ${request.files}");
 
     var response = await request.send();

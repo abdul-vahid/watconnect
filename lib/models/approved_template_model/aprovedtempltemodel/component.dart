@@ -68,10 +68,15 @@ class Button {
         url: data['url'] as String?,
       );
 
-  Map<String, dynamic> toMap() => {
-        'type': type,
-        'text': text,
-        'phone_number': phoneNumber,
-        'url': url,
-      };
+  Map<String, dynamic> toMap() {
+    final map = {
+      'type': type,
+      'text': text,
+      'phone_number': phoneNumber,
+      'url': url,
+    };
+
+    map.removeWhere((key, value) => value == null);
+    return map;
+  }
 }
