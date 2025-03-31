@@ -15,6 +15,7 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart' show Provider;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
 import 'package:whatsapp/models/lead_model.dart';
@@ -911,16 +912,14 @@ class _ChatScreenState extends State<ChatScreen> {
               controller: _scrollController,
               itemCount: allMessages.length,
               itemBuilder: (context, index) {
-                // DateTime now = DateTime.now();
-                // String formattedTime = DateFormat('hh:mm a').format(now);
+                log("allMessages[index].buttons:::::: ${allMessages[index].buttons}");
+                List butttons = [];
+                if (allMessages[index].buttons == null) {
+                  butttons = [];
+                } else {
+                  butttons = allMessages[index].buttons ?? [];
+                }
 
-                // DateTime utcTime = allMessages[index].createddate;
-                // DateTime istTime =
-                //     utcTime.add(const Duration(hours: 5, minutes: 30));
-                // formattedTime = DateFormat('hh:mm a').format(istTime);
-                // String title = allMessages[index].title ?? "";
-                // String msghistoryid = allMessages[index].id;
-                // print("sjdhjshdjas=>$msghistoryid");
                 String imageUrl = "";
 
                 DateTime now = DateTime.now();
@@ -947,16 +946,12 @@ class _ChatScreenState extends State<ChatScreen> {
                 } else {
                   dayLabel = DateFormat('EEEE').format(istTimee);
                 }
-                // String formattedTimee = DateFormat('hh:mm a').format(istTimee);
 
-                // String finalFormattedTime = '$dayLabel, $formattedTimee';
                 String finalFormattedTime = '$dayLabel';
-                // print("finalFormattedTime=>$finalFormattedTime");
 
-                // print(finalFormattedTime);
                 String title = allMessages[index].title ?? "";
                 String msghistoryid = allMessages[index].id;
-                // print("sjdhjshdjas=>$msghistoryid");
+
                 if (title.isNotEmpty) {
                   imageUrl =
                       "https://sandbox.watconnect.com/public/demo/attachment/$title";
@@ -1141,6 +1136,58 @@ class _ChatScreenState extends State<ChatScreen> {
                                           ],
                                         ),
                                       ),
+                                      butttons != null
+                                          ? Wrap(
+                                              spacing: 10,
+                                              children: List.generate(
+                                                butttons.length,
+                                                (inx) {
+                                                  return ElevatedButton(
+                                                    onPressed: () async {
+                                                      if (butttons[inx]
+                                                              ['type'] ==
+                                                          "PHONE_NUMBER") {
+                                                        final Uri phoneUri =
+                                                            Uri.parse(
+                                                                "tel:${butttons[inx]['phone_number']}");
+
+                                                        if (await canLaunchUrl(
+                                                            phoneUri)) {
+                                                          await launchUrl(
+                                                              phoneUri);
+                                                        } else {
+                                                          // throw "Could not launch $phoneNumber";
+                                                        }
+                                                      }
+                                                      print(
+                                                          "Button ${inx + 1} clicked");
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Colors.grey[400],
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(4),
+                                                        side: BorderSide(
+                                                            color: AppColor
+                                                                .navBarIconColor),
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      butttons[inx]['text'] ??
+                                                          "",
+                                                      style: TextStyle(
+                                                          color: AppColor
+                                                              .navBarIconColor),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            )
+                                          : SizedBox(),
                                       if (allMessages[index].status ==
                                           "Outgoing")
                                         if (allMessages[index].deliveryStatus ==
