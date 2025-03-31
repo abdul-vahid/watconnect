@@ -16,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart' show Provider;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:video_player/video_player.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
 import 'package:whatsapp/models/lead_model.dart';
@@ -89,7 +90,7 @@ class _ChatScreenState extends State<ChatScreen> {
   var selectedBody;
   var selectedFooter;
   dynamic? selectedButtons;
-
+  late VideoPlayerController _Vcontroller;
   TempleteListViewModel? templateVM;
   final List<String> imageUrls = [
     'https://i.pinimg.com/564x/51/7b/07/517b07bfac2232980597368f36fc06c5.jpg',
@@ -618,15 +619,53 @@ class _ChatScreenState extends State<ChatScreen> {
       allowedExtensions: ["jpg", 'png', 'pdf', 'html', 'mp4', 'mov', 'avi'],
     );
     if (pickedFile != null) {
-      file = pickedFile.files.first;
-
       setState(() {
+        file = pickedFile.files.first;
         image = File(file!.path!);
         print("image::: ${image}");
         fileNameController.text = file!.name;
       });
     }
     Navigator.of(context).pop();
+  }
+
+  Future<void> _pickImaFromGallery() async {
+    final pickedFile = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: [
+        "jpg",
+        'png',
+      ],
+    );
+    if (pickedFile != null) {
+      setState(() {
+        file = pickedFile.files.first;
+        image = File(file!.path!);
+        print("image::: ${image}");
+        fileNameController.text = file!.name;
+      });
+    }
+  }
+
+  Future<void> _pickVideoFromGallery() async {
+    final pickedFile = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: [
+        "mp4",
+        'mov',
+      ],
+    );
+    if (pickedFile != null) {
+      setState(() {
+        file = pickedFile.files.first;
+        image = File(file!.path!);
+        _Vcontroller = VideoPlayerController.file(image!);
+        print("image::: ${image}");
+        fileNameController.text = file!.name;
+      });
+    }
   }
 
   Future<void> _pickImageFromCamera() async {
@@ -958,7 +997,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 }
 
                 return GestureDetector(
-                  onLongPress: () => _showSimpleDialog(),
+                  onLongPress: () =>
+                      _showSimpleDialog(allMessages[index].id ?? ""),
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 5),
                     padding: const EdgeInsets.all(8),
@@ -1945,8 +1985,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
     print("Request hdshsd jhds body: $bodyy");
     MessageViewModel msgdelete = MessageViewModel(context);
-    msgdelete.singlemsgdelete(bodyy).then((value) {
-      // isdelete = true;
+    msgdelete.singlemsgdelete(bodyy).then((value) async {
+      var leadnumber = widget.wpnumber;
+      final prefs = await SharedPreferences.getInstance();
+      String? number = prefs.getString('phoneNumber');
+      print("number=>$number");
+      await Provider.of<MessageViewModel>(context, listen: false)
+          .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
+      Navigator.of(context).pop();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("deleted sucefully")));
       print("Delete single message successfully");
@@ -2142,7 +2188,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ));
   }
 
-  Future<void> _showSimpleDialog() async {
+  Future<void> _showSimpleDialog(String id) async {
     await showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -2161,8 +2207,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ElevatedButton(
                       onPressed: () {
                         print("mmms=>${msghistoryid}");
-                        singlemsgdelete(msghistoryid);
-                        Navigator.of(context).pop();
+                        singlemsgdelete(id);
                       },
                       child: const Text(
                         "ok",
@@ -2297,9 +2342,9 @@ class _ChatScreenState extends State<ChatScreen> {
     final regex = RegExp(r'\{\{\d+\}\}');
 
     int count = regex.allMatches(text).length;
-
+    file = null;
     controllers = List.generate(count, (index) => TextEditingController());
-
+    bool isOtherFileSelected = false;
     return showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
@@ -2373,8 +2418,25 @@ class _ChatScreenState extends State<ChatScreen> {
                                 // Handle different formats (IMAGE, VIDEO, DOCUMENT)
                                 if (selectedHeader != null &&
                                     selectedHeader.format != null)
-                                  _buildMediaWidget(
-                                      selectedHeader.format, imgToShow),
+                                  file != null &&
+                                          selectedHeader.format == 'IMAGE'
+                                      ? Image.file(image!)
+                                      : file != null &&
+                                              selectedHeader.format == 'VIDEO'
+                                          ? Image.asset(
+                                              "assets/images/video.png",
+                                              height: 120,
+                                              width: 120,
+                                            )
+                                          : file != null &&
+                                                  selectedHeader.format ==
+                                                      'DOCUMENT'
+                                              ? Image.asset(
+                                                  "assets/images/pdf.png",
+                                                )
+                                              : _buildMediaWidget(
+                                                  selectedHeader.format,
+                                                  imgToShow),
 
                                 if (selectedBody != null)
                                   Padding(
@@ -2427,6 +2489,45 @@ class _ChatScreenState extends State<ChatScreen> {
                                   ),
 
                                 SizedBox(height: 15),
+
+                                InkWell(
+                                  onTap: () {
+                                    if (selectedHeader.format == 'IMAGE') {
+                                      _pickImaFromGallery().then((onValue) {
+                                        if (file != null) {
+                                          setState(() {
+                                            isOtherFileSelected = true;
+                                          });
+                                        }
+                                      });
+                                    } else if (selectedHeader.format ==
+                                        'VIDEO') {
+                                      _pickVideoFromGallery().then((onValue) {
+                                        if (file != null) {
+                                          setState(() {
+                                            isOtherFileSelected = true;
+                                          });
+                                        }
+                                      });
+                                    }
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.grey[400],
+                                        border: Border.all(
+                                            color: AppColor.navBarIconColor)),
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 8.0),
+                                        child: Text("Choose File"),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
 
                                 Row(
                                   children: [
@@ -2515,8 +2616,32 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                   if (selectedHeader.format == "IMAGE" ||
                                       selectedHeader.format == "VIDEO") {
-                                    image = await urlToFile(imgToShow);
-                                    docId = await getDocId();
+                                    if (isOtherFileSelected) {
+                                      final prefs =
+                                          await SharedPreferences.getInstance();
+                                      String? number =
+                                          prefs.getString('phoneNumber');
+                                      String? leadid = widget.model.id;
+                                      String? sendimagedatabase =
+                                          await messageViewModel
+                                              .uploadFiledb(
+                                                  image!, number, leadid)
+                                              .then((value) async {
+                                        print(
+                                            "video sedn video send send----upload dididi->$value");
+
+                                        Map<String, dynamic> response =
+                                            jsonDecode(value);
+
+                                        fileid = response['records']?[0]['id'];
+
+                                        print("ID: $fileid");
+                                        docId = await getDocId();
+                                      });
+                                    } else {
+                                      image = await urlToFile(imgToShow);
+                                      docId = await getDocId();
+                                    }
                                   }
 
                                   if ((selectedHeader.format == "IMAGE" ||
