@@ -34,11 +34,11 @@ class _ViewVideoState extends State<ViewVideo> {
     return Scaffold(
       appBar: AppBar(
           automaticallyImplyLeading: false,
-          // leading: IconButton(
-          //   icon: const Icon(Icons.arrow_back,
-          //       color: Color.fromARGB(255, 255, 255, 255)),
-          //   onPressed: () => Navigator.of(context).pop(),
-          // ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back,
+                color: Color.fromARGB(255, 255, 255, 255)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
           title: const Text(
             "Video",
             style: TextStyle(color: Colors.white),

@@ -958,6 +958,15 @@ class _ChatScreenState extends State<ChatScreen> {
                 } else {
                   butttons = allMessages[index].buttons ?? [];
                 }
+                String result = "";
+                final regex = RegExp(r'\{\{\d+\}\}');
+                if (allMessages[index].messageBody != null &&
+                    allMessages[index].exampleBodyText != null &&
+                    regex.hasMatch(allMessages[index].messageBody)) {
+                  result = replacePlaceholders(
+                      allMessages[index].messageBody ?? "",
+                      allMessages[index].exampleBodyText ?? "");
+                }
 
                 String imageUrl = "";
 
@@ -1138,6 +1147,143 @@ class _ChatScreenState extends State<ChatScreen> {
                                     crossAxisAlignment: CrossAxisAlignment
                                         .start, // Align text properly
                                     children: [
+                                      allMessages[index].templateName != null
+                                          ? allMessages[index].header == "IMAGE"
+                                              ? InkWell(
+                                                  onTap: () {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext
+                                                          context) {
+                                                        return AlertDialog(
+                                                          title: const Text(
+                                                              "Image Details"),
+                                                          content: Column(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .min,
+                                                            children: [
+                                                              Image.network(
+                                                                imageUrl,
+                                                                height: 300,
+                                                                width: 300,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                                loadingBuilder: (BuildContext
+                                                                        context,
+                                                                    Widget
+                                                                        child,
+                                                                    ImageChunkEvent?
+                                                                        loadingProgress) {
+                                                                  if (loadingProgress ==
+                                                                      null) {
+                                                                    return child;
+                                                                  } else {
+                                                                    return Center(
+                                                                      child:
+                                                                          CircularProgressIndicator(
+                                                                        value: loadingProgress.expectedTotalBytes !=
+                                                                                null
+                                                                            ? loadingProgress.cumulativeBytesLoaded /
+                                                                                (loadingProgress.expectedTotalBytes ?? 1)
+                                                                            : null,
+                                                                      ),
+                                                                    );
+                                                                  }
+                                                                },
+                                                                errorBuilder:
+                                                                    (context,
+                                                                        error,
+                                                                        stackTrace) {
+                                                                  return const SizedBox
+                                                                      .shrink();
+                                                                },
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          actions: <Widget>[
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                              },
+                                                              child: Container(
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical: 8,
+                                                                    horizontal:
+                                                                        16),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: AppColor
+                                                                      .navBarIconColor,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              8),
+                                                                ),
+                                                                child:
+                                                                    const Text(
+                                                                  "Close",
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+                                                  child: Image.network(
+                                                    allMessages[index]
+                                                        .headerBody,
+                                                    height: 150,
+                                                    // width: 150,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                )
+                                              : allMessages[index].header ==
+                                                      "VIDEO"
+                                                  ? InkWell(
+                                                      onTap: () {
+                                                        Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                                builder:
+                                                                    (context) =>
+                                                                        ViewVideo(
+                                                                          videoUrl:
+                                                                              allMessages[index].headerBody,
+                                                                        )));
+                                                      },
+                                                      child: Container(
+                                                        height: 150,
+                                                        width: 150,
+                                                        decoration: BoxDecoration(
+                                                            color: Colors.black,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8)),
+                                                        child: Center(
+                                                          child: Icon(
+                                                            Icons
+                                                                .play_arrow_rounded,
+                                                            color: Colors.white,
+                                                            size: 30,
+                                                          ),
+                                                        ),
+                                                      )
+                                                      //  Image.asset(
+                                                      //     "assets/images/video.png"),
+                                                      )
+                                                  : SizedBox()
+                                          : SizedBox(),
                                       RichText(
                                         text: TextSpan(
                                           style: const TextStyle(
@@ -1148,21 +1294,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                           children: [
                                             if (allMessages[index].headerBody !=
                                                 null)
-                                              TextSpan(
-                                                text:
-                                                    '${capitalize(allMessages[index].headerBody!)}\n',
-                                                style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
+                                              if (allMessages[index]
+                                                          .templateName !=
+                                                      null &&
+                                                  allMessages[index]
+                                                          .messageBody !=
+                                                      null)
+                                                TextSpan(
+                                                  text: '${result}\n',
                                                 ),
-                                              ),
-                                            if (allMessages[index]
-                                                    .templateName !=
-                                                null)
-                                              TextSpan(
-                                                text:
-                                                    '${allMessages[index].templateName}\n',
-                                              ),
                                             if (allMessages[index].footer !=
                                                 null)
                                               TextSpan(
@@ -1182,46 +1322,53 @@ class _ChatScreenState extends State<ChatScreen> {
                                               children: List.generate(
                                                 butttons.length,
                                                 (inx) {
-                                                  return ElevatedButton(
-                                                    onPressed: () async {
-                                                      if (butttons[inx]
-                                                              ['type'] ==
-                                                          "PHONE_NUMBER") {
-                                                        final Uri phoneUri =
-                                                            Uri.parse(
-                                                                "tel:${butttons[inx]['phone_number']}");
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 8.0),
+                                                    child: ElevatedButton(
+                                                      onPressed: () async {
+                                                        if (butttons[inx]
+                                                                ['type'] ==
+                                                            "PHONE_NUMBER") {
+                                                          final Uri phoneUri =
+                                                              Uri.parse(
+                                                                  "tel:${butttons[inx]['phone_number']}");
 
-                                                        if (await canLaunchUrl(
-                                                            phoneUri)) {
-                                                          await launchUrl(
-                                                              phoneUri);
-                                                        } else {
-                                                          // throw "Could not launch $phoneNumber";
-                                                        }
-                                                      }
-                                                      print(
-                                                          "Button ${inx + 1} clicked");
-                                                    },
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          Colors.grey[400],
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(4),
-                                                        side: BorderSide(
+                                                          if (await canLaunchUrl(
+                                                              phoneUri)) {
+                                                            await launchUrl(
+                                                                phoneUri);
+                                                          } else {
+                                                            // throw "Could not launch $phoneNumber";
+                                                          }
+                                                        } else if (butttons[inx]
+                                                                ['type'] ==
+                                                            "URL") {}
+                                                        print(
+                                                            "Button ${inx + 1} clicked");
+                                                      },
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.grey[400],
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(4),
+                                                          side: BorderSide(
+                                                              color: AppColor
+                                                                  .navBarIconColor),
+                                                        ),
+                                                      ),
+                                                      child: Text(
+                                                        butttons[inx]['text'] ??
+                                                            "",
+                                                        style: TextStyle(
                                                             color: AppColor
                                                                 .navBarIconColor),
                                                       ),
-                                                    ),
-                                                    child: Text(
-                                                      butttons[inx]['text'] ??
-                                                          "",
-                                                      style: TextStyle(
-                                                          color: AppColor
-                                                              .navBarIconColor),
                                                     ),
                                                   );
                                                 },
@@ -1575,10 +1722,32 @@ class _ChatScreenState extends State<ChatScreen> {
                                                           vertical: 8.0),
                                                       child: Column(
                                                         children: [
-                                                          Image.asset(
-                                                            "assets/images/video.png",
-                                                            height: 120,
-                                                            width: 120,
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        8.0),
+                                                            child: Container(
+                                                              height: 150,
+                                                              width: 150,
+                                                              decoration: BoxDecoration(
+                                                                  color: Colors
+                                                                      .black,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              8)),
+                                                              child: Center(
+                                                                child: Icon(
+                                                                  Icons
+                                                                      .play_arrow_rounded,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: 30,
+                                                                ),
+                                                              ),
+                                                            ),
                                                           ),
                                                           if (allMessages[index]
                                                                   .status ==
@@ -1813,14 +1982,25 @@ class _ChatScreenState extends State<ChatScreen> {
                                                                           index]
                                                                       .deliveryStatus ==
                                                                   "read")
-                                                                IconButton(
-                                                                  icon: const Icon(
-                                                                      Icons
-                                                                          .done_all,
-                                                                      color: Colors
-                                                                          .green),
-                                                                  onPressed:
-                                                                      () {},
+                                                                Row(
+                                                                  mainAxisAlignment: allMessages[index]
+                                                                              .status ==
+                                                                          "Outgoing"
+                                                                      ? MainAxisAlignment
+                                                                          .end
+                                                                      : MainAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    IconButton(
+                                                                      icon: const Icon(
+                                                                          Icons
+                                                                              .done_all,
+                                                                          color:
+                                                                              Colors.green),
+                                                                      onPressed:
+                                                                          () {},
+                                                                    ),
+                                                                  ],
                                                                 )
                                                               else
                                                                 const SizedBox
@@ -2423,10 +2603,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                       ? Image.file(image!)
                                       : file != null &&
                                               selectedHeader.format == 'VIDEO'
-                                          ? Image.asset(
-                                              "assets/images/video.png",
-                                              height: 120,
-                                              width: 120,
+                                          ? Container(
+                                              height: 150,
+                                              width: 150,
+                                              decoration: BoxDecoration(
+                                                  color: Colors.black,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8)),
+                                              child: Center(
+                                                child: Icon(
+                                                  Icons.play_arrow_rounded,
+                                                  color: Colors.white,
+                                                  size: 30,
+                                                ),
+                                              ),
                                             )
                                           : file != null &&
                                                   selectedHeader.format ==
@@ -3054,8 +3244,17 @@ class _ChatScreenState extends State<ChatScreen> {
         return content.isNotEmpty
             ? Container(
                 height: 150,
-                width: double.infinity,
-                child: Image.asset("assets/images/video.png"),
+                width: 150,
+                decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(8)),
+                child: Center(
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
               )
             : Container(
                 height: 150,
@@ -3280,5 +3479,25 @@ class _ChatScreenState extends State<ChatScreen> {
             mstemp.sendmsgmobile(msgmobilbody: msgmobilebody);
           })
         });
+  }
+
+  String replacePlaceholders(String messageBody, String exampleBodyText) {
+    try {
+      // Try to parse the JSON
+      Map<String, dynamic> exampleData = jsonDecode(exampleBodyText);
+
+      // Replace only keys that match the placeholders (e.g., {{1}}, {{2}}, etc.)
+      exampleData.forEach((key, value) {
+        if (RegExp(r'^\d+$').hasMatch(key)) {
+          // Check if key is numeric
+          messageBody = messageBody.replaceAll("{{$key}}", value.toString());
+        }
+      });
+    } catch (e) {
+      // If parsing fails (exampleBodyText is not JSON), replace {{1}} with the text
+      messageBody = messageBody.replaceAll("{{1}}", exampleBodyText);
+    }
+
+    return messageBody;
   }
 }
