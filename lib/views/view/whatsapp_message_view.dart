@@ -1008,260 +1008,80 @@ class _ChatScreenState extends State<ChatScreen> {
                 return GestureDetector(
                   onLongPress: () =>
                       _showSimpleDialog(allMessages[index].id ?? ""),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 5),
-                    padding: const EdgeInsets.all(8),
-                    child: Align(
-                      alignment: _getAlignment(allMessages[index].status),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (index == 0)
-                              Align(
-                                alignment: Alignment.topCenter,
-                                child: Text(
-                                  finalFormattedTime,
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 5),
+                        padding: const EdgeInsets.all(8),
+                        child: Align(
+                          alignment: _getAlignment(allMessages[index].status),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              children: [
+                                Text(
+                                  allMessages[index].status == "Incoming"
+                                      ? allMessages[index].name
+                                      : userName,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: Colors.grey,
+                                    fontSize: 13,
+                                    color: Colors.black87,
                                   ),
                                 ),
-                              )
-                            else
-                              const SizedBox.shrink(),
-                            Text(
-                              allMessages[index].status == "Incoming"
-                                  ? allMessages[index].name
-                                  : userName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            if (allMessages[index].message != null &&
-                                allMessages[index].message!.isNotEmpty)
-                              IntrinsicWidth(
-                                child: Container(
-                                  constraints: BoxConstraints(
-                                    maxWidth:
-                                        MediaQuery.of(context).size.width *
-                                            0.65,
-                                  ),
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        allMessages[index].status == "Outgoing"
-                                            ? const Color(0xff594EBA)
-                                            : const Color(0xff221B41),
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: const Radius.circular(12),
-                                      topRight: const Radius.circular(12),
-                                      bottomLeft: allMessages[index].status ==
-                                              "Outgoing"
-                                          ? const Radius.circular(12)
-                                          : const Radius.circular(0),
-                                      bottomRight: allMessages[index].status ==
-                                              "Outgoing"
-                                          ? const Radius.circular(0)
-                                          : const Radius.circular(12),
+                                IntrinsicWidth(
+                                  child: Container(
+                                    constraints: BoxConstraints(
+                                      maxWidth:
+                                          MediaQuery.of(context).size.width *
+                                              0.65,
                                     ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 4,
-                                        offset: const Offset(2, 2),
-                                      )
-                                    ],
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        allMessages[index].message!,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.white,
-                                          height: 1.5,
-                                        ),
-                                        maxLines: 4,
-                                        overflow: TextOverflow.ellipsis,
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: allMessages[index].status ==
+                                              "Outgoing"
+                                          ? const Color(0xffE3FFC9)
+                                          : const Color(0xff7D9CE9),
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: const Radius.circular(12),
+                                        topRight: const Radius.circular(12),
+                                        bottomLeft: allMessages[index].status ==
+                                                "Outgoing"
+                                            ? const Radius.circular(12)
+                                            : Radius.zero,
+                                        bottomRight:
+                                            allMessages[index].status ==
+                                                    "Outgoing"
+                                                ? Radius.zero
+                                                : const Radius.circular(12),
                                       ),
-                                      const SizedBox(height: 6),
-                                      if (allMessages[index].status ==
-                                          "Outgoing")
-                                        if (allMessages[index].deliveryStatus !=
-                                            null)
-                                          Align(
-                                            alignment: Alignment.bottomRight,
-                                            child: Icon(
-                                              Icons.done_all,
-                                              color: allMessages[index]
-                                                          .deliveryStatus ==
-                                                      "read"
-                                                  ? Colors.green
-                                                  : Colors.white,
-                                              size: 16,
-                                            ),
-                                          ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            else
-                              const SizedBox.shrink(),
-                            if (allMessages[index].templateName != null ||
-                                allMessages[index].headerBody != null)
-                              IntrinsicWidth(
-                                child: Container(
-                                  constraints: BoxConstraints(
-                                    maxWidth:
-                                        MediaQuery.of(context).size.width *
-                                            0.65,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 8,
-                                    horizontal: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(8),
-                                      topRight: Radius.circular(8),
-                                      bottomLeft: Radius.circular(8),
-                                      bottomRight: Radius.circular(0),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.2),
+                                          blurRadius: 4,
+                                          offset: const Offset(2, 2),
+                                        )
+                                      ],
                                     ),
-                                    color:
-                                        allMessages[index].status == "Outgoing"
-                                            ? const Color(0xff594EBA)
-                                            : const Color(0xff221B41),
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize
-                                        .min, // Ensure it takes only required height
-                                    crossAxisAlignment: CrossAxisAlignment
-                                        .start, // Align text properly
-                                    children: [
-                                      allMessages[index].templateName != null
-                                          ? allMessages[index].header == "IMAGE"
-                                              ? InkWell(
-                                                  onTap: () {
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (BuildContext
-                                                          context) {
-                                                        return AlertDialog(
-                                                          title: const Text(
-                                                              "Image Details"),
-                                                          content: Column(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .min,
-                                                            children: [
-                                                              Image.network(
-                                                                imageUrl,
-                                                                height: 300,
-                                                                width: 300,
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                                loadingBuilder: (BuildContext
-                                                                        context,
-                                                                    Widget
-                                                                        child,
-                                                                    ImageChunkEvent?
-                                                                        loadingProgress) {
-                                                                  if (loadingProgress ==
-                                                                      null) {
-                                                                    return child;
-                                                                  } else {
-                                                                    return Center(
-                                                                      child:
-                                                                          CircularProgressIndicator(
-                                                                        value: loadingProgress.expectedTotalBytes !=
-                                                                                null
-                                                                            ? loadingProgress.cumulativeBytesLoaded /
-                                                                                (loadingProgress.expectedTotalBytes ?? 1)
-                                                                            : null,
-                                                                      ),
-                                                                    );
-                                                                  }
-                                                                },
-                                                                errorBuilder:
-                                                                    (context,
-                                                                        error,
-                                                                        stackTrace) {
-                                                                  return const SizedBox
-                                                                      .shrink();
-                                                                },
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          actions: <Widget>[
-                                                            TextButton(
-                                                              onPressed: () {
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop();
-                                                              },
-                                                              child: Container(
-                                                                padding: const EdgeInsets
-                                                                    .symmetric(
-                                                                    vertical: 8,
-                                                                    horizontal:
-                                                                        16),
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  color: AppColor
-                                                                      .navBarIconColor,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8),
-                                                                ),
-                                                                child:
-                                                                    const Text(
-                                                                  "Close",
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        );
-                                                      },
-                                                    );
-                                                  },
-                                                  child: Image.network(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        imageUrl.isNotEmpty
+                                            ? _buildAttachmentWidget(imageUrl)
+                                            : SizedBox(),
+                                        allMessages[index].header != null &&
+                                                imageUrl.isEmpty
+                                            ? allMessages[index].header ==
+                                                    "IMAGE"
+                                                ? Image.network(
                                                     allMessages[index]
-                                                        .headerBody,
-                                                    height: 150,
-                                                    // width: 150,
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                )
-                                              : allMessages[index].header ==
-                                                      "VIDEO"
-                                                  ? InkWell(
-                                                      onTap: () {
-                                                        Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                                builder:
-                                                                    (context) =>
-                                                                        ViewVideo(
-                                                                          videoUrl:
-                                                                              allMessages[index].headerBody,
-                                                                        )));
-                                                      },
-                                                      child: Container(
+                                                        .headerBody)
+                                                : allMessages[index].header ==
+                                                        "VIDEO"
+                                                    ? Container(
                                                         height: 150,
                                                         width: 150,
                                                         decoration: BoxDecoration(
@@ -1279,79 +1099,77 @@ class _ChatScreenState extends State<ChatScreen> {
                                                           ),
                                                         ),
                                                       )
-                                                      //  Image.asset(
-                                                      //     "assets/images/video.png"),
-                                                      )
-                                                  : SizedBox()
-                                          : SizedBox(),
-                                      RichText(
-                                        text: TextSpan(
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                            color: Colors.white,
-                                          ),
-                                          children: [
-                                            if (allMessages[index].headerBody !=
-                                                null)
-                                              if (allMessages[index]
-                                                          .templateName !=
-                                                      null &&
-                                                  allMessages[index]
-                                                          .messageBody !=
-                                                      null)
-                                                TextSpan(
-                                                  text: '${result}\n',
-                                                ),
-                                            if (allMessages[index].footer !=
-                                                null)
-                                              TextSpan(
-                                                text: allMessages[index].footer,
+                                                    : SizedBox()
+                                            : SizedBox.shrink(),
+                                        allMessages[index].message != null &&
+                                                allMessages[index]
+                                                    .message
+                                                    .toString()
+                                                    .isNotEmpty
+                                            ? Text(
+                                                allMessages[index].message!,
                                                 style: const TextStyle(
-                                                  fontWeight: FontWeight.normal,
-                                                  fontSize: 12,
-                                                  color: Colors.grey,
+                                                  fontSize: 14,
+                                                  // color: Colors.white,
+                                                  height: 1.5,
                                                 ),
-                                              ),
-                                          ],
+                                                maxLines: 4,
+                                                overflow: TextOverflow.ellipsis,
+                                              )
+                                            : SizedBox.shrink(),
+                                        allMessages[index].messageBody != null
+                                            ? Text(
+                                                '${result}',
+                                              )
+                                            : SizedBox.shrink(),
+                                        SizedBox(
+                                          height: 5,
                                         ),
-                                      ),
-                                      butttons != null
-                                          ? Wrap(
-                                              spacing: 10,
-                                              children: List.generate(
-                                                butttons.length,
-                                                (inx) {
-                                                  return Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 8.0),
+                                        if (allMessages[index].footer != null)
+                                          Text(
+                                            allMessages[index].footer!,
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey),
+                                          ),
+                                        if (butttons.isNotEmpty)
+                                          Wrap(
+                                            spacing: 10,
+                                            children: List.generate(
+                                              butttons.length,
+                                              (inx) {
+                                                return Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 8.0),
+                                                  child: Align(
+                                                    alignment: Alignment.center,
                                                     child: ElevatedButton(
                                                       onPressed: () async {
-                                                        if (butttons[inx]
-                                                                ['type'] ==
+                                                        final button =
+                                                            butttons[inx];
+                                                        if (button['type'] ==
                                                             "PHONE_NUMBER") {
                                                           final Uri phoneUri =
                                                               Uri.parse(
-                                                                  "tel:${butttons[inx]['phone_number']}");
-
+                                                                  "tel:${button['phone_number']}");
                                                           if (await canLaunchUrl(
                                                               phoneUri)) {
                                                             await launchUrl(
                                                                 phoneUri);
-                                                          } else {
-                                                            // throw "Could not launch $phoneNumber";
                                                           }
-                                                        } else if (butttons[inx]
-                                                                ['type'] ==
-                                                            "URL") {}
+                                                        } else if (button[
+                                                                'type'] ==
+                                                            "URL") {
+                                                          // Handle URL action
+                                                        }
                                                         print(
                                                             "Button ${inx + 1} clicked");
                                                       },
                                                       style: ElevatedButton
                                                           .styleFrom(
                                                         backgroundColor:
-                                                            Colors.grey[400],
+                                                            Colors.grey[200],
                                                         shape:
                                                             RoundedRectangleBorder(
                                                           borderRadius:
@@ -1359,7 +1177,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                                                   .circular(4),
                                                           side: BorderSide(
                                                               color: AppColor
-                                                                  .navBarIconColor),
+                                                                  .navBarIconColor,
+                                                              width: 1.5),
                                                         ),
                                                       ),
                                                       child: Text(
@@ -1367,779 +1186,1204 @@ class _ChatScreenState extends State<ChatScreen> {
                                                             "",
                                                         style: TextStyle(
                                                             color: AppColor
-                                                                .navBarIconColor),
+                                                                .navBarIconColor,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .underline),
                                                       ),
                                                     ),
-                                                  );
-                                                },
-                                              ),
-                                            )
-                                          : SizedBox(),
-                                      if (allMessages[index].status ==
-                                          "Outgoing")
-                                        if (allMessages[index].deliveryStatus ==
-                                                "delivered" ||
-                                            allMessages[index].deliveryStatus ==
-                                                "sent")
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        if (allMessages[index].status ==
+                                            "Outgoing")
                                           Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.end,
                                             children: [
                                               Icon(
                                                 Icons.done_all,
-                                                color: Colors.white,
+                                                color: allMessages[index]
+                                                            .deliveryStatus ==
+                                                        "read"
+                                                    ? Colors.green
+                                                    : Colors.grey,
                                                 size: 18,
                                               ),
                                             ],
                                           ),
-                                      if (allMessages[index].deliveryStatus ==
-                                          "read")
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            Icon(Icons.done_all,
-                                                color: Colors.green, size: 18),
-                                          ],
-                                        )
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              )
-                            else
-                              const SizedBox.shrink(),
-                            Text(
-                              formattedTime,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
+                                Text(
+                                  formattedTime,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
                             ),
-                            if (imageUrl.isNotEmpty)
-                              Container(
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                child: GestureDetector(
-                                  onTap: () async {
-                                    print(
-                                        "imageurl before show::: ${imageUrl}");
-                                    if (imageUrl
-                                        .split('.')
-                                        .last
-                                        .contains('pdf')) {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => ViewPdf(
-                                                    pdfUrl: imageUrl,
-                                                  )));
-                                    } else if (imageUrl
-                                        .split('.')
-                                        .last
-                                        .contains('mp4')) {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => ViewVideo(
-                                                    videoUrl: imageUrl,
-                                                  )));
-                                    } else if (imageUrl
-                                            .split('.')
-                                            .last
-                                            .contains('png') ||
-                                        imageUrl
-                                            .split('.')
-                                            .last
-                                            .contains('jpg') ||
-                                        imageUrl
-                                            .split('.')
-                                            .last
-                                            .contains('jpeg')) {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title: const Text("Image Details"),
-                                            content: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Image.network(
-                                                  imageUrl,
-                                                  height: 300,
-                                                  width: 300,
-                                                  fit: BoxFit.cover,
-                                                  loadingBuilder:
-                                                      (BuildContext context,
-                                                          Widget child,
-                                                          ImageChunkEvent?
-                                                              loadingProgress) {
-                                                    if (loadingProgress ==
-                                                        null) {
-                                                      return child;
-                                                    } else {
-                                                      return Center(
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                          value: loadingProgress
-                                                                      .expectedTotalBytes !=
-                                                                  null
-                                                              ? loadingProgress
-                                                                      .cumulativeBytesLoaded /
-                                                                  (loadingProgress
-                                                                          .expectedTotalBytes ??
-                                                                      1)
-                                                              : null,
-                                                        ),
-                                                      );
-                                                    }
-                                                  },
-                                                  errorBuilder: (context, error,
-                                                      stackTrace) {
-                                                    return const SizedBox
-                                                        .shrink();
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                            actions: <Widget>[
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      vertical: 8,
-                                                      horizontal: 16),
-                                                  decoration: BoxDecoration(
-                                                    color: AppColor
-                                                        .navBarIconColor,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                  ),
-                                                  child: const Text(
-                                                    "Close",
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    } else {
-                                      print("it is supposed to be here");
-                                      try {
-                                        final dir =
-                                            await getTemporaryDirectory();
-                                        String fileName =
-                                            imageUrl.split('/').last;
-                                        final filePath =
-                                            '${dir.path}/${fileName}';
-
-                                        final response =
-                                            await http.get(Uri.parse(imageUrl));
-
-                                        if (response.statusCode == 200) {
-                                          final file = File(filePath);
-                                          await file
-                                              .writeAsBytes(response.bodyBytes);
-
-                                          print(
-                                              "File downloaded to: $filePath");
-
-                                          OpenFile.open(filePath);
-                                        }
-                                      } catch (e) {
-                                        print("error in opening file:: ${e}");
-                                      }
-                                    }
-                                  },
-                                  child: Column(
-                                    children: [
-                                      imageUrl.split('.').last.contains('pdf')
-                                          ? IntrinsicWidth(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: allMessages[index]
-                                                              .status ==
-                                                          "Outgoing"
-                                                      ? const Color(0xff594EBA)
-                                                      : const Color(0xff221B41),
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                    topLeft:
-                                                        const Radius.circular(
-                                                            12),
-                                                    topRight:
-                                                        const Radius.circular(
-                                                            12),
-                                                    bottomLeft: allMessages[
-                                                                    index]
-                                                                .status ==
-                                                            "Outgoing"
-                                                        ? const Radius.circular(
-                                                            12)
-                                                        : const Radius.circular(
-                                                            0),
-                                                    bottomRight: allMessages[
-                                                                    index]
-                                                                .status ==
-                                                            "Outgoing"
-                                                        ? const Radius.circular(
-                                                            0)
-                                                        : const Radius.circular(
-                                                            12),
-                                                  ),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black
-                                                          .withOpacity(0.2),
-                                                      blurRadius: 4,
-                                                      offset:
-                                                          const Offset(2, 2),
-                                                    )
-                                                  ],
-                                                ),
-                                                child: Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(vertical: 8.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Image.asset(
-                                                        "assets/images/pdf.png",
-                                                        height: 120,
-                                                        width: 120,
-                                                      ),
-                                                      if (allMessages[index]
-                                                                  .deliveryStatus ==
-                                                              "delivered" ||
-                                                          allMessages[index]
-                                                                  .deliveryStatus ==
-                                                              "sent")
-                                                        Row(
-                                                          mainAxisAlignment: allMessages[
-                                                                          index]
-                                                                      .status ==
-                                                                  "Outgoing"
-                                                              ? MainAxisAlignment
-                                                                  .end
-                                                              : MainAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            IconButton(
-                                                              icon: const Icon(
-                                                                Icons.done_all,
-                                                                color: Color
-                                                                    .fromARGB(
-                                                                        255,
-                                                                        255,
-                                                                        255,
-                                                                        255),
-                                                              ),
-                                                              onPressed: () {},
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      if (allMessages[index]
-                                                              .deliveryStatus ==
-                                                          "read")
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .end,
-                                                          children: [
-                                                            IconButton(
-                                                              icon: const Icon(
-                                                                  Icons
-                                                                      .done_all,
-                                                                  color: Colors
-                                                                      .green),
-                                                              onPressed: () {},
-                                                            ),
-                                                          ],
-                                                        )
-                                                      else
-                                                        const SizedBox.shrink(),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            )
-                                          : imageUrl
-                                                  .split('.')
-                                                  .last
-                                                  .contains('mp4')
-                                              ? IntrinsicWidth(
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      color: allMessages[index]
-                                                                  .status ==
-                                                              "Outgoing"
-                                                          ? const Color(
-                                                              0xff594EBA)
-                                                          : const Color(
-                                                              0xff221B41),
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                        topLeft: const Radius
-                                                            .circular(12),
-                                                        topRight: const Radius
-                                                            .circular(12),
-                                                        bottomLeft: allMessages[
-                                                                        index]
-                                                                    .status ==
-                                                                "Outgoing"
-                                                            ? const Radius
-                                                                .circular(12)
-                                                            : const Radius
-                                                                .circular(0),
-                                                        bottomRight: allMessages[
-                                                                        index]
-                                                                    .status ==
-                                                                "Outgoing"
-                                                            ? const Radius
-                                                                .circular(0)
-                                                            : const Radius
-                                                                .circular(12),
-                                                      ),
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: Colors.black
-                                                              .withOpacity(0.2),
-                                                          blurRadius: 4,
-                                                          offset: const Offset(
-                                                              2, 2),
-                                                        )
-                                                      ],
-                                                    ),
-                                                    child: Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          vertical: 8.0),
-                                                      child: Column(
-                                                        children: [
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        8.0),
-                                                            child: Container(
-                                                              height: 150,
-                                                              width: 150,
-                                                              decoration: BoxDecoration(
-                                                                  color: Colors
-                                                                      .black,
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8)),
-                                                              child: Center(
-                                                                child: Icon(
-                                                                  Icons
-                                                                      .play_arrow_rounded,
-                                                                  color: Colors
-                                                                      .white,
-                                                                  size: 30,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          if (allMessages[index]
-                                                                  .status ==
-                                                              "Outgoing")
-                                                            if (allMessages[index]
-                                                                        .deliveryStatus ==
-                                                                    "delivered" ||
-                                                                allMessages[index]
-                                                                        .deliveryStatus ==
-                                                                    "sent")
-                                                              Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .end,
-                                                                children: [
-                                                                  IconButton(
-                                                                    icon:
-                                                                        const Icon(
-                                                                      Icons
-                                                                          .done_all,
-                                                                      color: Color.fromARGB(
-                                                                          255,
-                                                                          255,
-                                                                          255,
-                                                                          255),
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {},
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                          // if (allMessages[index]
-                                                          //         .deliveryStatus ==
-                                                          //     "sent")
-                                                          //   Row(
-                                                          //     mainAxisAlignment:
-                                                          //         MainAxisAlignment
-                                                          //             .end,
-                                                          //     children: [
-                                                          //       IconButton(
-                                                          //         icon: const Icon(
-                                                          //             Icons
-                                                          //                 .check,
-                                                          //             color: Colors
-                                                          //                 .white),
-                                                          //         onPressed:
-                                                          //             () {},
-                                                          //       ),
-                                                          //     ],
-                                                          //   ),
-                                                          if (allMessages[index]
-                                                                  .deliveryStatus ==
-                                                              "read")
-                                                            Row(
-                                                              mainAxisAlignment: allMessages[
-                                                                              index]
-                                                                          .status ==
-                                                                      "Outgoing"
-                                                                  ? MainAxisAlignment
-                                                                      .end
-                                                                  : MainAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                IconButton(
-                                                                  icon: const Icon(
-                                                                      Icons
-                                                                          .done_all,
-                                                                      color: Colors
-                                                                          .green),
-                                                                  onPressed:
-                                                                      () {},
-                                                                ),
-                                                              ],
-                                                            )
-                                                          else
-                                                            const SizedBox
-                                                                .shrink(),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                )
-                                              : imageUrl
-                                                          .split('.')
-                                                          .last
-                                                          .contains('png') ||
-                                                      imageUrl
-                                                          .split('.')
-                                                          .last
-                                                          .contains('jpg') ||
-                                                      imageUrl
-                                                          .split('.')
-                                                          .last
-                                                          .contains('jpeg')
-                                                  ? IntrinsicWidth(
-                                                      child: Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: allMessages[
-                                                                          index]
-                                                                      .status ==
-                                                                  "Outgoing"
-                                                              ? const Color(
-                                                                  0xff594EBA)
-                                                              : const Color(
-                                                                  0xff221B41),
-                                                          borderRadius:
-                                                              BorderRadius.only(
-                                                            topLeft:
-                                                                const Radius
-                                                                    .circular(
-                                                                    12),
-                                                            topRight:
-                                                                const Radius
-                                                                    .circular(
-                                                                    12),
-                                                            bottomLeft: allMessages[
-                                                                            index]
-                                                                        .status ==
-                                                                    "Outgoing"
-                                                                ? const Radius
-                                                                    .circular(
-                                                                    12)
-                                                                : const Radius
-                                                                    .circular(
-                                                                    0),
-                                                            bottomRight: allMessages[
-                                                                            index]
-                                                                        .status ==
-                                                                    "Outgoing"
-                                                                ? const Radius
-                                                                    .circular(0)
-                                                                : const Radius
-                                                                    .circular(
-                                                                    12),
-                                                          ),
-                                                          boxShadow: [
-                                                            BoxShadow(
-                                                              color: Colors
-                                                                  .black
-                                                                  .withOpacity(
-                                                                      0.2),
-                                                              blurRadius: 4,
-                                                              offset:
-                                                                  const Offset(
-                                                                      2, 2),
-                                                            )
-                                                          ],
-                                                        ),
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  vertical: 8.0,
-                                                                  horizontal:
-                                                                      4),
-                                                          child: Column(
-                                                            children: [
-                                                              Image.network(
-                                                                imageUrl,
-                                                                height: 120,
-                                                                width: 120,
-                                                                fit: BoxFit
-                                                                    .cover,
-                                                                loadingBuilder: (BuildContext
-                                                                        context,
-                                                                    Widget
-                                                                        child,
-                                                                    ImageChunkEvent?
-                                                                        loadingProgress) {
-                                                                  if (loadingProgress ==
-                                                                      null) {
-                                                                    return child;
-                                                                  } else {
-                                                                    return Center(
-                                                                      child:
-                                                                          CircularProgressIndicator(
-                                                                        color: Colors
-                                                                            .black,
-                                                                        value: loadingProgress.expectedTotalBytes !=
-                                                                                null
-                                                                            ? loadingProgress.cumulativeBytesLoaded /
-                                                                                (loadingProgress.expectedTotalBytes ?? 1)
-                                                                            : null,
-                                                                      ),
-                                                                    );
-                                                                  }
-                                                                },
-                                                                errorBuilder:
-                                                                    (context,
-                                                                        error,
-                                                                        stackTrace) {
-                                                                  return const SizedBox
-                                                                      .shrink();
-                                                                },
-                                                              ),
-                                                              if (allMessages[
-                                                                          index]
-                                                                      .status ==
-                                                                  "Outgoing")
-                                                                if (allMessages[index]
-                                                                            .deliveryStatus ==
-                                                                        "delivered" ||
-                                                                    allMessages[index]
-                                                                            .deliveryStatus ==
-                                                                        "sent")
-                                                                  Row(
-                                                                    mainAxisAlignment: allMessages[index].status ==
-                                                                            "Outgoing"
-                                                                        ? MainAxisAlignment
-                                                                            .end
-                                                                        : MainAxisAlignment
-                                                                            .start,
-                                                                    children: [
-                                                                      IconButton(
-                                                                        icon:
-                                                                            const Icon(
-                                                                          Icons
-                                                                              .done_all,
-                                                                          color: Color.fromARGB(
-                                                                              255,
-                                                                              255,
-                                                                              255,
-                                                                              255),
-                                                                        ),
-                                                                        onPressed:
-                                                                            () {},
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                              if (allMessages[
-                                                                          index]
-                                                                      .deliveryStatus ==
-                                                                  "read")
-                                                                Row(
-                                                                  mainAxisAlignment: allMessages[index]
-                                                                              .status ==
-                                                                          "Outgoing"
-                                                                      ? MainAxisAlignment
-                                                                          .end
-                                                                      : MainAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    IconButton(
-                                                                      icon: const Icon(
-                                                                          Icons
-                                                                              .done_all,
-                                                                          color:
-                                                                              Colors.green),
-                                                                      onPressed:
-                                                                          () {},
-                                                                    ),
-                                                                  ],
-                                                                )
-                                                              else
-                                                                const SizedBox
-                                                                    .shrink(),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    )
-                                                  : IntrinsicWidth(
-                                                      child: Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: allMessages[
-                                                                          index]
-                                                                      .status ==
-                                                                  "Outgoing"
-                                                              ? const Color(
-                                                                  0xff594EBA)
-                                                              : const Color(
-                                                                  0xff221B41),
-                                                          borderRadius:
-                                                              BorderRadius.only(
-                                                            topLeft:
-                                                                const Radius
-                                                                    .circular(
-                                                                    12),
-                                                            topRight:
-                                                                const Radius
-                                                                    .circular(
-                                                                    12),
-                                                            bottomLeft: allMessages[
-                                                                            index]
-                                                                        .status ==
-                                                                    "Outgoing"
-                                                                ? const Radius
-                                                                    .circular(
-                                                                    12)
-                                                                : const Radius
-                                                                    .circular(
-                                                                    0),
-                                                            bottomRight: allMessages[
-                                                                            index]
-                                                                        .status ==
-                                                                    "Outgoing"
-                                                                ? const Radius
-                                                                    .circular(0)
-                                                                : const Radius
-                                                                    .circular(
-                                                                    12),
-                                                          ),
-                                                          boxShadow: [
-                                                            BoxShadow(
-                                                              color: Colors
-                                                                  .black
-                                                                  .withOpacity(
-                                                                      0.2),
-                                                              blurRadius: 4,
-                                                              offset:
-                                                                  const Offset(
-                                                                      2, 2),
-                                                            )
-                                                          ],
-                                                        ),
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  vertical:
-                                                                      8.0),
-                                                          child: Column(
-                                                            children: [
-                                                              Image.asset(
-                                                                "assets/images/doc.png",
-                                                                height: 120,
-                                                                width: 120,
-                                                              ),
-                                                              if (allMessages[
-                                                                          index]
-                                                                      .status ==
-                                                                  "Outgoing")
-                                                                if (allMessages[index]
-                                                                            .deliveryStatus ==
-                                                                        "delivered" ||
-                                                                    allMessages[index]
-                                                                            .deliveryStatus ==
-                                                                        "sent")
-                                                                  IconButton(
-                                                                    icon:
-                                                                        const Icon(
-                                                                      Icons
-                                                                          .done_all,
-                                                                      color: Color.fromARGB(
-                                                                          255,
-                                                                          255,
-                                                                          255,
-                                                                          255),
-                                                                    ),
-                                                                    onPressed:
-                                                                        () {},
-                                                                  ),
-                                                              if (allMessages[
-                                                                          index]
-                                                                      .deliveryStatus ==
-                                                                  "read")
-                                                                Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .end,
-                                                                  children: [
-                                                                    IconButton(
-                                                                      icon: const Icon(
-                                                                          Icons
-                                                                              .done_all,
-                                                                          color:
-                                                                              Colors.green),
-                                                                      onPressed:
-                                                                          () {},
-                                                                    ),
-                                                                  ],
-                                                                )
-                                                              else
-                                                                const SizedBox
-                                                                    .shrink(),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            else
-                              const SizedBox.shrink(),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
+
+                      /////////////////////////////////////////////////
+                      // Container(
+                      //   margin: const EdgeInsets.symmetric(vertical: 5),
+                      //   padding: const EdgeInsets.all(8),
+                      //   child: Align(
+                      //     alignment: _getAlignment(allMessages[index].status),
+                      //     child: Padding(
+                      //       padding: const EdgeInsets.all(8.0),
+                      //       child: Column(
+                      //         crossAxisAlignment: CrossAxisAlignment.start,
+                      //         children: [
+                      //           if (index == 0)
+                      //             Align(
+                      //               alignment: Alignment.topCenter,
+                      //               child: Text(
+                      //                 finalFormattedTime,
+                      //                 style: const TextStyle(
+                      //                   fontWeight: FontWeight.bold,
+                      //                   fontSize: 14,
+                      //                   color: Colors.grey,
+                      //                 ),
+                      //               ),
+                      //             )
+                      //           else
+                      //             const SizedBox.shrink(),
+                      //           Text(
+                      //             allMessages[index].status == "Incoming"
+                      //                 ? allMessages[index].name
+                      //                 : userName,
+                      //             style: const TextStyle(
+                      //               fontWeight: FontWeight.bold,
+                      //               fontSize: 13,
+                      //               color: Colors.black87,
+                      //             ),
+                      //           ),
+                      //           if (allMessages[index].message != null &&
+                      //               allMessages[index].message!.isNotEmpty)
+                      //             IntrinsicWidth(
+                      //               child: Container(
+                      //                 constraints: BoxConstraints(
+                      //                   maxWidth:
+                      //                       MediaQuery.of(context).size.width *
+                      //                           0.65,
+                      //                 ),
+                      //                 margin: const EdgeInsets.symmetric(
+                      //                     vertical: 4),
+                      //                 padding: const EdgeInsets.all(10),
+                      //                 decoration: BoxDecoration(
+                      //                   color: allMessages[index].status ==
+                      //                           "Outgoing"
+                      //                       ? const Color(0xff594EBA)
+                      //                       : const Color(0xff221B41),
+                      //                   borderRadius: BorderRadius.only(
+                      //                     topLeft: const Radius.circular(12),
+                      //                     topRight: const Radius.circular(12),
+                      //                     bottomLeft:
+                      //                         allMessages[index].status ==
+                      //                                 "Outgoing"
+                      //                             ? const Radius.circular(12)
+                      //                             : const Radius.circular(0),
+                      //                     bottomRight:
+                      //                         allMessages[index].status ==
+                      //                                 "Outgoing"
+                      //                             ? const Radius.circular(0)
+                      //                             : const Radius.circular(12),
+                      //                   ),
+                      //                   boxShadow: [
+                      //                     BoxShadow(
+                      //                       color:
+                      //                           Colors.black.withOpacity(0.2),
+                      //                       blurRadius: 4,
+                      //                       offset: const Offset(2, 2),
+                      //                     )
+                      //                   ],
+                      //                 ),
+                      //                 child: Column(
+                      //                   crossAxisAlignment:
+                      //                       CrossAxisAlignment.start,
+                      //                   children: [
+                      //                     Text(
+                      //                       allMessages[index].message!,
+                      //                       style: const TextStyle(
+                      //                         fontSize: 14,
+                      //                         color: Colors.white,
+                      //                         height: 1.5,
+                      //                       ),
+                      //                       maxLines: 4,
+                      //                       overflow: TextOverflow.ellipsis,
+                      //                     ),
+                      //                     const SizedBox(height: 6),
+                      //                     if (allMessages[index].status ==
+                      //                         "Outgoing")
+                      //                       if (allMessages[index]
+                      //                               .deliveryStatus !=
+                      //                           null)
+                      //                         Align(
+                      //                           alignment:
+                      //                               Alignment.bottomRight,
+                      //                           child: Icon(
+                      //                             Icons.done_all,
+                      //                             color: allMessages[index]
+                      //                                         .deliveryStatus ==
+                      //                                     "read"
+                      //                                 ? Colors.green
+                      //                                 : Colors.white,
+                      //                             size: 16,
+                      //                           ),
+                      //                         ),
+                      //                   ],
+                      //                 ),
+                      //               ),
+                      //             )
+                      //           else
+                      //             const SizedBox.shrink(),
+                      //           if (allMessages[index].templateName != null ||
+                      //               allMessages[index].headerBody != null)
+                      //             IntrinsicWidth(
+                      //               child: Container(
+                      //                 constraints: BoxConstraints(
+                      //                   maxWidth:
+                      //                       MediaQuery.of(context).size.width *
+                      //                           0.65,
+                      //                 ),
+                      //                 padding: const EdgeInsets.symmetric(
+                      //                   vertical: 8,
+                      //                   horizontal: 12,
+                      //                 ),
+                      //                 decoration: BoxDecoration(
+                      //                   borderRadius: BorderRadius.only(
+                      //                     topLeft: Radius.circular(8),
+                      //                     topRight: Radius.circular(8),
+                      //                     bottomLeft: Radius.circular(8),
+                      //                     bottomRight: Radius.circular(0),
+                      //                   ),
+                      //                   color: allMessages[index].status ==
+                      //                           "Outgoing"
+                      //                       ? const Color(0xff594EBA)
+                      //                       : const Color(0xff221B41),
+                      //                 ),
+                      //                 child: Column(
+                      //                   mainAxisSize: MainAxisSize
+                      //                       .min, // Ensure it takes only required height
+                      //                   crossAxisAlignment: CrossAxisAlignment
+                      //                       .start, // Align text properly
+                      //                   children: [
+                      //                     allMessages[index].templateName !=
+                      //                             null
+                      //                         ? allMessages[index].header ==
+                      //                                 "IMAGE"
+                      //                             ? InkWell(
+                      //                                 onTap: () {
+                      //                                   showDialog(
+                      //                                     context: context,
+                      //                                     builder: (BuildContext
+                      //                                         context) {
+                      //                                       return AlertDialog(
+                      //                                         title: const Text(
+                      //                                             "Image Details"),
+                      //                                         content: Column(
+                      //                                           mainAxisSize:
+                      //                                               MainAxisSize
+                      //                                                   .min,
+                      //                                           children: [
+                      //                                             Image.network(
+                      //                                               imageUrl,
+                      //                                               height: 300,
+                      //                                               width: 300,
+                      //                                               fit: BoxFit
+                      //                                                   .cover,
+                      //                                               loadingBuilder: (BuildContext
+                      //                                                       context,
+                      //                                                   Widget
+                      //                                                       child,
+                      //                                                   ImageChunkEvent?
+                      //                                                       loadingProgress) {
+                      //                                                 if (loadingProgress ==
+                      //                                                     null) {
+                      //                                                   return child;
+                      //                                                 } else {
+                      //                                                   return Center(
+                      //                                                     child:
+                      //                                                         CircularProgressIndicator(
+                      //                                                       value: loadingProgress.expectedTotalBytes != null
+                      //                                                           ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
+                      //                                                           : null,
+                      //                                                     ),
+                      //                                                   );
+                      //                                                 }
+                      //                                               },
+                      //                                               errorBuilder:
+                      //                                                   (context,
+                      //                                                       error,
+                      //                                                       stackTrace) {
+                      //                                                 return const SizedBox
+                      //                                                     .shrink();
+                      //                                               },
+                      //                                             ),
+                      //                                           ],
+                      //                                         ),
+                      //                                         actions: <Widget>[
+                      //                                           TextButton(
+                      //                                             onPressed:
+                      //                                                 () {
+                      //                                               Navigator.of(
+                      //                                                       context)
+                      //                                                   .pop();
+                      //                                             },
+                      //                                             child:
+                      //                                                 Container(
+                      //                                               padding: const EdgeInsets
+                      //                                                   .symmetric(
+                      //                                                   vertical:
+                      //                                                       8,
+                      //                                                   horizontal:
+                      //                                                       16),
+                      //                                               decoration:
+                      //                                                   BoxDecoration(
+                      //                                                 color: AppColor
+                      //                                                     .navBarIconColor,
+                      //                                                 borderRadius:
+                      //                                                     BorderRadius.circular(
+                      //                                                         8),
+                      //                                               ),
+                      //                                               child:
+                      //                                                   const Text(
+                      //                                                 "Close",
+                      //                                                 style:
+                      //                                                     TextStyle(
+                      //                                                   color: Colors
+                      //                                                       .white,
+                      //                                                 ),
+                      //                                               ),
+                      //                                             ),
+                      //                                           ),
+                      //                                         ],
+                      //                                       );
+                      //                                     },
+                      //                                   );
+                      //                                 },
+                      //                                 child: Image.network(
+                      //                                   allMessages[index]
+                      //                                       .headerBody,
+                      //                                   height: 150,
+                      //                                   // width: 150,
+                      //                                   fit: BoxFit.cover,
+                      //                                 ),
+                      //                               )
+                      //                             : allMessages[index].header ==
+                      //                                     "VIDEO"
+                      //                                 ? InkWell(
+                      //                                     onTap: () {
+                      //                                       Navigator.push(
+                      //                                           context,
+                      //                                           MaterialPageRoute(
+                      //                                               builder:
+                      //                                                   (context) =>
+                      //                                                       ViewVideo(
+                      //                                                         videoUrl: allMessages[index].headerBody,
+                      //                                                       )));
+                      //                                     },
+                      //                                     child: Container(
+                      //                                       height: 150,
+                      //                                       width: 150,
+                      //                                       decoration: BoxDecoration(
+                      //                                           color: Colors
+                      //                                               .black,
+                      //                                           borderRadius:
+                      //                                               BorderRadius
+                      //                                                   .circular(
+                      //                                                       8)),
+                      //                                       child: Center(
+                      //                                         child: Icon(
+                      //                                           Icons
+                      //                                               .play_arrow_rounded,
+                      //                                           color: Colors
+                      //                                               .white,
+                      //                                           size: 30,
+                      //                                         ),
+                      //                                       ),
+                      //                                     )
+                      //                                     //  Image.asset(
+                      //                                     //     "assets/images/video.png"),
+                      //                                     )
+                      //                                 : SizedBox()
+                      //                         : SizedBox(),
+                      //                     RichText(
+                      //                       text: TextSpan(
+                      //                         style: const TextStyle(
+                      //                           fontWeight: FontWeight.bold,
+                      //                           fontSize: 14,
+                      //                           color: Colors.white,
+                      //                         ),
+                      //                         children: [
+                      //                           if (allMessages[index]
+                      //                                   .headerBody !=
+                      //                               null)
+                      //                             if (allMessages[index]
+                      //                                         .templateName !=
+                      //                                     null &&
+                      //                                 allMessages[index]
+                      //                                         .messageBody !=
+                      //                                     null)
+                      //                               TextSpan(
+                      //                                 text: '${result}\n',
+                      //                               ),
+                      //                           if (allMessages[index].footer !=
+                      //                               null)
+                      //                             TextSpan(
+                      //                               text: allMessages[index]
+                      //                                   .footer,
+                      //                               style: const TextStyle(
+                      //                                 fontWeight:
+                      //                                     FontWeight.normal,
+                      //                                 fontSize: 12,
+                      //                                 color: Colors.grey,
+                      //                               ),
+                      //                             ),
+                      //                         ],
+                      //                       ),
+                      //                     ),
+                      //                     butttons != null
+                      //                         ? Wrap(
+                      //                             spacing: 10,
+                      //                             children: List.generate(
+                      //                               butttons.length,
+                      //                               (inx) {
+                      //                                 return Padding(
+                      //                                   padding:
+                      //                                       const EdgeInsets
+                      //                                           .only(top: 8.0),
+                      //                                   child: ElevatedButton(
+                      //                                     onPressed: () async {
+                      //                                       if (butttons[inx]
+                      //                                               ['type'] ==
+                      //                                           "PHONE_NUMBER") {
+                      //                                         final Uri
+                      //                                             phoneUri =
+                      //                                             Uri.parse(
+                      //                                                 "tel:${butttons[inx]['phone_number']}");
+
+                      //                                         if (await canLaunchUrl(
+                      //                                             phoneUri)) {
+                      //                                           await launchUrl(
+                      //                                               phoneUri);
+                      //                                         } else {
+                      //                                           // throw "Could not launch $phoneNumber";
+                      //                                         }
+                      //                                       } else if (butttons[
+                      //                                                   inx]
+                      //                                               ['type'] ==
+                      //                                           "URL") {}
+                      //                                       print(
+                      //                                           "Button ${inx + 1} clicked");
+                      //                                     },
+                      //                                     style: ElevatedButton
+                      //                                         .styleFrom(
+                      //                                       backgroundColor:
+                      //                                           Colors
+                      //                                               .grey[400],
+                      //                                       shape:
+                      //                                           RoundedRectangleBorder(
+                      //                                         borderRadius:
+                      //                                             BorderRadius
+                      //                                                 .circular(
+                      //                                                     4),
+                      //                                         side: BorderSide(
+                      //                                             color: AppColor
+                      //                                                 .navBarIconColor),
+                      //                                       ),
+                      //                                     ),
+                      //                                     child: Text(
+                      //                                       butttons[inx]
+                      //                                               ['text'] ??
+                      //                                           "",
+                      //                                       style: TextStyle(
+                      //                                           color: AppColor
+                      //                                               .navBarIconColor),
+                      //                                     ),
+                      //                                   ),
+                      //                                 );
+                      //                               },
+                      //                             ),
+                      //                           )
+                      //                         : SizedBox(),
+                      //                     if (allMessages[index].status ==
+                      //                         "Outgoing")
+                      //                       if (allMessages[index]
+                      //                                   .deliveryStatus ==
+                      //                               "delivered" ||
+                      //                           allMessages[index]
+                      //                                   .deliveryStatus ==
+                      //                               "sent")
+                      //                         Row(
+                      //                           mainAxisAlignment:
+                      //                               MainAxisAlignment.end,
+                      //                           children: [
+                      //                             Icon(
+                      //                               Icons.done_all,
+                      //                               color: Colors.white,
+                      //                               size: 18,
+                      //                             ),
+                      //                           ],
+                      //                         ),
+                      //                     if (allMessages[index]
+                      //                             .deliveryStatus ==
+                      //                         "read")
+                      //                       Row(
+                      //                         mainAxisAlignment:
+                      //                             MainAxisAlignment.end,
+                      //                         children: [
+                      //                           Icon(Icons.done_all,
+                      //                               color: Colors.green,
+                      //                               size: 18),
+                      //                         ],
+                      //                       )
+                      //                   ],
+                      //                 ),
+                      //               ),
+                      //             )
+                      //           else
+                      //             const SizedBox.shrink(),
+                      //           Text(
+                      //             formattedTime,
+                      //             style: const TextStyle(
+                      //               fontWeight: FontWeight.bold,
+                      //               fontSize: 14,
+                      //               color: Colors.grey,
+                      //             ),
+                      //           ),
+                      //           if (imageUrl.isNotEmpty)
+                      //             Container(
+                      //               margin:
+                      //                   const EdgeInsets.symmetric(vertical: 8),
+                      //               child: GestureDetector(
+                      //                 onTap: () async {
+                      //                   print(
+                      //                       "imageurl before show::: ${imageUrl}");
+                      //                   if (imageUrl
+                      //                       .split('.')
+                      //                       .last
+                      //                       .contains('pdf')) {
+                      //                     Navigator.push(
+                      //                         context,
+                      //                         MaterialPageRoute(
+                      //                             builder: (context) => ViewPdf(
+                      //                                   pdfUrl: imageUrl,
+                      //                                 )));
+                      //                   } else if (imageUrl
+                      //                       .split('.')
+                      //                       .last
+                      //                       .contains('mp4')) {
+                      //                     Navigator.push(
+                      //                         context,
+                      //                         MaterialPageRoute(
+                      //                             builder: (context) =>
+                      //                                 ViewVideo(
+                      //                                   videoUrl: imageUrl,
+                      //                                 )));
+                      //                   } else if (imageUrl
+                      //                           .split('.')
+                      //                           .last
+                      //                           .contains('png') ||
+                      //                       imageUrl
+                      //                           .split('.')
+                      //                           .last
+                      //                           .contains('jpg') ||
+                      //                       imageUrl
+                      //                           .split('.')
+                      //                           .last
+                      //                           .contains('jpeg')) {
+                      //                     showDialog(
+                      //                       context: context,
+                      //                       builder: (BuildContext context) {
+                      //                         return AlertDialog(
+                      //                           title:
+                      //                               const Text("Image Details"),
+                      //                           content: Column(
+                      //                             mainAxisSize:
+                      //                                 MainAxisSize.min,
+                      //                             children: [
+                      //                               Image.network(
+                      //                                 imageUrl,
+                      //                                 height: 300,
+                      //                                 width: 300,
+                      //                                 fit: BoxFit.cover,
+                      //                                 loadingBuilder: (BuildContext
+                      //                                         context,
+                      //                                     Widget child,
+                      //                                     ImageChunkEvent?
+                      //                                         loadingProgress) {
+                      //                                   if (loadingProgress ==
+                      //                                       null) {
+                      //                                     return child;
+                      //                                   } else {
+                      //                                     return Center(
+                      //                                       child:
+                      //                                           CircularProgressIndicator(
+                      //                                         value: loadingProgress
+                      //                                                     .expectedTotalBytes !=
+                      //                                                 null
+                      //                                             ? loadingProgress
+                      //                                                     .cumulativeBytesLoaded /
+                      //                                                 (loadingProgress
+                      //                                                         .expectedTotalBytes ??
+                      //                                                     1)
+                      //                                             : null,
+                      //                                       ),
+                      //                                     );
+                      //                                   }
+                      //                                 },
+                      //                                 errorBuilder: (context,
+                      //                                     error, stackTrace) {
+                      //                                   return const SizedBox
+                      //                                       .shrink();
+                      //                                 },
+                      //                               ),
+                      //                             ],
+                      //                           ),
+                      //                           actions: <Widget>[
+                      //                             TextButton(
+                      //                               onPressed: () {
+                      //                                 Navigator.of(context)
+                      //                                     .pop();
+                      //                               },
+                      //                               child: Container(
+                      //                                 padding: const EdgeInsets
+                      //                                     .symmetric(
+                      //                                     vertical: 8,
+                      //                                     horizontal: 16),
+                      //                                 decoration: BoxDecoration(
+                      //                                   color: AppColor
+                      //                                       .navBarIconColor,
+                      //                                   borderRadius:
+                      //                                       BorderRadius
+                      //                                           .circular(8),
+                      //                                 ),
+                      //                                 child: const Text(
+                      //                                   "Close",
+                      //                                   style: TextStyle(
+                      //                                     color: Colors.white,
+                      //                                   ),
+                      //                                 ),
+                      //                               ),
+                      //                             ),
+                      //                           ],
+                      //                         );
+                      //                       },
+                      //                     );
+                      //                   } else {
+                      //                     print("it is supposed to be here");
+                      //                     try {
+                      //                       final dir =
+                      //                           await getTemporaryDirectory();
+                      //                       String fileName =
+                      //                           imageUrl.split('/').last;
+                      //                       final filePath =
+                      //                           '${dir.path}/${fileName}';
+
+                      //                       final response = await http
+                      //                           .get(Uri.parse(imageUrl));
+
+                      //                       if (response.statusCode == 200) {
+                      //                         final file = File(filePath);
+                      //                         await file.writeAsBytes(
+                      //                             response.bodyBytes);
+
+                      //                         print(
+                      //                             "File downloaded to: $filePath");
+
+                      //                         OpenFile.open(filePath);
+                      //                       }
+                      //                     } catch (e) {
+                      //                       print(
+                      //                           "error in opening file:: ${e}");
+                      //                     }
+                      //                   }
+                      //                 },
+                      //                 child: Column(
+                      //                   children: [
+                      //                     imageUrl
+                      //                             .split('.')
+                      //                             .last
+                      //                             .contains('pdf')
+                      //                         ? IntrinsicWidth(
+                      //                             child: Container(
+                      //                               decoration: BoxDecoration(
+                      //                                 color: allMessages[index]
+                      //                                             .status ==
+                      //                                         "Outgoing"
+                      //                                     ? const Color(
+                      //                                         0xff594EBA)
+                      //                                     : const Color(
+                      //                                         0xff221B41),
+                      //                                 borderRadius:
+                      //                                     BorderRadius.only(
+                      //                                   topLeft: const Radius
+                      //                                       .circular(12),
+                      //                                   topRight: const Radius
+                      //                                       .circular(12),
+                      //                                   bottomLeft: allMessages[
+                      //                                                   index]
+                      //                                               .status ==
+                      //                                           "Outgoing"
+                      //                                       ? const Radius
+                      //                                           .circular(12)
+                      //                                       : const Radius
+                      //                                           .circular(0),
+                      //                                   bottomRight: allMessages[
+                      //                                                   index]
+                      //                                               .status ==
+                      //                                           "Outgoing"
+                      //                                       ? const Radius
+                      //                                           .circular(0)
+                      //                                       : const Radius
+                      //                                           .circular(12),
+                      //                                 ),
+                      //                                 boxShadow: [
+                      //                                   BoxShadow(
+                      //                                     color: Colors.black
+                      //                                         .withOpacity(0.2),
+                      //                                     blurRadius: 4,
+                      //                                     offset: const Offset(
+                      //                                         2, 2),
+                      //                                   )
+                      //                                 ],
+                      //                               ),
+                      //                               child: Padding(
+                      //                                 padding: const EdgeInsets
+                      //                                     .symmetric(
+                      //                                     vertical: 8.0),
+                      //                                 child: Column(
+                      //                                   children: [
+                      //                                     Image.asset(
+                      //                                       "assets/images/pdf.png",
+                      //                                       height: 120,
+                      //                                       width: 120,
+                      //                                     ),
+                      //                                     if (allMessages[index]
+                      //                                                 .deliveryStatus ==
+                      //                                             "delivered" ||
+                      //                                         allMessages[index]
+                      //                                                 .deliveryStatus ==
+                      //                                             "sent")
+                      //                                       Row(
+                      //                                         mainAxisAlignment: allMessages[
+                      //                                                         index]
+                      //                                                     .status ==
+                      //                                                 "Outgoing"
+                      //                                             ? MainAxisAlignment
+                      //                                                 .end
+                      //                                             : MainAxisAlignment
+                      //                                                 .start,
+                      //                                         children: [
+                      //                                           IconButton(
+                      //                                             icon:
+                      //                                                 const Icon(
+                      //                                               Icons
+                      //                                                   .done_all,
+                      //                                               color: Color
+                      //                                                   .fromARGB(
+                      //                                                       255,
+                      //                                                       255,
+                      //                                                       255,
+                      //                                                       255),
+                      //                                             ),
+                      //                                             onPressed:
+                      //                                                 () {},
+                      //                                           ),
+                      //                                         ],
+                      //                                       ),
+                      //                                     if (allMessages[index]
+                      //                                             .deliveryStatus ==
+                      //                                         "read")
+                      //                                       Row(
+                      //                                         mainAxisAlignment:
+                      //                                             MainAxisAlignment
+                      //                                                 .end,
+                      //                                         children: [
+                      //                                           IconButton(
+                      //                                             icon: const Icon(
+                      //                                                 Icons
+                      //                                                     .done_all,
+                      //                                                 color: Colors
+                      //                                                     .green),
+                      //                                             onPressed:
+                      //                                                 () {},
+                      //                                           ),
+                      //                                         ],
+                      //                                       )
+                      //                                     else
+                      //                                       const SizedBox
+                      //                                           .shrink(),
+                      //                                   ],
+                      //                                 ),
+                      //                               ),
+                      //                             ),
+                      //                           )
+                      //                         : imageUrl
+                      //                                 .split('.')
+                      //                                 .last
+                      //                                 .contains('mp4')
+                      //                             ? IntrinsicWidth(
+                      //                                 child: Container(
+                      //                                   decoration:
+                      //                                       BoxDecoration(
+                      //                                     color: allMessages[
+                      //                                                     index]
+                      //                                                 .status ==
+                      //                                             "Outgoing"
+                      //                                         ? const Color(
+                      //                                             0xff594EBA)
+                      //                                         : const Color(
+                      //                                             0xff221B41),
+                      //                                     borderRadius:
+                      //                                         BorderRadius.only(
+                      //                                       topLeft:
+                      //                                           const Radius
+                      //                                               .circular(
+                      //                                               12),
+                      //                                       topRight:
+                      //                                           const Radius
+                      //                                               .circular(
+                      //                                               12),
+                      //                                       bottomLeft: allMessages[
+                      //                                                       index]
+                      //                                                   .status ==
+                      //                                               "Outgoing"
+                      //                                           ? const Radius
+                      //                                               .circular(
+                      //                                               12)
+                      //                                           : const Radius
+                      //                                               .circular(
+                      //                                               0),
+                      //                                       bottomRight: allMessages[
+                      //                                                       index]
+                      //                                                   .status ==
+                      //                                               "Outgoing"
+                      //                                           ? const Radius
+                      //                                               .circular(0)
+                      //                                           : const Radius
+                      //                                               .circular(
+                      //                                               12),
+                      //                                     ),
+                      //                                     boxShadow: [
+                      //                                       BoxShadow(
+                      //                                         color: Colors
+                      //                                             .black
+                      //                                             .withOpacity(
+                      //                                                 0.2),
+                      //                                         blurRadius: 4,
+                      //                                         offset:
+                      //                                             const Offset(
+                      //                                                 2, 2),
+                      //                                       )
+                      //                                     ],
+                      //                                   ),
+                      //                                   child: Padding(
+                      //                                     padding:
+                      //                                         const EdgeInsets
+                      //                                             .symmetric(
+                      //                                             vertical:
+                      //                                                 8.0),
+                      //                                     child: Column(
+                      //                                       children: [
+                      //                                         Padding(
+                      //                                           padding: const EdgeInsets
+                      //                                               .symmetric(
+                      //                                               horizontal:
+                      //                                                   8.0),
+                      //                                           child:
+                      //                                               Container(
+                      //                                             height: 150,
+                      //                                             width: 150,
+                      //                                             decoration: BoxDecoration(
+                      //                                                 color: Colors
+                      //                                                     .black,
+                      //                                                 borderRadius:
+                      //                                                     BorderRadius.circular(
+                      //                                                         8)),
+                      //                                             child: Center(
+                      //                                               child: Icon(
+                      //                                                 Icons
+                      //                                                     .play_arrow_rounded,
+                      //                                                 color: Colors
+                      //                                                     .white,
+                      //                                                 size: 30,
+                      //                                               ),
+                      //                                             ),
+                      //                                           ),
+                      //                                         ),
+                      //                                         if (allMessages[
+                      //                                                     index]
+                      //                                                 .status ==
+                      //                                             "Outgoing")
+                      //                                           if (allMessages[index]
+                      //                                                       .deliveryStatus ==
+                      //                                                   "delivered" ||
+                      //                                               allMessages[index]
+                      //                                                       .deliveryStatus ==
+                      //                                                   "sent")
+                      //                                             Row(
+                      //                                               mainAxisAlignment:
+                      //                                                   MainAxisAlignment
+                      //                                                       .end,
+                      //                                               children: [
+                      //                                                 IconButton(
+                      //                                                   icon:
+                      //                                                       const Icon(
+                      //                                                     Icons
+                      //                                                         .done_all,
+                      //                                                     color: Color.fromARGB(
+                      //                                                         255,
+                      //                                                         255,
+                      //                                                         255,
+                      //                                                         255),
+                      //                                                   ),
+                      //                                                   onPressed:
+                      //                                                       () {},
+                      //                                                 ),
+                      //                                               ],
+                      //                                             ),
+                      //                                         if (allMessages[
+                      //                                                     index]
+                      //                                                 .deliveryStatus ==
+                      //                                             "read")
+                      //                                           Row(
+                      //                                             mainAxisAlignment: allMessages[index]
+                      //                                                         .status ==
+                      //                                                     "Outgoing"
+                      //                                                 ? MainAxisAlignment
+                      //                                                     .end
+                      //                                                 : MainAxisAlignment
+                      //                                                     .start,
+                      //                                             children: [
+                      //                                               IconButton(
+                      //                                                 icon: const Icon(
+                      //                                                     Icons
+                      //                                                         .done_all,
+                      //                                                     color:
+                      //                                                         Colors.green),
+                      //                                                 onPressed:
+                      //                                                     () {},
+                      //                                               ),
+                      //                                             ],
+                      //                                           )
+                      //                                         else
+                      //                                           const SizedBox
+                      //                                               .shrink(),
+                      //                                       ],
+                      //                                     ),
+                      //                                   ),
+                      //                                 ),
+                      //                               )
+                      //                             : imageUrl
+                      //                                         .split('.')
+                      //                                         .last
+                      //                                         .contains(
+                      //                                             'png') ||
+                      //                                     imageUrl
+                      //                                         .split('.')
+                      //                                         .last
+                      //                                         .contains(
+                      //                                             'jpg') ||
+                      //                                     imageUrl
+                      //                                         .split('.')
+                      //                                         .last
+                      //                                         .contains('jpeg')
+                      //                                 ? IntrinsicWidth(
+                      //                                     child: Container(
+                      //                                       decoration:
+                      //                                           BoxDecoration(
+                      //                                         color: allMessages[
+                      //                                                         index]
+                      //                                                     .status ==
+                      //                                                 "Outgoing"
+                      //                                             ? const Color(
+                      //                                                 0xff594EBA)
+                      //                                             : const Color(
+                      //                                                 0xff221B41),
+                      //                                         borderRadius:
+                      //                                             BorderRadius
+                      //                                                 .only(
+                      //                                           topLeft:
+                      //                                               const Radius
+                      //                                                   .circular(
+                      //                                                   12),
+                      //                                           topRight:
+                      //                                               const Radius
+                      //                                                   .circular(
+                      //                                                   12),
+                      //                                           bottomLeft: allMessages[index]
+                      //                                                       .status ==
+                      //                                                   "Outgoing"
+                      //                                               ? const Radius
+                      //                                                   .circular(
+                      //                                                   12)
+                      //                                               : const Radius
+                      //                                                   .circular(
+                      //                                                   0),
+                      //                                           bottomRight: allMessages[index]
+                      //                                                       .status ==
+                      //                                                   "Outgoing"
+                      //                                               ? const Radius
+                      //                                                   .circular(
+                      //                                                   0)
+                      //                                               : const Radius
+                      //                                                   .circular(
+                      //                                                   12),
+                      //                                         ),
+                      //                                         boxShadow: [
+                      //                                           BoxShadow(
+                      //                                             color: Colors
+                      //                                                 .black
+                      //                                                 .withOpacity(
+                      //                                                     0.2),
+                      //                                             blurRadius: 4,
+                      //                                             offset:
+                      //                                                 const Offset(
+                      //                                                     2, 2),
+                      //                                           )
+                      //                                         ],
+                      //                                       ),
+                      //                                       child: Padding(
+                      //                                         padding:
+                      //                                             const EdgeInsets
+                      //                                                 .symmetric(
+                      //                                                 vertical:
+                      //                                                     8.0,
+                      //                                                 horizontal:
+                      //                                                     4),
+                      //                                         child: Column(
+                      //                                           children: [
+                      //                                             Image.network(
+                      //                                               imageUrl,
+                      //                                               height: 120,
+                      //                                               width: 120,
+                      //                                               fit: BoxFit
+                      //                                                   .cover,
+                      //                                               loadingBuilder: (BuildContext
+                      //                                                       context,
+                      //                                                   Widget
+                      //                                                       child,
+                      //                                                   ImageChunkEvent?
+                      //                                                       loadingProgress) {
+                      //                                                 if (loadingProgress ==
+                      //                                                     null) {
+                      //                                                   return child;
+                      //                                                 } else {
+                      //                                                   return Center(
+                      //                                                     child:
+                      //                                                         CircularProgressIndicator(
+                      //                                                       color:
+                      //                                                           Colors.black,
+                      //                                                       value: loadingProgress.expectedTotalBytes != null
+                      //                                                           ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
+                      //                                                           : null,
+                      //                                                     ),
+                      //                                                   );
+                      //                                                 }
+                      //                                               },
+                      //                                               errorBuilder:
+                      //                                                   (context,
+                      //                                                       error,
+                      //                                                       stackTrace) {
+                      //                                                 return const SizedBox
+                      //                                                     .shrink();
+                      //                                               },
+                      //                                             ),
+                      //                                             if (allMessages[
+                      //                                                         index]
+                      //                                                     .status ==
+                      //                                                 "Outgoing")
+                      //                                               if (allMessages[index].deliveryStatus ==
+                      //                                                       "delivered" ||
+                      //                                                   allMessages[index].deliveryStatus ==
+                      //                                                       "sent")
+                      //                                                 Row(
+                      //                                                   mainAxisAlignment: allMessages[index].status ==
+                      //                                                           "Outgoing"
+                      //                                                       ? MainAxisAlignment.end
+                      //                                                       : MainAxisAlignment.start,
+                      //                                                   children: [
+                      //                                                     IconButton(
+                      //                                                       icon:
+                      //                                                           const Icon(
+                      //                                                         Icons.done_all,
+                      //                                                         color: Color.fromARGB(255, 255, 255, 255),
+                      //                                                       ),
+                      //                                                       onPressed:
+                      //                                                           () {},
+                      //                                                     ),
+                      //                                                   ],
+                      //                                                 ),
+                      //                                             if (allMessages[
+                      //                                                         index]
+                      //                                                     .deliveryStatus ==
+                      //                                                 "read")
+                      //                                               Row(
+                      //                                                 mainAxisAlignment: allMessages[index].status ==
+                      //                                                         "Outgoing"
+                      //                                                     ? MainAxisAlignment
+                      //                                                         .end
+                      //                                                     : MainAxisAlignment
+                      //                                                         .start,
+                      //                                                 children: [
+                      //                                                   IconButton(
+                      //                                                     icon: const Icon(
+                      //                                                         Icons.done_all,
+                      //                                                         color: Colors.green),
+                      //                                                     onPressed:
+                      //                                                         () {},
+                      //                                                   ),
+                      //                                                 ],
+                      //                                               )
+                      //                                             else
+                      //                                               const SizedBox
+                      //                                                   .shrink(),
+                      //                                           ],
+                      //                                         ),
+                      //                                       ),
+                      //                                     ),
+                      //                                   )
+                      //                                 : IntrinsicWidth(
+                      //                                     child: Container(
+                      //                                       decoration:
+                      //                                           BoxDecoration(
+                      //                                         color: allMessages[
+                      //                                                         index]
+                      //                                                     .status ==
+                      //                                                 "Outgoing"
+                      //                                             ? const Color(
+                      //                                                 0xff594EBA)
+                      //                                             : const Color(
+                      //                                                 0xff221B41),
+                      //                                         borderRadius:
+                      //                                             BorderRadius
+                      //                                                 .only(
+                      //                                           topLeft:
+                      //                                               const Radius
+                      //                                                   .circular(
+                      //                                                   12),
+                      //                                           topRight:
+                      //                                               const Radius
+                      //                                                   .circular(
+                      //                                                   12),
+                      //                                           bottomLeft: allMessages[index]
+                      //                                                       .status ==
+                      //                                                   "Outgoing"
+                      //                                               ? const Radius
+                      //                                                   .circular(
+                      //                                                   12)
+                      //                                               : const Radius
+                      //                                                   .circular(
+                      //                                                   0),
+                      //                                           bottomRight: allMessages[index]
+                      //                                                       .status ==
+                      //                                                   "Outgoing"
+                      //                                               ? const Radius
+                      //                                                   .circular(
+                      //                                                   0)
+                      //                                               : const Radius
+                      //                                                   .circular(
+                      //                                                   12),
+                      //                                         ),
+                      //                                         boxShadow: [
+                      //                                           BoxShadow(
+                      //                                             color: Colors
+                      //                                                 .black
+                      //                                                 .withOpacity(
+                      //                                                     0.2),
+                      //                                             blurRadius: 4,
+                      //                                             offset:
+                      //                                                 const Offset(
+                      //                                                     2, 2),
+                      //                                           )
+                      //                                         ],
+                      //                                       ),
+                      //                                       child: Padding(
+                      //                                         padding:
+                      //                                             const EdgeInsets
+                      //                                                 .symmetric(
+                      //                                                 vertical:
+                      //                                                     8.0),
+                      //                                         child: Column(
+                      //                                           children: [
+                      //                                             Image.asset(
+                      //                                               "assets/images/doc.png",
+                      //                                               height: 120,
+                      //                                               width: 120,
+                      //                                             ),
+                      //                                             if (allMessages[
+                      //                                                         index]
+                      //                                                     .status ==
+                      //                                                 "Outgoing")
+                      //                                               if (allMessages[index].deliveryStatus ==
+                      //                                                       "delivered" ||
+                      //                                                   allMessages[index].deliveryStatus ==
+                      //                                                       "sent")
+                      //                                                 IconButton(
+                      //                                                   icon:
+                      //                                                       const Icon(
+                      //                                                     Icons
+                      //                                                         .done_all,
+                      //                                                     color: Color.fromARGB(
+                      //                                                         255,
+                      //                                                         255,
+                      //                                                         255,
+                      //                                                         255),
+                      //                                                   ),
+                      //                                                   onPressed:
+                      //                                                       () {},
+                      //                                                 ),
+                      //                                             if (allMessages[
+                      //                                                         index]
+                      //                                                     .deliveryStatus ==
+                      //                                                 "read")
+                      //                                               Row(
+                      //                                                 mainAxisAlignment:
+                      //                                                     MainAxisAlignment
+                      //                                                         .end,
+                      //                                                 children: [
+                      //                                                   IconButton(
+                      //                                                     icon: const Icon(
+                      //                                                         Icons.done_all,
+                      //                                                         color: Colors.green),
+                      //                                                     onPressed:
+                      //                                                         () {},
+                      //                                                   ),
+                      //                                                 ],
+                      //                                               )
+                      //                                             else
+                      //                                               const SizedBox
+                      //                                                   .shrink(),
+                      //                                           ],
+                      //                                         ),
+                      //                                       ),
+                      //                                     ),
+                      //                                   ),
+                      //                   ],
+                      //                 ),
+                      //               ),
+                      //             )
+                      //           else
+                      //             const SizedBox.shrink(),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
                   ),
                 );
               }),
@@ -3499,5 +3743,123 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     return messageBody;
+  }
+
+  Widget _buildAttachmentWidget(String url) {
+    String fileType = url.split('.').last.toLowerCase();
+
+    switch (fileType) {
+      case 'pdf':
+        return InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ViewPdf(
+                            pdfUrl: url,
+                          )));
+            },
+            child:
+                Image.asset("assets/images/pdf.png", height: 120, width: 120));
+      case 'mp4':
+        return InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ViewVideo(
+                            videoUrl: url,
+                          )));
+            },
+            child: _buildVideoPlaceholder());
+      case 'png':
+      case 'jpg':
+      case 'jpeg':
+        return InkWell(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text("Image Details"),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.network(
+                          url,
+                          height: 300,
+                          width: 300,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (BuildContext context, Widget child,
+                              ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child;
+                            } else {
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          (loadingProgress.expectedTotalBytes ??
+                                              1)
+                                      : null,
+                                ),
+                              );
+                            }
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ],
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: AppColor.navBarIconColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            "Close",
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            child:
+                Image.network(url, height: 120, width: 120, fit: BoxFit.cover));
+      default:
+        return SizedBox.shrink();
+    }
+  }
+
+// Video placeholder widget
+  Widget _buildVideoPlaceholder() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Container(
+        height: 150,
+        width: 150,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 30),
+        ),
+      ),
+    );
   }
 }

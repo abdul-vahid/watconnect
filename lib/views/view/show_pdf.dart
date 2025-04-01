@@ -25,6 +25,11 @@ class _ViewPdfState extends State<ViewPdf> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back,
+                color: Color.fromARGB(255, 255, 255, 255)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
           title: Text(
             "Document",
             style: TextStyle(color: Colors.white),
