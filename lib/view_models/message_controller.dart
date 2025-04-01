@@ -5,6 +5,17 @@ class MessageController extends ChangeNotifier {
   var phNo;
   String userProfile = "";
 
+  List msgToDelete = [];
+
+  updateDeleteMsgList(String val) {
+    if (msgToDelete.contains(val)) {
+      msgToDelete.remove(val);
+    } else {
+      msgToDelete.add(val);
+    }
+    notifyListeners();
+  }
+
   setUsrProfile(str) {
     userProfile = str;
     print("setting the user prifiel:::::${userProfile}");

@@ -13,7 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart' show Provider;
+import 'package:provider/provider.dart' show Consumer, Provider;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
@@ -23,6 +23,7 @@ import 'package:whatsapp/models/lead_model.dart';
 import 'package:whatsapp/models/ms_model/message_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
+import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
@@ -71,6 +72,8 @@ class _ChatScreenState extends State<ChatScreen> {
   String? selectedTemplateId;
   String templetmsgid = "";
   var templeteViewModel;
+
+  List deleteMgs = [];
   String messageid = "";
   late MessageViewModel messageViewModel;
   final TextEditingController _controller = TextEditingController();
@@ -157,76 +160,88 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     debug("All Templates Map Data: $allTemplatesMap");
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: GestureDetector(
-          onTap: () {
-            _showProfileDialog(context);
-          },
-          child: Row(
-            children: [
-              const CircleAvatar(
-                backgroundImage: NetworkImage(
-                  'https://www.w3schools.com/w3images/avatar2.png',
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  widget.leadName ?? "",
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          IconButton(
+    return Consumer<MessageController>(
+        builder: (context, msgController, child) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          leading: IconButton(
             icon: const Icon(
-              Icons.more_vert,
+              Icons.arrow_back,
               color: Colors.white,
             ),
-            onPressed: () {
-              _showDeleteDialog();
-            },
+            onPressed: () => Navigator.pop(context),
           ),
-        ],
-      ),
-      body: Container(
-        child: Stack(
-          children: [
-            RefreshIndicator(
-              onRefresh: _pullRefresh,
-              child: _isLoading ? Container() : _pageBody(),
+          title: GestureDetector(
+            onTap: () {
+              _showProfileDialog(context);
+            },
+            child: Row(
+              children: [
+                const CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    'https://www.w3schools.com/w3images/avatar2.png',
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    widget.leadName ?? "",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
             ),
-            if (_isLoading)
-              Positioned.fill(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                  child: Container(
-                    color: Colors.white.withOpacity(0.2),
-                    child: Center(
-                      child: LoadingAnimationWidget.flickr(
-                        leftDotColor: AppColor.cardsColor,
-                        rightDotColor: AppColor.navBarIconColor,
-                        size: 40,
+          ),
+          actions: [
+            deleteMgs.length > 1
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.delete,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {},
+                  )
+                : SizedBox(),
+            IconButton(
+              icon: const Icon(
+                Icons.more_vert,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                _showDeleteDialog();
+              },
+            ),
+          ],
+        ),
+        body: Container(
+          child: Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: _pullRefresh,
+                child: _isLoading ? Container() : _pageBody(),
+              ),
+              if (_isLoading)
+                Positioned.fill(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                    child: Container(
+                      color: Colors.white.withOpacity(0.2),
+                      child: Center(
+                        child: LoadingAnimationWidget.flickr(
+                          leftDotColor: AppColor.cardsColor,
+                          rightDotColor: AppColor.navBarIconColor,
+                          size: 40,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   void _showProfileDialog(BuildContext context) {
@@ -745,13 +760,22 @@ class _ChatScreenState extends State<ChatScreen> {
           msghistorydata: imagehistorydata,
         )
             .then((value) {
+          setState(() {
+            showLoader = false;
+          });
           print("\x1B[32msendhistoryimagesendhistoryimage$value\x1B[0m");
           return null;
         });
       } else {
+        setState(() {
+          showLoader = false;
+        });
         debugPrint('Image upload failed or response was null');
       }
     } else {
+      setState(() {
+        showLoader = false;
+      });
       debugPrint('No image selected');
     }
   }
@@ -961,11 +985,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 String result = "";
                 final regex = RegExp(r'\{\{\d+\}\}');
                 if (allMessages[index].messageBody != null &&
-                    allMessages[index].exampleBodyText != null &&
+                    allMessages[index].bodyTextParams != null &&
                     regex.hasMatch(allMessages[index].messageBody)) {
                   result = replacePlaceholders(
                       allMessages[index].messageBody ?? "",
-                      allMessages[index].exampleBodyText ?? "");
+                      allMessages[index].bodyTextParams ?? "");
                 }
 
                 String imageUrl = "";
@@ -982,8 +1006,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       dateA?.month == dateB?.month &&
                       dateA?.day == dateB?.day;
                 }
-
-                // DateTime now = DateTime.now();
 
                 String dayLabel = '';
                 if (isSameDay(istTimee, now)) {
@@ -1005,1387 +1027,183 @@ class _ChatScreenState extends State<ChatScreen> {
                       "https://sandbox.watconnect.com/public/demo/attachment/$title";
                 }
 
-                return GestureDetector(
-                  onLongPress: () =>
-                      _showSimpleDialog(allMessages[index].id ?? ""),
-                  child: Column(
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.symmetric(vertical: 5),
-                        padding: const EdgeInsets.all(8),
-                        child: Align(
-                          alignment: _getAlignment(allMessages[index].status),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              children: [
-                                Text(
-                                  allMessages[index].status == "Incoming"
-                                      ? allMessages[index].name
-                                      : userName,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                IntrinsicWidth(
-                                  child: Container(
-                                    constraints: BoxConstraints(
-                                      maxWidth:
-                                          MediaQuery.of(context).size.width *
-                                              0.65,
-                                    ),
-                                    margin:
-                                        const EdgeInsets.symmetric(vertical: 4),
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: allMessages[index].status ==
-                                              "Outgoing"
-                                          ? const Color(0xffE3FFC9)
-                                          : const Color(0xff7D9CE9),
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: const Radius.circular(12),
-                                        topRight: const Radius.circular(12),
-                                        bottomLeft: allMessages[index].status ==
-                                                "Outgoing"
-                                            ? const Radius.circular(12)
-                                            : Radius.zero,
-                                        bottomRight:
-                                            allMessages[index].status ==
-                                                    "Outgoing"
-                                                ? Radius.zero
-                                                : const Radius.circular(12),
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.2),
-                                          blurRadius: 4,
-                                          offset: const Offset(2, 2),
-                                        )
-                                      ],
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        imageUrl.isNotEmpty
-                                            ? _buildAttachmentWidget(imageUrl)
-                                            : SizedBox(),
-                                        allMessages[index].header != null &&
-                                                imageUrl.isEmpty
-                                            ? allMessages[index].header ==
-                                                    "IMAGE"
-                                                ? Image.network(
-                                                    allMessages[index]
-                                                        .headerBody)
-                                                : allMessages[index].header ==
-                                                        "VIDEO"
-                                                    ? Container(
-                                                        height: 150,
-                                                        width: 150,
-                                                        decoration: BoxDecoration(
-                                                            color: Colors.black,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8)),
-                                                        child: Center(
-                                                          child: Icon(
-                                                            Icons
-                                                                .play_arrow_rounded,
-                                                            color: Colors.white,
-                                                            size: 30,
-                                                          ),
-                                                        ),
-                                                      )
-                                                    : SizedBox()
-                                            : SizedBox.shrink(),
-                                        allMessages[index].message != null &&
-                                                allMessages[index]
-                                                    .message
-                                                    .toString()
-                                                    .isNotEmpty
-                                            ? Text(
-                                                allMessages[index].message!,
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  // color: Colors.white,
-                                                  height: 1.5,
-                                                ),
-                                                maxLines: 4,
-                                                overflow: TextOverflow.ellipsis,
-                                              )
-                                            : SizedBox.shrink(),
-                                        allMessages[index].messageBody != null
-                                            ? Text(
-                                                '${result}',
-                                              )
-                                            : SizedBox.shrink(),
-                                        SizedBox(
-                                          height: 5,
+                return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (deleteMgs.isNotEmpty) {
+                          if (deleteMgs.contains(allMessages[index].id ?? "")) {
+                            deleteMgs.remove(allMessages[index].id ?? "");
+                          } else {
+                            deleteMgs.add(allMessages[index].id ?? "");
+                          }
+                        }
+                      },
+                      onLongPress: () {
+                        _showSimpleDialog(allMessages[index].id ?? "");
+                        setState(() {}); // Local state update
+                        if (deleteMgs.contains(allMessages[index].id ?? "")) {
+                          deleteMgs.remove(allMessages[index].id ?? "");
+                        } else {
+                          deleteMgs.add(allMessages[index].id ?? "");
+                        }
+
+                        if (deleteMgs.length > 1) {
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Container(
+                        color: deleteMgs.contains(allMessages[index].id)
+                            ? Color(0xffAFAFAF)
+                            : Colors.transparent,
+                        child: Row(
+                          mainAxisAlignment:
+                              allMessages[index].status == "Incoming"
+                                  ? MainAxisAlignment.start
+                                  : MainAxisAlignment.end,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 5),
+                                padding: const EdgeInsets.all(8),
+                                child: Align(
+                                  alignment:
+                                      _getAlignment(allMessages[index].status),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        allMessages[index].status == "Incoming"
+                                            ? allMessages[index].name
+                                            : userName,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: Colors.black87,
                                         ),
-                                        if (allMessages[index].footer != null)
-                                          Text(
-                                            allMessages[index].footer!,
-                                            style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey),
+                                      ),
+                                      IntrinsicWidth(
+                                        child: Container(
+                                          constraints: BoxConstraints(
+                                            maxWidth: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.65,
                                           ),
-                                        if (butttons.isNotEmpty)
-                                          Wrap(
-                                            spacing: 10,
-                                            children: List.generate(
-                                              butttons.length,
-                                              (inx) {
-                                                return Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 8.0),
-                                                  child: Align(
-                                                    alignment: Alignment.center,
-                                                    child: ElevatedButton(
-                                                      onPressed: () async {
-                                                        final button =
-                                                            butttons[inx];
-                                                        if (button['type'] ==
-                                                            "PHONE_NUMBER") {
-                                                          final Uri phoneUri =
-                                                              Uri.parse(
-                                                                  "tel:${button['phone_number']}");
-                                                          if (await canLaunchUrl(
-                                                              phoneUri)) {
-                                                            await launchUrl(
-                                                                phoneUri);
-                                                          }
-                                                        } else if (button[
-                                                                'type'] ==
-                                                            "URL") {
-                                                          // Handle URL action
-                                                        }
-                                                        print(
-                                                            "Button ${inx + 1} clicked");
-                                                      },
-                                                      style: ElevatedButton
-                                                          .styleFrom(
-                                                        backgroundColor:
-                                                            Colors.grey[200],
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(4),
-                                                          side: BorderSide(
-                                                              color: AppColor
-                                                                  .navBarIconColor,
-                                                              width: 1.5),
-                                                        ),
-                                                      ),
-                                                      child: Text(
-                                                        butttons[inx]['text'] ??
-                                                            "",
-                                                        style: TextStyle(
-                                                            color: AppColor
-                                                                .navBarIconColor,
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                            decoration:
-                                                                TextDecoration
-                                                                    .underline),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                );
-                                              },
+                                          margin: const EdgeInsets.symmetric(
+                                              vertical: 4),
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: allMessages[index].status ==
+                                                    "Outgoing"
+                                                ? const Color(0xffE3FFC9)
+                                                : const Color(0xff7D9CE9),
+                                            borderRadius: BorderRadius.only(
+                                              topLeft:
+                                                  const Radius.circular(12),
+                                              topRight:
+                                                  const Radius.circular(12),
+                                              bottomLeft: allMessages[index]
+                                                          .status ==
+                                                      "Outgoing"
+                                                  ? const Radius.circular(12)
+                                                  : Radius.zero,
+                                              bottomRight: allMessages[index]
+                                                          .status ==
+                                                      "Outgoing"
+                                                  ? Radius.zero
+                                                  : const Radius.circular(12),
                                             ),
-                                          ),
-                                        if (allMessages[index].status ==
-                                            "Outgoing")
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              Icon(
-                                                Icons.done_all,
-                                                color: allMessages[index]
-                                                            .deliveryStatus ==
-                                                        "read"
-                                                    ? Colors.green
-                                                    : Colors.grey,
-                                                size: 18,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withOpacity(0.2),
+                                                blurRadius: 4,
+                                                offset: const Offset(2, 2),
                                               ),
                                             ],
                                           ),
-                                      ],
-                                    ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              if (imageUrl.isNotEmpty)
+                                                _buildAttachmentWidget(
+                                                    imageUrl),
+                                              if (allMessages[index].header !=
+                                                      null &&
+                                                  imageUrl.isEmpty)
+                                                _buildHeaderMedia(
+                                                    allMessages[index].header!,
+                                                    allMessages[index]
+                                                        .headerBody),
+                                              if (allMessages[index].message !=
+                                                      null &&
+                                                  allMessages[index]
+                                                      .message!
+                                                      .isNotEmpty)
+                                                Text(
+                                                  allMessages[index].message!,
+                                                  style: const TextStyle(
+                                                      fontSize: 14,
+                                                      height: 1.5),
+                                                  maxLines: 4,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              if (allMessages[index]
+                                                      .messageBody !=
+                                                  null)
+                                                Text('${result}'),
+                                              const SizedBox(height: 5),
+                                              if (allMessages[index].footer !=
+                                                  null)
+                                                Text(
+                                                  allMessages[index].footer!,
+                                                  style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey),
+                                                ),
+                                              if (butttons.isNotEmpty)
+                                                _buildButtons(butttons),
+                                              if (allMessages[index].status ==
+                                                  "Outgoing")
+                                                Align(
+                                                  alignment:
+                                                      Alignment.bottomRight,
+                                                  child: Icon(
+                                                    Icons.done_all,
+                                                    color: allMessages[index]
+                                                                .deliveryStatus ==
+                                                            "read"
+                                                        ? Colors.green
+                                                        : Colors.grey,
+                                                    size: 18,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        formattedTime,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Text(
-                                  formattedTime,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
-
-                      /////////////////////////////////////////////////
-                      // Container(
-                      //   margin: const EdgeInsets.symmetric(vertical: 5),
-                      //   padding: const EdgeInsets.all(8),
-                      //   child: Align(
-                      //     alignment: _getAlignment(allMessages[index].status),
-                      //     child: Padding(
-                      //       padding: const EdgeInsets.all(8.0),
-                      //       child: Column(
-                      //         crossAxisAlignment: CrossAxisAlignment.start,
-                      //         children: [
-                      //           if (index == 0)
-                      //             Align(
-                      //               alignment: Alignment.topCenter,
-                      //               child: Text(
-                      //                 finalFormattedTime,
-                      //                 style: const TextStyle(
-                      //                   fontWeight: FontWeight.bold,
-                      //                   fontSize: 14,
-                      //                   color: Colors.grey,
-                      //                 ),
-                      //               ),
-                      //             )
-                      //           else
-                      //             const SizedBox.shrink(),
-                      //           Text(
-                      //             allMessages[index].status == "Incoming"
-                      //                 ? allMessages[index].name
-                      //                 : userName,
-                      //             style: const TextStyle(
-                      //               fontWeight: FontWeight.bold,
-                      //               fontSize: 13,
-                      //               color: Colors.black87,
-                      //             ),
-                      //           ),
-                      //           if (allMessages[index].message != null &&
-                      //               allMessages[index].message!.isNotEmpty)
-                      //             IntrinsicWidth(
-                      //               child: Container(
-                      //                 constraints: BoxConstraints(
-                      //                   maxWidth:
-                      //                       MediaQuery.of(context).size.width *
-                      //                           0.65,
-                      //                 ),
-                      //                 margin: const EdgeInsets.symmetric(
-                      //                     vertical: 4),
-                      //                 padding: const EdgeInsets.all(10),
-                      //                 decoration: BoxDecoration(
-                      //                   color: allMessages[index].status ==
-                      //                           "Outgoing"
-                      //                       ? const Color(0xff594EBA)
-                      //                       : const Color(0xff221B41),
-                      //                   borderRadius: BorderRadius.only(
-                      //                     topLeft: const Radius.circular(12),
-                      //                     topRight: const Radius.circular(12),
-                      //                     bottomLeft:
-                      //                         allMessages[index].status ==
-                      //                                 "Outgoing"
-                      //                             ? const Radius.circular(12)
-                      //                             : const Radius.circular(0),
-                      //                     bottomRight:
-                      //                         allMessages[index].status ==
-                      //                                 "Outgoing"
-                      //                             ? const Radius.circular(0)
-                      //                             : const Radius.circular(12),
-                      //                   ),
-                      //                   boxShadow: [
-                      //                     BoxShadow(
-                      //                       color:
-                      //                           Colors.black.withOpacity(0.2),
-                      //                       blurRadius: 4,
-                      //                       offset: const Offset(2, 2),
-                      //                     )
-                      //                   ],
-                      //                 ),
-                      //                 child: Column(
-                      //                   crossAxisAlignment:
-                      //                       CrossAxisAlignment.start,
-                      //                   children: [
-                      //                     Text(
-                      //                       allMessages[index].message!,
-                      //                       style: const TextStyle(
-                      //                         fontSize: 14,
-                      //                         color: Colors.white,
-                      //                         height: 1.5,
-                      //                       ),
-                      //                       maxLines: 4,
-                      //                       overflow: TextOverflow.ellipsis,
-                      //                     ),
-                      //                     const SizedBox(height: 6),
-                      //                     if (allMessages[index].status ==
-                      //                         "Outgoing")
-                      //                       if (allMessages[index]
-                      //                               .deliveryStatus !=
-                      //                           null)
-                      //                         Align(
-                      //                           alignment:
-                      //                               Alignment.bottomRight,
-                      //                           child: Icon(
-                      //                             Icons.done_all,
-                      //                             color: allMessages[index]
-                      //                                         .deliveryStatus ==
-                      //                                     "read"
-                      //                                 ? Colors.green
-                      //                                 : Colors.white,
-                      //                             size: 16,
-                      //                           ),
-                      //                         ),
-                      //                   ],
-                      //                 ),
-                      //               ),
-                      //             )
-                      //           else
-                      //             const SizedBox.shrink(),
-                      //           if (allMessages[index].templateName != null ||
-                      //               allMessages[index].headerBody != null)
-                      //             IntrinsicWidth(
-                      //               child: Container(
-                      //                 constraints: BoxConstraints(
-                      //                   maxWidth:
-                      //                       MediaQuery.of(context).size.width *
-                      //                           0.65,
-                      //                 ),
-                      //                 padding: const EdgeInsets.symmetric(
-                      //                   vertical: 8,
-                      //                   horizontal: 12,
-                      //                 ),
-                      //                 decoration: BoxDecoration(
-                      //                   borderRadius: BorderRadius.only(
-                      //                     topLeft: Radius.circular(8),
-                      //                     topRight: Radius.circular(8),
-                      //                     bottomLeft: Radius.circular(8),
-                      //                     bottomRight: Radius.circular(0),
-                      //                   ),
-                      //                   color: allMessages[index].status ==
-                      //                           "Outgoing"
-                      //                       ? const Color(0xff594EBA)
-                      //                       : const Color(0xff221B41),
-                      //                 ),
-                      //                 child: Column(
-                      //                   mainAxisSize: MainAxisSize
-                      //                       .min, // Ensure it takes only required height
-                      //                   crossAxisAlignment: CrossAxisAlignment
-                      //                       .start, // Align text properly
-                      //                   children: [
-                      //                     allMessages[index].templateName !=
-                      //                             null
-                      //                         ? allMessages[index].header ==
-                      //                                 "IMAGE"
-                      //                             ? InkWell(
-                      //                                 onTap: () {
-                      //                                   showDialog(
-                      //                                     context: context,
-                      //                                     builder: (BuildContext
-                      //                                         context) {
-                      //                                       return AlertDialog(
-                      //                                         title: const Text(
-                      //                                             "Image Details"),
-                      //                                         content: Column(
-                      //                                           mainAxisSize:
-                      //                                               MainAxisSize
-                      //                                                   .min,
-                      //                                           children: [
-                      //                                             Image.network(
-                      //                                               imageUrl,
-                      //                                               height: 300,
-                      //                                               width: 300,
-                      //                                               fit: BoxFit
-                      //                                                   .cover,
-                      //                                               loadingBuilder: (BuildContext
-                      //                                                       context,
-                      //                                                   Widget
-                      //                                                       child,
-                      //                                                   ImageChunkEvent?
-                      //                                                       loadingProgress) {
-                      //                                                 if (loadingProgress ==
-                      //                                                     null) {
-                      //                                                   return child;
-                      //                                                 } else {
-                      //                                                   return Center(
-                      //                                                     child:
-                      //                                                         CircularProgressIndicator(
-                      //                                                       value: loadingProgress.expectedTotalBytes != null
-                      //                                                           ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
-                      //                                                           : null,
-                      //                                                     ),
-                      //                                                   );
-                      //                                                 }
-                      //                                               },
-                      //                                               errorBuilder:
-                      //                                                   (context,
-                      //                                                       error,
-                      //                                                       stackTrace) {
-                      //                                                 return const SizedBox
-                      //                                                     .shrink();
-                      //                                               },
-                      //                                             ),
-                      //                                           ],
-                      //                                         ),
-                      //                                         actions: <Widget>[
-                      //                                           TextButton(
-                      //                                             onPressed:
-                      //                                                 () {
-                      //                                               Navigator.of(
-                      //                                                       context)
-                      //                                                   .pop();
-                      //                                             },
-                      //                                             child:
-                      //                                                 Container(
-                      //                                               padding: const EdgeInsets
-                      //                                                   .symmetric(
-                      //                                                   vertical:
-                      //                                                       8,
-                      //                                                   horizontal:
-                      //                                                       16),
-                      //                                               decoration:
-                      //                                                   BoxDecoration(
-                      //                                                 color: AppColor
-                      //                                                     .navBarIconColor,
-                      //                                                 borderRadius:
-                      //                                                     BorderRadius.circular(
-                      //                                                         8),
-                      //                                               ),
-                      //                                               child:
-                      //                                                   const Text(
-                      //                                                 "Close",
-                      //                                                 style:
-                      //                                                     TextStyle(
-                      //                                                   color: Colors
-                      //                                                       .white,
-                      //                                                 ),
-                      //                                               ),
-                      //                                             ),
-                      //                                           ),
-                      //                                         ],
-                      //                                       );
-                      //                                     },
-                      //                                   );
-                      //                                 },
-                      //                                 child: Image.network(
-                      //                                   allMessages[index]
-                      //                                       .headerBody,
-                      //                                   height: 150,
-                      //                                   // width: 150,
-                      //                                   fit: BoxFit.cover,
-                      //                                 ),
-                      //                               )
-                      //                             : allMessages[index].header ==
-                      //                                     "VIDEO"
-                      //                                 ? InkWell(
-                      //                                     onTap: () {
-                      //                                       Navigator.push(
-                      //                                           context,
-                      //                                           MaterialPageRoute(
-                      //                                               builder:
-                      //                                                   (context) =>
-                      //                                                       ViewVideo(
-                      //                                                         videoUrl: allMessages[index].headerBody,
-                      //                                                       )));
-                      //                                     },
-                      //                                     child: Container(
-                      //                                       height: 150,
-                      //                                       width: 150,
-                      //                                       decoration: BoxDecoration(
-                      //                                           color: Colors
-                      //                                               .black,
-                      //                                           borderRadius:
-                      //                                               BorderRadius
-                      //                                                   .circular(
-                      //                                                       8)),
-                      //                                       child: Center(
-                      //                                         child: Icon(
-                      //                                           Icons
-                      //                                               .play_arrow_rounded,
-                      //                                           color: Colors
-                      //                                               .white,
-                      //                                           size: 30,
-                      //                                         ),
-                      //                                       ),
-                      //                                     )
-                      //                                     //  Image.asset(
-                      //                                     //     "assets/images/video.png"),
-                      //                                     )
-                      //                                 : SizedBox()
-                      //                         : SizedBox(),
-                      //                     RichText(
-                      //                       text: TextSpan(
-                      //                         style: const TextStyle(
-                      //                           fontWeight: FontWeight.bold,
-                      //                           fontSize: 14,
-                      //                           color: Colors.white,
-                      //                         ),
-                      //                         children: [
-                      //                           if (allMessages[index]
-                      //                                   .headerBody !=
-                      //                               null)
-                      //                             if (allMessages[index]
-                      //                                         .templateName !=
-                      //                                     null &&
-                      //                                 allMessages[index]
-                      //                                         .messageBody !=
-                      //                                     null)
-                      //                               TextSpan(
-                      //                                 text: '${result}\n',
-                      //                               ),
-                      //                           if (allMessages[index].footer !=
-                      //                               null)
-                      //                             TextSpan(
-                      //                               text: allMessages[index]
-                      //                                   .footer,
-                      //                               style: const TextStyle(
-                      //                                 fontWeight:
-                      //                                     FontWeight.normal,
-                      //                                 fontSize: 12,
-                      //                                 color: Colors.grey,
-                      //                               ),
-                      //                             ),
-                      //                         ],
-                      //                       ),
-                      //                     ),
-                      //                     butttons != null
-                      //                         ? Wrap(
-                      //                             spacing: 10,
-                      //                             children: List.generate(
-                      //                               butttons.length,
-                      //                               (inx) {
-                      //                                 return Padding(
-                      //                                   padding:
-                      //                                       const EdgeInsets
-                      //                                           .only(top: 8.0),
-                      //                                   child: ElevatedButton(
-                      //                                     onPressed: () async {
-                      //                                       if (butttons[inx]
-                      //                                               ['type'] ==
-                      //                                           "PHONE_NUMBER") {
-                      //                                         final Uri
-                      //                                             phoneUri =
-                      //                                             Uri.parse(
-                      //                                                 "tel:${butttons[inx]['phone_number']}");
-
-                      //                                         if (await canLaunchUrl(
-                      //                                             phoneUri)) {
-                      //                                           await launchUrl(
-                      //                                               phoneUri);
-                      //                                         } else {
-                      //                                           // throw "Could not launch $phoneNumber";
-                      //                                         }
-                      //                                       } else if (butttons[
-                      //                                                   inx]
-                      //                                               ['type'] ==
-                      //                                           "URL") {}
-                      //                                       print(
-                      //                                           "Button ${inx + 1} clicked");
-                      //                                     },
-                      //                                     style: ElevatedButton
-                      //                                         .styleFrom(
-                      //                                       backgroundColor:
-                      //                                           Colors
-                      //                                               .grey[400],
-                      //                                       shape:
-                      //                                           RoundedRectangleBorder(
-                      //                                         borderRadius:
-                      //                                             BorderRadius
-                      //                                                 .circular(
-                      //                                                     4),
-                      //                                         side: BorderSide(
-                      //                                             color: AppColor
-                      //                                                 .navBarIconColor),
-                      //                                       ),
-                      //                                     ),
-                      //                                     child: Text(
-                      //                                       butttons[inx]
-                      //                                               ['text'] ??
-                      //                                           "",
-                      //                                       style: TextStyle(
-                      //                                           color: AppColor
-                      //                                               .navBarIconColor),
-                      //                                     ),
-                      //                                   ),
-                      //                                 );
-                      //                               },
-                      //                             ),
-                      //                           )
-                      //                         : SizedBox(),
-                      //                     if (allMessages[index].status ==
-                      //                         "Outgoing")
-                      //                       if (allMessages[index]
-                      //                                   .deliveryStatus ==
-                      //                               "delivered" ||
-                      //                           allMessages[index]
-                      //                                   .deliveryStatus ==
-                      //                               "sent")
-                      //                         Row(
-                      //                           mainAxisAlignment:
-                      //                               MainAxisAlignment.end,
-                      //                           children: [
-                      //                             Icon(
-                      //                               Icons.done_all,
-                      //                               color: Colors.white,
-                      //                               size: 18,
-                      //                             ),
-                      //                           ],
-                      //                         ),
-                      //                     if (allMessages[index]
-                      //                             .deliveryStatus ==
-                      //                         "read")
-                      //                       Row(
-                      //                         mainAxisAlignment:
-                      //                             MainAxisAlignment.end,
-                      //                         children: [
-                      //                           Icon(Icons.done_all,
-                      //                               color: Colors.green,
-                      //                               size: 18),
-                      //                         ],
-                      //                       )
-                      //                   ],
-                      //                 ),
-                      //               ),
-                      //             )
-                      //           else
-                      //             const SizedBox.shrink(),
-                      //           Text(
-                      //             formattedTime,
-                      //             style: const TextStyle(
-                      //               fontWeight: FontWeight.bold,
-                      //               fontSize: 14,
-                      //               color: Colors.grey,
-                      //             ),
-                      //           ),
-                      //           if (imageUrl.isNotEmpty)
-                      //             Container(
-                      //               margin:
-                      //                   const EdgeInsets.symmetric(vertical: 8),
-                      //               child: GestureDetector(
-                      //                 onTap: () async {
-                      //                   print(
-                      //                       "imageurl before show::: ${imageUrl}");
-                      //                   if (imageUrl
-                      //                       .split('.')
-                      //                       .last
-                      //                       .contains('pdf')) {
-                      //                     Navigator.push(
-                      //                         context,
-                      //                         MaterialPageRoute(
-                      //                             builder: (context) => ViewPdf(
-                      //                                   pdfUrl: imageUrl,
-                      //                                 )));
-                      //                   } else if (imageUrl
-                      //                       .split('.')
-                      //                       .last
-                      //                       .contains('mp4')) {
-                      //                     Navigator.push(
-                      //                         context,
-                      //                         MaterialPageRoute(
-                      //                             builder: (context) =>
-                      //                                 ViewVideo(
-                      //                                   videoUrl: imageUrl,
-                      //                                 )));
-                      //                   } else if (imageUrl
-                      //                           .split('.')
-                      //                           .last
-                      //                           .contains('png') ||
-                      //                       imageUrl
-                      //                           .split('.')
-                      //                           .last
-                      //                           .contains('jpg') ||
-                      //                       imageUrl
-                      //                           .split('.')
-                      //                           .last
-                      //                           .contains('jpeg')) {
-                      //                     showDialog(
-                      //                       context: context,
-                      //                       builder: (BuildContext context) {
-                      //                         return AlertDialog(
-                      //                           title:
-                      //                               const Text("Image Details"),
-                      //                           content: Column(
-                      //                             mainAxisSize:
-                      //                                 MainAxisSize.min,
-                      //                             children: [
-                      //                               Image.network(
-                      //                                 imageUrl,
-                      //                                 height: 300,
-                      //                                 width: 300,
-                      //                                 fit: BoxFit.cover,
-                      //                                 loadingBuilder: (BuildContext
-                      //                                         context,
-                      //                                     Widget child,
-                      //                                     ImageChunkEvent?
-                      //                                         loadingProgress) {
-                      //                                   if (loadingProgress ==
-                      //                                       null) {
-                      //                                     return child;
-                      //                                   } else {
-                      //                                     return Center(
-                      //                                       child:
-                      //                                           CircularProgressIndicator(
-                      //                                         value: loadingProgress
-                      //                                                     .expectedTotalBytes !=
-                      //                                                 null
-                      //                                             ? loadingProgress
-                      //                                                     .cumulativeBytesLoaded /
-                      //                                                 (loadingProgress
-                      //                                                         .expectedTotalBytes ??
-                      //                                                     1)
-                      //                                             : null,
-                      //                                       ),
-                      //                                     );
-                      //                                   }
-                      //                                 },
-                      //                                 errorBuilder: (context,
-                      //                                     error, stackTrace) {
-                      //                                   return const SizedBox
-                      //                                       .shrink();
-                      //                                 },
-                      //                               ),
-                      //                             ],
-                      //                           ),
-                      //                           actions: <Widget>[
-                      //                             TextButton(
-                      //                               onPressed: () {
-                      //                                 Navigator.of(context)
-                      //                                     .pop();
-                      //                               },
-                      //                               child: Container(
-                      //                                 padding: const EdgeInsets
-                      //                                     .symmetric(
-                      //                                     vertical: 8,
-                      //                                     horizontal: 16),
-                      //                                 decoration: BoxDecoration(
-                      //                                   color: AppColor
-                      //                                       .navBarIconColor,
-                      //                                   borderRadius:
-                      //                                       BorderRadius
-                      //                                           .circular(8),
-                      //                                 ),
-                      //                                 child: const Text(
-                      //                                   "Close",
-                      //                                   style: TextStyle(
-                      //                                     color: Colors.white,
-                      //                                   ),
-                      //                                 ),
-                      //                               ),
-                      //                             ),
-                      //                           ],
-                      //                         );
-                      //                       },
-                      //                     );
-                      //                   } else {
-                      //                     print("it is supposed to be here");
-                      //                     try {
-                      //                       final dir =
-                      //                           await getTemporaryDirectory();
-                      //                       String fileName =
-                      //                           imageUrl.split('/').last;
-                      //                       final filePath =
-                      //                           '${dir.path}/${fileName}';
-
-                      //                       final response = await http
-                      //                           .get(Uri.parse(imageUrl));
-
-                      //                       if (response.statusCode == 200) {
-                      //                         final file = File(filePath);
-                      //                         await file.writeAsBytes(
-                      //                             response.bodyBytes);
-
-                      //                         print(
-                      //                             "File downloaded to: $filePath");
-
-                      //                         OpenFile.open(filePath);
-                      //                       }
-                      //                     } catch (e) {
-                      //                       print(
-                      //                           "error in opening file:: ${e}");
-                      //                     }
-                      //                   }
-                      //                 },
-                      //                 child: Column(
-                      //                   children: [
-                      //                     imageUrl
-                      //                             .split('.')
-                      //                             .last
-                      //                             .contains('pdf')
-                      //                         ? IntrinsicWidth(
-                      //                             child: Container(
-                      //                               decoration: BoxDecoration(
-                      //                                 color: allMessages[index]
-                      //                                             .status ==
-                      //                                         "Outgoing"
-                      //                                     ? const Color(
-                      //                                         0xff594EBA)
-                      //                                     : const Color(
-                      //                                         0xff221B41),
-                      //                                 borderRadius:
-                      //                                     BorderRadius.only(
-                      //                                   topLeft: const Radius
-                      //                                       .circular(12),
-                      //                                   topRight: const Radius
-                      //                                       .circular(12),
-                      //                                   bottomLeft: allMessages[
-                      //                                                   index]
-                      //                                               .status ==
-                      //                                           "Outgoing"
-                      //                                       ? const Radius
-                      //                                           .circular(12)
-                      //                                       : const Radius
-                      //                                           .circular(0),
-                      //                                   bottomRight: allMessages[
-                      //                                                   index]
-                      //                                               .status ==
-                      //                                           "Outgoing"
-                      //                                       ? const Radius
-                      //                                           .circular(0)
-                      //                                       : const Radius
-                      //                                           .circular(12),
-                      //                                 ),
-                      //                                 boxShadow: [
-                      //                                   BoxShadow(
-                      //                                     color: Colors.black
-                      //                                         .withOpacity(0.2),
-                      //                                     blurRadius: 4,
-                      //                                     offset: const Offset(
-                      //                                         2, 2),
-                      //                                   )
-                      //                                 ],
-                      //                               ),
-                      //                               child: Padding(
-                      //                                 padding: const EdgeInsets
-                      //                                     .symmetric(
-                      //                                     vertical: 8.0),
-                      //                                 child: Column(
-                      //                                   children: [
-                      //                                     Image.asset(
-                      //                                       "assets/images/pdf.png",
-                      //                                       height: 120,
-                      //                                       width: 120,
-                      //                                     ),
-                      //                                     if (allMessages[index]
-                      //                                                 .deliveryStatus ==
-                      //                                             "delivered" ||
-                      //                                         allMessages[index]
-                      //                                                 .deliveryStatus ==
-                      //                                             "sent")
-                      //                                       Row(
-                      //                                         mainAxisAlignment: allMessages[
-                      //                                                         index]
-                      //                                                     .status ==
-                      //                                                 "Outgoing"
-                      //                                             ? MainAxisAlignment
-                      //                                                 .end
-                      //                                             : MainAxisAlignment
-                      //                                                 .start,
-                      //                                         children: [
-                      //                                           IconButton(
-                      //                                             icon:
-                      //                                                 const Icon(
-                      //                                               Icons
-                      //                                                   .done_all,
-                      //                                               color: Color
-                      //                                                   .fromARGB(
-                      //                                                       255,
-                      //                                                       255,
-                      //                                                       255,
-                      //                                                       255),
-                      //                                             ),
-                      //                                             onPressed:
-                      //                                                 () {},
-                      //                                           ),
-                      //                                         ],
-                      //                                       ),
-                      //                                     if (allMessages[index]
-                      //                                             .deliveryStatus ==
-                      //                                         "read")
-                      //                                       Row(
-                      //                                         mainAxisAlignment:
-                      //                                             MainAxisAlignment
-                      //                                                 .end,
-                      //                                         children: [
-                      //                                           IconButton(
-                      //                                             icon: const Icon(
-                      //                                                 Icons
-                      //                                                     .done_all,
-                      //                                                 color: Colors
-                      //                                                     .green),
-                      //                                             onPressed:
-                      //                                                 () {},
-                      //                                           ),
-                      //                                         ],
-                      //                                       )
-                      //                                     else
-                      //                                       const SizedBox
-                      //                                           .shrink(),
-                      //                                   ],
-                      //                                 ),
-                      //                               ),
-                      //                             ),
-                      //                           )
-                      //                         : imageUrl
-                      //                                 .split('.')
-                      //                                 .last
-                      //                                 .contains('mp4')
-                      //                             ? IntrinsicWidth(
-                      //                                 child: Container(
-                      //                                   decoration:
-                      //                                       BoxDecoration(
-                      //                                     color: allMessages[
-                      //                                                     index]
-                      //                                                 .status ==
-                      //                                             "Outgoing"
-                      //                                         ? const Color(
-                      //                                             0xff594EBA)
-                      //                                         : const Color(
-                      //                                             0xff221B41),
-                      //                                     borderRadius:
-                      //                                         BorderRadius.only(
-                      //                                       topLeft:
-                      //                                           const Radius
-                      //                                               .circular(
-                      //                                               12),
-                      //                                       topRight:
-                      //                                           const Radius
-                      //                                               .circular(
-                      //                                               12),
-                      //                                       bottomLeft: allMessages[
-                      //                                                       index]
-                      //                                                   .status ==
-                      //                                               "Outgoing"
-                      //                                           ? const Radius
-                      //                                               .circular(
-                      //                                               12)
-                      //                                           : const Radius
-                      //                                               .circular(
-                      //                                               0),
-                      //                                       bottomRight: allMessages[
-                      //                                                       index]
-                      //                                                   .status ==
-                      //                                               "Outgoing"
-                      //                                           ? const Radius
-                      //                                               .circular(0)
-                      //                                           : const Radius
-                      //                                               .circular(
-                      //                                               12),
-                      //                                     ),
-                      //                                     boxShadow: [
-                      //                                       BoxShadow(
-                      //                                         color: Colors
-                      //                                             .black
-                      //                                             .withOpacity(
-                      //                                                 0.2),
-                      //                                         blurRadius: 4,
-                      //                                         offset:
-                      //                                             const Offset(
-                      //                                                 2, 2),
-                      //                                       )
-                      //                                     ],
-                      //                                   ),
-                      //                                   child: Padding(
-                      //                                     padding:
-                      //                                         const EdgeInsets
-                      //                                             .symmetric(
-                      //                                             vertical:
-                      //                                                 8.0),
-                      //                                     child: Column(
-                      //                                       children: [
-                      //                                         Padding(
-                      //                                           padding: const EdgeInsets
-                      //                                               .symmetric(
-                      //                                               horizontal:
-                      //                                                   8.0),
-                      //                                           child:
-                      //                                               Container(
-                      //                                             height: 150,
-                      //                                             width: 150,
-                      //                                             decoration: BoxDecoration(
-                      //                                                 color: Colors
-                      //                                                     .black,
-                      //                                                 borderRadius:
-                      //                                                     BorderRadius.circular(
-                      //                                                         8)),
-                      //                                             child: Center(
-                      //                                               child: Icon(
-                      //                                                 Icons
-                      //                                                     .play_arrow_rounded,
-                      //                                                 color: Colors
-                      //                                                     .white,
-                      //                                                 size: 30,
-                      //                                               ),
-                      //                                             ),
-                      //                                           ),
-                      //                                         ),
-                      //                                         if (allMessages[
-                      //                                                     index]
-                      //                                                 .status ==
-                      //                                             "Outgoing")
-                      //                                           if (allMessages[index]
-                      //                                                       .deliveryStatus ==
-                      //                                                   "delivered" ||
-                      //                                               allMessages[index]
-                      //                                                       .deliveryStatus ==
-                      //                                                   "sent")
-                      //                                             Row(
-                      //                                               mainAxisAlignment:
-                      //                                                   MainAxisAlignment
-                      //                                                       .end,
-                      //                                               children: [
-                      //                                                 IconButton(
-                      //                                                   icon:
-                      //                                                       const Icon(
-                      //                                                     Icons
-                      //                                                         .done_all,
-                      //                                                     color: Color.fromARGB(
-                      //                                                         255,
-                      //                                                         255,
-                      //                                                         255,
-                      //                                                         255),
-                      //                                                   ),
-                      //                                                   onPressed:
-                      //                                                       () {},
-                      //                                                 ),
-                      //                                               ],
-                      //                                             ),
-                      //                                         if (allMessages[
-                      //                                                     index]
-                      //                                                 .deliveryStatus ==
-                      //                                             "read")
-                      //                                           Row(
-                      //                                             mainAxisAlignment: allMessages[index]
-                      //                                                         .status ==
-                      //                                                     "Outgoing"
-                      //                                                 ? MainAxisAlignment
-                      //                                                     .end
-                      //                                                 : MainAxisAlignment
-                      //                                                     .start,
-                      //                                             children: [
-                      //                                               IconButton(
-                      //                                                 icon: const Icon(
-                      //                                                     Icons
-                      //                                                         .done_all,
-                      //                                                     color:
-                      //                                                         Colors.green),
-                      //                                                 onPressed:
-                      //                                                     () {},
-                      //                                               ),
-                      //                                             ],
-                      //                                           )
-                      //                                         else
-                      //                                           const SizedBox
-                      //                                               .shrink(),
-                      //                                       ],
-                      //                                     ),
-                      //                                   ),
-                      //                                 ),
-                      //                               )
-                      //                             : imageUrl
-                      //                                         .split('.')
-                      //                                         .last
-                      //                                         .contains(
-                      //                                             'png') ||
-                      //                                     imageUrl
-                      //                                         .split('.')
-                      //                                         .last
-                      //                                         .contains(
-                      //                                             'jpg') ||
-                      //                                     imageUrl
-                      //                                         .split('.')
-                      //                                         .last
-                      //                                         .contains('jpeg')
-                      //                                 ? IntrinsicWidth(
-                      //                                     child: Container(
-                      //                                       decoration:
-                      //                                           BoxDecoration(
-                      //                                         color: allMessages[
-                      //                                                         index]
-                      //                                                     .status ==
-                      //                                                 "Outgoing"
-                      //                                             ? const Color(
-                      //                                                 0xff594EBA)
-                      //                                             : const Color(
-                      //                                                 0xff221B41),
-                      //                                         borderRadius:
-                      //                                             BorderRadius
-                      //                                                 .only(
-                      //                                           topLeft:
-                      //                                               const Radius
-                      //                                                   .circular(
-                      //                                                   12),
-                      //                                           topRight:
-                      //                                               const Radius
-                      //                                                   .circular(
-                      //                                                   12),
-                      //                                           bottomLeft: allMessages[index]
-                      //                                                       .status ==
-                      //                                                   "Outgoing"
-                      //                                               ? const Radius
-                      //                                                   .circular(
-                      //                                                   12)
-                      //                                               : const Radius
-                      //                                                   .circular(
-                      //                                                   0),
-                      //                                           bottomRight: allMessages[index]
-                      //                                                       .status ==
-                      //                                                   "Outgoing"
-                      //                                               ? const Radius
-                      //                                                   .circular(
-                      //                                                   0)
-                      //                                               : const Radius
-                      //                                                   .circular(
-                      //                                                   12),
-                      //                                         ),
-                      //                                         boxShadow: [
-                      //                                           BoxShadow(
-                      //                                             color: Colors
-                      //                                                 .black
-                      //                                                 .withOpacity(
-                      //                                                     0.2),
-                      //                                             blurRadius: 4,
-                      //                                             offset:
-                      //                                                 const Offset(
-                      //                                                     2, 2),
-                      //                                           )
-                      //                                         ],
-                      //                                       ),
-                      //                                       child: Padding(
-                      //                                         padding:
-                      //                                             const EdgeInsets
-                      //                                                 .symmetric(
-                      //                                                 vertical:
-                      //                                                     8.0,
-                      //                                                 horizontal:
-                      //                                                     4),
-                      //                                         child: Column(
-                      //                                           children: [
-                      //                                             Image.network(
-                      //                                               imageUrl,
-                      //                                               height: 120,
-                      //                                               width: 120,
-                      //                                               fit: BoxFit
-                      //                                                   .cover,
-                      //                                               loadingBuilder: (BuildContext
-                      //                                                       context,
-                      //                                                   Widget
-                      //                                                       child,
-                      //                                                   ImageChunkEvent?
-                      //                                                       loadingProgress) {
-                      //                                                 if (loadingProgress ==
-                      //                                                     null) {
-                      //                                                   return child;
-                      //                                                 } else {
-                      //                                                   return Center(
-                      //                                                     child:
-                      //                                                         CircularProgressIndicator(
-                      //                                                       color:
-                      //                                                           Colors.black,
-                      //                                                       value: loadingProgress.expectedTotalBytes != null
-                      //                                                           ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
-                      //                                                           : null,
-                      //                                                     ),
-                      //                                                   );
-                      //                                                 }
-                      //                                               },
-                      //                                               errorBuilder:
-                      //                                                   (context,
-                      //                                                       error,
-                      //                                                       stackTrace) {
-                      //                                                 return const SizedBox
-                      //                                                     .shrink();
-                      //                                               },
-                      //                                             ),
-                      //                                             if (allMessages[
-                      //                                                         index]
-                      //                                                     .status ==
-                      //                                                 "Outgoing")
-                      //                                               if (allMessages[index].deliveryStatus ==
-                      //                                                       "delivered" ||
-                      //                                                   allMessages[index].deliveryStatus ==
-                      //                                                       "sent")
-                      //                                                 Row(
-                      //                                                   mainAxisAlignment: allMessages[index].status ==
-                      //                                                           "Outgoing"
-                      //                                                       ? MainAxisAlignment.end
-                      //                                                       : MainAxisAlignment.start,
-                      //                                                   children: [
-                      //                                                     IconButton(
-                      //                                                       icon:
-                      //                                                           const Icon(
-                      //                                                         Icons.done_all,
-                      //                                                         color: Color.fromARGB(255, 255, 255, 255),
-                      //                                                       ),
-                      //                                                       onPressed:
-                      //                                                           () {},
-                      //                                                     ),
-                      //                                                   ],
-                      //                                                 ),
-                      //                                             if (allMessages[
-                      //                                                         index]
-                      //                                                     .deliveryStatus ==
-                      //                                                 "read")
-                      //                                               Row(
-                      //                                                 mainAxisAlignment: allMessages[index].status ==
-                      //                                                         "Outgoing"
-                      //                                                     ? MainAxisAlignment
-                      //                                                         .end
-                      //                                                     : MainAxisAlignment
-                      //                                                         .start,
-                      //                                                 children: [
-                      //                                                   IconButton(
-                      //                                                     icon: const Icon(
-                      //                                                         Icons.done_all,
-                      //                                                         color: Colors.green),
-                      //                                                     onPressed:
-                      //                                                         () {},
-                      //                                                   ),
-                      //                                                 ],
-                      //                                               )
-                      //                                             else
-                      //                                               const SizedBox
-                      //                                                   .shrink(),
-                      //                                           ],
-                      //                                         ),
-                      //                                       ),
-                      //                                     ),
-                      //                                   )
-                      //                                 : IntrinsicWidth(
-                      //                                     child: Container(
-                      //                                       decoration:
-                      //                                           BoxDecoration(
-                      //                                         color: allMessages[
-                      //                                                         index]
-                      //                                                     .status ==
-                      //                                                 "Outgoing"
-                      //                                             ? const Color(
-                      //                                                 0xff594EBA)
-                      //                                             : const Color(
-                      //                                                 0xff221B41),
-                      //                                         borderRadius:
-                      //                                             BorderRadius
-                      //                                                 .only(
-                      //                                           topLeft:
-                      //                                               const Radius
-                      //                                                   .circular(
-                      //                                                   12),
-                      //                                           topRight:
-                      //                                               const Radius
-                      //                                                   .circular(
-                      //                                                   12),
-                      //                                           bottomLeft: allMessages[index]
-                      //                                                       .status ==
-                      //                                                   "Outgoing"
-                      //                                               ? const Radius
-                      //                                                   .circular(
-                      //                                                   12)
-                      //                                               : const Radius
-                      //                                                   .circular(
-                      //                                                   0),
-                      //                                           bottomRight: allMessages[index]
-                      //                                                       .status ==
-                      //                                                   "Outgoing"
-                      //                                               ? const Radius
-                      //                                                   .circular(
-                      //                                                   0)
-                      //                                               : const Radius
-                      //                                                   .circular(
-                      //                                                   12),
-                      //                                         ),
-                      //                                         boxShadow: [
-                      //                                           BoxShadow(
-                      //                                             color: Colors
-                      //                                                 .black
-                      //                                                 .withOpacity(
-                      //                                                     0.2),
-                      //                                             blurRadius: 4,
-                      //                                             offset:
-                      //                                                 const Offset(
-                      //                                                     2, 2),
-                      //                                           )
-                      //                                         ],
-                      //                                       ),
-                      //                                       child: Padding(
-                      //                                         padding:
-                      //                                             const EdgeInsets
-                      //                                                 .symmetric(
-                      //                                                 vertical:
-                      //                                                     8.0),
-                      //                                         child: Column(
-                      //                                           children: [
-                      //                                             Image.asset(
-                      //                                               "assets/images/doc.png",
-                      //                                               height: 120,
-                      //                                               width: 120,
-                      //                                             ),
-                      //                                             if (allMessages[
-                      //                                                         index]
-                      //                                                     .status ==
-                      //                                                 "Outgoing")
-                      //                                               if (allMessages[index].deliveryStatus ==
-                      //                                                       "delivered" ||
-                      //                                                   allMessages[index].deliveryStatus ==
-                      //                                                       "sent")
-                      //                                                 IconButton(
-                      //                                                   icon:
-                      //                                                       const Icon(
-                      //                                                     Icons
-                      //                                                         .done_all,
-                      //                                                     color: Color.fromARGB(
-                      //                                                         255,
-                      //                                                         255,
-                      //                                                         255,
-                      //                                                         255),
-                      //                                                   ),
-                      //                                                   onPressed:
-                      //                                                       () {},
-                      //                                                 ),
-                      //                                             if (allMessages[
-                      //                                                         index]
-                      //                                                     .deliveryStatus ==
-                      //                                                 "read")
-                      //                                               Row(
-                      //                                                 mainAxisAlignment:
-                      //                                                     MainAxisAlignment
-                      //                                                         .end,
-                      //                                                 children: [
-                      //                                                   IconButton(
-                      //                                                     icon: const Icon(
-                      //                                                         Icons.done_all,
-                      //                                                         color: Colors.green),
-                      //                                                     onPressed:
-                      //                                                         () {},
-                      //                                                   ),
-                      //                                                 ],
-                      //                                               )
-                      //                                             else
-                      //                                               const SizedBox
-                      //                                                   .shrink(),
-                      //                                           ],
-                      //                                         ),
-                      //                                       ),
-                      //                                     ),
-                      //                                   ),
-                      //                   ],
-                      //                 ),
-                      //               ),
-                      //             )
-                      //           else
-                      //             const SizedBox.shrink(),
-                      //         ],
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
-                    ],
-                  ),
-                );
+                    ));
               }),
         ),
         _buildMessageInputArea(),
@@ -2426,13 +1244,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Alignment _getAlignment(String? status) {
-    if (status == "Outgoing") {
-      return Alignment.centerRight;
-    } else if (status == "Incoming") {
-      return Alignment.centerLeft;
-    } else {
-      return Alignment.center;
-    }
+    return status == "Outgoing" ? Alignment.centerRight : Alignment.centerLeft;
   }
 
   Widget _buildMessageInputArea() {
@@ -3482,7 +2294,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 width: 80,
                 child: Image.asset("assets/images/img_placeholder.png"),
               )
-            : Image.network(content);
+            : Image.network(content, fit: BoxFit.cover);
 
       case "VIDEO":
         return content.isNotEmpty
@@ -3727,18 +2539,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
   String replacePlaceholders(String messageBody, String exampleBodyText) {
     try {
-      // Try to parse the JSON
       Map<String, dynamic> exampleData = jsonDecode(exampleBodyText);
 
-      // Replace only keys that match the placeholders (e.g., {{1}}, {{2}}, etc.)
       exampleData.forEach((key, value) {
         if (RegExp(r'^\d+$').hasMatch(key)) {
-          // Check if key is numeric
           messageBody = messageBody.replaceAll("{{$key}}", value.toString());
         }
       });
     } catch (e) {
-      // If parsing fails (exampleBodyText is not JSON), replace {{1}} with the text
       messageBody = messageBody.replaceAll("{{1}}", exampleBodyText);
     }
 
@@ -3759,8 +2567,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             pdfUrl: url,
                           )));
             },
-            child:
-                Image.asset("assets/images/pdf.png", height: 120, width: 120));
+            child: Image.asset("assets/images/pdf.png",
+                height: 120, width: MediaQuery.of(context).size.width * 0.65));
       case 'mp4':
         return InkWell(
             onTap: () {
@@ -3838,8 +2646,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 },
               );
             },
-            child:
-                Image.network(url, height: 120, width: 120, fit: BoxFit.cover));
+            child: Image.network(url,
+                height: 120,
+                width: MediaQuery.of(context).size.width * 0.65,
+                fit: BoxFit.cover));
       default:
         return SizedBox.shrink();
     }
@@ -3848,10 +2658,10 @@ class _ChatScreenState extends State<ChatScreen> {
 // Video placeholder widget
   Widget _buildVideoPlaceholder() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 2.0),
       child: Container(
-        height: 150,
-        width: 150,
+        height: 120,
+        width: MediaQuery.of(context).size.width * 0.65,
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(8),
@@ -3860,6 +2670,137 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 30),
         ),
       ),
+    );
+  }
+
+  Widget _buildHeaderMedia(String header, String headerBody) {
+    switch (header) {
+      case "IMAGE":
+        return InkWell(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text("Image Details"),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.network(
+                        headerBody,
+                        height: 300,
+                        width: 300,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (BuildContext context, Widget child,
+                            ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          } else {
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        (loadingProgress.expectedTotalBytes ??
+                                            1)
+                                    : null,
+                              ),
+                            );
+                          }
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ],
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: AppColor.navBarIconColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          "Close",
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+          child: Image.network(headerBody,
+              height: 120,
+              width: MediaQuery.of(context).size.width * 0.65,
+              fit: BoxFit.cover),
+        );
+      case "VIDEO":
+        return InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ViewVideo(
+                            videoUrl: headerBody,
+                          )));
+            },
+            child: _buildVideoPlaceholder());
+      default:
+        return SizedBox.shrink();
+    }
+  }
+
+  Widget _buildButtons(List<dynamic> buttons) {
+    return Wrap(
+      spacing: 10,
+      children: buttons.map((button) {
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () async {
+                  if (button['type'] == "PHONE_NUMBER") {
+                    final Uri phoneUri =
+                        Uri.parse("tel:${button['phone_number']}");
+                    if (await canLaunchUrl(phoneUri)) await launchUrl(phoneUri);
+                  } else if (button['type'] == "URL") {
+                    // Handle URL action
+                  }
+                  print("Button clicked: ${button['text']}");
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[200],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    side:
+                        BorderSide(color: AppColor.navBarIconColor, width: 1.5),
+                  ),
+                ),
+                child: Text(
+                  button['text'] ?? "",
+                  style: TextStyle(
+                    color: AppColor.navBarIconColor,
+                    fontWeight: FontWeight.w700,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }
