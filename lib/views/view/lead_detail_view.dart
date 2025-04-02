@@ -135,8 +135,6 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                     ),
                   ],
                 ),
-                // width: 340,
-                // height: 600,
                 child: Column(
                   children: [
                     Padding(
@@ -367,17 +365,51 @@ class _LeadDetailViewState extends State<LeadDetailView> {
   }
 
   void _deleteUser() {
-    String leadidd = model?.id;
-    print("leadddid=>$leadidd");
+    String? leadidd = model?.id;
+
+    if (leadidd == null || leadidd.isEmpty) {
+      print("Error: leadidd is null or empty");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: Lead ID is invalid.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Ensure it's a well-formed UTF-16 string
+    try {
+      leadidd = leadidd.trim(); // Remove extra spaces
+      print("Lead ID: $leadidd");
+    } catch (e) {
+      print("Invalid UTF-16 string: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: Invalid lead ID format.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     LeadListViewModel(context).deleteById(leadidd).then((value) {
       print("working enter");
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Lead deleted successfully.'),
           backgroundColor: Colors.green,
         ),
       );
-      Navigator.pop(context);
+
+      Provider.of<LeadListViewModel>(context, listen: false).fetch();
+
+      Future.delayed(Duration(milliseconds: 100), () {
+        if (mounted && Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+      });
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

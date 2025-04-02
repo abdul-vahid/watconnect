@@ -22,7 +22,6 @@ class _MessageHistorytView extends State<MessageHistorytView> {
   String? success = '';
   @override
   void initState() {
-    // bottomnavigationbar animated
     super.initState();
 
     Provider.of<MeesageHistoryViewModel>(context, listen: false)

@@ -19,7 +19,7 @@ class MessageViewModel extends BaseListViewModel {
   Future Fetchmsghistorydata({required leadnumber, required number}) async {
     try {
       var url = AppUtils.getUrl(
-          AppConstants.Messagehistory.replaceAll('{leadnumber}', leadnumber)
+          AppConstants.Messagehistory.replaceAll('{leadnumber }', leadnumber)
               .replaceAll('{whatsapp_setting_number}', number));
       print("urll= get hisory msg>$url");
       print("AAAAAAA");

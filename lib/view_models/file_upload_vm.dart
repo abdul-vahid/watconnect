@@ -1,6 +1,5 @@
 //import 'package:http/http.dart' as http;
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:whatsapp/services/api_service.dart';
 import '../core/models/base_list_view_model.dart';
@@ -34,10 +33,5 @@ class FileUploadVm extends BaseListViewModel {
     String url = AppUtils.getUrl("${AppConstants.imagesend}/$parentId");
 
     debugPrint("Uploading file to: $url");
-
-    // var result = await _apiService.uploadImage(image, url, addFileModel, token);
-
-    // debugPrint("File upload response: $result");
-    // return result;
   }
 }

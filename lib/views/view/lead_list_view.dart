@@ -157,6 +157,7 @@ class _LeadListViewState extends State<LeadListView> {
               controller: textController,
               onChanged: _filterLeads,
               decoration: InputDecoration(
+                isDense: true,
                 hintText: 'Search...',
                 hintStyle: TextStyle(
                   color: AppColor.textoriconColor.withOpacity(0.6),
@@ -309,30 +310,6 @@ class _LeadListViewState extends State<LeadListView> {
                       ),
                     ),
 
-                    // Container(
-                    //   decoration: BoxDecoration(
-                    //     border: Border.all(
-                    //       color: Colors.black,
-                    //       width: 0.2,
-                    //     ),
-                    //     borderRadius: BorderRadius.circular(8),
-                    //   ),
-                    //   child: DropdownButtonFormField<String>(
-                    //     hint: const Text('Select Leads Status'),
-                    //     items: uniquePaymentTerms.map((String value) {
-                    //       return DropdownMenuItem<String>(
-                    //         value: value,
-                    //         child: Text(value),
-                    //       );
-                    //     }).toList(),
-                    //     onChanged: (String? newValue) {
-                    //       setState(() {
-                    //         selectlead = newValue;
-                    //       });
-                    //     },
-                    //     value: selectlead,
-                    //   ),
-                    // ),
                     const SizedBox(height: 24),
 
                     Row(
@@ -341,6 +318,7 @@ class _LeadListViewState extends State<LeadListView> {
                         ElevatedButton(
                           onPressed: () {
                             filterLeads(selectlead);
+                            Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColor.cardsColor,
@@ -409,274 +387,6 @@ class _LeadListViewState extends State<LeadListView> {
     );
   }
 
-  // List<Widget> getLeadWidgets() {
-  //   List<Widget> widgets = [];
-  //   Set<String> uniqueIds = {};
-
-  //   for (var viewModel in leadModelList) {
-  //     LeadModel model = viewModel;
-
-  //     var unreadRecord = unreadCountVm?.viewModels.firstWhere(
-  //       (unreadModel) =>
-  //           unreadModel.model.records?.any(
-  //               (record) => record.whatsappNumber == model.whatsapp_number) ??
-  //           false,
-  //       orElse: () => null,
-  //     );
-
-  //     if (unreadRecord != null) {
-  //       // print("hiii working...");
-  //       var matchingRecords = unreadRecord.model.records
-  //           ?.where((record) => record.whatsappNumber == model.whatsapp_number)
-  //           .toList();
-
-  //       var unreadMsgCount =
-  //           matchingRecords != null && matchingRecords.isNotEmpty
-  //               ? matchingRecords.first.unreadMsgCount
-  //               : "0";
-
-  //       if (!uniqueIds.contains(model.id)) {
-  //         uniqueIds.add(model.id!);
-  //         widgets.add(leadRecordList(model, unreadMsgCount));
-  //       }
-  //     } else {
-  //       if (!uniqueIds.contains(model.id)) {
-  //         uniqueIds.add(model.id!);
-  //         widgets.add(leadRecordList(model, "0"));
-  //       }
-  //     }
-  //   }
-
-  //   return widgets;
-  // }
-
-  // List<Widget> getLeadWidgets() {
-  //   List<Widget> widgets = [];
-  //   Set<String> uniqueIds = {};
-
-  //   for (var viewModel in leadModelList) {
-  //     LeadModel model = viewModel;
-
-  //     var unreadRecord = unreadCountVm?.viewModels.firstWhere(
-  //       (unreadModel) =>
-  //           unreadModel.model.records?.any(
-  //               (record) => record.whatsappNumber == model.whatsapp_number) ??
-  //           false,
-  //       orElse: () => null,
-  //     );
-
-  //     if (unreadRecord != null) {
-  //       var matchingRecords = unreadRecord.model.records
-  //           ?.where((record) => record.whatsappNumber == model.whatsapp_number)
-  //           .toList();
-
-  //       var unreadMsgCount =
-  //           matchingRecords != null && matchingRecords.isNotEmpty
-  //               ? matchingRecords.first.unreadMsgCount
-  //               : "";
-
-  //       if (!uniqueIds.contains(model.id)) {
-  //         uniqueIds.add(model.id!);
-
-  //         widgets.add(Dismissible(
-  //           key: UniqueKey(),
-  //           onDismissed: (direction) async {
-  //             await _marksread(model.whatsapp_number ?? "", model.id);
-  //             setState(() {});
-  //           },
-  //           background: Container(
-  //             color: Colors.green,
-  //             alignment: Alignment.centerRight,
-  //             child: const Padding(
-  //               padding: EdgeInsets.only(right: 20),
-  //               child: Icon(Icons.chat_sharp, color: Colors.white),
-  //             ),
-  //           ),
-  //           child: leadRecordList(model, unreadMsgCount),
-  //         ));
-  //       }
-  //     } else {
-  //       if (!uniqueIds.contains(model.id)) {
-  //         uniqueIds.add(model.id!);
-  //         widgets.add(leadRecordList(model, ""));
-  //       }
-  //     }
-  //   }
-  //   return widgets;
-  // }
-
-  // Widget leadRecordList(LeadModel model, String unreadMsgCount) {
-  //   Color statusColor;
-  //   switch (model.leadstatus) {
-  //     case 'Contacted':
-  //       statusColor = const Color.fromARGB(255, 46, 198, 69);
-  //       break;
-  //     case 'Open - Not Contacted && Working - Contacted':
-  //       statusColor = Colors.lightBlue.withOpacity(0.7);
-  //       break;
-  //     case 'Closed - Converted && Closed - Not Converted':
-  //       statusColor = AppColor.motivationCar1Color;
-  //       break;
-  //     default:
-  //       statusColor = Colors.lightBlue.withOpacity(0.7);
-  //       break;
-  //   }
-
-  //   return Dismissible(
-  //     key: UniqueKey(),
-  //     onDismissed: (direction) {
-  //       if (model.whatsapp_number != null) {
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(
-  //             builder: (context) => ChatScreen(
-  //               leadName: '${model.firstname}  ${model.lastname}  ',
-  //               wpnumber: model.whatsapp_number ?? "",
-  //               model: model,
-  //             ),
-  //           ),
-  //         );
-  //       } else {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(
-  //             content: Text('No Phone Number '),
-  //             duration: Duration(seconds: 3),
-  //             backgroundColor: AppColor.motivationCar1Color,
-  //           ),
-  //         );
-  //       }
-  //     },
-  //     background: Container(
-  //       color: Colors.green,
-  //       alignment: Alignment.centerRight,
-  //       child: const Padding(
-  //         padding: EdgeInsets.only(right: 20),
-  //         child: Icon(Icons.chat_sharp, color: Colors.white),
-  //       ),
-  //     ),
-  //     child: Container(
-  //       decoration: BoxDecoration(
-  //         color: Colors.white,
-  //         borderRadius: BorderRadius.circular(10),
-  //         border: Border(
-  //           left: BorderSide(
-  //             color: statusColor,
-  //             width: 5,
-  //           ),
-  //         ),
-  //         boxShadow: [
-  //           BoxShadow(
-  //             color: Colors.black.withOpacity(0.1),
-  //             blurRadius: 5,
-  //             spreadRadius: 3,
-  //             offset: const Offset(2, 4),
-  //           ),
-  //         ],
-  //       ),
-  //       margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-  //       child: Padding(
-  //         padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
-  //         child: InkWell(
-  //           onTap: () {
-  //             Navigator.push(
-  //               context,
-  //               MaterialPageRoute(
-  //                 builder: (context) => LeadDetailView(
-  //                   model: model,
-  //                 ),
-  //               ),
-  //             );
-  //           },
-  //           child: ListTile(
-  //             contentPadding: EdgeInsets.zero,
-  //             title: Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //               children: [
-  //                 Expanded(
-  //                   child: Column(
-  //                     crossAxisAlignment: CrossAxisAlignment.start,
-  //                     children: [
-  //                       Text(
-  //                         "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
-  //                         style: const TextStyle(
-  //                           fontSize: 14,
-  //                           fontWeight: FontWeight.bold,
-  //                         ),
-  //                       ),
-  //                       Text(
-  //                         "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number : ''}",
-  //                         style: const TextStyle(
-  //                           fontSize: 12,
-  //                         ),
-  //                       ),
-  //                       Text(
-  //                         "${model.email?.isNotEmpty == true ? model.email : ''}",
-  //                         style: const TextStyle(
-  //                           fontSize: 12,
-  //                         ),
-  //                       ),
-  //                       Container(
-  //                         decoration: BoxDecoration(
-  //                             borderRadius: BorderRadius.circular(100),
-  //                             color: Colors.lightBlue.withOpacity(0.7)),
-  //                         child: Padding(
-  //                           padding: const EdgeInsets.all(2.0),
-  //                           child: Text(
-  //                             "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
-  //                             style: const TextStyle(
-  //                                 fontSize: 10, color: Colors.white),
-  //                           ),
-  //                         ),
-  //                       ),
-  //                       const SizedBox(
-  //                         height: 4,
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 ),
-  //                 Row(
-  //                   mainAxisAlignment: MainAxisAlignment.end,
-  //                   children: [
-  //                     const SizedBox(width: 10),
-  //                     IconButton(
-  //                       onPressed: () {
-  //                         Navigator.push(
-  //                           context,
-  //                           MaterialPageRoute(
-  //                             builder: (context) => LeadDetailView(
-  //                               model: model,
-  //                             ),
-  //                           ),
-  //                         );
-  //                       },
-  //                       icon: const Icon(
-  //                         Icons.arrow_forward_ios,
-  //                         color: Colors.black45,
-  //                       ),
-  //                       iconSize: 22,
-  //                       tooltip: 'Details',
-  //                     ),
-  //                     if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
-  //                       badges.Badge(
-  //                         badgeContent: Text(
-  //                           '$unreadMsgCount',
-  //                           style: TextStyle(
-  //                             color: Colors.white,
-  //                           ),
-  //                         ),
-  //                       )
-  //                     else
-  //                       SizedBox.shrink(),
-  //                   ],
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
   List<Widget> getLeadWidgets() {
     List<Widget> widgets = [];
     Set<String> uniqueIds = {};
@@ -684,16 +394,8 @@ class _LeadListViewState extends State<LeadListView> {
     for (var viewModel in leadModelList) {
       LeadModel model = viewModel;
 
-      // var unreadRecord = unreadCountVm?.viewModels.firstWhere(
-      //   (unreadModel) =>
-      //       unreadModel.model.records?.any(
-      //           (record) => record.whatsappNumber == model.whatsapp_number) ??
-      //       false,
-      //   orElse: () => null,
-      // );
       var unreadRecord = unreadCountVm?.viewModels.firstWhere(
         (unreadModel) {
-          // Check if model is UnreadMsgModel
           if (unreadModel.model is UnreadMsgModel) {
             var unreadMsgModel = unreadModel.model as UnreadMsgModel;
             return unreadMsgModel.records?.any(

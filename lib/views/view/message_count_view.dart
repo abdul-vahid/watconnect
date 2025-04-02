@@ -1,4 +1,3 @@
-// // -----------------End Code of Record List Method-------------------------
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +10,6 @@ import '../../view_models/campaign_vm.dart';
 import '../../view_models/unread_count_vm.dart';
 import 'campaign_add_update_view.dart';
 import 'campaign_detail_view.dart';
-// import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 
 class MessageCountListView extends StatefulWidget {
   const MessageCountListView({super.key});
@@ -145,31 +143,6 @@ class _MessageCountListView extends State<MessageCountListView> {
                     },
                   ),
                 ),
-
-                // suffixIcon: Padding(
-                //   padding: const EdgeInsets.all(5.0),
-                //   child: Align(
-                //     alignment: Alignment.topLeft,
-                //     child: Container(
-                //       height: 40,
-                //       width: 40,
-                //       child: FloatingActionButton(
-                //         elevation: 0.5,
-                //         backgroundColor: AppColor.navBarIconColor,
-                //         shape: const CircleBorder(),
-                //         tooltip: 'Filter',
-                //         onPressed: () {
-                //           _showFilterBottomSheet(context);
-                //         },
-                //         child: const Icon(
-                //           Icons.filter_list_rounded,
-                //           color: Colors.white,
-                //           size: 23,
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                // ),
                 prefixIconConstraints: const BoxConstraints(minWidth: 40),
               ),
             ),
@@ -179,14 +152,6 @@ class _MessageCountListView extends State<MessageCountListView> {
       body: AppUtils.getAppBody(campaignlistvm, _pageBody),
     );
   }
-
-  // Future<void> _pullRefresh() async {
-  //   campaign?.viewModels.clear();
-  //   Provider.of<UnreadCountVm>(context, listen: false).fetch();
-  //   campaign = Provider.of<CampaignViewModel>(context, listen: false);
-  //   isRefresh = true;
-  //   return Future<void>.delayed(const Duration(seconds: 2));
-  // }
 
   void _showFilterBottomSheet(BuildContext context) {
     showModalBottomSheet(

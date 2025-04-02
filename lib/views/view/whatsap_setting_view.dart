@@ -48,32 +48,11 @@ class _WhatsapSettingViewState extends State<WhatsapSettingView> {
         centerTitle: true,
         elevation: 0,
         automaticallyImplyLeading: false,
-        // bottom: PreferredSize(
-        //   preferredSize: const Size.fromHeight(40.0),
-        //   child: Container(
-        //     height: 30,
-        //     width: MediaQuery.of(context).size.width,
-        //     decoration: const BoxDecoration(
-        //       boxShadow: [],
-        //       border: Border(
-        //         bottom: BorderSide(
-        //           width: 1.5,
-        //           color: Color.fromARGB(255, 0, 0, 0),
-        //         ),
-        //       ),
-        //     ),
-        //     padding:
-        //         const EdgeInsets.only(top: 12, bottom: 12, left: 10, right: 10),
-        //   ),
-        // ),
       ),
       body: RefreshIndicator(
         onRefresh: _pullRefresh,
         child: _pageBody(),
       ),
-      // bottomNavigationBar: AppUtils.buildAnimatedNotchBottomBar(
-      //   context,
-      // ),
     );
   }
 

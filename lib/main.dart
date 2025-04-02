@@ -16,7 +16,6 @@ import 'package:whatsapp/view_models/campaign_count_vm.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/view_models/message_history_vm.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
-import 'package:whatsapp/view_models/theme_changer.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/view_models/user_data_list_vm.dart';
 import 'firebase_options.dart';
@@ -80,14 +79,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AutoResponseViewModel(context)),
         ChangeNotifierProvider(
             create: (_) => WhatsappSettingViewModel(context)),
-        // ChangeNotifierProvider(create: (_) => AccountListViewModel(context)),
         ChangeNotifierProvider(create: (_) => CampaignCountViewModel(context)),
-        // ChangeNotifierProvider(create: (_) => ContactListViewModel(context)),
         ChangeNotifierProvider(create: (_) => ChartListViewModel(context)),
-        // ChangeNotifierProvider(create: (_) => MeetingListViewModel(context)),
         ChangeNotifierProvider(create: (_) => GetUserViewModel(context)),
         ChangeNotifierProvider(create: (_) => UserDataListViewModel(context)),
-        // ChangeNotifierProvider(create: (_) => TaskListViewModel(context)),
         ChangeNotifierProvider(create: (_) => CampaignViewModel(context)),
         ChangeNotifierProvider(create: (_) => MessageController())
       ],

@@ -7,7 +7,6 @@ import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_not
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-//import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/views/view/edit_profile_view.dart';
@@ -16,8 +15,6 @@ import '../../models/get_user.dart';
 import '../../models/user_model/user_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
-// ignore: unused_import
-import '../../utils/enum.dart';
 import '../../view_models/get_user_vm.dart';
 import '../../view_models/user_data_list_vm.dart' show UserDataListViewModel;
 import '../../view_models/user_list_vm.dart';
@@ -134,6 +131,7 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _getBody() {
+    String fullname = fName! + lName!;
     print("this func call when refresh");
 
     print("logourl::: ${userModel?.logourl ?? ""}");
@@ -182,24 +180,6 @@ class _ProfileViewState extends State<ProfileView> {
                                 errorWidget: (context, url, error) =>
                                     Icon(Icons.error),
                               ),
-
-                              //  FadeInImage.assetNetwork(
-                              //   placeholder: "assets/images/loading.gif",
-                              //   image: ms.userProfile,
-                              //   fit: BoxFit.cover,
-                              //   height: 100,
-                              //   width: 100,
-                              //   imageErrorBuilder:
-                              //       (context, error, stackTrace) {
-                              //     print("some error> in widget::::${error}");
-                              //     return Image.network(
-                              //       'https://sandbox.watconnect.com/public/demo/users/${userModel?.id}',
-                              //       fit: BoxFit.cover,
-                              //       height: 100,
-                              //       width: 100,
-                              //     );
-                              //   },
-                              // ),
                             ),
                           ),
                         );
@@ -235,7 +215,8 @@ class _ProfileViewState extends State<ProfileView> {
                 const SizedBox(height: 20),
                 Center(
                   child: Text(
-                    userModel?.username ?? "",
+                    // userModel?.username ?? "",
+                    fullname,
                     style: const TextStyle(
                         fontSize: 20,
                         color: Color.fromARGB(255, 255, 255, 255)),
@@ -479,7 +460,7 @@ class _ProfileViewState extends State<ProfileView> {
     var userMap = user?.toJson();
     print("userLLL >>> ${userMap}");
     Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
-    // AppUtils.onLoading(context, "Please Wait...");
+
     var selectedImage = await chooseImage("Gallery");
     print("select mage=>$selectedImage");
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -491,7 +472,6 @@ class _ProfileViewState extends State<ProfileView> {
       UserListViewModel()
           .uploadFile(selectedImage, userMap.toString(), url)
           .then((value) async {
-        // print("val>>>> ${value}");
         await AppUtils.getToken();
         getProfileData();
         MessageController msgController =
@@ -501,22 +481,6 @@ class _ProfileViewState extends State<ProfileView> {
       }).catchError((error) {
         print("Error uploading file: $error");
       });
-
-      // UserListViewModel()
-      //     .updateProfilePicture((userModel?.logourl)!, selectedImage)
-      //     .then((records) {
-      //   setState(() {
-      //     prefs.setString(SharedPrefsConstants.userKey, (userModel?.toJson())!);
-      //     profileUrl = AppUtils.getImageUrl(records);
-      //   });
-      //   Timer(const Duration(seconds: 1), (() {
-      //     Navigator.pop(context);
-      //   }));
-      // }).catchError((onError) {
-      //   Navigator.pop(context);
-      //   List<String> errorMessages = AppUtils.getErrorMessages(onError);
-      //   AppUtils.getAlert(context, errorMessages, title: "Error Alert");
-      // });
     } else {
       Navigator.pop(context);
     }
