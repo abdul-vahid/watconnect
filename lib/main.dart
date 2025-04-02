@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 // import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -96,6 +97,7 @@ class MyApp extends StatelessWidget {
             backgroundColor: AppColor.navBarIconColor,
           ),
         ),
+        builder: EasyLoading.init(),
         home: const SplashView(),
       ),
     );

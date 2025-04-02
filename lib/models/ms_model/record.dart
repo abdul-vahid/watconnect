@@ -28,6 +28,7 @@ class Record {
   String? headerBody;
   String? messageBody;
   String? exampleBodyText;
+  String? bodyTextParams;
   String? footer;
   String? messagingProduct;
   String? recipientType;
@@ -71,6 +72,7 @@ class Record {
       this.headerBody,
       this.messageBody,
       this.exampleBodyText,
+      this.bodyTextParams,
       this.footer,
       this.buttons,
       this.title,
@@ -114,6 +116,7 @@ class Record {
         headerBody: data['header_body'] as String?,
         messageBody: data['message_body'] as String?,
         exampleBodyText: data['example_body_text'] as String?,
+        bodyTextParams: data['body_text_params'] as String?,
         footer: data['footer'] as String?,
         messagingProduct: data['messaging_product'] as String?,
         recipientType: data['recipient_type'] as String?,
