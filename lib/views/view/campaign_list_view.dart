@@ -267,10 +267,10 @@ class _CampaignListView extends State<CampaignListView> {
                     // Payment Term Dropdown
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                          width: 0.2,
-                        ),
+                        // border: Border.all(
+                        //   color: Colors.black,
+                        //   width: 0.2,
+                        // ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: DropdownButtonFormField<String>(

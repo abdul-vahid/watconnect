@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -73,7 +74,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String? selectedTemplateId;
   String templetmsgid = "";
   var templeteViewModel;
-
+  late Timer _timer;
   List deleteMgs = [];
   String messageid = "";
   late MessageViewModel messageViewModel;
@@ -121,6 +122,12 @@ class _ChatScreenState extends State<ChatScreen> {
       _scrollToBottom();
     });
     print("Lead Number =>${widget.wpnumber}    ");
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   void _scrollToBottom() {
@@ -459,6 +466,8 @@ class _ChatScreenState extends State<ChatScreen> {
           _controller.clear();
           setState(() {
             showLoader = false;
+            image = null;
+            getHistory();
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -690,6 +699,25 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<void> _pickDocFromGallery() async {
+    final pickedFile = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: [
+        "pdf",
+      ],
+    );
+    if (pickedFile != null) {
+      setState(() {
+        file = pickedFile.files.first;
+        image = File(file!.path!);
+        // _Vcontroller = VideoPlayerController.file(image!);
+        print("image::: ${image}");
+        fileNameController.text = file!.name;
+      });
+    }
+  }
+
   Future<void> _pickImageFromCamera() async {
     final pickedFile = await picker.pickImage(
       source: ImageSource.camera,
@@ -769,6 +797,8 @@ class _ChatScreenState extends State<ChatScreen> {
             .then((value) {
           setState(() {
             showLoader = false;
+            image = null;
+            getHistory();
           });
           print("\x1B[32msendhistoryimagesendhistoryimage$value\x1B[0m");
           return null;
@@ -776,12 +806,16 @@ class _ChatScreenState extends State<ChatScreen> {
       } else {
         setState(() {
           showLoader = false;
+          image = null;
+          getHistory();
         });
         debugPrint('Image upload failed or response was null');
       }
     } else {
       setState(() {
         showLoader = false;
+        image = null;
+        getHistory();
       });
       debugPrint('No image selected');
     }
@@ -891,7 +925,9 @@ class _ChatScreenState extends State<ChatScreen> {
     print("after all functions arecalled::::");
     setState(() {
       isImageSent = true;
+      getHistory();
       showLoader = false;
+      image = null;
     });
   }
 
@@ -970,6 +1006,8 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       isImageSent = true;
       showLoader = false;
+      image = null;
+      getHistory();
     });
   }
 
@@ -999,6 +1037,12 @@ class _ChatScreenState extends State<ChatScreen> {
                     result = replacePlaceholders(
                         allMessages[index].messageBody ?? "",
                         allMessages[index].bodyTextParams ?? "");
+                  } else if (allMessages[index].messageBody != null &&
+                      allMessages[index].exampleBodyText != null &&
+                      regex.hasMatch(allMessages[index].messageBody)) {
+                    result = replacePlaceholders(
+                        allMessages[index].messageBody ?? "",
+                        allMessages[index].exampleBodyText ?? "");
                   } else {
                     result = allMessages[index].messageBody ?? "";
                   }
@@ -1040,6 +1084,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                   return (allMessages[index].header == null &&
                           allMessages[index].messageBody == null &&
+                          imageUrl.isEmpty &&
                           (allMessages[index].message == null ||
                               allMessages[index].message.toString().isEmpty))
                       ? SizedBox()
@@ -1337,18 +1382,24 @@ class _ChatScreenState extends State<ChatScreen> {
                                     ),
                                   ),
                                 )
-                              : Container(
-                                  width: 50,
-                                  height: 50,
-                                  margin: const EdgeInsets.only(right: 8.0),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    image: DecorationImage(
-                                      image: FileImage(image!),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                )
+                              : image.toString().split('.').last.contains('mp4')
+                                  ? Icon(
+                                      Icons.play_arrow,
+                                      color: Colors.black,
+                                    )
+                                  : Container(
+                                      width: 50,
+                                      height: 50,
+                                      margin: const EdgeInsets.only(right: 8.0),
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        image: DecorationImage(
+                                          image: FileImage(image!),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    )
                           : const SizedBox.shrink(),
                       Expanded(
                         child: TextField(
@@ -1434,6 +1485,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                       .isNotEmpty) {
                                     setState(() {
                                       showLoader = false;
+                                      image = null;
+                                      getHistory();
                                     });
                                     messagesendd(_controller.text)
                                         .then((onValue) {
@@ -1453,6 +1506,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       });
                                     });
                                   } else {
+                                    showLoader = false;
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
@@ -1746,6 +1800,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                       'DOCUMENT'
                                               ? Image.asset(
                                                   "assets/images/pdf.png",
+                                                  height: 100,
                                                 )
                                               : _buildMediaWidget(
                                                   selectedHeader.format,
@@ -1803,51 +1858,61 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                 SizedBox(height: 15),
 
-                                if (selectedHeader != null)
-                                  selectedHeader.format == 'IMAGE' ||
-                                          selectedHeader.format == 'VIDEO' ||
-                                          selectedHeader.format == 'DOCUMENT'
-                                      ? InkWell(
-                                          onTap: () {
-                                            if (selectedHeader.format ==
-                                                'IMAGE') {
-                                              _pickImaFromGallery()
-                                                  .then((onValue) {
-                                                if (file != null) {
-                                                  setState(() {
-                                                    isOtherFileSelected = true;
-                                                  });
-                                                }
-                                              });
-                                            } else if (selectedHeader.format ==
-                                                'VIDEO') {
-                                              _pickVideoFromGallery()
-                                                  .then((onValue) {
-                                                if (file != null) {
-                                                  setState(() {
-                                                    isOtherFileSelected = true;
-                                                  });
-                                                }
-                                              });
-                                            }
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                                color: Colors.grey[400],
-                                                border: Border.all(
-                                                    color: AppColor
-                                                        .navBarIconColor)),
-                                            child: Center(
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8.0),
-                                                child: Text("Choose File"),
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      : SizedBox(),
+                                // if (selectedHeader != null)
+                                //   selectedHeader.format == 'IMAGE' ||
+                                //           selectedHeader.format == 'VIDEO' ||
+                                //           selectedHeader.format == 'DOCUMENT'
+                                //       ? InkWell(
+                                //           onTap: () {
+                                //             if (selectedHeader.format ==
+                                //                 'IMAGE') {
+                                //               _pickImaFromGallery()
+                                //                   .then((onValue) {
+                                //                 if (file != null) {
+                                //                   setState(() {
+                                //                     isOtherFileSelected = true;
+                                //                   });
+                                //                 }
+                                //               });
+                                //             } else if (selectedHeader.format ==
+                                //                 'VIDEO') {
+                                //               _pickVideoFromGallery()
+                                //                   .then((onValue) {
+                                //                 if (file != null) {
+                                //                   setState(() {
+                                //                     isOtherFileSelected = true;
+                                //                   });
+                                //                 }
+                                //               });
+                                //             } else if (selectedHeader.format ==
+                                //                 'DOCUMENT') {
+                                //               _pickDocFromGallery()
+                                //                   .then((onValue) {
+                                //                 if (file != null) {
+                                //                   setState(() {
+                                //                     isOtherFileSelected = true;
+                                //                   });
+                                //                 }
+                                //               });
+                                //             }
+                                //           },
+                                //           child: Container(
+                                //             decoration: BoxDecoration(
+                                //                 color: Colors.grey[400],
+                                //                 border: Border.all(
+                                //                     color: AppColor
+                                //                         .navBarIconColor)),
+                                //             child: Center(
+                                //               child: Padding(
+                                //                 padding:
+                                //                     const EdgeInsets.symmetric(
+                                //                         vertical: 8.0),
+                                //                 child: Text("Choose File"),
+                                //               ),
+                                //             ),
+                                //           ),
+                                //         )
+                                //       : SizedBox(),
                                 SizedBox(
                                   height: 10,
                                 ),
@@ -1942,29 +2007,30 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                   if (selectedHeader.format == "IMAGE" ||
                                       selectedHeader.format == "VIDEO") {
-                                    if (isOtherFileSelected) {
-                                      final prefs =
-                                          await SharedPreferences.getInstance();
-                                      String? number =
-                                          prefs.getString('phoneNumber');
-                                      String? leadid = widget.model.id;
-                                      String? sendimagedatabase =
-                                          await messageViewModel
-                                              .uploadFiledb(
-                                                  image!, number, leadid)
-                                              .then((value) async {
-                                        print(
-                                            "video sedn video send send----upload dididi->$value");
+                                    // if (isOtherFileSelected) {
+                                    //   final prefs =
+                                    //       await SharedPreferences.getInstance();
+                                    //   String? number =
+                                    //       prefs.getString('phoneNumber');
+                                    //   String? leadid = widget.model.id;
+                                    //   String? sendimagedatabase =
+                                    //       await messageViewModel
+                                    //           .uploadFiledb(
+                                    //               image!, number, leadid)
+                                    //           .then((value) async {
+                                    //     print(
+                                    //         "video sedn video send send----upload dididi->$value");
 
-                                        Map<String, dynamic> response =
-                                            jsonDecode(value);
+                                    //     Map<String, dynamic> response =
+                                    //         jsonDecode(value);
 
-                                        fileid = response['records']?[0]['id'];
+                                    //     fileid = response['records']?[0]['id'];
 
-                                        print("ID: $fileid");
-                                        docId = await getDocId();
-                                      });
-                                    } else {
+                                    //     print("ID: $fileid");
+                                    //     docId = await getDocId();
+                                    //   });
+                                    // } else
+                                    {
                                       image = await urlToFile(imgToShow);
                                       docId = await getDocId();
                                     }
@@ -2061,11 +2127,13 @@ class _ChatScreenState extends State<ChatScreen> {
                                                 leadnumber: leadnumber,
                                                 number: number)
                                             .then((onValue) {
+                                          getHistory();
                                           Navigator.pop(context);
                                         });
                                       });
                                     });
                                   }
+                                  getHistory();
                                 },
                                 child: _isLoading
                                     ? CircularProgressIndicator(
@@ -2878,7 +2946,12 @@ class _ChatScreenState extends State<ChatScreen> {
                         Uri.parse("tel:${button['phone_number']}");
                     if (await canLaunchUrl(phoneUri)) await launchUrl(phoneUri);
                   } else if (button['type'] == "URL") {
-                    await launchUrl(button['url']);
+                    final Uri url = Uri.parse(button['url']);
+
+                    if (!await launchUrl(url,
+                        mode: LaunchMode.externalApplication)) {
+                      throw Exception('Could not launch $url');
+                    }
                   }
                   print("Button clicked: ${button['text']}");
                 },
@@ -2904,5 +2977,14 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       }).toList(),
     );
+  }
+
+  Future<void> getHistory() async {
+    var leadnumber = widget.wpnumber;
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+    print("number=>$number");
+    await Provider.of<MessageViewModel>(context, listen: false)
+        .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
   }
 }

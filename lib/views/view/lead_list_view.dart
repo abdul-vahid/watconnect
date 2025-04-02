@@ -336,6 +336,7 @@ class _LeadListViewState extends State<LeadListView> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
+                            Navigator.pop(context);
                             filterLeads(selectlead);
                           },
                           style: ElevatedButton.styleFrom(
