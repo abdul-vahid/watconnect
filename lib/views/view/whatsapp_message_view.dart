@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -198,7 +199,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           actions: [
-            msgController.msgToDelete.length > 1
+            msgController.msgToDelete.length > 0
                 ? IconButton(
                     icon: const Icon(
                       Icons.delete,
@@ -1056,11 +1057,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         onLongPress: () {
                           msgController
                               .updateDeleteMsgList(allMessages[index].id ?? "");
-                          _showSimpleDialog(allMessages[index].id ?? "");
-
-                          if (msgController.msgToDelete.length > 1) {
-                            Navigator.pop(context);
-                          }
+                          // _showSimpleDialog(allMessages[index].id ?? "");
                         },
                         child: Container(
                           color: msgController.msgToDelete
@@ -1229,14 +1226,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void singlemsgdelete(List idsToDelete) async {
-    print("Single delete attempt for message with ID: $msghistoryid");
+    print("Single delete attempt for message with ID: $idsToDelete");
 
-    if (msghistoryid.isEmpty) {
-      print("Invalid message ID. Cannot delete.");
-      return;
-    }
-    var msghistoryidd = msghistoryid;
-    print("sdhsdhjdhjsdhfdks=>$msghistoryidd");
+    // if (msghistoryid.isEmpty) {
+    //   print("Invalid message ID. Cannot delete.");
+    //   return;
+    // }
+    // var msghistoryidd = msghistoryid;
+    // print("sdhsdhjdhjsdhfdks=>$msghistoryidd");
 
     var bodyy = jsonEncode({"ids": idsToDelete});
 
@@ -1249,7 +1246,7 @@ class _ChatScreenState extends State<ChatScreen> {
       print("number=>$number");
       await Provider.of<MessageViewModel>(context, listen: false)
           .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
-      Navigator.of(context).pop();
+      // Navigator.of(context).pop();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("deleted sucefully")));
 
@@ -1772,41 +1769,51 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                 SizedBox(height: 15),
 
-                                InkWell(
-                                  onTap: () {
-                                    if (selectedHeader.format == 'IMAGE') {
-                                      _pickImaFromGallery().then((onValue) {
-                                        if (file != null) {
-                                          setState(() {
-                                            isOtherFileSelected = true;
-                                          });
-                                        }
-                                      });
-                                    } else if (selectedHeader.format ==
-                                        'VIDEO') {
-                                      _pickVideoFromGallery().then((onValue) {
-                                        if (file != null) {
-                                          setState(() {
-                                            isOtherFileSelected = true;
-                                          });
-                                        }
-                                      });
-                                    }
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.grey[400],
-                                        border: Border.all(
-                                            color: AppColor.navBarIconColor)),
-                                    child: Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 8.0),
-                                        child: Text("Choose File"),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                if (selectedHeader != null)
+                                  selectedHeader.format == 'IMAGE' ||
+                                          selectedHeader.format == 'VIDEO' ||
+                                          selectedHeader.format == 'DOCUMENT'
+                                      ? InkWell(
+                                          onTap: () {
+                                            if (selectedHeader.format ==
+                                                'IMAGE') {
+                                              _pickImaFromGallery()
+                                                  .then((onValue) {
+                                                if (file != null) {
+                                                  setState(() {
+                                                    isOtherFileSelected = true;
+                                                  });
+                                                }
+                                              });
+                                            } else if (selectedHeader.format ==
+                                                'VIDEO') {
+                                              _pickVideoFromGallery()
+                                                  .then((onValue) {
+                                                if (file != null) {
+                                                  setState(() {
+                                                    isOtherFileSelected = true;
+                                                  });
+                                                }
+                                              });
+                                            }
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                                color: Colors.grey[400],
+                                                border: Border.all(
+                                                    color: AppColor
+                                                        .navBarIconColor)),
+                                            child: Center(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8.0),
+                                                child: Text("Choose File"),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : SizedBox(),
                                 SizedBox(
                                   height: 10,
                                 ),
@@ -1859,6 +1866,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                   bool anyEmpty = controllers.any(
                                       (controller) => controller.text.isEmpty);
                                   if (anyEmpty) {
+                                    EasyLoading.showToast(
+                                        'All fields are required');
+
                                     setState(() {
                                       _isLoading = false;
                                     });
@@ -2791,6 +2801,28 @@ class _ChatScreenState extends State<ChatScreen> {
                           )));
             },
             child: _buildVideoPlaceholder());
+
+      case "DOCUMENT":
+        return InkWell(
+          onTap: () {
+            // print("headerBody>>> ${headerBody}");
+            try {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ViewPdf(
+                            pdfUrl: headerBody,
+                          )));
+            } catch (e) {
+              print("erorore opening file>>> ${e}");
+            }
+          },
+          child: Image.asset(
+            "assets/images/doc.png",
+            height: 120,
+            width: 120,
+          ),
+        );
       default:
         return SizedBox.shrink();
     }
