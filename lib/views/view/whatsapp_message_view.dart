@@ -2878,7 +2878,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         Uri.parse("tel:${button['phone_number']}");
                     if (await canLaunchUrl(phoneUri)) await launchUrl(phoneUri);
                   } else if (button['type'] == "URL") {
-                    // Handle URL action
+                    await launchUrl(button['url']);
                   }
                   print("Button clicked: ${button['text']}");
                 },

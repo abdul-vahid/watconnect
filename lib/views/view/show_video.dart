@@ -63,23 +63,32 @@ class _ViewVideoState extends State<ViewVideo> {
                     ),
                   ),
                   if (!_controller.value.isPlaying)
-                    IconButton(
-                      icon: const Icon(Icons.play_arrow,
-                          size: 60, color: Colors.white),
-                      onPressed: _togglePlayPause,
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black45,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: IconButton(
+                          icon: const Icon(Icons.play_arrow,
+                              size: 30, color: Colors.white),
+                          onPressed: _togglePlayPause,
+                        ),
+                      ),
                     ),
                 ],
               )
             : const CircularProgressIndicator(), // Show loader while video loads
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
-        onPressed: _togglePlayPause,
-        child: Icon(
-          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-          color: Colors.white,
-        ),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: Colors.blue,
+      //   onPressed: _togglePlayPause,
+      //   child: Icon(
+      //     _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+      //     color: Colors.white,
+      //   ),
+      // ),
     );
   }
 }
