@@ -207,11 +207,11 @@ class _TempleteListView extends State<TempleteListView> {
                     const SizedBox(height: 16),
                     InputDecorator(
                       decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        contentPadding: const EdgeInsets.all(10),
-                      ),
+                          // border: OutlineInputBorder(
+                          //   borderRadius: BorderRadius.circular(12.0),
+                          // ),
+                          // contentPadding: const EdgeInsets.all(10),
+                          ),
                       child: DropdownButtonFormField<String>(
                         isDense: true,
                         // isExpanded: true,
