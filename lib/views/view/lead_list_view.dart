@@ -275,10 +275,6 @@ class _LeadListViewState extends State<LeadListView> {
                     // Payment Term Dropdown
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                          width: 0.2,
-                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: DropdownButtonFormField<String>(
@@ -490,6 +486,8 @@ class _LeadListViewState extends State<LeadListView> {
 
           leads?.viewModels.clear();
           Provider.of<LeadListViewModel>(context, listen: false).fetch();
+          var a = Provider.of<UnreadCountVm>(context, listen: false)
+              .fetchunreadcount(number: number ?? "");
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
