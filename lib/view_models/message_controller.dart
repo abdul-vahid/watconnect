@@ -13,6 +13,15 @@ class MessageController extends ChangeNotifier {
     } else {
       msgToDelete.add(val);
     }
+
+    print("msgToDelete>::>>:>>>:::>>>>  ${msgToDelete}");
+
+    notifyListeners();
+  }
+
+  clearDeleteList() {
+    msgToDelete.clear();
+    msgToDelete = [];
     notifyListeners();
   }
 
