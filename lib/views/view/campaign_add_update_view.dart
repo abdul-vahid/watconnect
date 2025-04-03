@@ -571,7 +571,18 @@ class _Forms extends State<CampaignAddUpdateView> {
   }
 
   void onButtonPressed() async {
+    print(
+        "controllers::: ${controllers}   ${isChecked}  ${image}  ${isOtherFileSelected}   ${imgToShow}");
     CampaignViewModel getaccountData = CampaignViewModel(context);
+
+    if (controllers.isNotEmpty) {
+      bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
+      if (anyEmpty) {
+        EasyLoading.showToast('All fields are required');
+
+        return;
+      }
+    }
 
     if (_addleadFormKey.currentState!.validate()) {
       if (_name == null || _name.toString().isEmpty) {
@@ -615,7 +626,6 @@ class _Forms extends State<CampaignAddUpdateView> {
 
           // await getFileData.addFiles(image!, campaignId, fileData);
         }
-        // ignore: use_build_context_synchronously
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
@@ -730,10 +740,14 @@ class _Forms extends State<CampaignAddUpdateView> {
     }
   }
 
+  bool isChecked = false;
+  String imgToShow = "";
+  bool isOtherFileSelected = false;
   Future<void> _sendTemplateSheet() {
-    bool isChecked = false;
+    isChecked = false;
+    image = null;
     String text = selectedBody.text;
-    String imgToShow = "";
+    imgToShow = "";
     if (selectedHeader != null &&
         selectedHeader.example != null &&
         selectedHeader.example.headerHandle != null &&
@@ -743,13 +757,14 @@ class _Forms extends State<CampaignAddUpdateView> {
     } else {
       imgToShow = "";
     }
+    controllers.clear();
 
     final regex = RegExp(r'\{\{\d+\}\}');
 
     int count = regex.allMatches(text).length;
     file = null;
     controllers = List.generate(count, (index) => TextEditingController());
-    bool isOtherFileSelected = false;
+    isOtherFileSelected = false;
 
     return showModalBottomSheet<void>(
       context: context,
@@ -929,8 +944,9 @@ class _Forms extends State<CampaignAddUpdateView> {
                                             'VIDEO') {
                                           _pickVideoFromGallery()
                                               .then((onValue) {
-                                            if (file != null) {
+                                            if (onValue != null) {
                                               setState(() {
+                                                image = onValue;
                                                 isOtherFileSelected = true;
                                               });
                                             }
@@ -938,8 +954,9 @@ class _Forms extends State<CampaignAddUpdateView> {
                                         } else if (selectedHeader.format ==
                                             'DOCUMENT') {
                                           _pickDocFromGallery().then((onValue) {
-                                            if (file != null) {
+                                            if (onValue != null) {
                                               setState(() {
+                                                image = onValue;
                                                 isOtherFileSelected = true;
                                               });
                                             }
@@ -994,6 +1011,18 @@ class _Forms extends State<CampaignAddUpdateView> {
                     ),
                     InkWell(
                       onTap: () {
+                        setState(() {});
+                        if (controllers.isNotEmpty) {
+                          bool anyEmpty = controllers
+                              .any((controller) => controller.text.isEmpty);
+                          if (anyEmpty) {
+                            EasyLoading.showToast('All fields are required');
+
+                            return;
+                          }
+                        }
+                        Navigator.pop(context);
+                        print("image here:: ${image}  ${isOtherFileSelected}");
                         addCampaignTemplate(
                             fileToSend: image, sendToAdmin: isChecked);
                       },
@@ -1089,7 +1118,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     }
   }
 
-  Future<void> _pickDocFromGallery() async {
+  Future<File?> _pickDocFromGallery() async {
     final pickedFile = await FilePicker.platform.pickFiles(
       allowMultiple: false,
       type: FileType.custom,
@@ -1103,12 +1132,16 @@ class _Forms extends State<CampaignAddUpdateView> {
         image = File(file!.path!);
         // _Vcontroller = VideoPlayerController.file(image!);
         print("image::: ${image}");
+
         fileNameController.text = file!.name;
       });
+      return image;
+    } else {
+      return null;
     }
   }
 
-  Future<void> _pickVideoFromGallery() async {
+  Future<File?> _pickVideoFromGallery() async {
     final pickedFile = await FilePicker.platform.pickFiles(
       allowMultiple: false,
       type: FileType.custom,
@@ -1125,6 +1158,9 @@ class _Forms extends State<CampaignAddUpdateView> {
         print("image::: ${image}");
         fileNameController.text = file!.name;
       });
+      return image;
+    } else {
+      return null;
     }
   }
 
