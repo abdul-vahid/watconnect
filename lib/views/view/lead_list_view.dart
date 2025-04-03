@@ -781,12 +781,19 @@ class _LeadListViewState extends State<LeadListView> {
                 model: model,
               ),
             ),
-          );
+          ).then((_) {
+            // Call your function here when user comes back
+            Provider.of<UnreadCountVm>(context, listen: false)
+                .fetchunreadcount(number: number ?? "");
+            setState(() {
+              unreadMsgCount = "0";
+              unreadMsgCount = "";
+            });
+            print("unreadMsgCount====${unreadMsgCount}  ");
+          });
 
           leads?.viewModels.clear();
           Provider.of<LeadListViewModel>(context, listen: false).fetch();
-          var a = Provider.of<UnreadCountVm>(context, listen: false)
-              .fetchunreadcount(number: number ?? "");
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
