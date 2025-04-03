@@ -22,7 +22,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
-
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
 import 'package:whatsapp/models/lead_model.dart';
