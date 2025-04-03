@@ -149,8 +149,7 @@ class _ChatScreenState extends State<ChatScreen> {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
-          duration:
-              const Duration(milliseconds: 500), // Adjust duration if needed
+          duration: const Duration(milliseconds: 500),
           curve: Curves.easeOut,
         );
       }
@@ -3041,7 +3040,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       socket!.onConnect((_) {
         print('Connected to WebSocket');
-        socket!.emit("setup", {"id": "12345"});
+        socket!.emit("setup", userId);
       });
 
       socket!.on("connected", (_) {
