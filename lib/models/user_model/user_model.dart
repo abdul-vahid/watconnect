@@ -29,10 +29,10 @@ class UserModel extends BaseModel {
   factory UserModel.fromMap(Map<String, dynamic> data) => UserModel(
         success: data['success'] as bool?,
         authToken: data['authToken'] as String?,
-        username: data['username'] as String?,
-        userrole: data['userrole'] as String?,
-        companyname: data['companyname'] as String?,
-        logourl: data['logourl'] as String?,
+        username: (data['username'] as String?)?.trim(), // Trimmed
+        userrole: (data['userrole'] as String?)?.trim(), // Trimmed
+        companyname: (data['companyname'] as String?)?.trim(), // Trimmed
+        logourl: (data['logourl'] as String?)?.trim(), // Trimmed
         sidebarbgurl: data['sidebarbgurl'] as String?,
         id: data['id'] as String?,
         permissions: (data['permissions'] as List<dynamic>?)
@@ -49,25 +49,21 @@ class UserModel extends BaseModel {
   Map<String, dynamic> toMap() => {
         'success': success,
         'authToken': authToken,
-        'username': username,
-        'userrole': userrole,
-        'companyname': companyname,
-        'logourl': logourl,
+        'username': username?.trim(), // Trimmed
+        'userrole': userrole?.trim(), // Trimmed
+        'companyname': companyname?.trim(), // Trimmed
+        'logourl': logourl?.trim(), // Trimmed
         'sidebarbgurl': sidebarbgurl,
         'id': id,
         'permissions': permissions?.map((e) => e.toMap()).toList(),
       };
 
-  /// `dart:convert`
-  ///
-  /// Parses the string and returns the resulting Json object as [UserModel].
+  /// Parses the string and returns the resulting JSON object as [UserModel].
   @override
   factory UserModel.fromJson(String data) {
     return UserModel.fromMap(json.decode(data) as Map<String, dynamic>);
   }
 
-  /// `dart:convert`
-  ///
   /// Converts [UserModel] to a JSON string.
   String toJson() => json.encode(toMap());
 }

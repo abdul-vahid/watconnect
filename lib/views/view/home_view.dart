@@ -173,11 +173,11 @@ class _HomeViewState extends State<HomeView> {
     }
     print("cammma=>${campaignCount}");
 
-    for (var viewModel in templateVM!.viewModels) {
-      TemplateModel tempmodel = viewModel.model;
-      templateCount = tempmodel.data?.length;
-      debug('countofdata===$templateCount');
-    }
+    // for (var viewModel in templateVM!.viewModels) {
+    //   TemplateModel tempmodel = viewModel.model;
+    //   templateCount = tempmodel.data?.length;
+    //   debug('countofdata===$templateCount');
+    // }
 
     getBusinessWidgets();
     getTemplateData();

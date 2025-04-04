@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+// import 'dart:io' as IO;
 
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -12,11 +13,13 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart' show Consumer, Provider;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
@@ -24,6 +27,7 @@ import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datu
 import 'package:whatsapp/models/lead_model.dart';
 import 'package:whatsapp/models/ms_model/message_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
@@ -74,7 +78,6 @@ class _ChatScreenState extends State<ChatScreen> {
   String? selectedTemplateId;
   String templetmsgid = "";
   var templeteViewModel;
-  late Timer _timer;
   List deleteMgs = [];
   String messageid = "";
   late MessageViewModel messageViewModel;
@@ -107,11 +110,20 @@ class _ChatScreenState extends State<ChatScreen> {
   bool showLoader = false;
   String userName = "";
   TextEditingController _templateController = TextEditingController();
+
+  IO.Socket? socket;
+  String token = "your_token_here"; // 🔹 Replace with actual token
+  var userId; // 🔹 Replace with actual user ID
+  String leadId = "lead_456"; // 🔹 Replace with actual lead ID
+  String phNum = "+919876543210"; // 🔹 Replace with actual phone number
+
   @override
   void initState() {
+    leadId = widget.wpnumber ?? "";
     MessageController msgController =
         Provider.of<MessageController>(context, listen: false);
-
+    connectSocket();
+    // connectSocket();
     msgController.clearDeleteList();
     _fetchTemplates();
     super.initState();
@@ -126,18 +138,22 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    _timer.cancel();
+    disconnectSocket();
+
+    // socketService.disconnect();
     super.dispose();
   }
 
   void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 200,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
@@ -154,7 +170,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     _scrollToBottom();
     setState(() {});
-    print("all messages:: ${allMessages.length}  ${allMessages}");
 
     templateVM = Provider.of<TempleteListViewModel>(context);
     messageViewModel = Provider.of<MessageViewModel>(context);
@@ -217,15 +232,6 @@ class _ChatScreenState extends State<ChatScreen> {
                     },
                   )
                 : SizedBox(),
-            // IconButton(
-            //   icon: const Icon(
-            //     Icons.more_vert,
-            //     color: Colors.white,
-            //   ),
-            //   onPressed: () {
-            //     _showDeleteDialog();
-            //   },
-            // ),
             PopupMenuButton<String>(
               icon: const Icon(
                 Icons.more_vert,
@@ -678,7 +684,7 @@ class _ChatScreenState extends State<ChatScreen> {
     Navigator.of(context).pop();
   }
 
-  Future<void> _pickImaFromGallery() async {
+  Future<File?> _pickImaFromGallery() async {
     final pickedFile = await FilePicker.platform.pickFiles(
       allowMultiple: false,
       type: FileType.custom,
@@ -694,6 +700,9 @@ class _ChatScreenState extends State<ChatScreen> {
         print("image::: ${image}");
         fileNameController.text = file!.name;
       });
+      return image;
+    } else {
+      return null;
     }
   }
 
@@ -1876,61 +1885,62 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                 SizedBox(height: 15),
 
-                                // if (selectedHeader != null)
-                                //   selectedHeader.format == 'IMAGE' ||
-                                //           selectedHeader.format == 'VIDEO' ||
-                                //           selectedHeader.format == 'DOCUMENT'
-                                //       ? InkWell(
-                                //           onTap: () {
-                                //             if (selectedHeader.format ==
-                                //                 'IMAGE') {
-                                //               _pickImaFromGallery()
-                                //                   .then((onValue) {
-                                //                 if (file != null) {
-                                //                   setState(() {
-                                //                     isOtherFileSelected = true;
-                                //                   });
-                                //                 }
-                                //               });
-                                //             } else if (selectedHeader.format ==
-                                //                 'VIDEO') {
-                                //               _pickVideoFromGallery()
-                                //                   .then((onValue) {
-                                //                 if (file != null) {
-                                //                   setState(() {
-                                //                     isOtherFileSelected = true;
-                                //                   });
-                                //                 }
-                                //               });
-                                //             } else if (selectedHeader.format ==
-                                //                 'DOCUMENT') {
-                                //               _pickDocFromGallery()
-                                //                   .then((onValue) {
-                                //                 if (file != null) {
-                                //                   setState(() {
-                                //                     isOtherFileSelected = true;
-                                //                   });
-                                //                 }
-                                //               });
-                                //             }
-                                //           },
-                                //           child: Container(
-                                //             decoration: BoxDecoration(
-                                //                 color: Colors.grey[400],
-                                //                 border: Border.all(
-                                //                     color: AppColor
-                                //                         .navBarIconColor)),
-                                //             child: Center(
-                                //               child: Padding(
-                                //                 padding:
-                                //                     const EdgeInsets.symmetric(
-                                //                         vertical: 8.0),
-                                //                 child: Text("Choose File"),
-                                //               ),
-                                //             ),
-                                //           ),
-                                //         )
-                                //       : SizedBox(),
+                                if (selectedHeader != null)
+                                  selectedHeader.format == 'IMAGE' ||
+                                          selectedHeader.format == 'VIDEO' ||
+                                          selectedHeader.format == 'DOCUMENT'
+                                      ? InkWell(
+                                          onTap: () {
+                                            if (selectedHeader.format ==
+                                                'IMAGE') {
+                                              _pickImaFromGallery()
+                                                  .then((onValue) {
+                                                if (onValue != null) {
+                                                  setState(() {
+                                                    image = onValue;
+                                                    isOtherFileSelected = true;
+                                                  });
+                                                }
+                                              });
+                                            } else if (selectedHeader.format ==
+                                                'VIDEO') {
+                                              _pickVideoFromGallery()
+                                                  .then((onValue) {
+                                                if (file != null) {
+                                                  setState(() {
+                                                    isOtherFileSelected = true;
+                                                  });
+                                                }
+                                              });
+                                            } else if (selectedHeader.format ==
+                                                'DOCUMENT') {
+                                              _pickDocFromGallery()
+                                                  .then((onValue) {
+                                                if (file != null) {
+                                                  setState(() {
+                                                    isOtherFileSelected = true;
+                                                  });
+                                                }
+                                              });
+                                            }
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                                color: Colors.grey[400],
+                                                border: Border.all(
+                                                    color: AppColor
+                                                        .navBarIconColor)),
+                                            child: Center(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8.0),
+                                                child: Text("Choose File"),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : SizedBox(),
                                 SizedBox(
                                   height: 10,
                                 ),
@@ -2025,30 +2035,28 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                   if (selectedHeader.format == "IMAGE" ||
                                       selectedHeader.format == "VIDEO") {
-                                    // if (isOtherFileSelected) {
-                                    //   final prefs =
-                                    //       await SharedPreferences.getInstance();
-                                    //   String? number =
-                                    //       prefs.getString('phoneNumber');
-                                    //   String? leadid = widget.model.id;
-                                    //   String? sendimagedatabase =
-                                    //       await messageViewModel
-                                    //           .uploadFiledb(
-                                    //               image!, number, leadid)
-                                    //           .then((value) async {
-                                    //     print(
-                                    //         "video sedn video send send----upload dididi->$value");
+                                    if (isOtherFileSelected) {
+                                      final prefs =
+                                          await SharedPreferences.getInstance();
+                                      String? number =
+                                          prefs.getString('phoneNumber');
+                                      String? leadid = widget.model.id;
+                                      // String? sendimagedatabase =
+                                      await messageViewModel
+                                          .uploadFiledb(image!, number, leadid)
+                                          .then((value) async {
+                                        print(
+                                            "video sedn video send send----upload dididi->$value");
 
-                                    //     Map<String, dynamic> response =
-                                    //         jsonDecode(value);
+                                        Map<String, dynamic> response =
+                                            jsonDecode(value);
 
-                                    //     fileid = response['records']?[0]['id'];
+                                        fileid = response['records']?[0]['id'];
 
-                                    //     print("ID: $fileid");
-                                    //     docId = await getDocId();
-                                    //   });
-                                    // } else
-                                    {
+                                        print("ID: $fileid");
+                                        docId = await getDocId();
+                                      });
+                                    } else {
                                       image = await urlToFile(imgToShow);
                                       docId = await getDocId();
                                     }
@@ -3004,5 +3012,63 @@ class _ChatScreenState extends State<ChatScreen> {
     print("number=>$number");
     await Provider.of<MessageViewModel>(context, listen: false)
         .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
+  }
+
+  Future<void> connectSocket() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+
+    String tkn = await AppUtils.getToken() ?? "";
+    Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+
+    token = tkn;
+    phNum = number ?? "";
+    userId = decodedToken;
+
+    try {
+      print("Token: $token");
+
+      socket = IO.io(
+        'https://sandbox.watconnect.com',
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setPath('/swp/socket.io')
+            .setExtraHeaders({'Authorization': 'Bearer $token'})
+            .build(),
+      );
+
+      socket!.connect();
+
+      socket!.onConnect((_) {
+        print('Connected to WebSocket');
+        socket!.emit("setup", userId);
+      });
+
+      socket!.on("connected", (_) {
+        print(" WebSocket setup complete");
+      });
+
+      socket!.on("receivedwhatsappmessage", (data) {
+        print("📩 New WhatsApp message: $data");
+        getHistory();
+      });
+
+      socket!.onDisconnect((_) {
+        print(" WebSocket Disconnected");
+      });
+
+      socket!.onError((error) {
+        print(" WebSocket Error: $error");
+      });
+    } catch (error) {
+      print("Error connecting to WebSocket: $error");
+    }
+  }
+
+  void disconnectSocket() {
+    if (socket != null) {
+      socket!.disconnect();
+      print("🔴 WebSocket Disconnected");
+    }
   }
 }
