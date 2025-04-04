@@ -132,15 +132,6 @@ class _UserListView extends State<UserListView> {
           child: Container(
             height: 70,
             width: MediaQuery.of(context).size.width,
-            decoration: const BoxDecoration(
-              boxShadow: [],
-              border: Border(
-                bottom: BorderSide(
-                  width: 1.8,
-                  color: Color.fromARGB(255, 0, 0, 0),
-                ),
-              ),
-            ),
             padding:
                 const EdgeInsets.only(top: 12, bottom: 12, left: 10, right: 10),
             child: Row(

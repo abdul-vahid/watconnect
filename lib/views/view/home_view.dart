@@ -171,6 +171,7 @@ class _HomeViewState extends State<HomeView> {
       CampaignCountModel campmodel = viewModel.model;
       campaignCount = campmodel.result?.pending;
     }
+    print("cammma=>${campaignCount}");
 
     for (var viewModel in templateVM!.viewModels) {
       TemplateModel tempmodel = viewModel.model;

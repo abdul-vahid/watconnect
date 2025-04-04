@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
+import 'package:whatsapp/views/view/changepassword_view.dart';
 import 'package:whatsapp/views/view/user_add_update_view.dart';
 import 'package:whatsapp/views/view/user_list_view.dart';
 
@@ -313,14 +314,30 @@ class _UserDetailView extends State<UserDetailView> {
                               });
                             },
                           ),
-                          ElevatedButton(
-                            onPressed: _showSimpleDialog,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColor.cardsColor,
-                            ),
-                            child: const Text(
-                              "Change Password",
-                              style: TextStyle(color: Colors.white),
+                          Align(
+                            alignment: Alignment.center,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ChangePasswordScreen(
+                                        widget.model?.username ?? "",
+                                        widget.model?.whatsappNumber ?? ""
+                                        // '', // Ensure it's not null
+                                        // _obscurePassword1,
+                                        // _passwordController,
+                                        ),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColor.cardsColor,
+                              ),
+                              child: const Text(
+                                "Change Password",
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           )
                         ],
