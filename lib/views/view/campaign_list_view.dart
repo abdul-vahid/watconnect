@@ -69,7 +69,6 @@ class _CampaignListView extends State<CampaignListView> {
         for (var record in campginmodel!.records!) {
           if (record.campaignStatus != null) {
             _paymentterms.add(record.campaignStatus!);
-
             print("selectedcampaign:::${selectedcampaign}");
             if (selectedcampaign != null) {
               print(

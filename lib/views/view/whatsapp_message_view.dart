@@ -33,6 +33,7 @@ import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
+import 'package:whatsapp/views/view/view_fullscreen_img.dart';
 
 import '../../models/template_model/template_model.dart';
 import '../../models/user_model/user_model.dart';
@@ -112,10 +113,10 @@ class _ChatScreenState extends State<ChatScreen> {
   TextEditingController _templateController = TextEditingController();
 
   IO.Socket? socket;
-  String token = "your_token_here"; // 🔹 Replace with actual token
-  var userId; // 🔹 Replace with actual user ID
-  String leadId = "lead_456"; // 🔹 Replace with actual lead ID
-  String phNum = "+919876543210"; // 🔹 Replace with actual phone number
+  String token = "your_token_here";
+  var userId;
+  String leadId = "lead_456";
+  String phNum = "+919876543210";
 
   @override
   void initState() {
@@ -140,7 +141,6 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     disconnectSocket();
 
-    // socketService.disconnect();
     super.dispose();
   }
 
@@ -554,10 +554,10 @@ class _ChatScreenState extends State<ChatScreen> {
       "language": "en",
       // "category": "MARKETING",
       "header": "TEXT",
-      "header_body": selectedHeader.text,
-      "message_body": selectedBody.text,
+      "header_body": selectedHeader == null ? "" : selectedHeader.text,
+      "message_body": selectedBody == null ? "" : selectedBody.text,
       "example_body_text": {"sendToAdmin": false},
-      "footer": selectedFooter.text,
+      "footer": selectedFooter == null ? "" : selectedFooter.text,
       "buttons": [],
       "business_number": number
     };
@@ -1515,21 +1515,19 @@ class _ChatScreenState extends State<ChatScreen> {
                                       getHistory();
                                     });
                                     messagesendd(_controller.text)
-                                        .then((onValue) {
-                                      setState(() async {
-                                        var leadnumber = widget.wpnumber;
-                                        final prefs = await SharedPreferences
-                                            .getInstance();
-                                        String? number =
-                                            prefs.getString('phoneNumber');
-                                        print("number=>$number");
-                                        await Provider.of<MessageViewModel>(
-                                                context,
-                                                listen: false)
-                                            .Fetchmsghistorydata(
-                                                leadnumber: leadnumber,
-                                                number: number);
-                                      });
+                                        .then((onValue) async {
+                                      var leadnumber = widget.wpnumber;
+                                      final prefs =
+                                          await SharedPreferences.getInstance();
+                                      String? number =
+                                          prefs.getString('phoneNumber');
+                                      print("number=>$number");
+                                      await Provider.of<MessageViewModel>(
+                                              context,
+                                              listen: false)
+                                          .Fetchmsghistorydata(
+                                              leadnumber: leadnumber,
+                                              number: number);
                                     });
                                   } else {
                                     showLoader = false;
@@ -2084,20 +2082,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                             bodyTextParams,
                                             imgToShow)
                                         .then((val) async {
-                                      setState(() async {
-                                        var leadnumber = widget.wpnumber;
-                                        final prefs = await SharedPreferences
-                                            .getInstance();
-                                        String? number =
-                                            prefs.getString('phoneNumber');
-                                        print("number=>$number");
-                                        await Provider.of<MessageViewModel>(
-                                                context,
-                                                listen: false)
-                                            .Fetchmsghistorydata(
-                                                leadnumber: leadnumber,
-                                                number: number)
-                                            .then((onValue) {
+                                      var leadnumber = widget.wpnumber;
+                                      final prefs =
+                                          await SharedPreferences.getInstance();
+                                      String? number =
+                                          prefs.getString('phoneNumber');
+                                      print("number=>$number");
+                                      await Provider.of<MessageViewModel>(
+                                              context,
+                                              listen: false)
+                                          .Fetchmsghistorydata(
+                                              leadnumber: leadnumber,
+                                              number: number)
+                                          .then((onValue) {
+                                        setState(() {
                                           _isLoading = false;
                                           image = null;
                                           Navigator.pop(context);
@@ -2109,24 +2107,26 @@ class _ChatScreenState extends State<ChatScreen> {
                                     await sendDocTemp(templateToSend, isChecked,
                                             imgToShow)
                                         .then((value) async {
-                                      setState(() async {
-                                        var leadnumber = widget.wpnumber;
-                                        final prefs = await SharedPreferences
-                                            .getInstance();
-                                        String? number =
-                                            prefs.getString('phoneNumber');
-                                        print("number=>$number");
-                                        await Provider.of<MessageViewModel>(
-                                                context,
-                                                listen: false)
-                                            .Fetchmsghistorydata(
-                                                leadnumber: leadnumber,
-                                                number: number)
-                                            .then((onValue) {
-                                          image = null;
-                                          _isLoading = false;
-                                          Navigator.pop(context);
-                                        });
+                                      var leadnumber = widget.wpnumber;
+                                      final prefs =
+                                          await SharedPreferences.getInstance();
+                                      String? number =
+                                          prefs.getString('phoneNumber');
+                                      print("number=>$number");
+                                      await Provider.of<MessageViewModel>(
+                                              context,
+                                              listen: false)
+                                          .Fetchmsghistorydata(
+                                              leadnumber: leadnumber,
+                                              number: number)
+                                          .then((onValue) {
+                                        setState(
+                                          () {
+                                            image = null;
+                                            _isLoading = false;
+                                            Navigator.pop(context);
+                                          },
+                                        );
                                       });
                                     });
                                   } else if (selectedHeader.format == "TEXT") {
@@ -2135,26 +2135,26 @@ class _ChatScreenState extends State<ChatScreen> {
                                             compoTextParams,
                                             isChecked,
                                             bodyTextParams)
-                                        .then((value) {
-                                      setState(() async {
-                                        _isLoading = false;
-                                        image = null;
-                                        var leadnumber = widget.wpnumber;
-                                        final prefs = await SharedPreferences
-                                            .getInstance();
-                                        String? number =
-                                            prefs.getString('phoneNumber');
-                                        print("number=>$number");
-                                        await Provider.of<MessageViewModel>(
-                                                context,
-                                                listen: false)
-                                            .Fetchmsghistorydata(
-                                                leadnumber: leadnumber,
-                                                number: number)
-                                            .then((onValue) {
-                                          getHistory();
-                                          Navigator.pop(context);
+                                        .then((value) async {
+                                      var leadnumber = widget.wpnumber;
+                                      final prefs =
+                                          await SharedPreferences.getInstance();
+                                      String? number =
+                                          prefs.getString('phoneNumber');
+                                      print("number=>$number");
+                                      await Provider.of<MessageViewModel>(
+                                              context,
+                                              listen: false)
+                                          .Fetchmsghistorydata(
+                                              leadnumber: leadnumber,
+                                              number: number)
+                                          .then((onValue) {
+                                        getHistory();
+                                        setState(() {
+                                          _isLoading = false;
+                                          image = null;
                                         });
+                                        Navigator.pop(context);
                                       });
                                     });
                                   }
@@ -2359,9 +2359,9 @@ class _ChatScreenState extends State<ChatScreen> {
       "id": selectedTemplateId,
       "name": templateToSend,
       "language": selectedLanguage,
-      "header": selectedHeader.format,
+      "header": selectedHeader == null ? "" : selectedHeader.format,
       "header_body": imgToShow.isNotEmpty ? imgToShow : selectedHeader.text,
-      "message_body": selectedBody.text,
+      "message_body": selectedBody == null ? "" : selectedBody.text,
       "example_body_text": exBodyText,
       "footer": footer,
       "buttons": ba,
@@ -2530,11 +2530,11 @@ class _ChatScreenState extends State<ChatScreen> {
       "id": selectedTemplateId,
       "name": tempToSend,
       "language": selectedLanguage,
-      "header": selectedHeader.format,
+      "header": selectedHeader == null ? "" : selectedHeader.format,
       "header_body": docUrl,
-      "message_body": selectedBody.text,
+      "message_body": selectedBody == null ? "" : selectedBody.text,
       "example_body_text": {"sendToAdmin": isChecked},
-      "footer": selectedFooter.text,
+      "footer": selectedFooter == null ? "" : selectedFooter.text,
       "buttons": [],
       "business_number": number
     };
@@ -2655,7 +2655,7 @@ class _ChatScreenState extends State<ChatScreen> {
       // "category": "MARKETING",
       "header": selectedHeader == null ? "" : selectedHeader.format,
       "header_body": selectedHeader == null ? "" : selectedHeader.text,
-      "message_body": selectedBody.text,
+      "message_body": selectedBody == null ? "" : selectedBody.text,
       "example_body_text": exBodyText,
       "footer": footer,
       "buttons": ba,
@@ -2758,66 +2758,73 @@ class _ChatScreenState extends State<ChatScreen> {
       case 'jpeg':
         return InkWell(
             onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text("Image Details"),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.network(
-                          url,
-                          height: 300,
-                          width: 300,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (BuildContext context, Widget child,
-                              ImageChunkEvent? loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child;
-                            } else {
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes !=
-                                          null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          (loadingProgress.expectedTotalBytes ??
-                                              1)
-                                      : null,
-                                ),
-                              );
-                            }
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return const SizedBox.shrink();
-                          },
-                        ),
-                      ],
-                    ),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: AppColor.navBarIconColor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            "Close",
-                            style: TextStyle(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              );
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => PreviewImage(
+                            imgUrl: url,
+                          )));
+
+              // showDialog(
+              //   context: context,
+              //   builder: (BuildContext context) {
+              //     return AlertDialog(
+              //       title: const Text("Image Details"),
+              //       content: Column(
+              //         mainAxisSize: MainAxisSize.min,
+              //         children: [
+              //           Image.network(
+              //             url,
+              //             height: 300,
+              //             width: 300,
+              //             fit: BoxFit.cover,
+              //             loadingBuilder: (BuildContext context, Widget child,
+              //                 ImageChunkEvent? loadingProgress) {
+              //               if (loadingProgress == null) {
+              //                 return child;
+              //               } else {
+              //                 return Center(
+              //                   child: CircularProgressIndicator(
+              //                     value: loadingProgress.expectedTotalBytes !=
+              //                             null
+              //                         ? loadingProgress.cumulativeBytesLoaded /
+              //                             (loadingProgress.expectedTotalBytes ??
+              //                                 1)
+              //                         : null,
+              //                   ),
+              //                 );
+              //               }
+              //             },
+              //             errorBuilder: (context, error, stackTrace) {
+              //               return const SizedBox.shrink();
+              //             },
+              //           ),
+              //         ],
+              //       ),
+              //       actions: <Widget>[
+              //         TextButton(
+              //           onPressed: () {
+              //             Navigator.of(context).pop();
+              //           },
+              //           child: Container(
+              //             padding: const EdgeInsets.symmetric(
+              //                 vertical: 8, horizontal: 16),
+              //             decoration: BoxDecoration(
+              //               color: AppColor.navBarIconColor,
+              //               borderRadius: BorderRadius.circular(8),
+              //             ),
+              //             child: const Text(
+              //               "Close",
+              //               style: TextStyle(
+              //                 color: Colors.white,
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //       ],
+              //     );
+              //   },
+              // );
             },
             child: Image.network(url,
                 height: 120,
@@ -2851,66 +2858,72 @@ class _ChatScreenState extends State<ChatScreen> {
       case "IMAGE":
         return InkWell(
           onTap: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text("Image Details"),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.network(
-                        headerBody,
-                        height: 300,
-                        width: 300,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (BuildContext context, Widget child,
-                            ImageChunkEvent? loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          } else {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        (loadingProgress.expectedTotalBytes ??
-                                            1)
-                                    : null,
-                              ),
-                            );
-                          }
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                    ],
-                  ),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: AppColor.navBarIconColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          "Close",
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => PreviewImage(
+                          imgUrl: headerBody,
+                        )));
+            // showDialog(
+            //   context: context,
+            //   builder: (BuildContext context) {
+            //     return AlertDialog(
+            //       title: const Text("Image Details"),
+            //       content: Column(
+            //         mainAxisSize: MainAxisSize.min,
+            //         children: [
+            //           Image.network(
+            //             headerBody,
+            //             height: 300,
+            //             width: 300,
+            //             fit: BoxFit.cover,
+            //             loadingBuilder: (BuildContext context, Widget child,
+            //                 ImageChunkEvent? loadingProgress) {
+            //               if (loadingProgress == null) {
+            //                 return child;
+            //               } else {
+            //                 return Center(
+            //                   child: CircularProgressIndicator(
+            //                     value: loadingProgress.expectedTotalBytes !=
+            //                             null
+            //                         ? loadingProgress.cumulativeBytesLoaded /
+            //                             (loadingProgress.expectedTotalBytes ??
+            //                                 1)
+            //                         : null,
+            //                   ),
+            //                 );
+            //               }
+            //             },
+            //             errorBuilder: (context, error, stackTrace) {
+            //               return const SizedBox.shrink();
+            //             },
+            //           ),
+            //         ],
+            //       ),
+            //       actions: <Widget>[
+            //         TextButton(
+            //           onPressed: () {
+            //             Navigator.of(context).pop();
+            //           },
+            //           child: Container(
+            //             padding: const EdgeInsets.symmetric(
+            //                 vertical: 8, horizontal: 16),
+            //             decoration: BoxDecoration(
+            //               color: AppColor.navBarIconColor,
+            //               borderRadius: BorderRadius.circular(8),
+            //             ),
+            //             child: const Text(
+            //               "Close",
+            //               style: TextStyle(
+            //                 color: Colors.white,
+            //               ),
+            //             ),
+            //           ),
+            //         ),
+            //       ],
+            //     );
+            //   },
+            // );
           },
           child: Image.network(headerBody,
               height: 120,
@@ -3067,7 +3080,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void disconnectSocket() {
     if (socket != null) {
       socket!.disconnect();
-      print("🔴 WebSocket Disconnected");
+      print(" WebSocket Disconnected");
     }
   }
 }

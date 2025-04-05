@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
@@ -22,6 +24,11 @@ class LeadListView extends StatefulWidget {
 }
 
 class _LeadListViewState extends State<LeadListView> {
+  IO.Socket? socket;
+  String token = "your_token_here";
+  var userId;
+  String leadId = "lead_456";
+  String phNum = "+919876543210";
   final List<String> _leadfilter = [];
   List<LeadModel> leadss = [];
   TextEditingController textController = TextEditingController();
@@ -43,8 +50,16 @@ class _LeadListViewState extends State<LeadListView> {
     // _marksread();
     _getUnreadCount();
     super.initState();
+    connectSocket();
     tempLeadModelList = leadModelList;
     Provider.of<LeadListViewModel>(context, listen: false).fetch();
+  }
+
+  @override
+  void dispose() {
+    disconnectSocket();
+
+    super.dispose();
   }
 
   Future<void> _getUnreadCount() async {
@@ -1074,5 +1089,64 @@ class _LeadListViewState extends State<LeadListView> {
               (lead) => lead.leadstatus?.toLowerCase() == filter.toLowerCase())
           .toList();
     });
+  }
+
+  Future<void> connectSocket() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+
+    String tkn = await AppUtils.getToken() ?? "";
+    Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+
+    token = tkn;
+    phNum = number ?? "";
+    userId = decodedToken;
+
+    try {
+      print("Token: $token");
+
+      socket = IO.io(
+        'https://sandbox.watconnect.com',
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setPath('/swp/socket.io')
+            .setExtraHeaders({'Authorization': 'Bearer $token'})
+            .build(),
+      );
+
+      socket!.connect();
+
+      socket!.onConnect((_) {
+        print('Connected to WebSocket');
+        socket!.emit("setup", userId);
+      });
+
+      socket!.on("connected", (_) {
+        print(" WebSocket setup complete");
+      });
+
+      socket!.on("receivedwhatsappmessage", (data) {
+        print("📩 New WhatsApp message: $data");
+        Provider.of<UnreadCountVm>(context, listen: false)
+            .fetchunreadcount(number: number ?? "");
+      });
+
+      socket!.onDisconnect((_) {
+        print(" WebSocket Disconnected");
+      });
+
+      socket!.onError((error) {
+        print(" WebSocket Error: $error");
+      });
+    } catch (error) {
+      print("Error connecting to WebSocket: $error");
+    }
+  }
+
+  void disconnectSocket() {
+    if (socket != null) {
+      socket!.disconnect();
+      print(" WebSocket Disconnected");
+    }
   }
 }
