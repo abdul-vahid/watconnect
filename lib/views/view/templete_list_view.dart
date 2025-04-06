@@ -205,31 +205,23 @@ class _TempleteListView extends State<TempleteListView> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    InputDecorator(
-                      decoration: InputDecoration(
-                          // border: OutlineInputBorder(
-                          //   borderRadius: BorderRadius.circular(12.0),
-                          // ),
-                          // contentPadding: const EdgeInsets.all(10),
-                          ),
-                      child: DropdownButtonFormField<String>(
-                        isDense: true,
-                        // isExpanded: true,
-                        // menuMaxHeight: 10,
-                        hint: const Text('Select Leads Status'),
-                        items: uniqtempletestatus.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selecttemplte = newValue;
-                          });
-                        },
-                        value: selecttemplte,
-                      ),
+                    DropdownButtonFormField<String>(
+                      isDense: true,
+                      // isExpanded: true,
+                      // menuMaxHeight: 10,
+                      hint: const Text('Select Leads Status'),
+                      items: uniqtempletestatus.map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selecttemplte = newValue;
+                        });
+                      },
+                      value: selecttemplte,
                     ),
                     SizedBox(height: 7),
                     ElevatedButton(

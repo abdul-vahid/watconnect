@@ -23,7 +23,7 @@ class _PreviewImageState extends State<PreviewImage> {
         elevation: 2,
         backgroundColor: AppColor.navBarIconColor,
         title: Text(
-          "View Image",
+          "Image",
           style: const TextStyle(
               color: Color.fromARGB(255, 255, 255, 255),
               fontSize: 20,

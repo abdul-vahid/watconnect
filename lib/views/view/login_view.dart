@@ -152,33 +152,106 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
                     const SizedBox(height: 150),
-
-                    // Submit Button
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).appBarTheme.backgroundColor,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      width: 350,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor:
-                              const Color.fromARGB(255, 255, 255, 255),
-                          backgroundColor: const Color(0xFF233A73),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100)),
-                        ),
-                        onPressed: onButtonPressed,
-                        child: const Text(
-                          'Submit',
-                          style: TextStyle(
-                            fontSize: 18,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            height: 50,
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.code),
+                              label: const Text(
+                                'Node.js',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: const Color(0xFF233A73),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              onPressed: onButtonPressed,
+                            ),
                           ),
                         ),
-                      ),
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            height: 50,
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.cloud),
+                              label: const Text(
+                                'Salesforce',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: const Color(0xFF233A73),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              onPressed: () =>
+                                  {print("salesforce login functionality")},
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 40),
 
+                    // // Submit Button
+                    // Container(
+                    //   decoration: BoxDecoration(
+                    //     color: Theme.of(context).appBarTheme.backgroundColor,
+                    //     borderRadius: BorderRadius.circular(15),
+                    //   ),
+                    //   width: 350,
+                    //   height: 50,
+                    //   child: ElevatedButton(
+                    //     style: TextButton.styleFrom(
+                    //       foregroundColor:
+                    //           const Color.fromARGB(255, 255, 255, 255),
+                    //       backgroundColor: const Color(0xFF233A73),
+                    //       shape: RoundedRectangleBorder(
+                    //           borderRadius: BorderRadius.circular(100)),
+                    //     ),
+                    //     onPressed: onButtonPressed,
+                    //     child: const Text(
+                    //       'Login with Node Js',
+                    //       style: TextStyle(
+                    //         fontSize: 18,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 40),
+                    // Container(
+                    //   decoration: BoxDecoration(
+                    //     color: Theme.of(context).appBarTheme.backgroundColor,
+                    //     borderRadius: BorderRadius.circular(15),
+                    //   ),
+                    //   width: 350,
+                    //   height: 50,
+                    //   child: ElevatedButton(
+                    //     style: TextButton.styleFrom(
+                    //       foregroundColor:
+                    //           const Color.fromARGB(255, 255, 255, 255),
+                    //       backgroundColor: const Color(0xFF233A73),
+                    //       shape: RoundedRectangleBorder(
+                    //           borderRadius: BorderRadius.circular(100)),
+                    //     ),
+                    //     onPressed: onButtonPressed,
+                    //     child: const Text(
+                    //       'Login with Salesforce',
+                    //       style: TextStyle(
+                    //         fontSize: 18,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                     const SizedBox(height: 40),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
