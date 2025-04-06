@@ -197,6 +197,7 @@ class _Forms extends State<CampaignAddUpdateView> {
         // decoration: InputDecoration(border: Border.all(12)),
         height: 49,
         color: Colors.white,
+
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Row(
           children: [
@@ -219,9 +220,8 @@ class _Forms extends State<CampaignAddUpdateView> {
               ),
             ),
 
-            const SizedBox(width: 10), // Space between buttons
+            const SizedBox(width: 10),
 
-            // Second button (Cancel)
             Expanded(
               child: OutlinedButton(
                 onPressed: () {
@@ -274,6 +274,9 @@ class _Forms extends State<CampaignAddUpdateView> {
   }
 
   Future<void> _pullRefresh() async {
+    if (widget.model != null) {
+      return;
+    }
     Provider.of<CampaignViewModel>(context, listen: false).fetchCampaign();
 
     isRefresh = true;
@@ -572,7 +575,7 @@ class _Forms extends State<CampaignAddUpdateView> {
 
   void onButtonPressed() async {
     print(
-        "controllers::: ${controllers}   ${isChecked}  ${image}  ${isOtherFileSelected}   ${imgToShow}");
+        "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}");
     CampaignViewModel getaccountData = CampaignViewModel(context);
 
     if (controllers.isNotEmpty) {
@@ -842,7 +845,6 @@ class _Forms extends State<CampaignAddUpdateView> {
                           crossAxisAlignment: CrossAxisAlignment
                               .start, // Align content properly
                           children: [
-                            // Handle different formats (IMAGE, VIDEO, DOCUMENT)
                             if (selectedHeader != null &&
                                 selectedHeader.format != null)
                               file != null && selectedHeader.format == 'IMAGE'
@@ -873,16 +875,13 @@ class _Forms extends State<CampaignAddUpdateView> {
                                             )
                                           : _buildMediaWidget(
                                               selectedHeader.format, imgToShow),
-
                             if (selectedBody != null)
                               Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 8.0),
                                 child: Text("${selectedBody.text}"),
                               ),
-
                             SizedBox(height: 10),
-
                             if (selectedButtons != null)
                               Wrap(
                                 spacing: 10,
@@ -911,18 +910,14 @@ class _Forms extends State<CampaignAddUpdateView> {
                                   },
                                 ),
                               ),
-
                             SizedBox(height: 15),
-
                             if (selectedFooter != null)
                               Text(
                                 selectedFooter.text,
                                 style: TextStyle(color: Colors.grey),
                                 textAlign: TextAlign.left,
                               ),
-
                             SizedBox(height: 15),
-
                             if (selectedHeader != null)
                               selectedHeader.format == 'IMAGE' ||
                                       selectedHeader.format == 'VIDEO' ||
@@ -982,7 +977,6 @@ class _Forms extends State<CampaignAddUpdateView> {
                             SizedBox(
                               height: 10,
                             ),
-
                             Row(
                               children: [
                                 Checkbox(
