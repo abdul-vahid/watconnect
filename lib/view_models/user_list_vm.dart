@@ -5,6 +5,7 @@ import 'dart:io';
 // ignore: unused_import
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/app_constants.dart';
@@ -24,22 +25,18 @@ class UserListViewModel extends BaseListViewModel {
   }
 
   Future<dynamic> registerFCMToken(String token) async {
-    //String url = AppUtils.getUrl(AppConstants.registerFCMTokenAPIPath);
-    //SharedPreferences prefs = await SharedPreferences.getInstance();
-    //var userModel = AppUtils.getSessionUser(prefs);
-    /* Map<String, String> body = {
-      "registration_id": token,
-      "user_id": userModel?.authToken ?? ""
-    }; */
-    //return post(url: url, body: jsonEncode(body));
+    String url = AppUtils.getUrl(AppConstants.notificationfcm);
+    print("Notifcation Url=>${url}");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var userModel = AppUtils.getSessionUser(prefs);
+    Map<String, String> body = {
+      "fcm_token":
+          "fJN07y2DSn-waJrIKKHp5P:APA91bHPDbpOKoOujOOghmtbb9cmvgxaAWZbmM9XF6CR4ZGA2LBg7kffG49pzeq5UtYfkUspYLo88532tp8gVegFeh7C2Qz1LcZp23MFh8wRaA3NtziG6oY",
+      "device_id": "862888054696195"
+    };
+    print("bodyyy=>$body");
+    return post(url: url, body: jsonEncode(body));
   }
-
-  /* Future<dynamic> updateStudentProfile(UserModel userModel) async {
-    String url = AppUtils.getUrl(
-        "${AppConstants.studentProfileAPIPath}/${userModel.studentId}");
-
-    return await post(url: url, body: userModel.toJson());
-  } */
 
   Future<dynamic> getOTP(String mobileNo, String reason) async {
     String url = AppUtils.getUrl(AppConstants.otpVerificationAPIPath);
