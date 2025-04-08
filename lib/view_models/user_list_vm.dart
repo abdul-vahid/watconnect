@@ -28,6 +28,9 @@ class UserListViewModel extends BaseListViewModel {
     String url = AppUtils.getUrl(AppConstants.notificationfcm);
     print("Notifcation Url=>${url}");
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String d = "";
+    String device_id = "";
+
     var userModel = AppUtils.getSessionUser(prefs);
     Map<String, String> body = {
       "fcm_token":
@@ -35,7 +38,7 @@ class UserListViewModel extends BaseListViewModel {
       "device_id": "862888054696195"
     };
     print("bodyyy=>$body");
-    return post(url: url, body: jsonEncode(body));
+    return post(url: url, body: jsonEncode(userModel));
   }
 
   Future<dynamic> getOTP(String mobileNo, String reason) async {
@@ -160,12 +163,4 @@ class UserListViewModel extends BaseListViewModel {
 
     return viewModels;
   }
-
-  // Future<void> updatePassword(String? id, UserDataModel userModel) async {
-  //   // var id = "754d1acf-317e-4bf8-9084-f0fa8d26a8bc";
-  //   String url = AppUtils.getUrl("${AppConstants.userPasswordAPIPath}/$id");
-  //   debug(' check===update password$url');
-  //   final result = await put(url: url, body: userModel.toJson());
-  //   return result;
-  // }
 }

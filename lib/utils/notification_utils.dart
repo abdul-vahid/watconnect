@@ -50,7 +50,7 @@ class NotificationUtil {
   }
 
   static Future<void> onMessageReceived(RemoteMessage? remoteMessage) {
-    print("remote=>$remoteMessage");
+    print("remote value=>$remoteMessage");
     if (remoteMessage != null) {
       LocalNotificationService.displayNotification(remoteMessage);
     }
@@ -60,7 +60,7 @@ class NotificationUtil {
 
   static void registerToken() async {
     _firebaseMessaging!.getToken().then((token) {
-      debug("registerToken $token");
+      debug("registerToken value=> $token");
       UserListViewModel().registerFCMToken(token!).then((value) {
         print("value message notification firebase=>${value}");
       }, onError: (error, stackTrace) {});
