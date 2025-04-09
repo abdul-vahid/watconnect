@@ -4,6 +4,7 @@ import 'dart:io';
 
 // ignore: unused_import
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
@@ -12,7 +13,7 @@ import '../utils/app_constants.dart';
 import '../utils/app_utils.dart';
 
 import '../models/user_model/user_model.dart';
-
+import 'package:device_info_plus/device_info_plus.dart';
 import '../core/models/base_list_view_model.dart';
 import '../utils/function_lib.dart';
 
@@ -24,21 +25,58 @@ class UserListViewModel extends BaseListViewModel {
     return await post(url: url, body: userModel.toJson());
   }
 
+  Future<String> getDeviceId() async {
+    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      print("Device: Android");
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      print("Aanaannn=>${androidInfo.id}");
+      print("Aanaannndevice=>${androidInfo.device}");
+      print("Aanadeviceannn=>${androidInfo.name}");
+
+      return androidInfo.id ?? "unknown_device_id";
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      print("Device: iOS");
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      return iosInfo.name ?? "unknown_device_id";
+    } else {
+      print("Device: Unsupported");
+      return "unsupported_platform";
+    }
+  }
+
+  // Future<dynamic> registerFCMToken(String token) async {
+  //   String url = AppUtils.getUrl(AppConstants.notificationfcm);
+  //   print("Notifcation Url=>${url}");
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String d = "";
+  //   String device_id = "";
+
+  //   var userModel = AppUtils.getSessionUser(prefs);
+  //   Map<String, String> body = {
+  //     "fcm_token":
+  //         "dd75P88kT9GMCO7kzHa-wj:APA91bHlBX5C0TpaHYSuLygxfoky3cWFGAc6Of64bOIrSrJ_DK7XxMhp93M9v0XnIVNla6qNC94_rPFlijzmBh-2uY9Etlff_JVzuTFoVwlJAcezNKqyik0",
+  //     "device_id": "860588055848157"
+  //   };
+  //   print("bodyyy=>$body");
+  //   return post(url: url, body: jsonEncode(userModel));
+  // }
+
   Future<dynamic> registerFCMToken(String token) async {
     String url = AppUtils.getUrl(AppConstants.notificationfcm);
-    print("Notifcation Url=>${url}");
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String d = "";
-    String device_id = "";
+    print("Notification URL => $url");
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     var userModel = AppUtils.getSessionUser(prefs);
-    Map<String, String> body = {
-      "fcm_token":
-          "fJN07y2DSn-waJrIKKHp5P:APA91bHPDbpOKoOujOOghmtbb9cmvgxaAWZbmM9XF6CR4ZGA2LBg7kffG49pzeq5UtYfkUspYLo88532tp8gVegFeh7C2Qz1LcZp23MFh8wRaA3NtziG6oY",
-      "device_id": "862888054696195"
-    };
-    print("bodyyy=>$body");
-    return post(url: url, body: jsonEncode(userModel));
+
+    String deviceId = await getDeviceId();
+
+    Map<String, String> body = {"fcm_token": token, "device_id": deviceId};
+
+    print("Request body => $body");
+
+    return post(url: url, body: jsonEncode(body));
   }
 
   Future<dynamic> getOTP(String mobileNo, String reason) async {

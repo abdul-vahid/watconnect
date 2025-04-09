@@ -815,14 +815,11 @@ class _LeadListViewState extends State<LeadListView> {
             .setExtraHeaders({'Authorization': 'Bearer $token'})
             .build(),
       );
-
       socket!.connect();
-
       socket!.onConnect((_) {
         print('Connected to WebSocket');
         socket!.emit("setup", userId);
       });
-
       socket!.on("connected", (_) {
         print(" WebSocket setup complete");
       });

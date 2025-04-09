@@ -42,7 +42,6 @@ class NotificationUtil {
         onMessageReceived(remoteMessage!);
       },
     );
-
     registerToken();
     if (!isInitialized) {
       isInitialized = true;
