@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +20,8 @@ class LocalNotificationService {
     _notificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (details) {
-        debug("onDidReceiveNotificationResponse");
+        log("onDidReceiveNotificationResponse     ${details}  ${details.data}   ");
+
         BuildContext? context = AppUtils.currentContext;
         if (context != null) {
           // Navigator.push(

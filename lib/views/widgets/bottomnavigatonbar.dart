@@ -34,7 +34,8 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
 
   @override
   void initState() {
-    NotificationUtil().initialize(context);
+    NotificationUtil(context).initialize();
+
     SharedPreferences.getInstance().then((prefs) {
       userModelData = AppUtils.getSessionUser(prefs);
       print("userModelData${userModelData}");

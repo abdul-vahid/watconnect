@@ -126,12 +126,15 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     leadId = widget.wpnumber ?? "";
-    MessageController msgController =
-        Provider.of<MessageController>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      MessageController msgController =
+          Provider.of<MessageController>(context, listen: false);
+      msgController.clearDeleteList();
+    });
     connectSocket();
     templateNames.add("Select Template Name");
     // connectSocket();
-    msgController.clearDeleteList();
+
     _fetchTemplates();
     super.initState();
     _pullRefresh();
@@ -3131,7 +3134,7 @@ class _ChatScreenState extends State<ChatScreen> {
       });
 
       socket!.on("receivedwhatsappmessage", (data) {
-        print("📩 New WhatsApp message: $data");
+        print("New WhatsApp message: $data");
         getHistory();
       });
 
