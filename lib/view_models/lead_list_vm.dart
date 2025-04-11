@@ -9,9 +9,9 @@ class LeadListViewModel extends BaseListViewModel {
   @override
   BuildContext context;
   LeadListViewModel(this.context);
-  void fetch() async {
+  Future<void> fetch() async {
     String url = AppUtils.getUrl(AppConstants.leadAPIPath);
-    get(url: url, baseModel: LeadModel());
+    await get(url: url, baseModel: LeadModel());
   }
 
   Future<dynamic> addlead(LeadModel addleadModel) async {
