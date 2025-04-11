@@ -124,7 +124,7 @@ class BaseListViewModel extends ChangeNotifier {
       {required String url,
       required String body,
       String jsonKey = "records"}) async {
-    log("req body>>${url}>>>>>> ${body}");
+    log("req body>> ${url} >>>>>> ${body}");
 
     try {
       var r = await BaseService().post(url: url, body: body);

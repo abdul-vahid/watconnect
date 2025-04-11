@@ -31,7 +31,7 @@ class UserListViewModel extends BaseListViewModel {
     if (defaultTargetPlatform == TargetPlatform.android) {
       print("Device: Android");
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      print("Aanaannn=>${androidInfo.id}");
+      print("Aanaannn=>${androidInfo.id} ");
       print("Aanaannndevice=>${androidInfo.device}");
       print("Aanadeviceannn=>${androidInfo.name}");
 

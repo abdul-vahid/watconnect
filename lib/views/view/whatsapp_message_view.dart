@@ -60,8 +60,8 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   List<TextEditingController> controllers = [];
 
-  List<String> templateNamesss = []; // Global list to store template names
-  List<String> templateIds = []; // Global list to store template ids
+  List<String> templateNamesss = [];
+  List<String> templateIds = [];
   String msghistoryid = "";
   final ScrollController _scrollController = ScrollController();
   bool isImageSent = false;
@@ -92,7 +92,12 @@ class _ChatScreenState extends State<ChatScreen> {
   bool historyExists = false;
   List allMessages = [];
   String? fileid;
-  List<dynamic> tempateCategory = ['UTILITY', 'MARKETING', 'AUTHENTICATION'];
+  List<dynamic> tempateCategory = [
+    'All Categories',
+    'UTILITY',
+    'MARKETING',
+    'AUTHENTICATION',
+  ];
   String? selectedTemplateName;
   var selectedLanguage;
   var selectedHeader;
@@ -124,6 +129,7 @@ class _ChatScreenState extends State<ChatScreen> {
     MessageController msgController =
         Provider.of<MessageController>(context, listen: false);
     connectSocket();
+    templateNames.add("Select Template Name");
     // connectSocket();
     msgController.clearDeleteList();
     _fetchTemplates();
@@ -539,20 +545,30 @@ class _ChatScreenState extends State<ChatScreen> {
       "type": "template",
       "template": {
         "name": templateToSend,
-        "language": {"code": "en"},
+        "language": {"code": selectedLanguage},
         "components": [
           {"type": "header", "parameters": []},
           {"type": "body", "parameters": []}
         ]
       }
     };
+    if (SelectedTemplateCategory == "AUTHENTICATION") {
+      List cp = templateBody["template"]["components"];
+      cp.add({
+        "type": "button",
+        "sub_type": "url",
+        "index": "0",
+        "parameters": []
+      });
+    }
+    ;
     print("templetete body=>$templateBody");
 
     Map<String, dynamic> createtemp = {
       "id": selectedTemplateId,
       "name": templateToSend,
-      "language": "en",
-      // "category": "MARKETING",
+      "language": selectedLanguage,
+      "category": SelectedTemplateCategory ?? "MARKETING",
       "header": "TEXT",
       "header_body": selectedHeader == null ? "" : selectedHeader.text,
       "message_body": selectedBody == null ? "" : selectedBody.text,
@@ -2018,17 +2034,26 @@ class _ChatScreenState extends State<ChatScreen> {
                                       selectedTemplateName ??
                                           _templateController.text;
 
+                                  print(
+                                      "selected header:: >><><>< ${selectedHeader}");
+
                                   if (selectedHeader == null) {
-                                    await sendTextTemplate(
-                                        templateToSend,
-                                        compoTextParams,
-                                        isChecked,
-                                        bodyTextParams);
                                     setState(() {
-                                      _isLoading = false;
-                                      image = null;
+                                      _isLoading = true;
                                     });
-                                    return;
+                                    await sendTextTemplate(
+                                            templateToSend,
+                                            compoTextParams,
+                                            isChecked,
+                                            bodyTextParams)
+                                        .then((onValue) {
+                                      setState(() {
+                                        _isLoading = false;
+                                        image = null;
+                                        Navigator.pop(context);
+                                        return;
+                                      });
+                                    });
                                   }
 
                                   if (selectedHeader.format == "IMAGE" ||
@@ -2190,6 +2215,8 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _getBootmSheet() {
     TextEditingController _templateController = TextEditingController();
     int selectedBtnIdx = 0;
+    SelectedTemplateCategory = null;
+    selectedTemplateName = null;
     return showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
@@ -2241,11 +2268,15 @@ class _ChatScreenState extends State<ChatScreen> {
                           if (selectedCategory != null) {
                             String categoryKey = selectedCategory.toLowerCase();
 
-                            templateNames = (allTemplatesMap[categoryKey]
-                                        ?.values
-                                        .toList() ??
-                                    [])
-                                .cast<String>();
+                            if (SelectedTemplateCategory != 'All') {
+                              templateNames = (allTemplatesMap[categoryKey]
+                                          ?.values
+                                          .toList() ??
+                                      [])
+                                  .cast<String>();
+                            } else {
+                              _fetchTemplates();
+                            }
 
                             debug("Selected Category: $categoryKey");
                             debug("Filtered Templates: $templateNames");
@@ -2294,6 +2325,13 @@ class _ChatScreenState extends State<ChatScreen> {
                               AppColor.navBarIconColor),
                         ),
                         onPressed: () {
+                          print(
+                              "selectedTemplateName>>> ${selectedTemplateName}");
+                          if (selectedTemplateName == null ||
+                              selectedTemplateName == "Select Template Name") {
+                            EasyLoading.showToast("Select Template Name");
+                            return;
+                          }
                           log("all comp info >> >>  ${selectedHeader}  ${selectedBody} ${selectedFooter} ${selectedButtons}}");
                           log("selectedBody['text']>>> ${selectedBody.text}  ");
                           final regex = RegExp(r'\{\{\d+\}\}');
@@ -2393,6 +2431,17 @@ class _ChatScreenState extends State<ChatScreen> {
         ]
       }
     };
+
+    if (SelectedTemplateCategory == "AUTHENTICATION") {
+      List cp = templateBody["template"]["components"];
+      cp.add({
+        "type": "button",
+        "sub_type": "url",
+        "index": "0",
+        "parameters": compoTextParams
+      });
+    }
+    ;
 
     print("template body=>$templateBody");
 
@@ -2573,6 +2622,16 @@ class _ChatScreenState extends State<ChatScreen> {
           ]
         }
       };
+      if (SelectedTemplateCategory == "AUTHENTICATION") {
+        List cp = templateBody["template"]["components"];
+        cp.add({
+          "type": "button",
+          "sub_type": "url",
+          "index": "0",
+          "parameters": []
+        });
+      }
+      ;
 
       var templateSendResponse =
           await mstemp.sendtemplete(number: number, msgmobilbody: templateBody);
@@ -2639,7 +2698,7 @@ class _ChatScreenState extends State<ChatScreen> {
     } else {
       footer = "";
     }
-
+    List cp = [];
     Map exBodyText = {};
     Map a = {"sendToAdmin": sendOnLoginNum};
     Map b = campaignParam;
@@ -2685,6 +2744,16 @@ class _ChatScreenState extends State<ChatScreen> {
               ]
             }
           },
+          if (SelectedTemplateCategory == "AUTHENTICATION")
+            {
+              cp = templateBody["template"]["components"],
+              cp.add({
+                "type": "button",
+                "sub_type": "url",
+                "index": "0",
+                "parameters": compoTextParams
+              }),
+            },
           mstemp
               .sendtemplete(number: number, msgmobilbody: templateBody)
               .then((value) {
