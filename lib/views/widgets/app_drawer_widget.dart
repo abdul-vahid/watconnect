@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/views/view/templete_list_view.dart';
 import 'package:whatsapp/views/view/whatsap_setting_view.dart';
 import 'package:whatsapp/views/widgets/bottomnavigatonbar.dart';
@@ -300,76 +301,107 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
     );
   }
 
-  Future<void> showAlertDialog() async {
-    // Setup the "No" button
-    Widget noButton = TextButton(
-      style: TextButton.styleFrom(
-        foregroundColor: Colors.grey,
-        backgroundColor: Colors.grey[200],
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-      onPressed: () {
-        Navigator.pop(context);
-      },
-      child: Text(
-        "No",
-        // style: TextStyle(color: AppColor.navBarIconColor),
-      ),
-    );
+  Future<void> logoutUser() async {
+    AppUtils.logout(context);
+  }
 
-    Widget yesButton = TextButton(
-      style: TextButton.styleFrom(
-        foregroundColor: Colors.white,
-        backgroundColor: AppColor.navBarIconColor,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-      child: Text(
-        'Yes',
-        style: TextStyle(fontSize: 14),
-      ),
-      onPressed: () {
-        Navigator.pop(context);
-        AppUtils.logout(context);
-      },
-    );
+  // Future<void> showAlertDialog() async {
+  //   // Setup the "No" button
+  //   Widget noButton = TextButton(
+  //     style: TextButton.styleFrom(
+  //       foregroundColor: Colors.grey,
+  //       backgroundColor: Colors.grey[200],
+  //       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(8),
+  //       ),
+  //     ),
+  //     onPressed: () {
+  //       Navigator.pop(context);
+  //     },
+  //     child: Text(
+  //       "No",
+  //       // style: TextStyle(color: AppColor.navBarIconColor),
+  //     ),
+  //   );
 
-    await showDialog<void>(
+  //   Widget yesButton = TextButton(
+  //     style: TextButton.styleFrom(
+  //       foregroundColor: Colors.white,
+  //       backgroundColor: AppColor.navBarIconColor,
+  //       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(8),
+  //       ),
+  //     ),
+  //     child: Text(
+  //       'Yes',
+  //       style: TextStyle(fontSize: 14),
+  //     ),
+  //     onPressed: () {
+  //       Navigator.pop(context);
+  //       AppUtils.logout(context);
+  //     },
+  //   );
+
+  //   await showDialog<void>(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         backgroundColor: Colors.white,
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(15),
+  //         ),
+  //         content: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             const Text(
+  //               'Are you sure you want to logout?',
+  //               style: TextStyle(
+  //                 fontSize: 16,
+  //                 color: Colors.black,
+  //               ),
+  //             ),
+  //             const SizedBox(height: 15),
+  //             const Divider(),
+  //             const SizedBox(height: 15),
+  //             Row(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: [
+  //                 noButton,
+  //                 const SizedBox(width: 20),
+  //                 yesButton,
+  //               ],
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+  void showAlertDialog() {
+    showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Are you sure you want to logout?',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 15),
-              const Divider(),
-              const SizedBox(height: 15),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  noButton,
-                  const SizedBox(width: 20),
-                  yesButton,
-                ],
-              ),
-            ],
-          ),
+          title: Text("Logout"),
+          content: Text("Are you sure you want to logout?"),
+          actions: [
+            TextButton(
+              child: Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text("Logout"),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await logoutUser();
+                // Navigate to login screen or do post-logout cleanup
+              },
+            ),
+          ],
         );
       },
     );

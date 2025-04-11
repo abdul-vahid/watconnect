@@ -295,12 +295,9 @@ class _LoginViewState extends State<LoginView> {
         }
         if (records.isNotEmpty) {
           var userModel = records[0].model as UserModel;
-
           {
             AppUtils.onLoading(context, "Logging You, please wait...");
-
             print("userModel::: ${userModel.success}   ${records[0].model}");
-
             if (!userListViewModel.isError && records.isNotEmpty) {
               var userModel = records[0].model as UserModel;
               SharedPreferences.getInstance().then((prefs) {
