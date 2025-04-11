@@ -12,6 +12,7 @@ import '../utils/app_color.dart';
 import '../utils/app_constants.dart';
 import '../views/view/login_view.dart';
 import 'function_lib.dart';
+import 'notification_utils.dart';
 
 class AppUtils {
   late UserModel userModelObjj;
@@ -353,7 +354,9 @@ class AppUtils {
 
   static void logout(context) {
     onLoading(context, "Logging out...");
+
     SharedPreferences.getInstance().then((prefs) {
+      NotificationUtil.deleteFCMTokenOnLogout();
       prefs.clear();
       Navigator.pushAndRemoveUntil(
           context,
@@ -368,7 +371,6 @@ class AppUtils {
       logout(context);
     }
   }
-
   /* static FutureOr<void> makePhoneCall(String phoneNumber) async {
     final Uri launchUri = Uri(
       scheme: 'tel',

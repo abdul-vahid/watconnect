@@ -124,4 +124,12 @@ class NotificationUtil {
       ),
     );
   }
+
+  static Future<void> deleteFCMTokenOnLogout() async {
+    try {
+      await _firebaseMessaging?.deleteToken();
+    } catch (e) {
+      debugPrint("Failed to delete FCM token: $e");
+    }
+  }
 }

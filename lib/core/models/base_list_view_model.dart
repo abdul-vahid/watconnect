@@ -44,6 +44,12 @@ class BaseListViewModel extends ChangeNotifier {
       debug("execute");
       status = "Completed";
     } on UnauthorisedException {
+      AppUtils.getAlert(AppUtils.currentContext!, [
+        "You have been logged out!",
+      ], onPressed: () {
+        Navigator.pop(AppUtils.currentContext!);
+        AppUtils.logout(AppUtils.currentContext);
+      });
       Navigator.push(
           context!, MaterialPageRoute(builder: (context) => const LoginView()));
       status = "Error";
