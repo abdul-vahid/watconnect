@@ -368,7 +368,6 @@ class AppUtils {
       logout(context);
     }
   }
-
   /* static FutureOr<void> makePhoneCall(String phoneNumber) async {
     final Uri launchUri = Uri(
       scheme: 'tel',

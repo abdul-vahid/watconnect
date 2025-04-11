@@ -19,7 +19,6 @@ import '../utils/function_lib.dart';
 
 class UserListViewModel extends BaseListViewModel {
   String? name;
-
   Future<dynamic> signup(UserModel userModel) async {
     String url = AppUtils.getUrl(AppConstants.signupAPIPath);
     return await post(url: url, body: userModel.toJson());
@@ -27,19 +26,18 @@ class UserListViewModel extends BaseListViewModel {
 
   Future<String> getDeviceId() async {
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-
     if (defaultTargetPlatform == TargetPlatform.android) {
       print("Device: Android");
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       print("Aanaannn=>${androidInfo.id}");
       print("Aanaannndevice=>${androidInfo.device}");
       print("Aanadeviceannn=>${androidInfo.name}");
-
+      // print("ANDROID ID => ${androidInfo.androidId}");
       return androidInfo.id ?? "unknown_device_id";
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       print("Device: iOS");
       IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      return iosInfo.name ?? "unknown_device_id";
+      return iosInfo.identifierForVendor ?? "unknown_device_id";
     } else {
       print("Device: Unsupported");
       return "unsupported_platform";
