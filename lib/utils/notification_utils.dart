@@ -12,6 +12,7 @@ class NotificationUtil {
   static BuildContext? context;
   static bool isInitialized = false;
   void initialize(context) {
+    registerToken();
     if (isInitialized) {
       return;
     }
@@ -38,7 +39,6 @@ class NotificationUtil {
     FirebaseMessaging.onMessageOpenedApp.listen(
       (RemoteMessage? remoteMessage) {
         debug("display notifcation app background");
-
         onMessageReceived(remoteMessage!);
       },
     );
@@ -58,7 +58,7 @@ class NotificationUtil {
   }
 
   static void registerToken() async {
-    _firebaseMessaging!.getToken().then((token) {
+    _firebaseMessaging?.getToken().then((token) {
       debug("registerToken value=> $token");
       UserListViewModel().registerFCMToken(token!).then((value) {
         print("value message notification firebase=>${value}");
