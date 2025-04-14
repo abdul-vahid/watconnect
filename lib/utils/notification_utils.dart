@@ -8,8 +8,7 @@ import '../models/lead_model.dart';
 import '../services/notifications/local_notification_service.dart';
 import '../view_models/lead_list_vm.dart';
 import '../view_models/user_list_vm.dart';
-import '../views/view/lead_detail_view.dart';
-import 'app_utils.dart';
+
 import 'function_lib.dart';
 
 class NotificationUtil {
@@ -46,11 +45,18 @@ class NotificationUtil {
       }
     });
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage? remoteMessage) {
-      debug("Foreground  received");
-      if (remoteMessage != null) {
-        onMessageReceived(remoteMessage);
-      }
+    FirebaseMessaging.onMessage.listen((RemoteMessage? remoteMessage) async {
+      debug("Foreground  received >>> ${remoteMessage?.data} ");
+      // if (remoteMessage != null) {
+      //   final leadId = remoteMessage.data['lead_id'];
+      //   if (leadId != null) {
+      //     await Provider.of<LeadListViewModel>(context, listen: false)
+      //         .fetch()
+      //         .then((val) {
+      //       NavigationFunc(leadId.toString(), context);
+      //     });
+      //   }
+      // }
     });
 
     FirebaseMessaging.onMessageOpenedApp
