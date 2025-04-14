@@ -576,13 +576,11 @@ class _Forms extends State<CampaignAddUpdateView> {
   void onButtonPressed() async {
     print(
         "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}");
-    CampaignViewModel getaccountData = CampaignViewModel(context);
 
     if (controllers.isNotEmpty) {
       bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
       if (anyEmpty) {
         EasyLoading.showToast('All fields are required');
-
         return;
       }
     }
@@ -605,53 +603,8 @@ class _Forms extends State<CampaignAddUpdateView> {
       }
       _addleadFormKey.currentState!.save();
       AppUtils.onLoading(context, "Saving, please wait...");
-      Map<String, dynamic> camp = {
-        'name': _name,
-        'template_id': selectedTemplateId,
-        'template_name': selectedTemplateName,
-        'status': 'Pending',
-        'business_number': number,
-        'type': _type,
-        'startDate': _dateStartInput.text,
-        'group_ids': selectedGroups,
-        'description': _description,
-      };
 
-      getaccountData.addCampaign(camp).then((value) async {
-        if (value is Map<String, dynamic>) {
-          String? campaignId = value["record"]?["id"];
-          if (campaignId == null) {
-            debug("Campaign ID is null. File upload skipped.");
-            return;
-          }
-
-          debug("Uploading file with Campaign ID: $campaignId");
-
-          // await getFileData.addFiles(image!, campaignId, fileData);
-        }
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MultiProvider(
-              providers: [
-                ChangeNotifierProvider(
-                  create: (_) => CampaignViewModel(context),
-                ),
-              ],
-              child: const CampaignListView(),
-            ),
-          ),
-          (Route<dynamic> route) => route.isFirst,
-        );
-      }).catchError((error, stackTrace) {
-        debug("Error: $error");
-        Navigator.pop(context);
-        AppUtils.getAlert(
-          context,
-          AppUtils.getErrorMessages(error),
-          title: "Error Alert",
-        );
-      });
+      sendingCamplaign();
     } else {
       print("landed here ");
     }
@@ -1017,8 +970,8 @@ class _Forms extends State<CampaignAddUpdateView> {
                         }
                         Navigator.pop(context);
                         print("image here:: ${image}  ${isOtherFileSelected}");
-                        addCampaignTemplate(
-                            fileToSend: image, sendToAdmin: isChecked);
+                        // addCampaignTemplate(
+                        //     fileToSend: image, sendToAdmin: isChecked);
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -1205,5 +1158,57 @@ class _Forms extends State<CampaignAddUpdateView> {
     print("createtemp campaign:::: ${createtemp}");
 
     // mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) {});
+  }
+
+  void sendingCamplaign() {
+    CampaignViewModel getaccountData = CampaignViewModel(context);
+
+    Map<String, dynamic> camp = {
+      'name': _name,
+      'template_id': selectedTemplateId,
+      'template_name': selectedTemplateName,
+      'status': 'Pending',
+      'business_number': number,
+      'type': _type,
+      'startDate': _dateStartInput.text,
+      'group_ids': selectedGroups,
+      'description': _description,
+    };
+
+    getaccountData.addCampaign(camp).then((value) async {
+      if (value is Map<String, dynamic>) {
+        String? campaignId = value["record"]?["id"];
+        if (campaignId == null) {
+          debug("Campaign ID is null. File upload skipped.");
+          return;
+        }
+
+        debug("Uploading file with Campaign ID: $campaignId");
+
+        // await getFileData.addFiles(image!, campaignId, fileData);
+      }
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MultiProvider(
+            providers: [
+              ChangeNotifierProvider(
+                create: (_) => CampaignViewModel(context),
+              ),
+            ],
+            child: const CampaignListView(),
+          ),
+        ),
+        (Route<dynamic> route) => route.isFirst,
+      );
+    }).catchError((error, stackTrace) {
+      debug("Error: $error");
+      Navigator.pop(context);
+      AppUtils.getAlert(
+        context,
+        AppUtils.getErrorMessages(error),
+        title: "Error Alert",
+      );
+    });
   }
 }

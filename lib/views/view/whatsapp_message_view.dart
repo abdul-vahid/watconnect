@@ -2294,9 +2294,12 @@ class _ChatScreenState extends State<ChatScreen> {
                             if (SelectedTemplateCategory != 'All') {
                               templateNames = (allTemplatesMap[categoryKey]
                                           ?.values
+                                          .toSet()
                                           .toList() ??
                                       [])
-                                  .cast<String>();
+                                  .map((e) => e.toString())
+                                  .toSet()
+                                  .toList();
                             } else {
                               _fetchTemplates();
                             }

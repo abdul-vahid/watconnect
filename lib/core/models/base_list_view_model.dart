@@ -28,10 +28,11 @@ class BaseListViewModel extends ChangeNotifier {
       {required BaseModel baseModel,
       required String url,
       String jsonKey = "records"}) async {
+    log("get api url>>> ${url}   ");
     try {
       final jsonObject = await BaseService().get(url: url);
       await _refreshToken(url, jsonKey);
-      debug("Response Data == $jsonObject");
+      log("Response Data == $jsonObject                   ${url}");
       var records = jsonObject;
       if (jsonObject is! List) {
         debug("not an array");
