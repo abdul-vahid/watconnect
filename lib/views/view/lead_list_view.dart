@@ -830,8 +830,7 @@ class _LeadListViewState extends State<LeadListView> {
 
       socket!.on("receivedwhatsappmessage", (data) {
         print(" New WhatsApp message: $data");
-        Provider.of<UnreadCountVm>(context, listen: false)
-            .fetchunreadcount(number: number ?? "");
+        _getUnreadCount();
       });
 
       socket!.onDisconnect((_) {
