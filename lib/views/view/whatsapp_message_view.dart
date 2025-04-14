@@ -1744,6 +1744,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     int count = regex.allMatches(text).length;
     file = null;
+    fileid = null;
     controllers = List.generate(count, (index) => TextEditingController());
     bool isOtherFileSelected = false;
     return showModalBottomSheet<void>(
@@ -2059,6 +2060,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                     });
                                   }
 
+                                  print(
+                                      "selected button::: ${selectedButtons} ");
+
                                   if (selectedHeader.format == "IMAGE" ||
                                       selectedHeader.format == "VIDEO") {
                                     if (isOtherFileSelected) {
@@ -2080,34 +2084,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                         fileid = response['records']?[0]['id'];
 
                                         print("ID: $fileid");
-                                        docId = await getDocId();
                                       });
                                     } else {
                                       image = await urlToFile(imgToShow);
-                                      docId = await getDocId();
                                     }
                                   }
 
                                   if ((selectedHeader.format == "IMAGE" ||
-                                          selectedHeader.format == "VIDEO") &&
-                                      docId.isNotEmpty) {
-                                    List parameter = [
-                                      {
-                                        "type": selectedHeader.format == "IMAGE"
-                                            ? "image"
-                                            : "video",
-                                        if (selectedHeader.format == "IMAGE")
-                                          "image": {"id": docId}
-                                        else
-                                          "video": {"id": docId},
-                                      }
-                                    ];
+                                      selectedHeader.format == "VIDEO")) {
+                                    print("this is call from here 1    }");
 
                                     await sendParamsApiCall(
                                             templateToSend,
                                             compoTextParams,
                                             isChecked,
-                                            parameter,
                                             bodyTextParams,
                                             imgToShow)
                                         .then((val) async {
@@ -2133,8 +2123,38 @@ class _ChatScreenState extends State<ChatScreen> {
                                     });
                                   } else if (selectedHeader.format ==
                                       "DOCUMENT") {
-                                    await sendDocTemp(templateToSend, isChecked,
-                                            imgToShow)
+                                    if (isOtherFileSelected == true) {
+                                      print("image :: ${image}");
+                                      final prefs =
+                                          await SharedPreferences.getInstance();
+                                      String? number =
+                                          prefs.getString('phoneNumber');
+                                      String? leadid = widget.model.id;
+                                      String? sendimagedatabase =
+                                          await messageViewModel
+                                              .uploadFiledb(
+                                                  image!, number, leadid)
+                                              .then((value) {
+                                        print(
+                                            "video sedn video send send----upload dididi->$value");
+
+                                        Map<String, dynamic> response =
+                                            jsonDecode(value);
+
+                                        fileid = response['records']?[0]['id'];
+
+                                        print("ID: $fileid");
+                                        return null;
+                                      });
+                                    }
+                                    await sendDocTemp(
+                                            templateToSend,
+                                            isChecked,
+                                            imgToShow,
+                                            bodyTextParams,
+                                            compoTextParams,
+                                            isOtherFileSelected,
+                                            fileid)
                                         .then((value) async {
                                       var leadnumber = widget.wpnumber;
                                       final prefs =
@@ -2274,9 +2294,12 @@ class _ChatScreenState extends State<ChatScreen> {
                             if (SelectedTemplateCategory != 'All') {
                               templateNames = (allTemplatesMap[categoryKey]
                                           ?.values
+                                          .toSet()
                                           .toList() ??
                                       [])
-                                  .cast<String>();
+                                  .map((e) => e.toString())
+                                  .toSet()
+                                  .toList();
                             } else {
                               _fetchTemplates();
                             }
@@ -2377,7 +2400,6 @@ class _ChatScreenState extends State<ChatScreen> {
     String templateToSend,
     List compoTextParams,
     bool sendOnLoginNum,
-    List params,
     Map campaignParam,
     String imgToShow,
   ) async {
@@ -2392,7 +2414,8 @@ class _ChatScreenState extends State<ChatScreen> {
     MessageViewModel mstemp = MessageViewModel(context);
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
-
+    print(
+        "selectedButtons?       ${selectedButtons} .buttons>>${selectedButtons?.buttons}");
     List ba =
         selectedButtons?.buttons.map((button) => button.toMap()).toList() ?? [];
     String footer = selectedFooter?.text ?? "";
@@ -2419,7 +2442,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
     print("temmplet msg id==========> $templeteidmessage");
     print("create object response=> $templateResponse");
-
+    var docId = await getDocId();
+    List params = [
+      {
+        "type": selectedHeader.format == "IMAGE" ? "image" : "video",
+        if (selectedHeader.format == "IMAGE")
+          "image": {"id": docId}
+        else
+          "video": {"id": docId},
+      }
+    ];
     var leadnumber = widget.wpnumber;
     Map<String, dynamic> templateBody = {
       "messaging_product": "whatsapp",
@@ -2463,7 +2495,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "message": "",
       "status": "Outgoing",
       "recordtypename": "recentlyMessage",
-      "file_id": null,
+      "file_id": fileid,
       "is_read": true,
       "business_number": number,
       "message_id": messageid,
@@ -2481,7 +2513,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "campaign_id": null,
       "body_text_params": campaignParam,
       "msg_history_id": msgResId,
-      "file_id": null,
+      "file_id": fileid,
       "whatsapp_number_admin": "7590889022"
     };
 
@@ -2571,7 +2603,13 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> sendDocTemp(
-      String tempToSend, bool isChecked, String docUrl) async {
+      String tempToSend,
+      bool isChecked,
+      String docUrl,
+      Map campaignParam,
+      List compoTextParams,
+      bool otherFileSeletect,
+      var fileId) async {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
@@ -2579,6 +2617,20 @@ class _ChatScreenState extends State<ChatScreen> {
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
 
+    List ba = [];
+    if (selectedButtons != null) {
+      print("list:::: ${selectedButtons.buttons} ");
+      ba = selectedButtons.buttons.map((button) => button.toMap()).toList();
+    }
+
+    Map exBodyText = {};
+    Map a = {"sendToAdmin": isChecked};
+    Map b = campaignParam;
+    if (campaignParam.isNotEmpty) {
+      exBodyText = {...b, ...a};
+    } else {
+      exBodyText = a;
+    }
     Map<String, dynamic> createtemp = {
       "id": selectedTemplateId,
       "name": tempToSend,
@@ -2586,9 +2638,9 @@ class _ChatScreenState extends State<ChatScreen> {
       "header": selectedHeader == null ? "" : selectedHeader.format,
       "header_body": docUrl,
       "message_body": selectedBody == null ? "" : selectedBody.text,
-      "example_body_text": {"sendToAdmin": isChecked},
+      "example_body_text": exBodyText,
       "footer": selectedFooter == null ? "" : selectedFooter.text,
-      "buttons": [],
+      "buttons": ba,
       "business_number": number
     };
 
@@ -2597,11 +2649,20 @@ class _ChatScreenState extends State<ChatScreen> {
           await mstemp.createmsgtemplete(msgmobilbody: createtemp);
       templeteidmessage = templateResponse['id'];
       print("Template message ID: $templeteidmessage");
-
-      Map<String, dynamic> url = {"url": docUrl};
-      var proxyResponse =
-          await mstemp.sendProxy(fileProxyBody: url, number: number);
-      print("Proxy response: $proxyResponse");
+      String fileId = "";
+      if (otherFileSeletect == false) {
+        Map<String, dynamic> url = {"url": docUrl};
+        fileId = await mstemp.sendProxy(fileProxyBody: url, number: number);
+        print("Proxy response: $fileId");
+      } else {
+        var res = await messageViewModel.uploadFile(image!, number);
+        print("res>>>>> ${res}   ${res.runtimeType}  ${jsonDecode(res)}   }");
+        var rs = jsonDecode(res);
+        print("rs:::: ${rs}   ${rs["id"]}");
+        // fileId = res["id"].toString();
+        fileId = rs["id"];
+      }
+      print("fileId>>> ${fileId}");
 
       var leadnumber = widget.wpnumber;
       Map<String, dynamic> templateBody = {
@@ -2617,11 +2678,11 @@ class _ChatScreenState extends State<ChatScreen> {
               "parameters": [
                 {
                   "type": "document",
-                  "document": {"id": proxyResponse}
+                  "document": {"id": fileId}
                 }
               ],
             },
-            {"type": "body", "parameters": []}
+            {"type": "body", "parameters": compoTextParams}
           ]
         }
       };
@@ -2650,7 +2711,7 @@ class _ChatScreenState extends State<ChatScreen> {
         "message": "",
         "status": "Outgoing",
         "recordtypename": "recentlyMessage",
-        "file_id": null,
+        "file_id": fileid,
         "is_read": true,
         "business_number": number,
         "message_id": messageid,

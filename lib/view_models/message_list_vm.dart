@@ -1,4 +1,5 @@
 import 'dart:convert' show jsonDecode, jsonEncode;
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -163,7 +164,7 @@ class MessageViewModel extends BaseListViewModel {
       "Authorization": token,
       "Content-Type": "multipart/form-data",
     });
-    debug("Request URL: $url");
+    log("Request URL: $url");
     // debug("Request Headers: ${request.headers}");
     debug("Request Fields: ${request.fields}");
     debug("Request Files: ${request.files}");
