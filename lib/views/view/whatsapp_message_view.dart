@@ -466,7 +466,6 @@ class _ChatScreenState extends State<ChatScreen> {
       "type": "text",
       "text": {"preview_url": false, "body": text}
     };
-
     Map<String, dynamic> msgmobilebody = {
       "parent_id": widget.model.id,
       "name": widget.leadName,
@@ -480,7 +479,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "business_number": number,
       "message_id": messageid
     };
-
+    print("leadnumberleadnumberleadnumber${leadnumber}");
     try {
       var value = await ms.sendMessage(number: number, addmsModel: addmsModel);
       print("valueee=>$value");
@@ -612,7 +611,6 @@ class _ChatScreenState extends State<ChatScreen> {
                     {print("semdtempmsghistorysemdtempmsghistory=>$value")});
           })
         });
-
     print("temmplet msg::::: id==========>$templeteidmessage");
   }
 
@@ -637,11 +635,13 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _getPhoneNumber() async {
+    print("widget.wpnumber${widget.wpnumber}");
     final prefs = await SharedPreferences.getInstance();
     userName = prefs.getString('userName') ?? "Me";
     setState(() {});
     String? number = prefs.getString('phoneNumber');
     if (number != null) {
+      print("widget.wpnumber${widget.wpnumber}");
       messageViewModel.Fetchmsghistorydata(
         leadnumber: widget.wpnumber ?? "",
         number: number,

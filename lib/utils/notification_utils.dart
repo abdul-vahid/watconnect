@@ -32,7 +32,8 @@ class NotificationUtil {
     _firebaseMessaging
         ?.getInitialMessage()
         .then((RemoteMessage? remoteMessage) async {
-      debug("getInitialMessage triggered (terminated satae)");
+      debug(
+          "getInitialMessage triggered (terminated satae)${remoteMessage?.data}");
       if (remoteMessage != null) {
         final leadId = remoteMessage.data['lead_id'];
         if (leadId != null) {

@@ -361,6 +361,7 @@ class _LeadListViewState extends State<LeadListView> {
   }
 
   Future<String?> _marksread(String whatsappNumber) async {
+    print("sajdjsahdjsah jhsjhkjdhakj${whatsappNumber}");
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
