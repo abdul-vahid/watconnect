@@ -2060,6 +2060,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                     });
                                   }
 
+                                  print(
+                                      "selected button::: ${selectedButtons} ");
+
                                   if (selectedHeader.format == "IMAGE" ||
                                       selectedHeader.format == "VIDEO") {
                                     if (isOtherFileSelected) {
@@ -2081,34 +2084,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                         fileid = response['records']?[0]['id'];
 
                                         print("ID: $fileid");
-                                        docId = await getDocId();
                                       });
                                     } else {
                                       image = await urlToFile(imgToShow);
-                                      docId = await getDocId();
                                     }
                                   }
 
                                   if ((selectedHeader.format == "IMAGE" ||
-                                          selectedHeader.format == "VIDEO") &&
-                                      docId.isNotEmpty) {
-                                    List parameter = [
-                                      {
-                                        "type": selectedHeader.format == "IMAGE"
-                                            ? "image"
-                                            : "video",
-                                        if (selectedHeader.format == "IMAGE")
-                                          "image": {"id": docId}
-                                        else
-                                          "video": {"id": docId},
-                                      }
-                                    ];
+                                      selectedHeader.format == "VIDEO")) {
+                                    print("this is call from here 1    }");
 
                                     await sendParamsApiCall(
                                             templateToSend,
                                             compoTextParams,
                                             isChecked,
-                                            parameter,
                                             bodyTextParams,
                                             imgToShow)
                                         .then((val) async {
@@ -2408,7 +2397,6 @@ class _ChatScreenState extends State<ChatScreen> {
     String templateToSend,
     List compoTextParams,
     bool sendOnLoginNum,
-    List params,
     Map campaignParam,
     String imgToShow,
   ) async {
@@ -2423,7 +2411,8 @@ class _ChatScreenState extends State<ChatScreen> {
     MessageViewModel mstemp = MessageViewModel(context);
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
-
+    print(
+        "selectedButtons?       ${selectedButtons} .buttons>>${selectedButtons?.buttons}");
     List ba =
         selectedButtons?.buttons.map((button) => button.toMap()).toList() ?? [];
     String footer = selectedFooter?.text ?? "";
@@ -2450,7 +2439,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
     print("temmplet msg id==========> $templeteidmessage");
     print("create object response=> $templateResponse");
-
+    var docId = await getDocId();
+    List params = [
+      {
+        "type": selectedHeader.format == "IMAGE" ? "image" : "video",
+        if (selectedHeader.format == "IMAGE")
+          "image": {"id": docId}
+        else
+          "video": {"id": docId},
+      }
+    ];
     var leadnumber = widget.wpnumber;
     Map<String, dynamic> templateBody = {
       "messaging_product": "whatsapp",
@@ -2494,7 +2492,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "message": "",
       "status": "Outgoing",
       "recordtypename": "recentlyMessage",
-      "file_id": null,
+      "file_id": fileid,
       "is_read": true,
       "business_number": number,
       "message_id": messageid,
@@ -2512,7 +2510,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "campaign_id": null,
       "body_text_params": campaignParam,
       "msg_history_id": msgResId,
-      "file_id": null,
+      "file_id": fileid,
       "whatsapp_number_admin": "7590889022"
     };
 
