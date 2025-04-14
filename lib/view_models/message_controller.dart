@@ -26,6 +26,7 @@ class MessageController extends ChangeNotifier {
   }
 
   setUsrProfile(str) {
+    userProfile = "";
     userProfile = str;
     print("setting the user prifiel:::::${userProfile}");
     notifyListeners();

@@ -466,6 +466,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 ),
                 buttonText: Text("Select Groups"),
                 onConfirm: (results) {
+                  print("results:::: ${results}");
                   // Update selectedGroups with selected items
                   setState(() {
                     selectedGroups = results.cast<String>();
@@ -574,6 +575,7 @@ class _Forms extends State<CampaignAddUpdateView> {
   }
 
   void onButtonPressed() async {
+    print("selectedGroups>>> ${selectedGroups}");
     print(
         "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}");
 
@@ -1111,6 +1113,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     }
   }
 
+  String? fileid;
   Future<File?> _pickImaFromGallery() async {
     final pickedFile = await FilePicker.platform.pickFiles(
       allowMultiple: false,
@@ -1160,55 +1163,153 @@ class _Forms extends State<CampaignAddUpdateView> {
     // mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) {});
   }
 
-  void sendingCamplaign() {
-    CampaignViewModel getaccountData = CampaignViewModel(context);
+  bool _isLoading = false;
+  Future<void> sendingCamplaign() async {
+    Map<String, String> bodyTextParams = {};
+    List compoTextParams = [];
+    List numberedCampParam = [];
 
-    Map<String, dynamic> camp = {
-      'name': _name,
-      'template_id': selectedTemplateId,
-      'template_name': selectedTemplateName,
-      'status': 'Pending',
-      'business_number': number,
-      'type': _type,
-      'startDate': _dateStartInput.text,
-      'group_ids': selectedGroups,
-      'description': _description,
+    bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
+    if (anyEmpty) {
+      EasyLoading.showToast('All fields are required');
+
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    File? imageFile;
+    String docId = "";
+    for (int i = 0; i < controllers.length; i++) {
+      bodyTextParams[(i + 1).toString()] = controllers[i].text;
+      Map body = {"type": "text", "text": controllers[i].text};
+      compoTextParams.add(body);
+      numberedCampParam.add(bodyTextParams);
+    }
+
+    String templateToSend = selectedTemplateName ?? "";
+
+    print("selected header:: >><><>< ${selectedHeader}");
+
+    setState(() {
+      _isLoading = true;
+    });
+    await sendTextTemplate(
+            templateToSend, compoTextParams, isChecked, bodyTextParams)
+        .then((onValue) {
+      setState(() {
+        _isLoading = false;
+        image = null;
+
+        CampaignViewModel getaccountData = CampaignViewModel(context);
+
+        Map<String, dynamic> camp = {
+          'name': _name,
+          'template_id': selectedTemplateId,
+          'template_name': selectedTemplateName,
+          'status': 'Pending',
+          'business_number': number,
+          'type': _type,
+          'startDate': _dateStartInput.text,
+          'group_ids': selectedGroups,
+          'description': _description,
+        };
+
+        getaccountData.addCampaign(camp).then((value) async {
+          if (value is Map<String, dynamic>) {
+            String? campaignId = value["record"]?["id"];
+            print("campaignId>>>  ${campaignId}");
+            if (campaignId == null) {
+              debug("Campaign ID is null. File upload skipped.");
+              return;
+            } else {
+              Map<String, dynamic> paramBody = {
+                "campaign_id": campaignId,
+                "body_text_params": bodyTextParams,
+                "msg_history_id": null,
+                "file_id": fileid,
+                "whatsapp_number_admin": "7590889022"
+              };
+
+              MessageViewModel mstemp = MessageViewModel(context);
+              var campaignResponse =
+                  await mstemp.sendCampParam(campParambody: paramBody);
+            }
+
+            debug("Uploading file with Campaign ID: $campaignId");
+
+            // await getFileData.addFiles(image!, campaignId, fileData);
+          }
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MultiProvider(
+                providers: [
+                  ChangeNotifierProvider(
+                    create: (_) => CampaignViewModel(context),
+                  ),
+                ],
+                child: const CampaignListView(),
+              ),
+            ),
+            (Route<dynamic> route) => route.isFirst,
+          );
+        }).catchError((error, stackTrace) {
+          debug("Error: $error");
+          Navigator.pop(context);
+          AppUtils.getAlert(
+            context,
+            AppUtils.getErrorMessages(error),
+            title: "Error Alert",
+          );
+        });
+      });
+    });
+
+    print("selected button::: ${selectedButtons} ");
+  }
+
+  Future<void> sendTextTemplate(
+    String templateToSend,
+    List compoTextParams,
+    bool sendOnLoginNum,
+    Map campaignParam,
+  ) async {
+    final mstemp = MessageViewModel(context);
+
+    List ba = [];
+    if (selectedButtons != null) {
+      print("list:::: ${selectedButtons.buttons}");
+      ba = selectedButtons.buttons.map((button) => button.toMap()).toList();
+    }
+
+    String footer = selectedFooter?.text ?? "";
+
+    Map<String, dynamic> exBodyText = {
+      ...campaignParam,
+      "sendToAdmin": sendOnLoginNum,
     };
 
-    getaccountData.addCampaign(camp).then((value) async {
-      if (value is Map<String, dynamic>) {
-        String? campaignId = value["record"]?["id"];
-        if (campaignId == null) {
-          debug("Campaign ID is null. File upload skipped.");
-          return;
-        }
+    Map<String, dynamic> createtemp = {
+      "id": selectedTemplateId,
+      "name": templateToSend,
+      "language": selectedLanguage,
+      "header": selectedHeader?.format ?? "",
+      "header_body": selectedHeader?.text ?? "",
+      "message_body": selectedBody?.text ?? "",
+      "example_body_text": exBodyText,
+      "footer": footer,
+      "buttons": ba,
+      "business_number": number,
+    };
 
-        debug("Uploading file with Campaign ID: $campaignId");
+    print("create map>>> $createtemp");
 
-        // await getFileData.addFiles(image!, campaignId, fileData);
-      }
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MultiProvider(
-            providers: [
-              ChangeNotifierProvider(
-                create: (_) => CampaignViewModel(context),
-              ),
-            ],
-            child: const CampaignListView(),
-          ),
-        ),
-        (Route<dynamic> route) => route.isFirst,
-      );
-    }).catchError((error, stackTrace) {
-      debug("Error: $error");
-      Navigator.pop(context);
-      AppUtils.getAlert(
-        context,
-        AppUtils.getErrorMessages(error),
-        title: "Error Alert",
-      );
-    });
+    try {
+      await mstemp.createmsgtemplete(msgmobilbody: createtemp);
+    } catch (e) {
+      print("Error sending template: $e");
+    }
   }
 }

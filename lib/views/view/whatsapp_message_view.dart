@@ -778,7 +778,7 @@ class _ChatScreenState extends State<ChatScreen> {
     Navigator.of(context).pop();
   }
 
-  void videosend(type) async {
+  void videosend(type, String? caps) async {
     print("woking....");
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
@@ -796,7 +796,7 @@ class _ChatScreenState extends State<ChatScreen> {
           "recipient_type": "individual",
           "to": widget.model.whatsapp_number,
           "type": type,
-          type: {"id": doucmentid, "caption": "document"}
+          type: {"id": doucmentid, "caption": caps ?? "Caption"}
         };
         String? responseimage = await messageViewModel
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
@@ -870,12 +870,12 @@ class _ChatScreenState extends State<ChatScreen> {
   void filesend(String type) {
     print("typyp=>$type");
     if (type == "image") {
-      imagesend(type);
+      imagesend(type, _controller.text.trim());
     } else if (type == "document" || type == "pdf") {
-      documetsend(type);
+      documetsend(type, _controller.text.trim());
     } else if (type == "video") {
       print("SAdddddddddddddddddddddd");
-      videosend(type);
+      videosend(type, _controller.text.trim());
     } else {
       debugPrint("Unsupported file type: $type");
     }
@@ -893,7 +893,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void imagesend(String type) async {
+  void imagesend(String type, String? caps) async {
     print("woking....");
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
@@ -916,7 +916,7 @@ class _ChatScreenState extends State<ChatScreen> {
           "recipient_type": "individual",
           "to": widget.model.whatsapp_number,
           "type": type,
-          type: {"id": doucmentid, "caption": "Image caption"}
+          type: {"id": doucmentid, "caption": caps ?? "Image caption"}
         };
         print("ississiis=>$imagebody");
         String? responseimage = await messageViewModel
@@ -977,7 +977,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  void documetsend(type) async {
+  void documetsend(type, String? caps) async {
     print("woking....");
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
@@ -997,7 +997,7 @@ class _ChatScreenState extends State<ChatScreen> {
           "recipient_type": "individual",
           "to": widget.model.whatsapp_number,
           "type": type,
-          type: {"id": doucmentid, "caption": "document"}
+          type: {"id": doucmentid, "caption": caps ?? "Caption"}
         };
         String? responseimage = await messageViewModel
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
@@ -2483,6 +2483,7 @@ class _ChatScreenState extends State<ChatScreen> {
     // Await template sending
     var sendTemplateResponse =
         await mstemp.sendtemplete(number: number, msgmobilbody: templateBody);
+    print("sendTemplateResponse>>>>>>> ${sendTemplateResponse}");
     String messageid = sendTemplateResponse['messages'][0]["id"] ?? "";
 
     print("value=== template>$sendTemplateResponse");
@@ -2749,8 +2750,7 @@ class _ChatScreenState extends State<ChatScreen> {
     String? number = prefs.getString('phoneNumber');
 
     late MessageViewModel mstemp = MessageViewModel(context);
-    TempleteListViewModel templeteViewModel =
-        Provider.of<TempleteListViewModel>(context, listen: false);
+
     List ba = [];
     if (selectedButtons != null) {
       print("list:::: ${selectedButtons.buttons} ");
@@ -2776,7 +2776,6 @@ class _ChatScreenState extends State<ChatScreen> {
       "id": selectedTemplateId,
       "name": templateToSend,
       "language": selectedLanguage,
-      // "category": "MARKETING",
       "header": selectedHeader == null ? "" : selectedHeader.format,
       "header_body": selectedHeader == null ? "" : selectedHeader.text,
       "message_body": selectedBody == null ? "" : selectedBody.text,
@@ -2785,6 +2784,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "buttons": ba,
       "business_number": number
     };
+
     print("create map>>> ${createtemp}");
     Map<String, dynamic> templateBody = {};
     var leadnumber = widget.wpnumber;

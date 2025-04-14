@@ -165,8 +165,8 @@ class _ProfileViewState extends State<ProfileView> {
                   child: Stack(
                     children: [
                       Consumer<MessageController>(
-                          builder: (context, ms, child) {
-                        print("ms>>>> ${ms.userProfile}");
+                          builder: (context, mssss, child) {
+                        print("ms>>>> ${mssss.userProfile}");
                         return CircleAvatar(
                           radius: 60,
                           backgroundColor: Colors.white,
@@ -174,7 +174,7 @@ class _ProfileViewState extends State<ProfileView> {
                             padding: const EdgeInsets.all(0),
                             child: ClipOval(
                               child: CachedNetworkImage(
-                                imageUrl: ms.userProfile,
+                                imageUrl: mssss.userProfile,
                                 placeholder: (context, url) =>
                                     CircularProgressIndicator(),
                                 errorWidget: (context, url, error) =>
