@@ -482,6 +482,7 @@ class _LeadListViewState extends State<LeadListView> {
       key: UniqueKey(),
       onDismissed: (direction) {
         print("model=>${model.toMap()}");
+        // print("model=>${model.toMap()}");
         if (model.whatsapp_number != null) {
           _marksread(model.whatsapp_number ?? "");
 
@@ -495,7 +496,9 @@ class _LeadListViewState extends State<LeadListView> {
                         : (model.lastname != null && model.lastname!.isNotEmpty)
                             ? model.lastname!
                             : "No Name Available",
-                wpnumber: model.whatsapp_number ?? "",
+                wpnumber: model.whatsapp_number!.contains("+")
+                    ? model.whatsapp_number ?? ""
+                    : "${model.countryCode}${model.whatsapp_number ?? ""}",
                 model: model,
               ),
             ),
@@ -591,7 +594,7 @@ class _LeadListViewState extends State<LeadListView> {
                         ),
                       ),
                       Text(
-                        "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number : ''}",
+                        "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number!.contains("+") ? model.whatsapp_number ?? "" : "${model.countryCode}${model.whatsapp_number ?? ""}" : ''}",
                         style: const TextStyle(fontSize: 12),
                       ),
                       Text(
