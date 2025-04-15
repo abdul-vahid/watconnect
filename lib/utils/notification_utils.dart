@@ -176,8 +176,10 @@ class NotificationUtil {
           leadName: matchedModel!.firstname ??
               matchedModel.lastname ??
               "No Name Available",
-          wpnumber: matchedModel!.whatsapp_number ?? "",
-          model: matchedModel!,
+          wpnumber: matchedModel!.whatsapp_number!.contains("+")
+              ? matchedModel.whatsapp_number ?? ""
+              : "${matchedModel.countryCode}${matchedModel.whatsapp_number ?? ""}",
+          model: matchedModel,
         ),
       ),
     );
