@@ -145,7 +145,6 @@ class NotificationUtil {
     debug("NavigationFunc called with leadId: $leadId");
     LeadModel? matchedModel;
     var leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
-
     for (var viewModel in leadlistvm.viewModels) {
       debug("Found lead ID: ${viewModel.model.id}");
       if (viewModel.model.id.toString() == leadId) {
@@ -153,12 +152,10 @@ class NotificationUtil {
         break;
       }
     }
-
     if (matchedModel == null) {
       debug("No matching lead found for ID: $leadId");
       return;
     }
-
     Navigator.push(
       cntxt,
       MaterialPageRoute(
