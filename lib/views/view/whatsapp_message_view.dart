@@ -1283,6 +1283,18 @@ class _ChatScreenState extends State<ChatScreen> {
                                                       Text('${result}'),
                                                     const SizedBox(height: 5),
                                                     if (allMessages[index]
+                                                            .description !=
+                                                        null)
+                                                      Text(allMessages[index]
+                                                          .description),
+                                                    SizedBox(
+                                                        height: allMessages[
+                                                                        index]
+                                                                    .description !=
+                                                                null
+                                                            ? 5
+                                                            : 0),
+                                                    if (allMessages[index]
                                                             .footer !=
                                                         null)
                                                       Text(
@@ -3156,6 +3168,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
     print("number=>$number");
+    if (!mounted) return;
     await Provider.of<MessageViewModel>(context, listen: false)
         .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
   }

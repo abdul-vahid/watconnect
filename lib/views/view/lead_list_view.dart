@@ -52,7 +52,6 @@ class _LeadListViewState extends State<LeadListView> {
     super.initState();
     connectSocket();
     tempLeadModelList = leadModelList;
-    Provider.of<LeadListViewModel>(context, listen: false).fetch();
   }
 
   @override
@@ -65,10 +64,11 @@ class _LeadListViewState extends State<LeadListView> {
   Future<void> _getUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
-    var a = Provider.of<UnreadCountVm>(context, listen: false)
-        .fetchunreadcount(number: number ?? "");
+    Provider.of<LeadListViewModel>(context, listen: false).fetch();
+    if (!mounted) return;
 
-    print("aaaaaaaaaaaaaa=>$a");
+    await Provider.of<UnreadCountVm>(context, listen: false)
+        .fetchunreadcount(number: number ?? "");
   }
 
   // Future<void> _marksread(String? whatsappNumber, String? leadId) async {

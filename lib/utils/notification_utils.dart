@@ -59,7 +59,7 @@ class NotificationUtil {
           try {
             final filePath =
                 await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
-
+            print("filePath:  remoteMessage:: ${filePath}   ${remoteMessage}");
             await showImageNotification(remoteMessage, filePath);
           } catch (e) {
             debugPrint(
