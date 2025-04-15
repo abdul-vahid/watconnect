@@ -49,7 +49,6 @@ class NotificationUtil {
       }
     });
 
-    // ✅ Foreground message handler
     FirebaseMessaging.onMessage.listen((RemoteMessage? remoteMessage) async {
       debugPrint("Foreground received >>> ${remoteMessage?.data}");
 
@@ -61,24 +60,18 @@ class NotificationUtil {
             final filePath =
                 await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
 
-            if (filePath != null) {
-              await showImageNotification(remoteMessage, filePath);
-            } else {
-              await LocalNotificationService.displayNotification(remoteMessage);
-            }
+            await showImageNotification(remoteMessage, filePath);
           } catch (e) {
             debugPrint(
                 "Image download failed, fallback to text notification: $e");
             LocalNotificationService.displayNotification(remoteMessage);
           }
         } else {
-          // 🔔 Text-only notification
           LocalNotificationService.displayNotification(remoteMessage);
         }
       }
     });
 
-    // ✅ When user taps the notification (app in background)
     FirebaseMessaging.onMessageOpenedApp
         .listen((RemoteMessage? remoteMessage) async {
       debug("onMessageOpenedApp triggered (background)");
@@ -95,7 +88,6 @@ class NotificationUtil {
     isInitialized = true;
   }
 
-  /// ✅ Image Notification (Big Picture Style)
   Future<void> showImageNotification(
       RemoteMessage message, String filePath) async {
     final BigPictureStyleInformation bigPictureStyleInformation =
@@ -127,7 +119,6 @@ class NotificationUtil {
     );
   }
 
-  /// ✅ Download image from URL and save to file
   Future<String> downloadAndSaveImage(String url, String fileName) async {
     final directory = await getApplicationDocumentsDirectory();
     final filePath = '${directory.path}/$fileName';
@@ -137,7 +128,6 @@ class NotificationUtil {
     return filePath;
   }
 
-  /// ✅ Token registration
   static void registerToken() async {
     _firebaseMessaging?.getToken().then((token) {
       debug("registerToken value => $token");
@@ -173,10 +163,8 @@ class NotificationUtil {
       cntxt,
       MaterialPageRoute(
         builder: (_) => ChatScreen(
-          leadName: matchedModel!.firstname ??
-              matchedModel.lastname ??
-              "No Name Available",
-          wpnumber: matchedModel!.whatsapp_number!.contains("+")
+          leadName: "${matchedModel!.firstname} ${matchedModel.lastname}",
+          wpnumber: matchedModel.whatsapp_number!.contains("+")
               ? matchedModel.whatsapp_number ?? ""
               : "${matchedModel.countryCode}${matchedModel.whatsapp_number ?? ""}",
           model: matchedModel,
@@ -185,14 +173,12 @@ class NotificationUtil {
     );
   }
 
-  /// ✅ Background notification handler
   static Future<void> _firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
     debug("Background FCM: ${message.notification?.title}");
     LocalNotificationService.displayNotification(message);
   }
 
-  /// ✅ Delete token on logout
   static Future<void> deleteFCMTokenOnLogout() async {
     try {
       await _firebaseMessaging?.deleteToken();
