@@ -362,6 +362,7 @@ class _LeadListViewState extends State<LeadListView> {
 
   Future<String?> _marksread(String whatsappNumber) async {
     print("sajdjsahdjsah jhsjhkjdhakj${whatsappNumber}");
+
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
@@ -437,7 +438,12 @@ class _LeadListViewState extends State<LeadListView> {
           widgets.add(Dismissible(
             key: UniqueKey(),
             onDismissed: (direction) async {
-              var res = await _marksread(model.whatsapp_number ?? "");
+              // var res = await _marksread(model.whatsapp_number ?? "");
+              var res = await _marksread(
+                model.whatsapp_number!.contains("+")
+                    ? model.whatsapp_number ?? ""
+                    : "${model.countryCode}${model.whatsapp_number ?? ""}",
+              );
             },
             background: Container(
               color: Colors.green,
