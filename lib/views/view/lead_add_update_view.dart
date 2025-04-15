@@ -532,7 +532,16 @@ class _Forms extends State<LeadAddView> {
                               //   },
                               //   data: _countrycode,
                               // ),
-                              DropdownButton<String>(
+                              DropdownButtonFormField<String>(
+                                isDense: true,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  border: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(8)),
+                                  ),
+                                ),
                                 value: selectedCountry,
                                 isExpanded: true,
                                 onChanged: (String? newValue) {
