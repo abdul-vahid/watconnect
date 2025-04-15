@@ -30,6 +30,8 @@ import 'view_models/lead_count_vm.dart';
 import 'view_models/whatsapp_setting_vm.dart';
 import 'views/view/splash_view.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -89,6 +91,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
         title: 'Watconnect',
         theme: ThemeData(
           textTheme: GoogleFonts.kohSantepheapTextTheme(),

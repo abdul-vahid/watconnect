@@ -6,6 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:whatsapp/main.dart';
+import 'package:whatsapp/models/lead_model.dart';
+import 'package:whatsapp/utils/function_lib.dart';
+import 'package:whatsapp/view_models/lead_list_vm.dart';
+import 'package:whatsapp/views/view/whatsapp_message_view.dart';
 
 import '../../utils/app_utils.dart';
 
@@ -15,7 +21,6 @@ class LocalNotificationService {
 
   static void initialize() {
     const androidInit = AndroidInitializationSettings("@mipmap/ic_launcher");
-
     const iOSInit = DarwinInitializationSettings();
 
     const initSettings = InitializationSettings(
@@ -25,7 +30,40 @@ class LocalNotificationService {
 
     _notificationsPlugin.initialize(
       initSettings,
-      onDidReceiveNotificationResponse: (details) {},
+      onDidReceiveNotificationResponse: (details) async {
+        debugPrint("Notification tapped");
+        debugPrint(
+            "Payload: ${details.payload}   ${details.payload.runtimeType} ");
+        debugPrint("Action ID: ${details.actionId}   ${details.data}");
+        debugPrint("Notification ID: ${details.id}");
+
+        if (details.payload == null || details.payload!.isEmpty) {
+          return;
+        }
+
+        Map<String, dynamic> finJson = {};
+        try {
+          finJson = jsonDecode(details.payload!);
+        } catch (e) {
+          debugPrint("Failed to decode payload: $e");
+          return;
+        }
+
+        debugPrint("finJson::::: $finJson");
+
+        String leadId = finJson['lead_id']?.toString() ?? '';
+        if (leadId.isEmpty) {
+          debugPrint("No lead_id found in payload.");
+          return;
+        }
+
+        final ctx = navigatorKey.currentContext!;
+        await Provider.of<LeadListViewModel>(ctx, listen: false)
+            .fetch()
+            .then((val) {
+          NavigationFunc(leadId, ctx);
+        });
+      },
     );
   }
 
@@ -98,15 +136,16 @@ class LocalNotificationService {
         iOS: const DarwinNotificationDetails(),
       );
 
+      print("message>>> data>>> ${message.data}");
       await _notificationsPlugin.show(
         id,
         message.notification?.title ?? 'New Notification',
         message.notification?.body ?? '',
         notificationDetails,
-        payload: message.data['id'],
+        payload: jsonEncode(message.data),
       );
 
-      debugPrint("Notification shown ✅");
+      debugPrint("Notification shown ");
     } catch (e) {
       debugPrint("Error displaying notification: $e");
     }
@@ -135,4 +174,36 @@ class LocalNotificationService {
   }
 
   static FlutterLocalNotificationsPlugin get instance => _notificationsPlugin;
+
+  static void NavigationFunc(String leadId, BuildContext cntxt) {
+    debug("NavigationFunc called with leadId: $leadId");
+    LeadModel? matchedModel;
+    var leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
+
+    for (var viewModel in leadlistvm.viewModels) {
+      debug("Found lead ID: ${viewModel.model.id}");
+      if (viewModel.model.id.toString() == leadId) {
+        matchedModel = viewModel.model;
+        break;
+      }
+    }
+
+    if (matchedModel == null) {
+      debug("No matching lead found for ID: $leadId");
+      return;
+    }
+
+    Navigator.push(
+      cntxt,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          leadName: "${matchedModel!.firstname} ${matchedModel.lastname}",
+          wpnumber: matchedModel.whatsapp_number!.contains("+")
+              ? matchedModel.whatsapp_number ?? ""
+              : "${matchedModel.countryCode}${matchedModel.whatsapp_number ?? ""}",
+          model: matchedModel,
+        ),
+      ),
+    );
+  }
 }
