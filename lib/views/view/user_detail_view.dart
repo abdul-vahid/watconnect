@@ -323,7 +323,8 @@ class _UserDetailView extends State<UserDetailView> {
                                   MaterialPageRoute(
                                     builder: (context) => ChangePasswordScreen(
                                         widget.model?.username ?? "",
-                                        widget.model?.whatsappNumber ?? ""
+                                        widget.model?.whatsappNumber ?? "",
+                                        userId ?? ""
                                         // '', // Ensure it's not null
                                         // _obscurePassword1,
                                         // _passwordController,
