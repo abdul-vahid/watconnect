@@ -1660,7 +1660,7 @@ class _ChatScreenState extends State<ChatScreen> {
               print("Record template Status: ${record.name}");
               setState(() {
                 templateNames.add(record.name);
-                print("Templates => $templateNames");
+                // print("Templates => $templateNames");
               });
             }
           }

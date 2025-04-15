@@ -13,7 +13,7 @@ class TempleteListViewModel extends BaseListViewModel {
   TempleteListViewModel(this.context);
 
   Future<dynamic> templetefetch({required String? number}) async {
-    String url = AppUtils.getUrl("${AppConstants.approvedtemplateapi}=$number");
+    String url = AppUtils.getUrl("${AppConstants.templeteAPIPath}=$number");
     print("uddlld=>TEE$url");
     get(url: url, baseModel: TemplateModel());
   }

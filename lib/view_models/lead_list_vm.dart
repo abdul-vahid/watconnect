@@ -35,7 +35,6 @@ class LeadListViewModel extends BaseListViewModel {
     String url = AppUtils.getUrl("${AppConstants.leadAPIPath}/$id");
     debug(' check===$url');
     var result = await put(url: url, body: leadModel.toJson());
-
     print("rssssssssssssss=>$result");
     return result;
   }

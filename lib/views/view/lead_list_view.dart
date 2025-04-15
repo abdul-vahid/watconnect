@@ -24,6 +24,7 @@ class LeadListView extends StatefulWidget {
 }
 
 class _LeadListViewState extends State<LeadListView> {
+  String finalResult = "";
   IO.Socket? socket;
   String token = "your_token_here";
   var userId;
@@ -411,6 +412,10 @@ class _LeadListViewState extends State<LeadListView> {
       var unreadRecord = unreadCountVm?.viewModels.firstWhere(
         (unreadModel) {
           if (unreadModel.model is UnreadMsgModel) {
+            var kp = model.countryCode;
+            var avribel = model.whatsapp_number ?? "";
+            finalResult = " ${kp}${avribel}";
+            // print("finalResultfinalResultfinalResultfinalResult${finalResult}");
             var unreadMsgModel = unreadModel.model as UnreadMsgModel;
             return unreadMsgModel.records?.any(
                   (record) => record.whatsappNumber == model.whatsapp_number,
@@ -438,12 +443,8 @@ class _LeadListViewState extends State<LeadListView> {
           widgets.add(Dismissible(
             key: UniqueKey(),
             onDismissed: (direction) async {
-              // var res = await _marksread(model.whatsapp_number ?? "");
-              var res = await _marksread(
-                model.whatsapp_number!.contains("+")
-                    ? model.whatsapp_number ?? ""
-                    : "${model.countryCode}${model.whatsapp_number ?? ""}",
-              );
+              print("fiifififiifif${finalResult}");
+              var res = await _marksread(finalResult);
             },
             background: Container(
               color: Colors.green,
@@ -463,7 +464,6 @@ class _LeadListViewState extends State<LeadListView> {
         }
       }
     }
-
     return widgets;
   }
 
@@ -490,7 +490,8 @@ class _LeadListViewState extends State<LeadListView> {
         print("model=>${model.toMap()}");
         // print("model=>${model.toMap()}");
         if (model.whatsapp_number != null) {
-          _marksread(model.whatsapp_number ?? "");
+          // _marksread(model.whatsapp_number ?? "");
+          _marksread(finalResult);
 
           Navigator.push(
             context,
@@ -831,7 +832,7 @@ class _LeadListViewState extends State<LeadListView> {
         socket!.emit("setup", userId);
       });
       socket!.on("connected", (_) {
-        print(" WebSocket setup complete");
+        // print(" WebSocket setup complete");
       });
 
       socket!.on("receivedwhatsappmessage", (data) {

@@ -575,8 +575,7 @@ class _Forms extends State<LeadAddView> {
                                 'Enter your phone number',
                                 initialValue: widget.model?.whatsapp_number,
                                 onSaved: (wpnumber) {
-                                  _whatsapnumber =
-                                      '${code[selectedCountry]}${wpnumber}';
+                                  _whatsapnumber = '${wpnumber}';
                                   print(
                                       "sdfdsfssdfjhsdkfjskdjfskdjsdk4${_whatsapnumber}");
                                 },
