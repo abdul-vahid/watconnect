@@ -23,7 +23,7 @@ class NotificationUtil {
   NotificationUtil(this.context);
 
   void initialize() {
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     LocalNotificationService.initialize();
     registerToken();
 
@@ -53,7 +53,7 @@ class NotificationUtil {
       debugPrint("Foreground received >>> ${remoteMessage?.data}");
 
       if (remoteMessage != null) {
-        final imageUrl = remoteMessage.data['image'];
+        final imageUrl = remoteMessage.data['fileUrl'];
 
         if (imageUrl != null && imageUrl.isNotEmpty) {
           try {
@@ -74,8 +74,10 @@ class NotificationUtil {
 
     FirebaseMessaging.onMessageOpenedApp
         .listen((RemoteMessage? remoteMessage) async {
-      debug("onMessageOpenedApp triggered (background)");
+      print(
+          "onMessageOpenedApp triggered (background)  ${remoteMessage?.data}");
       final leadId = remoteMessage?.data['lead_id'];
+
       if (leadId != null) {
         await Provider.of<LeadListViewModel>(context, listen: false)
             .fetch()
@@ -86,46 +88,6 @@ class NotificationUtil {
     });
 
     isInitialized = true;
-  }
-
-  Future<void> showImageNotification(
-      RemoteMessage message, String filePath) async {
-    final BigPictureStyleInformation bigPictureStyleInformation =
-        BigPictureStyleInformation(
-      FilePathAndroidBitmap(filePath),
-      largeIcon: FilePathAndroidBitmap(filePath),
-      contentTitle: message.notification?.title ?? '',
-      summaryText: message.notification?.body ?? '',
-    );
-
-    final AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
-      channelDescription: 'your_channel_description',
-      styleInformation: bigPictureStyleInformation,
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-
-    final NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await LocalNotificationService.instance.show(
-      0,
-      message.notification?.title,
-      message.notification?.body,
-      platformChannelSpecifics,
-    );
-  }
-
-  Future<String> downloadAndSaveImage(String url, String fileName) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/$fileName';
-    final response = await http.get(Uri.parse(url));
-    final file = File(filePath);
-    await file.writeAsBytes(response.bodyBytes);
-    return filePath;
   }
 
   static void registerToken() async {
@@ -170,10 +132,35 @@ class NotificationUtil {
     );
   }
 
-  static Future<void> _firebaseMessagingBackgroundHandler(
+  // static Future<void> _firebaseMessagingBackgroundHandler(
+  //     RemoteMessage message) async {
+  //   print("_firebaseMessagingBackgroundHandler>>>> ${message.data}");
+  //   debug("Background FCM: ${message.notification?.title}");
+  //   LocalNotificationService.displayNotification(message);
+  // }
+  static Future<void> firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
     debug("Background FCM: ${message.notification?.title}");
-    LocalNotificationService.displayNotification(message);
+
+    // Check for image URL in the background message
+    final imageUrl = message.data['fileUrl'];
+
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      try {
+        final filePath =
+            await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
+        print("filePath:  remoteMessage:: ${filePath}   ${message}");
+        await showImageNotification(
+            message, filePath); // Show notification with image
+      } catch (e) {
+        debugPrint("Image download failed, fallback to text notification: $e");
+        LocalNotificationService.displayNotification(
+            message); // Fallback if image download fails
+      }
+    } else {
+      LocalNotificationService.displayNotification(
+          message); // Normal notification if no image
+    }
   }
 
   static Future<void> deleteFCMTokenOnLogout() async {
@@ -183,4 +170,44 @@ class NotificationUtil {
       debugPrint("Failed to delete FCM token: $e");
     }
   }
+}
+
+Future<String> downloadAndSaveImage(String url, String fileName) async {
+  final directory = await getApplicationDocumentsDirectory();
+  final filePath = '${directory.path}/$fileName';
+  final response = await http.get(Uri.parse(url));
+  final file = File(filePath);
+  await file.writeAsBytes(response.bodyBytes);
+  return filePath;
+}
+
+Future<void> showImageNotification(
+    RemoteMessage message, String filePath) async {
+  final BigPictureStyleInformation bigPictureStyleInformation =
+      BigPictureStyleInformation(
+    FilePathAndroidBitmap(filePath),
+    largeIcon: FilePathAndroidBitmap(filePath),
+    contentTitle: message.notification?.title ?? '',
+    summaryText: message.notification?.body ?? '',
+  );
+
+  final AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(
+    'your_channel_id',
+    'your_channel_name',
+    channelDescription: 'your_channel_description',
+    styleInformation: bigPictureStyleInformation,
+    importance: Importance.max,
+    priority: Priority.high,
+  );
+
+  final NotificationDetails platformChannelSpecifics =
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+
+  await LocalNotificationService.instance.show(
+    0,
+    message.notification?.title,
+    message.notification?.body,
+    platformChannelSpecifics,
+  );
 }
