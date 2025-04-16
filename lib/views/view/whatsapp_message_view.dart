@@ -826,10 +826,11 @@ class _ChatScreenState extends State<ChatScreen> {
           "name": widget.leadName,
           "message_template_id": null,
           "whatsapp_number": widget.wpnumber,
-          "message": "",
+          "message": caps ?? "",
           "status": "Outgoing",
           "recordtypename": "lead",
           "file_id": fileid,
+          // "caption": caps ?? "",
           "business_number": number,
           "is_read": true
         };
@@ -945,10 +946,11 @@ class _ChatScreenState extends State<ChatScreen> {
           "name": widget.leadName,
           "message_template_id": null,
           "whatsapp_number": widget.wpnumber,
-          "message": "",
+          "message": caps ?? "",
           "status": "Outgoing",
           "recordtypename": "lead",
           "file_id": fileid,
+          // "caption": caps ?? "",
           "business_number": number,
           "is_read": true
         };
@@ -1025,10 +1027,11 @@ class _ChatScreenState extends State<ChatScreen> {
           "name": widget.leadName,
           "message_template_id": null,
           "whatsapp_number": widget.wpnumber,
-          "message": "",
+          "message": caps ?? "",
           "status": "Outgoing",
           "recordtypename": "lead",
           "file_id": fileid,
+          // "caption": caps ?? "",
           "business_number": number,
           "is_read": true
         };
