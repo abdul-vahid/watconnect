@@ -45,6 +45,8 @@ class _LeadListViewState extends State<LeadListView> {
   String? selectuser;
   bool isRefresh = false;
   int countunread = 0;
+  List allLeads = [];
+  List unreadList = [];
   String? number;
   @override
   void initState() {
@@ -65,11 +67,18 @@ class _LeadListViewState extends State<LeadListView> {
   Future<void> _getUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
-    Provider.of<LeadListViewModel>(context, listen: false).fetch();
-    if (!mounted) return;
 
+    if (!mounted) return;
+    Provider.of<LeadListViewModel>(context, listen: false).fetch();
     await Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number ?? "");
+
+    var unreadMsgModel;
+    for (var unreadModel in unreadCountVm?.viewModels ?? []) {
+      unreadMsgModel = unreadModel.model as UnreadMsgModel;
+    }
+    unreadList = unreadMsgModel.records ?? [];
+    setState(() {});
   }
 
   // Future<void> _marksread(String? whatsappNumber, String? leadId) async {
@@ -121,10 +130,12 @@ class _LeadListViewState extends State<LeadListView> {
     unreadCountVm = Provider.of<UnreadCountVm>(context);
     leadlistvm = Provider.of<LeadListViewModel>(context);
     userlistvm = Provider.of<UserDataListViewModel>(context);
-
+    allLeads = [];
+    // print("unreadCountVm::: ${unreadCountVm?.viewModels[0].toString()}");
     if (leadlistvm != null) {
       for (var viewModel in leadlistvm!.viewModels) {
         tempLeadModelList.add(viewModel.model);
+        allLeads.add(viewModel.model);
       }
     }
 
@@ -395,8 +406,21 @@ class _LeadListViewState extends State<LeadListView> {
     return Column(
       children: [
         Expanded(
-            child: ListView(
-          children: getLeadWidgets(),
+            child: ListView.builder(
+          itemCount: allLeads.length,
+          itemBuilder: (context, index) {
+            var unreadCount = "0";
+            var lead = allLeads[index];
+
+            for (var p in unreadList) {
+              if (p.whatsappNumber.toString().contains(lead.whatsapp_number)) {
+                unreadCount = p.unreadMsgCount;
+                break;
+              }
+            }
+
+            return leadRecordList(lead, unreadCount);
+          },
         ))
       ],
     );
@@ -407,35 +431,35 @@ class _LeadListViewState extends State<LeadListView> {
     Set<String> uniqueIds = {};
 
     for (var viewModel in leadModelList) {
+      var msgCnt = "";
       LeadModel model = viewModel;
-
       var unreadRecord = unreadCountVm?.viewModels.firstWhere(
         (unreadModel) {
-          if (unreadModel.model is UnreadMsgModel) {
-            var kp = model.countryCode;
-            var avribel = model.whatsapp_number ?? "";
-            finalResult = " ${kp}${avribel}";
-            // print("finalResultfinalResultfinalResultfinalResult${finalResult}");
-            var unreadMsgModel = unreadModel.model as UnreadMsgModel;
-            return unreadMsgModel.records?.any(
-                  (record) => record.whatsappNumber == model.whatsapp_number,
-                ) ??
-                false;
-          }
-          return false;
+          var unreadMsgModel = unreadModel.model;
+
+          return unreadMsgModel.records?.any(
+                (record) => record.whatsappNumber == model.whatsapp_number,
+              ) ??
+              false;
         },
         orElse: () => null,
       );
 
+      print("unreadRecord:::>>  ${unreadRecord}");
       if (unreadRecord != null) {
-        var matchingRecords = unreadRecord.model.records
-            ?.where((record) => record.whatsappNumber == model.whatsapp_number)
-            .toList();
+        var matchingRecords = unreadRecord.model.records?.where((record) {
+          msgCnt = record.unreadMsgCount;
+          print(
+              ' ${record.unreadMsgCount}  record.whatsappNumber: ${record.whatsappNumber}, model.whatsapp_number: ${model.whatsapp_number}');
+          return record.whatsappNumber == model.whatsapp_number;
+        }).toList();
 
         var unreadMsgCount =
             matchingRecords != null && matchingRecords.isNotEmpty
                 ? matchingRecords.first.unreadMsgCount
                 : "";
+
+        print("unreadMsgCount::::: ${unreadMsgCount}");
 
         if (!uniqueIds.contains(model.id)) {
           uniqueIds.add(model.id!);
@@ -488,10 +512,15 @@ class _LeadListViewState extends State<LeadListView> {
       key: UniqueKey(),
       onDismissed: (direction) {
         print("model=>${model.toMap()}");
-        // print("model=>${model.toMap()}");
+        var num = "";
+        if (model.whatsapp_number!.contains("+")) {
+          num = model.whatsapp_number ?? "";
+        } else {
+          num = "${model.countryCode}${model.whatsapp_number}";
+        }
+        print("model  finalResult=>${model.whatsapp_number}");
         if (model.whatsapp_number != null) {
-          // _marksread(model.whatsapp_number ?? "");
-          _marksread(finalResult);
+          _marksread(num);
 
           Navigator.push(
             context,
