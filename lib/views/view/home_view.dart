@@ -233,7 +233,6 @@ class _HomeViewState extends State<HomeView> {
         print("Model is not UnreadMsgModel: ${viewModel.model.runtimeType}");
       }
     }
-
     return Scaffold(
       drawer: const AppDrawerWidget(),
       appBar: AppBar(
