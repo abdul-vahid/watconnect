@@ -1387,8 +1387,10 @@ class _ChatScreenState extends State<ChatScreen> {
       await Provider.of<MessageViewModel>(context, listen: false)
           .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
       // Navigator.of(context).pop();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("deleted sucefully")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("deleted sucefully"),
+        backgroundColor: Colors.green,
+      ));
 
       MessageController msgController =
           Provider.of<MessageController>(context, listen: false);
@@ -1570,7 +1572,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       SnackBar(
                                         content: Text(
                                           "Please Type a Message",
-                                          selectionColor: Colors.amber,
+                                          selectionColor: Colors.green,
                                         ),
                                       ),
                                     );

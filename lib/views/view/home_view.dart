@@ -173,11 +173,11 @@ class _HomeViewState extends State<HomeView> {
     }
     print("cammma=>${campaignCount}");
 
-    // for (var viewModel in templateVM!.viewModels) {
-    //   TemplateModel tempmodel = viewModel.model;
-    //   templateCount = tempmodel.data?.length;
-    //   debug('countofdata===$templateCount');
-    // }
+    for (var viewModel in templateVM!.viewModels) {
+      TemplateModel tempmodel = viewModel.model;
+      templateCount = tempmodel.data?.length;
+      debug('countofdata===$templateCount');
+    }
 
     getBusinessWidgets();
     getTemplateData();
@@ -213,7 +213,7 @@ class _HomeViewState extends State<HomeView> {
       if (viewModel.model is UnreadMsgModel) {
         UnreadMsgModel unreadvm = viewModel.model as UnreadMsgModel;
         var records = unreadvm.records;
-
+        print("recorcccccccccccds${records!.length}");
         if (records != null) {
           for (var data in records) {
             String? unreadCount = data.unreadMsgCount;
@@ -222,7 +222,7 @@ class _HomeViewState extends State<HomeView> {
               // Safely convert String to int
               int count = int.tryParse(unreadCount) ?? 0;
               setState(() {
-                totalUnreadCount += count;
+                totalUnreadCount = records.length;
               });
             }
           }
@@ -233,7 +233,6 @@ class _HomeViewState extends State<HomeView> {
         print("Model is not UnreadMsgModel: ${viewModel.model.runtimeType}");
       }
     }
-
     return Scaffold(
       drawer: const AppDrawerWidget(),
       appBar: AppBar(
