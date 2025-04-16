@@ -212,7 +212,7 @@ class _HomeViewState extends State<HomeView> {
     for (var viewModel in unreadcountvm!.viewModels) {
       if (viewModel.model is UnreadMsgModel) {
         UnreadMsgModel unreadvm = viewModel.model as UnreadMsgModel;
-        var records = unreadvm.records;
+        var records = unreadvm.records ?? [];
         print("recorcccccccccccds${records!.length}");
         if (records != null) {
           for (var data in records) {
