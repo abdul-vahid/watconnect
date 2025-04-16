@@ -36,8 +36,8 @@ class _LeadListViewState extends State<LeadListView> {
   var leadlistvm;
   var userlistvm;
   // UnreadMsgModel? campginmodel;
-  List<LeadModel> leadModelList = [];
-  List<LeadModel> tempLeadModelList = [];
+  List leadModelList = [];
+  List tempLeadModelList = [];
   UnreadCountVm? unreadCountVm;
   // List<UnreadCountMsgModel> unreadModel = [];
   LeadListViewModel? leads;
@@ -52,9 +52,10 @@ class _LeadListViewState extends State<LeadListView> {
   void initState() {
     // _marksread();
     _getUnreadCount();
+    getLeadList();
     super.initState();
     connectSocket();
-    tempLeadModelList = leadModelList;
+    // tempLeadModelList = leadModelList;
   }
 
   @override
@@ -81,42 +82,35 @@ class _LeadListViewState extends State<LeadListView> {
     setState(() {});
   }
 
-  // Future<void> _marksread(String? whatsappNumber, String? leadId) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   number = prefs.getString('phoneNumber');
-
-  //   if (number != null && whatsappNumber != null) {
-  //     Map<String, String>? bodydata = {"whatsapp_number": whatsappNumber};
-
-  //     await Provider.of<UnreadCountVm>(context, listen: false)
-  //         .marksreadcountmsg(
-  //       leadnumber: whatsappNumber,
-  //       number: number,
-  //       bodydata: bodydata,
-  //     );
-
-  //     print("Lead with WhatsApp $whatsappNumber marked as read");
-  //   }
-  // }
-
   void _filterLeads(String searchLead) {
-    setState(() {
-      searchLead = searchLead.trim().toLowerCase();
+    searchLead = searchLead.trim().toLowerCase();
 
-      if (searchLead.isEmpty) {
-        leadModelList = List.from(tempLeadModelList);
-      } else {
-        leadModelList = tempLeadModelList.where((leadModel) {
-          var firstName = leadModel.firstname?.toLowerCase() ?? '';
-          var lastName = leadModel.lastname?.toLowerCase() ?? '';
-          var leadStatus = leadModel.leadstatus?.toLowerCase() ?? '';
+    if (searchLead.isEmpty) {
+      // setState(() {
+      //   allLeads = List.from(originalAllLeads); // restore original
+      // });
+    } else {
+      List<LeadModel> matched = [];
+      List<LeadModel> others = [];
 
-          return firstName.contains(searchLead) ||
-              lastName.contains(searchLead) ||
-              leadStatus.contains(searchLead);
-        }).toList();
+      for (var lead in tempLeadModelList) {
+        var firstName = lead.firstname?.toLowerCase() ?? '';
+        var lastName = lead.lastname?.toLowerCase() ?? '';
+        var leadStatus = lead.leadstatus?.toLowerCase() ?? '';
+
+        if (firstName.contains(searchLead) ||
+            lastName.contains(searchLead) ||
+            leadStatus.contains(searchLead)) {
+          matched.add(lead);
+        } else {
+          others.add(lead);
+        }
       }
-    });
+
+      setState(() {
+        allLeads = [...matched, ...others];
+      });
+    }
   }
 
   @override
@@ -130,14 +124,8 @@ class _LeadListViewState extends State<LeadListView> {
     unreadCountVm = Provider.of<UnreadCountVm>(context);
     leadlistvm = Provider.of<LeadListViewModel>(context);
     userlistvm = Provider.of<UserDataListViewModel>(context);
-    allLeads = [];
+
     // print("unreadCountVm::: ${unreadCountVm?.viewModels[0].toString()}");
-    if (leadlistvm != null) {
-      for (var viewModel in leadlistvm!.viewModels) {
-        tempLeadModelList.add(viewModel.model);
-        allLeads.add(viewModel.model);
-      }
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -196,7 +184,6 @@ class _LeadListViewState extends State<LeadListView> {
                   borderSide: BorderSide.none,
                   borderRadius: BorderRadius.circular(30),
                 ),
-
                 prefixIcon: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: IconButton(
@@ -210,31 +197,6 @@ class _LeadListViewState extends State<LeadListView> {
                     },
                   ),
                 ),
-                // suffixIcon: Padding(
-                //   padding: const EdgeInsets.all(5.0),
-                //   child: Align(
-                //     alignment: Alignment.topLeft,
-                //     child: Container(
-                //       margin: EdgeInsets.only(left: 10),
-                //       height: 40,
-                //       width: 40,
-                //       child: FloatingActionButton(
-                //         elevation: 0.5,
-                //         backgroundColor: AppColor.navBarIconColor,
-                //         shape: const CircleBorder(),
-                //         tooltip: 'Filter',
-                //         onPressed: () {
-                //           _showFilterBottomSheet(context);
-                //         },
-                //         child: const Icon(
-                //           Icons.filter_list_rounded,
-                //           color: Colors.white,
-                //           size: 23,
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                // ),
                 prefixIconConstraints: const BoxConstraints(minWidth: 40),
               ),
             ),
@@ -672,24 +634,6 @@ class _LeadListViewState extends State<LeadListView> {
                       )
                     else
                       const SizedBox.shrink(),
-                    // IconButton(
-                    //   onPressed: () {
-                    //     Navigator.push(
-                    //       context,
-                    //       MaterialPageRoute(
-                    //         builder: (context) => LeadDetailView(
-                    //           model: model,
-                    //         ),
-                    //       ),
-                    //     );
-                    //   },
-                    //   icon: const Icon(
-                    //     Icons.arrow_forward_ios,
-                    //     color: Colors.black45,
-                    //   ),
-                    //   iconSize: 22,
-                    //   tooltip: 'Details',
-                    // ),
                   ],
                 ),
               ],
@@ -697,128 +641,6 @@ class _LeadListViewState extends State<LeadListView> {
           ),
         ),
       ),
-
-      // child: Container(
-      //   decoration: BoxDecoration(
-      //     color: Colors.white,
-      //     borderRadius: BorderRadius.circular(10),
-      //     border: Border(
-      //       left: BorderSide(
-      //         color: statusColor,
-      //         width: 5,
-      //       ),
-      //     ),
-      //     boxShadow: [
-      //       BoxShadow(
-      //         color: Colors.black.withOpacity(0.1),
-      //         blurRadius: 5,
-      //         spreadRadius: 3,
-      //         offset: const Offset(2, 4),
-      //       ),
-      //     ],
-      //   ),
-      //   margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      //   child: Padding(
-      //     padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
-      //     child: InkWell(
-      //       onTap: () {
-      //         Navigator.push(
-      //           context,
-      //           MaterialPageRoute(
-      //             builder: (context) => LeadDetailView(
-      //               model: model,
-      //             ),
-      //           ),
-      //         );
-      //       },
-      //       child: ListTile(
-      //         contentPadding: EdgeInsets.zero,
-      //         title: Row(
-      //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //           children: [
-      //             Expanded(
-      //               child: Column(
-      //                 crossAxisAlignment: CrossAxisAlignment.start,
-      //                 children: [
-      //                   Text(
-      //                     "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
-      //                     style: const TextStyle(
-      //                       fontSize: 14,
-      //                       fontWeight: FontWeight.bold,
-      //                     ),
-      //                   ),
-      //                   Text(
-      //                     "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number : ''}",
-      //                     style: const TextStyle(
-      //                       fontSize: 12,
-      //                     ),
-      //                   ),
-      //                   Text(
-      //                     "${model.email?.isNotEmpty == true ? model.email : ''}",
-      //                     style: const TextStyle(
-      //                       fontSize: 12,
-      //                     ),
-      //                   ),
-      //                   Container(
-      //                     decoration: BoxDecoration(
-      //                         borderRadius: BorderRadius.circular(100),
-      //                         color: Colors.lightBlue.withOpacity(0.7)),
-      //                     child: Padding(
-      //                       padding: const EdgeInsets.all(2.0),
-      //                       child: Text(
-      //                         "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
-      //                         style: const TextStyle(
-      //                             fontSize: 10, color: Colors.white),
-      //                       ),
-      //                     ),
-      //                   ),
-      //                   const SizedBox(
-      //                     height: 4,
-      //                   ),
-      //                 ],
-      //               ),
-      //             ),
-      //             Row(
-      //               mainAxisAlignment: MainAxisAlignment.end,
-      //               children: [
-      //                 const SizedBox(width: 10),
-      //                 IconButton(
-      //                   onPressed: () {
-      //                     Navigator.push(
-      //                       context,
-      //                       MaterialPageRoute(
-      //                         builder: (context) => LeadDetailView(
-      //                           model: model,
-      //                         ),
-      //                       ),
-      //                     );
-      //                   },
-      //                   icon: const Icon(
-      //                     Icons.arrow_forward_ios,
-      //                     color: Colors.black45,
-      //                   ),
-      //                   iconSize: 22,
-      //                   tooltip: 'Details',
-      //                 ),
-      //                 if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
-      //                   badges.Badge(
-      //                     badgeContent: Text(
-      //                       unreadMsgCount,
-      //                       style: const TextStyle(
-      //                         color: Colors.white,
-      //                       ),
-      //                     ),
-      //                   )
-      //                 else
-      //                   const SizedBox.shrink(),
-      //               ],
-      //             ),
-      //           ],
-      //         ),
-      //       ),
-      //     ),
-      //   ),
-      // ),
     );
   }
 
@@ -886,5 +708,20 @@ class _LeadListViewState extends State<LeadListView> {
       socket!.disconnect();
       print(" WebSocket Disconnected");
     }
+  }
+
+  Future<void> getLeadList() async {
+    // leadlistvm = Provider.of<LeadListViewModel>(context, listen: false);
+    await Provider.of<LeadListViewModel>(context, listen: false)
+        .fetch()
+        .then((onValue) {
+      allLeads = [];
+
+      for (var viewModel in leadlistvm!.viewModels) {
+        tempLeadModelList.add(viewModel.model);
+        allLeads.add(viewModel.model);
+      }
+      setState(() {});
+    });
   }
 }
