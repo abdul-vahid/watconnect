@@ -1,8 +1,9 @@
-import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+// import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
+import 'package:whatsapp/views/view/changepassword_view.dart';
 import 'package:whatsapp/views/view/user_add_update_view.dart';
 import 'package:whatsapp/views/view/user_list_view.dart';
 
@@ -19,7 +20,7 @@ class UserDetailView extends StatefulWidget {
 }
 
 class _UserDetailView extends State<UserDetailView> {
-  late NotchBottomBarController _controller;
+  // late NotchBottomBarController _controller;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
@@ -291,7 +292,7 @@ class _UserDetailView extends State<UserDetailView> {
                           const Divider(),
                           getRow('Username', widget.model?.username ?? ''),
                           const Divider(),
-                          getRow('Phone', widget.model?.phone ?? ''),
+                          getRow('Phone', widget.model?.whatsappNumber ?? ''),
                           const Divider(),
                           getRow('First Name', widget.model?.firstname ?? ''),
                           const Divider(),
@@ -313,14 +314,31 @@ class _UserDetailView extends State<UserDetailView> {
                               });
                             },
                           ),
-                          ElevatedButton(
-                            onPressed: _showSimpleDialog,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColor.cardsColor,
-                            ),
-                            child: const Text(
-                              "Change Password",
-                              style: TextStyle(color: Colors.white),
+                          Align(
+                            alignment: Alignment.center,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ChangePasswordScreen(
+                                        widget.model?.username ?? "",
+                                        widget.model?.whatsappNumber ?? "",
+                                        userId ?? ""
+                                        // '', // Ensure it's not null
+                                        // _obscurePassword1,
+                                        // _passwordController,
+                                        ),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColor.cardsColor,
+                              ),
+                              child: const Text(
+                                "Change Password",
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           )
                         ],

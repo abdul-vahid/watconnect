@@ -15,17 +15,17 @@ class BaseService {
 
   Future<dynamic> post({required String url, required String body}) async {
     var token = await AppUtils.getToken();
-    debug("Token == $token");
+    // debug("Token == $token");
     token ??= "";
-    printLongString("body base service send= $body");
+    // printLongString("body base service send= $body");
     final responseJsonData = await _apiService.postResponse(url, body, token);
-    print("rsponse==>$responseJsonData");
+    // print("rsponse==>$responseJsonData");
     return responseJsonData;
   }
 
   Future<dynamic> delete({required String url, String? body}) async {
     var token = await AppUtils.getToken();
-    debug("Token == $token");
+    // debug("Token == $token");
     token ??= "";
     // printLongString("deletete send= $body");
     final responseJsonData =

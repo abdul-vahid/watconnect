@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'component.dart';
 
 class Datum {
@@ -27,9 +26,11 @@ class Datum {
         name: data['name'] as String?,
         messageSendTtlSeconds: data['message_send_ttl_seconds'] as int?,
         parameterFormat: data['parameter_format'] as String?,
-        components: (data['components'] as List<dynamic>?)
-            ?.map((e) => Component.fromMap(e as Map<String, dynamic>))
-            .toList(),
+        components: (data['components'] is List)
+            ? (data['components'] as List)
+                .map((e) => Component.fromMap(e as Map<String, dynamic>))
+                .toList()
+            : [],
         language: data['language'] as String?,
         status: data['status'] as String?,
         category: data['category'] as String?,
@@ -47,15 +48,14 @@ class Datum {
         'id': id,
       };
 
-  /// `dart:convert`
-  ///
-  /// Parses the string and returns the resulting Json object as [Datum].
   factory Datum.fromJson(String data) {
     return Datum.fromMap(json.decode(data) as Map<String, dynamic>);
   }
 
-  /// `dart:convert`
-  ///
-  /// Converts [Datum] to a JSON string.
   String toJson() => json.encode(toMap());
+
+  @override
+  String toString() {
+    return 'Datum(name: $name, parameterFormat: $parameterFormat, language: $language, status: $status, category: $category, id: $id, components: ${components?.map((c) => c.toString()).toList()})';
+  }
 }

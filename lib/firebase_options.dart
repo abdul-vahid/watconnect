@@ -42,17 +42,17 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyB7tUAyOKWrUq-emCwt8agXNOh367kQtnk',
-    appId: '1:949174804898:web:d72cd9c9f62b84a5ed92fb',
+    appId: '1:949174804898:web:4453e372cdd8a4f4ed92fb',
     messagingSenderId: '949174804898',
     projectId: 'whatsap-4ba75',
     authDomain: 'whatsap-4ba75.firebaseapp.com',
     storageBucket: 'whatsap-4ba75.firebasestorage.app',
-    measurementId: 'G-SYKNKKQ5RZ',
+    measurementId: 'G-8VTHP5Q735',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAagRDfQFGJIcImfiTQDh10jAh70RwPrUY',
-    appId: '1:949174804898:android:b61a76976d920a2fed92fb',
+    appId: '1:949174804898:android:ce9c1f7683e5b1dbed92fb',
     messagingSenderId: '949174804898',
     projectId: 'whatsap-4ba75',
     storageBucket: 'whatsap-4ba75.firebasestorage.app',
@@ -60,20 +60,20 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDflvKyPgasnDCn8yi4gO0veHDsOKRXCug',
-    appId: '1:949174804898:ios:c8ec8308d3d3feceed92fb',
+    appId: '1:949174804898:ios:c9f2385ef9b52d58ed92fb',
     messagingSenderId: '949174804898',
     projectId: 'whatsap-4ba75',
     storageBucket: 'whatsap-4ba75.firebasestorage.app',
-    iosBundleId: 'com.example.whatsapp',
+    iosBundleId: 'com.wat.connect',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyDflvKyPgasnDCn8yi4gO0veHDsOKRXCug',
-    appId: '1:949174804898:ios:c8ec8308d3d3feceed92fb',
+    appId: '1:949174804898:ios:c9f2385ef9b52d58ed92fb',
     messagingSenderId: '949174804898',
     projectId: 'whatsap-4ba75',
     storageBucket: 'whatsap-4ba75.firebasestorage.app',
-    iosBundleId: 'com.example.whatsapp',
+    iosBundleId: 'com.wat.connect',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 import 'package:whatsapp/view_models/lead_list_vm.dart';
@@ -101,72 +102,17 @@ class _LeadDetailViewState extends State<LeadDetailView> {
               color: Color.fromARGB(255, 255, 255, 255)),
         ),
         //-----------This Code Use of Icon Bar Showing Start Here------------
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(20.0),
-          child: Container(
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  width: 1.8,
-                  color: Color.fromARGB(255, 0, 0, 0),
-                ),
-              ),
-            ),
-            padding: const EdgeInsets.only(top: 12, bottom: 15),
-          ),
-        ),
+
         //-----------End Code of Icon Bar Showing-------------
       ),
-      // body: Stack(
-      //   children: [
-      //     _isLoading ? Container() : _pageBody(model),
-      //     if (_isLoading)
-      //       Positioned.fill(
-      //         child: BackdropFilter(
-      //           filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 1.0),
-      //           child: Container(
-      //             color: Colors.white.withOpacity(0.2),
-      //             child: Center(
-      //               child: LoadingAnimationWidget.flickr(
-      //                 leftDotColor: AppColor.cardsColor,
-      //                 rightDotColor: AppColor.navBarIconColor,
-      //                 size: 40,
-      //               ),
-      //             ),
-      //           ),
-      //         ),
-      //       ),
-      //   ],
-      // ),
       body: _pageBody(model),
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: AppColor.navBarIconColor,
-      //   shape: const CircleBorder(),
-      //   elevation: 9,
-      //   onPressed: () {
-      //     Navigator.push(
-      //       context,
-      //       MaterialPageRoute(
-      //         builder: (context) => ChatScreen(
-      //           leadName:
-      //               '${model.firstname?.isNotEmpty == true ? model.firstname : ""} ${model.lastname?.isNotEmpty == true ? model.lastname : ""}'
-      //                   .trim(),
-      //           model: model,
-      //         ),
-      //       ),
-      //     );
-      //   },
-      //   highlightElevation: 15,
-      //   child: const Icon(
-      //     FontAwesomeIcons.whatsapp,
-      //     size: 25,
-      //     color: Colors.white,
-      //   ),
-      // ),
     );
   }
 
   Widget _pageBody(model) {
+    print("widget.model?.whatsapp_number${widget.model?.whatsapp_number}");
+    // print("widget.model?.createdbyname${widget.model?.ownername}");
+
     print("model$model");
     return Container(
       color: Colors.white38,
@@ -189,8 +135,6 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                     ),
                   ],
                 ),
-                // width: 340,
-                // height: 600,
                 child: Column(
                   children: [
                     Padding(
@@ -260,8 +204,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                           recordRow(
                               "Payment Terms", widget.model?.paymentterms),
                           const Divider(),
-                          recordRow(
-                              "Assigned User", widget.model?.createdbyname),
+                          recordRow("Assigned User", widget.model?.ownername),
                           const Divider(),
                           recordRow("Company", widget.model?.company),
                           const Divider(),
@@ -410,7 +353,6 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                     ),
                     onPressed: () {
                       _deleteUser();
-                      Navigator.of(context).pop();
                     },
                   ),
                 ],
@@ -423,17 +365,51 @@ class _LeadDetailViewState extends State<LeadDetailView> {
   }
 
   void _deleteUser() {
-    String leadidd = model?.id;
-    print("leadddid=>$leadidd");
+    String? leadidd = model?.id;
+
+    if (leadidd == null || leadidd.isEmpty) {
+      print("Error: leadidd is null or empty");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: Lead ID is invalid.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Ensure it's a well-formed UTF-16 string
+    try {
+      leadidd = leadidd.trim(); // Remove extra spaces
+      print("Lead ID: $leadidd");
+    } catch (e) {
+      print("Invalid UTF-16 string: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: Invalid lead ID format.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     LeadListViewModel(context).deleteById(leadidd).then((value) {
       print("working enter");
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Lead deleted successfully.'),
           backgroundColor: Colors.green,
         ),
       );
-      Navigator.pop(context);
+
+      Provider.of<LeadListViewModel>(context, listen: false).fetch();
+
+      Future.delayed(Duration(milliseconds: 100), () {
+        if (mounted && Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+      });
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -446,10 +422,11 @@ class _LeadDetailViewState extends State<LeadDetailView> {
 
   void _navigateToEdit() {
     Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => LeadAddView(model: widget.model),
-      ),
-    );
+            context,
+            MaterialPageRoute(
+              builder: (context) => LeadAddView(model: widget.model),
+            ))
+        .then((value) =>
+            Provider.of<LeadListViewModel>(context, listen: false).fetch());
   }
 }

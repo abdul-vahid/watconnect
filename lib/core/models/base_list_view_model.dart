@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 // import 'dart:ffi';
 
 import 'package:flutter/material.dart';
@@ -27,10 +28,11 @@ class BaseListViewModel extends ChangeNotifier {
       {required BaseModel baseModel,
       required String url,
       String jsonKey = "records"}) async {
+    log("get api url>>> ${url}   ");
     try {
       final jsonObject = await BaseService().get(url: url);
       await _refreshToken(url, jsonKey);
-      debug("Response Data == $jsonObject");
+      log("Response Data == $jsonObject                   ${url}");
       var records = jsonObject;
       if (jsonObject is! List) {
         debug("not an array");
@@ -43,17 +45,16 @@ class BaseListViewModel extends ChangeNotifier {
       debug("execute");
       status = "Completed";
     } on UnauthorisedException {
+      AppUtils.getAlert(AppUtils.currentContext!, [
+        "You have been logged out!",
+      ], onPressed: () {
+        Navigator.pop(AppUtils.currentContext!);
+        AppUtils.logout(AppUtils.currentContext);
+      });
       Navigator.push(
           context!, MaterialPageRoute(builder: (context) => const LoginView()));
       status = "Error";
       exception = Exception("UnauthorisedException");
-      /* await _refreshToken(url, jsonKey);
-      final jsonObjectRequest = await BaseService().get(url: url);
-      final records = jsonObjectRequest[jsonKey];
-      //AppUtils.printDebug("Response Data === $records");
-      var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
-      viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
-      status = "Completed"; */
     } on AppException catch (error) {
       status = "Error";
       exception = error;
@@ -96,7 +97,7 @@ class BaseListViewModel extends ChangeNotifier {
 
         accessToken = jsonObject["access_token"];
         refreshToken = jsonObject["refresh_token"];
-        debug("Refresh Token == $refreshToken");
+        // debug("Refresh Token == $refreshToken");
 
         await prefs.setString(SharedPrefsConstants.accessTokenKey, accessToken);
         await prefs.setString(
@@ -130,9 +131,11 @@ class BaseListViewModel extends ChangeNotifier {
       {required String url,
       required String body,
       String jsonKey = "records"}) async {
+    log("req body>> ${url} >>>>>> ${body}");
+
     try {
       var r = await BaseService().post(url: url, body: body);
-      print("rrrrrrrrrrrr=>$r");
+      log("response=>$r    api>>> ${url}");
       return r;
     } on UnauthorisedException {
       await _refreshToken(url, jsonKey);

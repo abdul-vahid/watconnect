@@ -10,6 +10,25 @@
         "mobilesdk_app_id": "1:949174804898:android:b61a76976d920a2fed92fb",
         "android_client_info": {
           "package_name": "com.example.whatsapp"
+        } 
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAagRDfQFGJIcImfiTQDh10jAh70RwPrUY"
+        }
+      ],    
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:949174804898:android:ce9c1f7683e5b1dbed92fb",
+        "android_client_info": {
+          "package_name": "com.wat.connect"
         }
       },
       "oauth_client": [],

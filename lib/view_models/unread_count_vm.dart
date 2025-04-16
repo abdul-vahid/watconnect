@@ -15,9 +15,10 @@ class UnreadCountVm extends BaseListViewModel {
   Future<void> fetchunreadcount({
     String? number = '',
   }) async {
+    print("numberrr=>${number}");
     String url = AppUtils.getUrl("${AppConstants.unreadcountpath}$number");
     debug("urldata=>$url");
-    get(url: url, baseModel: UnreadMsgModel());
+    await get(url: url, baseModel: UnreadMsgModel());
   }
 
   Future<void> marksreadcountmsg({
@@ -25,12 +26,12 @@ class UnreadCountVm extends BaseListViewModel {
     String? number = '',
     Map<String, String>? bodydata,
   }) async {
+    print("Marks read request completed for $leadnumber");
     String url = AppUtils.getUrl("${AppConstants.marksreadmsg}$number");
 
     print("URL for marks read => $url");
     String body = jsonEncode(bodydata);
     print("bodyyy=>$body");
     await post(url: url, body: body);
-    print("Marks read request completed for $leadnumber");
   }
 }

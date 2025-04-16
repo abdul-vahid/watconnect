@@ -1,22 +1,20 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 
-import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+// import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-//import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/views/view/edit_profile_view.dart';
 
 import '../../models/get_user.dart';
 import '../../models/user_model/user_model.dart';
 import '../../utils/app_color.dart';
-import '../../utils/app_constants.dart';
 import '../../utils/app_utils.dart';
-// ignore: unused_import
-import '../../utils/enum.dart';
 import '../../view_models/get_user_vm.dart';
 import '../../view_models/user_data_list_vm.dart' show UserDataListViewModel;
 import '../../view_models/user_list_vm.dart';
@@ -30,7 +28,7 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
-  late NotchBottomBarController _controller;
+  // late NotchBottomBarController _controller;
   String? profileUrl;
   UserModel? userModel;
   GetUser? user;
@@ -44,7 +42,11 @@ class _ProfileViewState extends State<ProfileView> {
   String? phone;
   String? id;
 
-  Future<String> chooseImage(type) async {
+  String? contactName;
+  String? userRole;
+
+  Future<File?> chooseImage(type) async {
+    print("working this functio first line");
     XFile? image;
     if (type == "camera") {
       image = await ImagePicker()
@@ -61,20 +63,26 @@ class _ProfileViewState extends State<ProfileView> {
       });
     }
 
-    return base64Image;
+    return selectedImage;
   }
 
   void getProfileData() async {
     final prefs = await SharedPreferences.getInstance();
+
+    MessageController msgController =
+        Provider.of<MessageController>(context, listen: false);
+
     setState(() {
       userModel = AppUtils.getSessionUser(prefs);
+      msgController.setUsrProfile(
+          "https://sandbox.watconnect.com/public/demo/users/${userModel?.id}");
+      print("logourl::: ${userModel?.logourl ?? ""}");
     });
   }
 
   @override
   void initState() {
-    // bottomnavigationbar animated
-    _controller = NotchBottomBarController();
+    // _controller = NotchBottomBarController();
     Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
     SharedPreferences.getInstance().then((prefs) {
       var userModel = AppUtils.getSessionUser(prefs);
@@ -89,34 +97,21 @@ class _ProfileViewState extends State<ProfileView> {
   Widget build(BuildContext context) {
     userVm = Provider.of<GetUserViewModel>(context);
     for (var viewModel in userVm!.viewModels) {
+      print("viewModel.model:::>>>>> ${viewModel.model}");
       GetUser model = viewModel.model;
+      user = model;
       id = model.id ?? "";
       fName = model.firstname ?? "";
       lName = model.lastname ?? "";
       email = model.email ?? "";
       phone = model.phone ?? "";
+      print(
+          "viewModel.model:::>>>>> ${model.whatsapp_number}   ${model.whatsapp_settings}");
     }
 
     AppUtils.currentContext = context;
     return Scaffold(
-      // appBar: AppBar(
-
-      //   // leading: IconButton(
-      //   //   icon: const Icon(Icons.arrow_back,
-      //   //       color: Color.fromARGB(255, 255, 255, 255)),
-      //   //   onPressed: () => Navigator.of(context).pop(),
-      //   // ),
-      //   automaticallyImplyLeading: false,
-      //   title: Text('My Profile',
-      //       style: GoogleFonts.montserrat(
-      //           color: const Color.fromARGB(255, 255, 255, 255))),
-      //   centerTitle: true,
-      //   elevation: 0,
-      //   // backgroundColor: AppColor.appBarColor,
-      // ),
-
       appBar: AppUtils.getappbar(
-        // actions: PopupMenuButtonState(),
         automaticallyImplyLeading: false,
         title: "My Profile",
       ),
@@ -124,7 +119,6 @@ class _ProfileViewState extends State<ProfileView> {
         onRefresh: _pullRefresh,
         child: AppUtils.getAppBody(userVm!, _getBody),
       ),
-      // bottomNavigationBar: AppUtils.buildAnimatedNotchBottomBar(context)
     );
   }
 
@@ -137,6 +131,14 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _getBody() {
+    String fullname = fName! + lName!;
+    print("this func call when refresh");
+
+    print("logourl::: ${userModel?.logourl ?? ""}");
+    // print(
+    //     "'https://sandbox.watconnect.com/public/demo/users/${userModel?.id}',");
+    print("'https://sandbox.watconnect.com/${userModel?.id}',");
+
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -162,30 +164,26 @@ class _ProfileViewState extends State<ProfileView> {
                 Center(
                   child: Stack(
                     children: [
-                      CircleAvatar(
-                        radius: 60,
-                        backgroundColor: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(0),
-                          child: ClipOval(
-                            child: FadeInImage.assetNetwork(
-                              placeholder: "assets/images/loading.gif",
-                              image: userModel?.logourl ?? "",
-                              fit: BoxFit.cover,
-                              height: 100,
-                              width: 100,
-                              imageErrorBuilder: (context, error, stackTrace) {
-                                return Image.network(
-                                  'https://sandbox.watconnect.com/public/demo/users/${userModel?.id}',
-                                  fit: BoxFit.cover,
-                                  height: 100,
-                                  width: 100,
-                                );
-                              },
+                      Consumer<MessageController>(
+                          builder: (context, mssss, child) {
+                        print("ms>>>> ${mssss.userProfile}");
+                        return CircleAvatar(
+                          radius: 60,
+                          backgroundColor: Colors.white,
+                          child: Padding(
+                            padding: const EdgeInsets.all(0),
+                            child: ClipOval(
+                              child: CachedNetworkImage(
+                                imageUrl: mssss.userProfile,
+                                placeholder: (context, url) =>
+                                    CircularProgressIndicator(),
+                                errorWidget: (context, url, error) =>
+                                    Icon(Icons.error),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      }),
                       Positioned(
                         bottom: 0,
                         right: 0,
@@ -217,7 +215,8 @@ class _ProfileViewState extends State<ProfileView> {
                 const SizedBox(height: 20),
                 Center(
                   child: Text(
-                    userModel?.username ?? "",
+                    // userModel?.username ?? "",
+                    fullname,
                     style: const TextStyle(
                         fontSize: 20,
                         color: Color.fromARGB(255, 255, 255, 255)),
@@ -284,7 +283,10 @@ class _ProfileViewState extends State<ProfileView> {
                                     phone: phone,
                                   ),
                                 ),
-                              );
+                              ).then((value) => Provider.of<GetUserViewModel>(
+                                      context,
+                                      listen: false)
+                                  .fetchUser());
                             }
                             // else if (value == 'delete') {
                             //   _showDeleteDialog();
@@ -455,25 +457,29 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   void uploadImage() async {
-    AppUtils.onLoading(context, "Please Wait...");
-    String selectedImage = await chooseImage("Gallery");
+    var userMap = user?.toJson();
+    print("userLLL >>> ${userMap}");
+    Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
+
+    var selectedImage = await chooseImage("Gallery");
+    print("select mage=>$selectedImage");
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    if (selectedImage.isNotEmpty) {
+    if (selectedImage != null) {
+      var url =
+          "https://sandbox.watconnect.com/swp/api/auth/${user?.id ?? ""}/profile";
+
       UserListViewModel()
-          .updateProfilePicture((userModel?.logourl)!, selectedImage)
-          .then((records) {
-        setState(() {
-          prefs.setString(SharedPrefsConstants.userKey, (userModel?.toJson())!);
-          profileUrl = AppUtils.getImageUrl(records);
-        });
-        Timer(const Duration(seconds: 1), (() {
-          Navigator.pop(context);
-        }));
-      }).catchError((onError) {
-        Navigator.pop(context);
-        List<String> errorMessages = AppUtils.getErrorMessages(onError);
-        AppUtils.getAlert(context, errorMessages, title: "Error Alert");
+          .uploadFile(selectedImage, userMap.toString(), url)
+          .then((value) async {
+        await AppUtils.getToken();
+        getProfileData();
+        MessageController msgController =
+            Provider.of<MessageController>(context, listen: false);
+        msgController.setUsrProfile(
+            "https://sandbox.watconnect.com/public/demo/users/${userModel?.id}");
+      }).catchError((error) {
+        print("Error uploading file: $error");
       });
     } else {
       Navigator.pop(context);

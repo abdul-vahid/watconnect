@@ -43,6 +43,7 @@ class LeadModel extends BaseModel {
   String? ownername;
   String? createdbyname;
   String? lastmodifiedbyname;
+  String? countryCode;
 
   LeadModel({
     this.id,
@@ -84,6 +85,7 @@ class LeadModel extends BaseModel {
     this.ownername,
     this.createdbyname,
     this.lastmodifiedbyname,
+    this.countryCode,
   });
 
   factory LeadModel.fromMap(Map<String, dynamic> data) => LeadModel(
@@ -130,6 +132,7 @@ class LeadModel extends BaseModel {
         ownername: data['ownername']?.toString(),
         createdbyname: data['createdbyname']?.toString(),
         lastmodifiedbyname: data['lastmodifiedbyname']?.toString(),
+        countryCode: data['country_code']?.toString(),
       );
   @override
   LeadModel fromMap(Map<String, dynamic> data) {

@@ -1,14 +1,17 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 // import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
 import 'package:whatsapp/view_models/campaign_chart_vm.dart';
 import 'package:whatsapp/view_models/groups_view_model.dart';
+import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/message_list_vm.dart'
     show MessageViewModel;
 import 'package:whatsapp/view_models/auto_response_vm.dart';
@@ -18,7 +21,8 @@ import 'package:whatsapp/view_models/message_history_vm.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/view_models/user_data_list_vm.dart';
-import 'view_models/agent_list_vm.dart';
+import 'firebase_options.dart';
+import 'services/notifications/local_notification_service.dart';
 import 'view_models/campaign_vm.dart';
 import 'view_models/chart_list_vm.dart';
 
@@ -28,11 +32,14 @@ import 'view_models/lead_count_vm.dart';
 import 'view_models/whatsapp_setting_vm.dart';
 import 'views/view/splash_view.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp();
-  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  LocalNotificationService.initialize();
+  // FirebaseAnalytics analytics = FirebaseAnalytics.instance;
   // FirebaseMessaging messaging = FirebaseMessaging.instance;
   // NotificationSettings settings = await messaging.requestPermission();
   // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
@@ -77,20 +84,17 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AutoResponseViewModel(context)),
         ChangeNotifierProvider(
             create: (_) => WhatsappSettingViewModel(context)),
-        // ChangeNotifierProvider(create: (_) => AccountListViewModel(context)),
         ChangeNotifierProvider(create: (_) => CampaignCountViewModel(context)),
-        // ChangeNotifierProvider(create: (_) => ContactListViewModel(context)),
         ChangeNotifierProvider(create: (_) => ChartListViewModel(context)),
-        ChangeNotifierProvider(create: (_) => AgentListViewModel(context)),
-        // ChangeNotifierProvider(create: (_) => MeetingListViewModel(context)),
         ChangeNotifierProvider(create: (_) => GetUserViewModel(context)),
         ChangeNotifierProvider(create: (_) => UserDataListViewModel(context)),
-        // ChangeNotifierProvider(create: (_) => TaskListViewModel(context)),
         ChangeNotifierProvider(create: (_) => CampaignViewModel(context)),
+        ChangeNotifierProvider(create: (_) => MessageController())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'WhatsApp',
+        navigatorKey: navigatorKey,
+        title: 'Watconnect',
         theme: ThemeData(
           textTheme: GoogleFonts.kohSantepheapTextTheme(),
           primaryColor: AppColor.navBarIconColor,
@@ -98,6 +102,7 @@ class MyApp extends StatelessWidget {
             backgroundColor: AppColor.navBarIconColor,
           ),
         ),
+        builder: EasyLoading.init(),
         home: const SplashView(),
       ),
     );

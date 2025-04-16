@@ -12,7 +12,6 @@ class GetUserViewModel extends BaseListViewModel {
   GetUserViewModel(this.context);
 
   fetchUser() async {
-    //var id = "754d1acf-317e-4bf8-9084-f0fa8d26a8bc";
     String url = AppUtils.getUrl(AppConstants.getUserAPIPath);
     debug(' check===$url');
     get(url: url, baseModel: GetUser());

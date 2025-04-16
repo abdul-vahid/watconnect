@@ -52,35 +52,32 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
           ),
         ),
         actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
-            onSelected: (value) {
-              if (value == 'edit') {
-                // _navigateToEdit();
-                if (record != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          CampaignAddUpdateView(model: widget.record),
-                    ),
-                  );
+          if (widget.record?.campaignStatus !=
+              'Completed') // Hide the icon if status is 'Completed'
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
+              onSelected: (value) {
+                if (value == 'edit') {
+                  if (widget.record != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            CampaignAddUpdateView(model: widget.record),
+                      ),
+                    );
+                  }
                 }
-              }
-            },
-            itemBuilder: (BuildContext context) {
-              return [
-                const PopupMenuItem<String>(
-                  value: 'edit',
-                  child: Text('Edit'),
-                ),
-                // const PopupMenuItem<String>(
-                //   value: 'delete',
-                //   child: Text('Delete'),
-                // ),
-              ];
-            },
-          ),
+              },
+              itemBuilder: (BuildContext context) {
+                return [
+                  const PopupMenuItem<String>(
+                    value: 'edit',
+                    child: Text('Edit'),
+                  ),
+                ];
+              },
+            ),
         ],
       ),
       body: _pageBody(record),
@@ -180,6 +177,14 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
   // }
 
   Widget _pageBody(model) {
+    String? formattedDate;
+    if (widget.record?.startDate != null) {
+      formattedDate =
+          DateFormat('M/d/yyyy, h:mm:ss a').format(widget.record!.startDate!);
+    } else {
+      formattedDate = 'N/A';
+    }
+
     return Container(
       color: Colors.white38,
       child: SingleChildScrollView(
@@ -213,6 +218,9 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
                     _buildRow("Template Name", widget.record?.templateName),
                     const Divider(),
                     _buildRow("Group Name", widget.record?.groups),
+                    const Divider(),
+                    _buildRow("Time", formattedDate),
+
                     // const Divider(),
                     const SizedBox(height: 15),
                     // _messageHistoryRow(),

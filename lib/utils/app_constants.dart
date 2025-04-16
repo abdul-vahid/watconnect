@@ -9,6 +9,7 @@ abstract class SharedPrefsConstants {
   static const String userKey = "user";
   static const String accountKey = "account";
   static const String userDecodedTokenKey = "decoded_token_key";
+  static const String userrolekey = "userrole";
 }
 
 abstract class ResultStatus {
@@ -77,6 +78,9 @@ abstract class AppConstants {
   static const String templetesend =
       "/api/webhook_template/message?whatsapp_setting_number";
 
+  static const String proxy =
+      '/api/webhook_template/proxy?whatsapp_setting_number';
+
   static const String historycreate = "/api/whatsapp/message/history";
   static const String createtemplet = "/api/whatsapp/message/template";
 // ================home page api============================
@@ -101,6 +105,9 @@ abstract class AppConstants {
   static const String Messagehistory =
       '/api/whatsapp/message/history/{leadnumber}?whatsapp_setting_number={whatsapp_setting_number}';
   static const String Messagesendmobile = "/api/whatsapp/message/history";
+
+  static const String campaignParam = "/api/whatsapp/campaign/params";
+
   static const String marksreadmsg =
       "/api/whatsapp/chat/mark_as_read?whatsapp_setting_number=";
   static const String messageHistoryAPIPath =
@@ -111,6 +118,7 @@ abstract class AppConstants {
   static const String imagesend =
       "/api/webhook_template/documentId?whatsapp_setting_number=";
   static const String imagesendhistoy = "/api/whatsapp/files?id";
+  static const String notificationfcm = "/api/user_device/submitToken";
 // ======================Task Api====================
   static const String taskAPIPath = '/api/tasks';
 

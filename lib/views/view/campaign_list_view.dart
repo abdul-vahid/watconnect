@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 // import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 // import 'package:flutter/material.dart';
@@ -794,6 +795,8 @@
 // }
 
 // // -----------------End Code of Record List Method-------------------------
+=======
+>>>>>>> ada171f24e7945faad8306c21bf6efed532f4226
 import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
@@ -803,12 +806,9 @@ import '../../models/campaign_model/campaign_model.dart';
 import '../../models/user_model/user_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
-import '../../utils/function_lib.dart';
 import '../../view_models/campaign_vm.dart';
 import 'campaign_add_update_view.dart';
 import 'campaign_detail_view.dart';
-// import 'package:flutter_file_downloader/flutter_file_downloader.dart';
-import '../../models//campaign_model/record.dart';
 
 class CampaignListView extends StatefulWidget {
   const CampaignListView({super.key});
@@ -868,7 +868,6 @@ class _CampaignListView extends State<CampaignListView> {
         for (var record in campginmodel!.records!) {
           if (record.campaignStatus != null) {
             _paymentterms.add(record.campaignStatus!);
-
             print("selectedcampaign:::${selectedcampaign}");
             if (selectedcampaign != null) {
               print(
@@ -1065,6 +1064,13 @@ class _CampaignListView extends State<CampaignListView> {
 
                     // Payment Term Dropdown
                     Container(
+                      decoration: BoxDecoration(
+                        // border: Border.all(
+                        //   color: Colors.black,
+                        //   width: 0.2,
+                        // ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       child: DropdownButtonFormField<String>(
                         hint: const Text('Select Status'),
                         items: uniquePaymentTerms.map((String value) {
@@ -1083,25 +1089,30 @@ class _CampaignListView extends State<CampaignListView> {
                     ),
                     const SizedBox(height: 24),
 
-                    ElevatedButton(
-                      onPressed: () {
-                        _filterLeads(selectedcampaign);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.navBarIconColor,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            _filterLeads(selectedcampaign);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Filters',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Apply Filters',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -1140,6 +1151,24 @@ class _CampaignListView extends State<CampaignListView> {
       Navigator.pop(context);
     });
   }
+//   String getCampaignStatus(String? startDate, String? endDate) {
+//   if (startDate == null || endDate == null) return "Unknown";
+
+//   DateTime now = DateTime.now();
+//   DateTime start = DateTime.parse(startDate);
+//   DateTime end = DateTime.parse(endDate);
+//   Duration timeLeft = end.difference(now);
+
+//   if (now.isBefore(start)) {
+//     return "Upcoming";
+//   } else if (timeLeft.inSeconds > 3) {
+//     return "Ongoing";
+//   } else if (timeLeft.inSeconds > 0) {
+//     return "${timeLeft.inSeconds}";  // Countdown: 3, 2, 1
+//   } else {
+//     return "Completed";
+//   }
+// }
 
   Widget _pageBody() {
     return Column(
@@ -1214,6 +1243,16 @@ class _CampaignListView extends State<CampaignListView> {
                                       color: Colors.black,
                                     ),
                                   ),
+                                  // Text(
+                                  //   getCampaignStatus(
+                                  //       allCampaigns[index].startDate,
+                                  //       allCampaigns[index].endDate),
+                                  //   style: const TextStyle(
+                                  //     fontSize: 14,
+                                  //     fontWeight: FontWeight.bold,
+                                  //     color: Colors.black,
+                                  //   ),
+                                  // ),
                                 ],
                               ),
                             ),

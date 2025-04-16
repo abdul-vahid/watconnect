@@ -24,7 +24,18 @@ class _ViewPdfState extends State<ViewPdf> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Document")),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back,
+                color: Color.fromARGB(255, 255, 255, 255)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          title: Text(
+            "Document",
+            style: TextStyle(color: Colors.white),
+          ),
+          automaticallyImplyLeading: false,
+        ),
         body: Container(child: SfPdfViewer.network(widget.pdfUrl)));
   }
 }

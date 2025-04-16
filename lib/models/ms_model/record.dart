@@ -28,6 +28,7 @@ class Record {
   String? headerBody;
   String? messageBody;
   String? exampleBodyText;
+  String? bodyTextParams;
   String? footer;
   String? messagingProduct;
   String? recipientType;
@@ -38,53 +39,54 @@ class Record {
   String? title;
   String? body;
   String? unread_msg_count;
-
+  String? erormessage;
   List<dynamic>? buttons;
   dynamic filetype;
   dynamic description;
 
-  Record({
-    this.messageHistoryId,
-    this.id,
-    this.parentId,
-    this.name,
-    this.messageTemplateId,
-    this.whatsappNumber,
-    this.message,
-    this.status,
-    this.recordtypename,
-    this.fileId,
-    this.createdbyid,
-    this.lastmodifiedbyid,
-    this.createddate,
-    this.lastmodifieddate,
-    this.isRead,
-    this.businessNumber,
-    this.messageId,
-    this.deliveryStatus,
-    this.chatmsg,
-    this.templateName,
-    this.templateId,
-    this.language,
-    this.category,
-    this.header,
-    this.headerBody,
-    this.messageBody,
-    this.exampleBodyText,
-    this.footer,
-    this.buttons,
-    this.title,
-    this.filetype,
-    this.description,
-    this.messagingProduct,
-    this.recipientType,
-    this.to,
-    this.type,
-    this.text,
-    this.identifier,
-    this.body,
-    this.unread_msg_count,
-  });
+  Record(
+      {this.messageHistoryId,
+      this.id,
+      this.parentId,
+      this.name,
+      this.messageTemplateId,
+      this.whatsappNumber,
+      this.message,
+      this.status,
+      this.recordtypename,
+      this.fileId,
+      this.createdbyid,
+      this.lastmodifiedbyid,
+      this.createddate,
+      this.lastmodifieddate,
+      this.isRead,
+      this.businessNumber,
+      this.messageId,
+      this.deliveryStatus,
+      this.chatmsg,
+      this.templateName,
+      this.templateId,
+      this.language,
+      this.category,
+      this.header,
+      this.headerBody,
+      this.messageBody,
+      this.exampleBodyText,
+      this.bodyTextParams,
+      this.footer,
+      this.buttons,
+      this.title,
+      this.filetype,
+      this.description,
+      this.messagingProduct,
+      this.recipientType,
+      this.to,
+      this.type,
+      this.text,
+      this.identifier,
+      this.body,
+      this.unread_msg_count,
+      this.erormessage});
 
   factory Record.fromMap(Map<String, dynamic> data) => Record(
         messageHistoryId: data['message_history_id'] as String?,
@@ -114,6 +116,7 @@ class Record {
         headerBody: data['header_body'] as String?,
         messageBody: data['message_body'] as String?,
         exampleBodyText: data['example_body_text'] as String?,
+        bodyTextParams: data['body_text_params'] as String?,
         footer: data['footer'] as String?,
         messagingProduct: data['messaging_product'] as String?,
         recipientType: data['recipient_type'] as String?,
@@ -126,6 +129,7 @@ class Record {
         buttons: data['buttons'] as List<dynamic>?,
         filetype: data['filetype'] as dynamic,
         description: data['description'] as dynamic,
+        erormessage: data['err_message'] as String?,
       );
 
   static DateTime? parseDate(String? date) {
@@ -174,6 +178,7 @@ class Record {
         'title': title,
         'body': body,
         'unread_msg_count': unread_msg_count,
+        'erormessage': erormessage,
       };
 
   String toJson() => json.encode(toMap());

@@ -1,4 +1,5 @@
 import 'dart:convert' show jsonDecode, jsonEncode;
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -59,6 +60,18 @@ class MessageViewModel extends BaseListViewModel {
     return result;
   }
 
+  Future<dynamic> sendCampParam({
+    required Map<String, dynamic> campParambody,
+  }) async {
+    print("senjhhhdmsgmobile jjjjjjjjjcalled");
+    String url = AppUtils.getUrl(AppConstants.campaignParam);
+    print("url==mobile send >$url");
+    String body = jsonEncode(campParambody);
+    var result = await post(url: url, body: body);
+    debug('result $result');
+    return result;
+  }
+
   Future<dynamic> sendtemplete({
     String? number,
     required Map<String, dynamic> msgmobilbody,
@@ -68,7 +81,20 @@ class MessageViewModel extends BaseListViewModel {
     print("url==mobile templete send >$url");
     String body = jsonEncode(msgmobilbody);
     var result = await post(url: url, body: body);
-    debug('result templete sed $result');
+    // debug('result templete sed $result');
+    return result;
+  }
+
+  Future<dynamic> sendProxy({
+    String? number,
+    required Map<String, dynamic> fileProxyBody,
+  }) async {
+    print("c=templeate snd callled");
+    String url = AppUtils.getUrl('${AppConstants.proxy}=$number');
+    print("url==mobile templete send >$url");
+    String body = jsonEncode(fileProxyBody);
+    var result = await post(url: url, body: body);
+    // debug('result templete sed $result');
     return result;
   }
 
@@ -81,7 +107,7 @@ class MessageViewModel extends BaseListViewModel {
     print("createtempletcreatetemplet >$url");
     String body = jsonEncode(msgmobilbody);
     var result = await post(url: url, body: body);
-    debug('createtempletcreatetempletcreatetemplet $result');
+    // debug('createtempletcreatetempletcreatetemplet $result');
     return result;
   }
 
@@ -110,7 +136,7 @@ class MessageViewModel extends BaseListViewModel {
   Future<dynamic> uploadFile(File file, String? number) async {
     // final APIService _apiService = APIService();
     var token = await AppUtils.getToken();
-    debug("Token2 == $token");
+    // debug("Token2 == $token");
     token ??= "";
     var url = Uri.parse(
         "https://sandbox.watconnect.com/swp/api/webhook_template/documentId?whatsapp_setting_number=$number");
@@ -138,8 +164,8 @@ class MessageViewModel extends BaseListViewModel {
       "Authorization": token,
       "Content-Type": "multipart/form-data",
     });
-    debug("Request URL: $url");
-    debug("Request Headers: ${request.headers}");
+    log("Request URL: $url");
+    // debug("Request Headers: ${request.headers}");
     debug("Request Fields: ${request.fields}");
     debug("Request Files: ${request.files}");
     var response = await request.send();
@@ -275,7 +301,7 @@ class MessageViewModel extends BaseListViewModel {
     });
 
     debug("Request URL videooooo: $url");
-    debug("Request Headers: ${request.headers}");
+    // debug("Request Headers: ${request.headers}");
     debug("Request Files: ${request.files}");
 
     var response = await request.send();

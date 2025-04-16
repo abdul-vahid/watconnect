@@ -4,9 +4,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart'
     show InternetConnectionChecker;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
+import 'package:whatsapp/models/user_model/user_model.dart';
+import 'package:whatsapp/utils/app_utils.dart';
 
 import '../../utils/app_color.dart';
+import '../../utils/notification_utils.dart';
 import '../view/home_view.dart';
 import '../view/profile_view.dart' show ProfileView;
 import '../view/user_list_view.dart';
@@ -20,6 +24,7 @@ class FooterNavbarPage extends StatefulWidget {
 }
 
 class _FooterNavbarPageState extends State<FooterNavbarPage> {
+  UserModel? userModelData;
   // late StreamSubscription subscription;
   int selectedPage = 0;
   bool isDeviceConnected = false;
@@ -29,6 +34,15 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
 
   @override
   void initState() {
+    NotificationUtil(context).initialize();
+
+    SharedPreferences.getInstance().then((prefs) {
+      userModelData = AppUtils.getSessionUser(prefs);
+      print("userModelData${userModelData}");
+      // userModel ?? AppUtils.logout(context);
+    });
+    getuserrole();
+    print("init startwtwtwyw=>${userModelData?.userrole}");
     super.initState();
     // _controller = NotchBottomBarController();
     // getConnectivity();s
@@ -58,12 +72,6 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
 
   int selected = 0;
 
-  final _pageOptions = [
-    HomeView(),
-    ProfileView(),
-    const UserListView(),
-    const Whtsapphone(),
-  ];
   Future<bool> _onWillPop() async {
     return (await showCupertinoDialog(
           context: context,
@@ -85,6 +93,25 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
           ),
         )) ??
         false;
+  }
+
+  // void getuserrole() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   print(" wowowoow");
+  //   userModelData = await AppUtils.getSessionUser(prefs);
+  //   print("userModelData=>${userModelData?.userrole}");
+  //   setState(() {
+  //     // userModelData.userrole
+  //   });
+  //   print("dsfggggggg=>${userModelData?.userrole}");
+  // }
+  void getuserrole() async {
+    final prefs = await SharedPreferences.getInstance();
+    print("userModelData=>${userModelData?.userrole}");
+    setState(() {
+      userModelData = AppUtils.getSessionUser(prefs);
+    });
+    print("dsfggggggg=>${userModelData?.userrole}");
   }
 
   showDialogBox() => showCupertinoDialog<String>(
@@ -111,6 +138,13 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       );
   @override
   Widget build(BuildContext context) {
+    final _pageOptions = [
+      HomeView(),
+      ProfileView(),
+      if (userModelData?.userrole == "ADMIN") const UserListView(),
+      const Whtsapphone(),
+    ];
+    // print("dsfffffffffffffffffffffffffff=>${userModelData?.userrole}");
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -138,11 +172,12 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
               title: const Text('Profile'),
               backgroundColor: Colors.white,
             ),
-            BottomBarItem(
-              icon: const Icon(Icons.settings_accessibility_outlined),
-              title: const Text('User'),
-              backgroundColor: Colors.white,
-            ),
+            if (userModelData?.userrole == "ADMIN")
+              BottomBarItem(
+                icon: const Icon(Icons.settings_accessibility_outlined),
+                title: const Text('User'),
+                backgroundColor: Colors.white,
+              ),
             BottomBarItem(
               icon: const Icon(Icons.phone),
               title: const Text('Phone'),

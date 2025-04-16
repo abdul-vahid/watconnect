@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
 import '../../models/lead_model.dart';
@@ -21,8 +24,13 @@ class LeadListView extends StatefulWidget {
 }
 
 class _LeadListViewState extends State<LeadListView> {
-  final List<String> _paymentterms = [];
-  final List<String> _user = [];
+  String finalResult = "";
+  IO.Socket? socket;
+  String token = "your_token_here";
+  var userId;
+  String leadId = "lead_456";
+  String phNum = "+919876543210";
+  final List<String> _leadfilter = [];
   List<LeadModel> leadss = [];
   TextEditingController textController = TextEditingController();
   var leadlistvm;
@@ -43,17 +51,25 @@ class _LeadListViewState extends State<LeadListView> {
     // _marksread();
     _getUnreadCount();
     super.initState();
+    connectSocket();
     tempLeadModelList = leadModelList;
-    Provider.of<LeadListViewModel>(context, listen: false).fetch();
+  }
+
+  @override
+  void dispose() {
+    disconnectSocket();
+
+    super.dispose();
   }
 
   Future<void> _getUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
-    var a = Provider.of<UnreadCountVm>(context, listen: false)
-        .fetchunreadcount(number: number ?? "");
+    Provider.of<LeadListViewModel>(context, listen: false).fetch();
+    if (!mounted) return;
 
-    print("aaaaaaaaaaaaaa=>$a");
+    await Provider.of<UnreadCountVm>(context, listen: false)
+        .fetchunreadcount(number: number ?? "");
   }
 
   // Future<void> _marksread(String? whatsappNumber, String? leadId) async {
@@ -98,7 +114,7 @@ class _LeadListViewState extends State<LeadListView> {
   Widget build(BuildContext context) {
     if (leadlistvm != null) {
       for (var viewModel in leadlistvm!.viewModels) {
-        _paymentterms.add(viewModel.model.leadstatus);
+        _leadfilter.add(viewModel.model.leadstatus);
       }
     }
 
@@ -157,6 +173,7 @@ class _LeadListViewState extends State<LeadListView> {
               controller: textController,
               onChanged: _filterLeads,
               decoration: InputDecoration(
+                isDense: true,
                 hintText: 'Search...',
                 hintStyle: TextStyle(
                   color: AppColor.textoriconColor.withOpacity(0.6),
@@ -229,7 +246,7 @@ class _LeadListViewState extends State<LeadListView> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            List<String> uniquePaymentTerms = _paymentterms.toSet().toList();
+            List<String> uniquePaymentTerms = _leadfilter.toSet().toList();
 
             return Container(
               height: 220,
@@ -273,14 +290,29 @@ class _LeadListViewState extends State<LeadListView> {
 
                     // Payment Term Dropdown
                     Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       child: DropdownButtonFormField<String>(
                         hint: const Text('Select Leads Status'),
-                        items: uniquePaymentTerms.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        items: [
+                          DropdownMenuItem(
+                            value: 'Working - Contacted',
+                            child: Text('Working - Contacted'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Open - Not Contacted',
+                            child: Text('Open - Not Contacted'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Closed - Converted',
+                            child: Text('Closed - Converted'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Closed - Not Converted',
+                            child: Text('Closed - Not Converted'),
+                          ),
+                        ],
                         onChanged: (String? newValue) {
                           setState(() {
                             selectlead = newValue;
@@ -289,28 +321,35 @@ class _LeadListViewState extends State<LeadListView> {
                         value: selectlead,
                       ),
                     ),
+
                     const SizedBox(height: 24),
 
-                    ElevatedButton(
-                      onPressed: () {
-                        // Navigator.of(context).pop();
-                        filterLeads(selectlead);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.navBarIconColor,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            filterLeads(selectlead);
+                            Navigator.pop(context);
+                            // Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Filters',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Apply Filters',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -323,6 +362,8 @@ class _LeadListViewState extends State<LeadListView> {
   }
 
   Future<String?> _marksread(String whatsappNumber) async {
+    print("sajdjsahdjsah jhsjhkjdhakj${whatsappNumber}");
+
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
@@ -342,7 +383,7 @@ class _LeadListViewState extends State<LeadListView> {
   Future<void> _pullRefresh() async {
     leads?.viewModels.clear();
     Provider.of<LeadListViewModel>(context, listen: false).fetch();
-    // leads = Provider.of<LeadListViewModel>(context, listen: false);
+
     Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number);
     Provider.of<LeadListViewModel>(context, listen: false).fetch();
@@ -361,274 +402,6 @@ class _LeadListViewState extends State<LeadListView> {
     );
   }
 
-  // List<Widget> getLeadWidgets() {
-  //   List<Widget> widgets = [];
-  //   Set<String> uniqueIds = {};
-
-  //   for (var viewModel in leadModelList) {
-  //     LeadModel model = viewModel;
-
-  //     var unreadRecord = unreadCountVm?.viewModels.firstWhere(
-  //       (unreadModel) =>
-  //           unreadModel.model.records?.any(
-  //               (record) => record.whatsappNumber == model.whatsapp_number) ??
-  //           false,
-  //       orElse: () => null,
-  //     );
-
-  //     if (unreadRecord != null) {
-  //       // print("hiii working...");
-  //       var matchingRecords = unreadRecord.model.records
-  //           ?.where((record) => record.whatsappNumber == model.whatsapp_number)
-  //           .toList();
-
-  //       var unreadMsgCount =
-  //           matchingRecords != null && matchingRecords.isNotEmpty
-  //               ? matchingRecords.first.unreadMsgCount
-  //               : "0";
-
-  //       if (!uniqueIds.contains(model.id)) {
-  //         uniqueIds.add(model.id!);
-  //         widgets.add(leadRecordList(model, unreadMsgCount));
-  //       }
-  //     } else {
-  //       if (!uniqueIds.contains(model.id)) {
-  //         uniqueIds.add(model.id!);
-  //         widgets.add(leadRecordList(model, "0"));
-  //       }
-  //     }
-  //   }
-
-  //   return widgets;
-  // }
-
-  // List<Widget> getLeadWidgets() {
-  //   List<Widget> widgets = [];
-  //   Set<String> uniqueIds = {};
-
-  //   for (var viewModel in leadModelList) {
-  //     LeadModel model = viewModel;
-
-  //     var unreadRecord = unreadCountVm?.viewModels.firstWhere(
-  //       (unreadModel) =>
-  //           unreadModel.model.records?.any(
-  //               (record) => record.whatsappNumber == model.whatsapp_number) ??
-  //           false,
-  //       orElse: () => null,
-  //     );
-
-  //     if (unreadRecord != null) {
-  //       var matchingRecords = unreadRecord.model.records
-  //           ?.where((record) => record.whatsappNumber == model.whatsapp_number)
-  //           .toList();
-
-  //       var unreadMsgCount =
-  //           matchingRecords != null && matchingRecords.isNotEmpty
-  //               ? matchingRecords.first.unreadMsgCount
-  //               : "";
-
-  //       if (!uniqueIds.contains(model.id)) {
-  //         uniqueIds.add(model.id!);
-
-  //         widgets.add(Dismissible(
-  //           key: UniqueKey(),
-  //           onDismissed: (direction) async {
-  //             await _marksread(model.whatsapp_number ?? "", model.id);
-  //             setState(() {});
-  //           },
-  //           background: Container(
-  //             color: Colors.green,
-  //             alignment: Alignment.centerRight,
-  //             child: const Padding(
-  //               padding: EdgeInsets.only(right: 20),
-  //               child: Icon(Icons.chat_sharp, color: Colors.white),
-  //             ),
-  //           ),
-  //           child: leadRecordList(model, unreadMsgCount),
-  //         ));
-  //       }
-  //     } else {
-  //       if (!uniqueIds.contains(model.id)) {
-  //         uniqueIds.add(model.id!);
-  //         widgets.add(leadRecordList(model, ""));
-  //       }
-  //     }
-  //   }
-  //   return widgets;
-  // }
-
-  // Widget leadRecordList(LeadModel model, String unreadMsgCount) {
-  //   Color statusColor;
-  //   switch (model.leadstatus) {
-  //     case 'Contacted':
-  //       statusColor = const Color.fromARGB(255, 46, 198, 69);
-  //       break;
-  //     case 'Open - Not Contacted && Working - Contacted':
-  //       statusColor = Colors.lightBlue.withOpacity(0.7);
-  //       break;
-  //     case 'Closed - Converted && Closed - Not Converted':
-  //       statusColor = AppColor.motivationCar1Color;
-  //       break;
-  //     default:
-  //       statusColor = Colors.lightBlue.withOpacity(0.7);
-  //       break;
-  //   }
-
-  //   return Dismissible(
-  //     key: UniqueKey(),
-  //     onDismissed: (direction) {
-  //       if (model.whatsapp_number != null) {
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(
-  //             builder: (context) => ChatScreen(
-  //               leadName: '${model.firstname}  ${model.lastname}  ',
-  //               wpnumber: model.whatsapp_number ?? "",
-  //               model: model,
-  //             ),
-  //           ),
-  //         );
-  //       } else {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(
-  //             content: Text('No Phone Number '),
-  //             duration: Duration(seconds: 3),
-  //             backgroundColor: AppColor.motivationCar1Color,
-  //           ),
-  //         );
-  //       }
-  //     },
-  //     background: Container(
-  //       color: Colors.green,
-  //       alignment: Alignment.centerRight,
-  //       child: const Padding(
-  //         padding: EdgeInsets.only(right: 20),
-  //         child: Icon(Icons.chat_sharp, color: Colors.white),
-  //       ),
-  //     ),
-  //     child: Container(
-  //       decoration: BoxDecoration(
-  //         color: Colors.white,
-  //         borderRadius: BorderRadius.circular(10),
-  //         border: Border(
-  //           left: BorderSide(
-  //             color: statusColor,
-  //             width: 5,
-  //           ),
-  //         ),
-  //         boxShadow: [
-  //           BoxShadow(
-  //             color: Colors.black.withOpacity(0.1),
-  //             blurRadius: 5,
-  //             spreadRadius: 3,
-  //             offset: const Offset(2, 4),
-  //           ),
-  //         ],
-  //       ),
-  //       margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-  //       child: Padding(
-  //         padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
-  //         child: InkWell(
-  //           onTap: () {
-  //             Navigator.push(
-  //               context,
-  //               MaterialPageRoute(
-  //                 builder: (context) => LeadDetailView(
-  //                   model: model,
-  //                 ),
-  //               ),
-  //             );
-  //           },
-  //           child: ListTile(
-  //             contentPadding: EdgeInsets.zero,
-  //             title: Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //               children: [
-  //                 Expanded(
-  //                   child: Column(
-  //                     crossAxisAlignment: CrossAxisAlignment.start,
-  //                     children: [
-  //                       Text(
-  //                         "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
-  //                         style: const TextStyle(
-  //                           fontSize: 14,
-  //                           fontWeight: FontWeight.bold,
-  //                         ),
-  //                       ),
-  //                       Text(
-  //                         "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number : ''}",
-  //                         style: const TextStyle(
-  //                           fontSize: 12,
-  //                         ),
-  //                       ),
-  //                       Text(
-  //                         "${model.email?.isNotEmpty == true ? model.email : ''}",
-  //                         style: const TextStyle(
-  //                           fontSize: 12,
-  //                         ),
-  //                       ),
-  //                       Container(
-  //                         decoration: BoxDecoration(
-  //                             borderRadius: BorderRadius.circular(100),
-  //                             color: Colors.lightBlue.withOpacity(0.7)),
-  //                         child: Padding(
-  //                           padding: const EdgeInsets.all(2.0),
-  //                           child: Text(
-  //                             "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
-  //                             style: const TextStyle(
-  //                                 fontSize: 10, color: Colors.white),
-  //                           ),
-  //                         ),
-  //                       ),
-  //                       const SizedBox(
-  //                         height: 4,
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 ),
-  //                 Row(
-  //                   mainAxisAlignment: MainAxisAlignment.end,
-  //                   children: [
-  //                     const SizedBox(width: 10),
-  //                     IconButton(
-  //                       onPressed: () {
-  //                         Navigator.push(
-  //                           context,
-  //                           MaterialPageRoute(
-  //                             builder: (context) => LeadDetailView(
-  //                               model: model,
-  //                             ),
-  //                           ),
-  //                         );
-  //                       },
-  //                       icon: const Icon(
-  //                         Icons.arrow_forward_ios,
-  //                         color: Colors.black45,
-  //                       ),
-  //                       iconSize: 22,
-  //                       tooltip: 'Details',
-  //                     ),
-  //                     if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
-  //                       badges.Badge(
-  //                         badgeContent: Text(
-  //                           '$unreadMsgCount',
-  //                           style: TextStyle(
-  //                             color: Colors.white,
-  //                           ),
-  //                         ),
-  //                       )
-  //                     else
-  //                       SizedBox.shrink(),
-  //                   ],
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
   List<Widget> getLeadWidgets() {
     List<Widget> widgets = [];
     Set<String> uniqueIds = {};
@@ -637,10 +410,20 @@ class _LeadListViewState extends State<LeadListView> {
       LeadModel model = viewModel;
 
       var unreadRecord = unreadCountVm?.viewModels.firstWhere(
-        (unreadModel) =>
-            unreadModel.model.records?.any(
-                (record) => record.whatsappNumber == model.whatsapp_number) ??
-            false,
+        (unreadModel) {
+          if (unreadModel.model is UnreadMsgModel) {
+            var kp = model.countryCode;
+            var avribel = model.whatsapp_number ?? "";
+            finalResult = " ${kp}${avribel}";
+            // print("finalResultfinalResultfinalResultfinalResult${finalResult}");
+            var unreadMsgModel = unreadModel.model as UnreadMsgModel;
+            return unreadMsgModel.records?.any(
+                  (record) => record.whatsappNumber == model.whatsapp_number,
+                ) ??
+                false;
+          }
+          return false;
+        },
         orElse: () => null,
       );
 
@@ -660,7 +443,8 @@ class _LeadListViewState extends State<LeadListView> {
           widgets.add(Dismissible(
             key: UniqueKey(),
             onDismissed: (direction) async {
-              var res = await _marksread(model.whatsapp_number ?? "");
+              print("fiifififiifif${finalResult}");
+              var res = await _marksread(finalResult);
             },
             background: Container(
               color: Colors.green,
@@ -680,7 +464,6 @@ class _LeadListViewState extends State<LeadListView> {
         }
       }
     }
-
     return widgets;
   }
 
@@ -704,19 +487,41 @@ class _LeadListViewState extends State<LeadListView> {
     return Dismissible(
       key: UniqueKey(),
       onDismissed: (direction) {
+        print("model=>${model.toMap()}");
+        // print("model=>${model.toMap()}");
         if (model.whatsapp_number != null) {
-          _marksread(model.whatsapp_number ?? "");
+          // _marksread(model.whatsapp_number ?? "");
+          _marksread(finalResult);
 
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ChatScreen(
-                leadName: '${model.firstname}  ${model.lastname}  ',
-                wpnumber: model.whatsapp_number ?? "",
+                leadName:
+                    (model.firstname != null && model.firstname!.isNotEmpty)
+                        ? '${model.firstname} ${model.lastname ?? ""}'
+                        : (model.lastname != null && model.lastname!.isNotEmpty)
+                            ? model.lastname!
+                            : "No Name Available",
+                wpnumber: model.whatsapp_number!.contains("+")
+                    ? model.whatsapp_number ?? ""
+                    : "${model.countryCode}${model.whatsapp_number ?? ""}",
                 model: model,
               ),
             ),
-          );
+          ).then((_) {
+            // Call your function here when user comes back
+            Provider.of<UnreadCountVm>(context, listen: false)
+                .fetchunreadcount(number: number ?? "");
+            setState(() {
+              unreadMsgCount = "0";
+              unreadMsgCount = "";
+            });
+            print("unreadMsgCount====${unreadMsgCount}  ");
+          });
+
+          leads?.viewModels.clear();
+          Provider.of<LeadListViewModel>(context, listen: false).fetch();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -768,94 +573,223 @@ class _LeadListViewState extends State<LeadListView> {
                 ),
               );
             },
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number : ''}",
-                          style: const TextStyle(
-                            fontSize: 12,
-                          ),
-                        ),
-                        Text(
-                          "${model.email?.isNotEmpty == true ? model.email : ''}",
-                          style: const TextStyle(
-                            fontSize: 12,
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(100),
-                              color: Colors.lightBlue.withOpacity(0.7)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: Text(
-                              "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
-                              style: const TextStyle(
-                                  fontSize: 10, color: Colors.white),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 4,
-                        ),
-                      ],
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: AppColor.navBarIconColor,
+                  child: Text(
+                    "${model.firstname?.isNotEmpty == true ? model.firstname![0].toUpperCase() : '?'}",
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                ),
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(width: 10),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => LeadDetailView(
-                                model: model,
-                              ),
-                            ),
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.black45,
+                      Text(
+                        "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
                         ),
-                        iconSize: 22,
-                        tooltip: 'Details',
                       ),
-                      if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
-                        badges.Badge(
-                          badgeContent: Text(
-                            unreadMsgCount,
+                      Text(
+                        "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number!.contains("+") ? model.whatsapp_number ?? "" : "${model.countryCode}${model.whatsapp_number ?? ""}" : ''}",
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Text(
+                        "${model.email?.isNotEmpty == true ? model.email : ''}",
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(100),
+                          color: Colors.lightBlue.withOpacity(0.7),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Text(
+                            "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
                             style: const TextStyle(
+                              fontSize: 10,
                               color: Colors.white,
                             ),
                           ),
-                        )
-                      else
-                        const SizedBox.shrink(),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
                     ],
                   ),
-                ],
-              ),
+                ),
+                // Arrow and Badge
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
+                      badges.Badge(
+                        badgeContent: Text(
+                          unreadMsgCount,
+                          style: const TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    else
+                      const SizedBox.shrink(),
+                    // IconButton(
+                    //   onPressed: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => LeadDetailView(
+                    //           model: model,
+                    //         ),
+                    //       ),
+                    //     );
+                    //   },
+                    //   icon: const Icon(
+                    //     Icons.arrow_forward_ios,
+                    //     color: Colors.black45,
+                    //   ),
+                    //   iconSize: 22,
+                    //   tooltip: 'Details',
+                    // ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
       ),
+
+      // child: Container(
+      //   decoration: BoxDecoration(
+      //     color: Colors.white,
+      //     borderRadius: BorderRadius.circular(10),
+      //     border: Border(
+      //       left: BorderSide(
+      //         color: statusColor,
+      //         width: 5,
+      //       ),
+      //     ),
+      //     boxShadow: [
+      //       BoxShadow(
+      //         color: Colors.black.withOpacity(0.1),
+      //         blurRadius: 5,
+      //         spreadRadius: 3,
+      //         offset: const Offset(2, 4),
+      //       ),
+      //     ],
+      //   ),
+      //   margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      //   child: Padding(
+      //     padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
+      //     child: InkWell(
+      //       onTap: () {
+      //         Navigator.push(
+      //           context,
+      //           MaterialPageRoute(
+      //             builder: (context) => LeadDetailView(
+      //               model: model,
+      //             ),
+      //           ),
+      //         );
+      //       },
+      //       child: ListTile(
+      //         contentPadding: EdgeInsets.zero,
+      //         title: Row(
+      //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //           children: [
+      //             Expanded(
+      //               child: Column(
+      //                 crossAxisAlignment: CrossAxisAlignment.start,
+      //                 children: [
+      //                   Text(
+      //                     "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
+      //                     style: const TextStyle(
+      //                       fontSize: 14,
+      //                       fontWeight: FontWeight.bold,
+      //                     ),
+      //                   ),
+      //                   Text(
+      //                     "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number : ''}",
+      //                     style: const TextStyle(
+      //                       fontSize: 12,
+      //                     ),
+      //                   ),
+      //                   Text(
+      //                     "${model.email?.isNotEmpty == true ? model.email : ''}",
+      //                     style: const TextStyle(
+      //                       fontSize: 12,
+      //                     ),
+      //                   ),
+      //                   Container(
+      //                     decoration: BoxDecoration(
+      //                         borderRadius: BorderRadius.circular(100),
+      //                         color: Colors.lightBlue.withOpacity(0.7)),
+      //                     child: Padding(
+      //                       padding: const EdgeInsets.all(2.0),
+      //                       child: Text(
+      //                         "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
+      //                         style: const TextStyle(
+      //                             fontSize: 10, color: Colors.white),
+      //                       ),
+      //                     ),
+      //                   ),
+      //                   const SizedBox(
+      //                     height: 4,
+      //                   ),
+      //                 ],
+      //               ),
+      //             ),
+      //             Row(
+      //               mainAxisAlignment: MainAxisAlignment.end,
+      //               children: [
+      //                 const SizedBox(width: 10),
+      //                 IconButton(
+      //                   onPressed: () {
+      //                     Navigator.push(
+      //                       context,
+      //                       MaterialPageRoute(
+      //                         builder: (context) => LeadDetailView(
+      //                           model: model,
+      //                         ),
+      //                       ),
+      //                     );
+      //                   },
+      //                   icon: const Icon(
+      //                     Icons.arrow_forward_ios,
+      //                     color: Colors.black45,
+      //                   ),
+      //                   iconSize: 22,
+      //                   tooltip: 'Details',
+      //                 ),
+      //                 if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
+      //                   badges.Badge(
+      //                     badgeContent: Text(
+      //                       unreadMsgCount,
+      //                       style: const TextStyle(
+      //                         color: Colors.white,
+      //                       ),
+      //                     ),
+      //                   )
+      //                 else
+      //                   const SizedBox.shrink(),
+      //               ],
+      //             ),
+      //           ],
+      //         ),
+      //       ),
+      //     ),
+      //   ),
+      // ),
     );
   }
 
@@ -868,5 +802,60 @@ class _LeadListViewState extends State<LeadListView> {
               (lead) => lead.leadstatus?.toLowerCase() == filter.toLowerCase())
           .toList();
     });
+  }
+
+  Future<void> connectSocket() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+
+    String tkn = await AppUtils.getToken() ?? "";
+    Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+
+    token = tkn;
+    phNum = number ?? "";
+    userId = decodedToken;
+
+    try {
+      print("Token: $token");
+
+      socket = IO.io(
+        'https://sandbox.watconnect.com',
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setPath('/swp/socket.io')
+            .setExtraHeaders({'Authorization': 'Bearer $token'})
+            .build(),
+      );
+      socket!.connect();
+      socket!.onConnect((_) {
+        print('Connected to WebSocket');
+        socket!.emit("setup", userId);
+      });
+      socket!.on("connected", (_) {
+        // print(" WebSocket setup complete");
+      });
+
+      socket!.on("receivedwhatsappmessage", (data) {
+        print(" New WhatsApp message: $data");
+        _getUnreadCount();
+      });
+
+      socket!.onDisconnect((_) {
+        print(" WebSocket Disconnected");
+      });
+
+      socket!.onError((error) {
+        print(" WebSocket Error: $error");
+      });
+    } catch (error) {
+      print("Error connecting to WebSocket: $error");
+    }
+  }
+
+  void disconnectSocket() {
+    if (socket != null) {
+      socket!.disconnect();
+      print(" WebSocket Disconnected");
+    }
   }
 }

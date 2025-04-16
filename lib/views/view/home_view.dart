@@ -24,7 +24,6 @@ import '../../models/unread_msg_model/unread_msg_model.dart';
 import '../../models/whatsapp_setting_model/whatsapp_setting_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/function_lib.dart' show debug;
-import '../../view_models/agent_list_vm.dart';
 import '../../view_models/auto_response_vm.dart';
 import '../../view_models/campaign_chart_vm.dart' show CampaignChartViewModel;
 import '../../view_models/campaign_count_vm.dart';
@@ -52,7 +51,6 @@ class _HomeViewState extends State<HomeView> {
   UnreadCountVm? unreadCountVm;
   // ignore: prefer_typing_uninitialized_variables
   ChartListViewModel? leadListVM;
-  AgentListViewModel? agentListVM;
   LeadCountViewModel? leadCountVM;
   WhatsappSettingViewModel? whatsAppSettingVM;
   AutoResponseViewModel? autoResponseVM;
@@ -86,16 +84,8 @@ class _HomeViewState extends State<HomeView> {
   num totalCountofIncome = 0;
   num totalCountofExpence = 0;
   String? globalUnreadCount = "";
-  List<Templatedata> Templatedat = []; //template data  showing
+  List<Templatedata> Templatedat = [];
 
-  //--------------end of variable agent-----------
-
-  // Future<String?> getPhoneNumber() async {
-  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   final phoneNumber = prefs.getString('user_phone');
-  //   print('Retrieved phone number: $phoneNumber');
-  //   return phoneNumber;
-  // }
   Future<String?> getPhoneNumber() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final phoneNumber = prefs.getString('selectedWhatsAppNumber');
@@ -105,12 +95,6 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   void initState() {
-    // data = [
-    //   TaskData('Authentication', 0),
-    //   TaskData('Marketing', 3),
-    //   TaskData('Utility', 1),
-    //   // TaskData('Others', 52)
-    // ];
     _tooltipBehavior = TooltipBehavior(enable: true);
 
     getPhoneNumber();
@@ -153,67 +137,16 @@ class _HomeViewState extends State<HomeView> {
 
     Provider.of<ChartListViewModel>(context, listen: false).fetchLeadsMonth();
     Provider.of<LeadCountViewModel>(context, listen: false).countNewLead();
-    Provider.of<AgentListViewModel>(context, listen: false).fetchCountAgent();
     Provider.of<AutoResponseViewModel>(context, listen: false)
         .autoResponseFetch();
-    // Provider.of<UnreadCountVm>(context, listen: false).fetchunreadcount();
   }
-
-  // void fetch() async {
-  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   final phoneNumber = prefs.getString('user_phone');
-  //   Provider.of<WhatsappSettingViewModel>(context, listen: false).fetch().then((
-  //     value,
-  //   ) async {
-  //     if (Provider.of<WhatsappSettingViewModel>(
-  //       context,
-  //       listen: false,
-  //     ).viewModels.isNotEmpty) {
-  //       String? phoneNO = Provider.of<WhatsappSettingViewModel>(
-  //         context,
-  //         listen: false,
-  //       ).viewModels[0].model.record[0].phone;
-
-  //       final prefs = await SharedPreferences.getInstance();
-  //       await prefs.setString('phoneNumber', phoneNO ?? "");
-  //       Provider.of<CampaignChartViewModel>(
-  //         context,
-  //         listen: false,
-  //       ).fetchCampaignChart(number: phoneNO);
-
-  //       Provider.of<TempleteListViewModel>(
-  //         context,
-  //         listen: false,
-  //       ).templeteCountfetch(number: phoneNO);
-
-  //       Provider.of<CampaignCountViewModel>(
-  //         context,
-  //         listen: false,
-  //       ).fetchCampaignCount(number: phoneNO);
-  //     }
-
-  //     Provider.of<ChartListViewModel>(context, listen: false).fetchLeadsMonth();
-  //     Provider.of<LeadCountViewModel>(context, listen: false).countNewLead();
-  //     Provider.of<AgentListViewModel>(context, listen: false).fetchCountAgent();
-  //     Provider.of<AutoResponseViewModel>(
-  //       context,
-  //       listen: false,
-  //     ).autoResponseFetch();
-
-  //     Provider.of<UnreadCountVm>(context).fetchunreadcount();
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
-    // int index = 2;
-    // int _selectedIndex = 0;
-
     itemsMap = {};
 
     leadListVM = Provider.of<ChartListViewModel>(context);
     leadCountVM = Provider.of<LeadCountViewModel>(context);
-    agentListVM = Provider.of<AgentListViewModel>(context);
     whatsAppSettingVM = Provider.of<WhatsappSettingViewModel>(context);
     autoResponseVM = Provider.of<AutoResponseViewModel>(context);
     campaignVM = Provider.of<CampaignCountViewModel>(context);
@@ -238,6 +171,7 @@ class _HomeViewState extends State<HomeView> {
       CampaignCountModel campmodel = viewModel.model;
       campaignCount = campmodel.result?.pending;
     }
+    print("cammma=>${campaignCount}");
 
     for (var viewModel in templateVM!.viewModels) {
       TemplateModel tempmodel = viewModel.model;
@@ -247,54 +181,12 @@ class _HomeViewState extends State<HomeView> {
 
     getBusinessWidgets();
     getTemplateData();
-    // if (unreadCountVm != null) {
-    //   print("sdjdshfjsdhjfhsdj");
-    //   for (var viewModel in unreadCountVm!.viewModels) {
-    //     print("working... hdsgahasg j.");
-
-    //     if (viewModel.model is TemplateModel) {
-    //       UnreadMsgModel unreadmsg = viewModel.model as UnreadMsgModel;
-    //       print("Working haiiii unread msgsggsgsgs...");
-
-    //       if (unreadmsg.records != null) {
-    //         for (var entry in unreadmsg.records ?? []) {
-    //           print("enettetete=>$entry");
-    //         }
-    //       }
-    //     } else {
-    //       debugPrint("erorr : ${viewModel.model.runtimeType}");
-    //     }
-    //   }
-    // }
 
     int totalUnreadCount = 0;
-    for (var viewModel in unreadcountvm!.viewModels) {
-      UnreadMsgModel unreadvm = viewModel.model;
-      var records = unreadvm.records;
-
-      if (records != null) {
-        print("Records : $records");
-
-        for (var data in records) {
-          print("dattat: $data");
-
-          var unreadCount = data.unreadMsgCount;
-
-          if (unreadCount != null) {
-            print("unrnnrnr$unreadCount");
-            int count = int.tryParse(unreadCount) ?? 0;
-            setState(() {
-              totalUnreadCount += count;
-            });
-          }
-        }
-      } else {
-        print("No records found.");
-      }
-    }
     // for (var viewModel in unreadcountvm!.viewModels) {
-    //   UnreadMsgModel unreadvm = viewModel.model as UnreadMsgModel;
+    //   UnreadMsgModel unreadvm = viewModel.model;
     //   var records = unreadvm.records;
+
     //   if (records != null) {
     //     print("Records : $records");
 
@@ -304,7 +196,7 @@ class _HomeViewState extends State<HomeView> {
     //       var unreadCount = data.unreadMsgCount;
 
     //       if (unreadCount != null) {
-    //         print("unrnnrnr${unreadCount}");
+    //         print("unrnnrnr$unreadCount");
     //         int count = int.tryParse(unreadCount) ?? 0;
     //         setState(() {
     //           totalUnreadCount += count;
@@ -315,8 +207,32 @@ class _HomeViewState extends State<HomeView> {
     //     print("No records found.");
     //   }
     // }
-    // print("totalUnreadCount${totalUnreadCount}");
 
+    // int totalUnreadCount = 0;
+    for (var viewModel in unreadcountvm!.viewModels) {
+      if (viewModel.model is UnreadMsgModel) {
+        UnreadMsgModel unreadvm = viewModel.model as UnreadMsgModel;
+        var records = unreadvm.records;
+        print("recorcccccccccccds${records!.length}");
+        if (records != null) {
+          for (var data in records) {
+            String? unreadCount = data.unreadMsgCount;
+
+            if (unreadCount != null) {
+              // Safely convert String to int
+              int count = int.tryParse(unreadCount) ?? 0;
+              setState(() {
+                totalUnreadCount = records.length;
+              });
+            }
+          }
+        } else {
+          print("No records found.");
+        }
+      } else {
+        print("Model is not UnreadMsgModel: ${viewModel.model.runtimeType}");
+      }
+    }
     return Scaffold(
       drawer: const AppDrawerWidget(),
       appBar: AppBar(
@@ -359,430 +275,7 @@ class _HomeViewState extends State<HomeView> {
           ),
         ],
       ),
-      // body: SingleChildScrollView(
-      //   child: Padding(
-      //     padding: const EdgeInsets.all(8.0),
-      //     child: Column(
-      //       mainAxisAlignment: MainAxisAlignment.start,
-      //       crossAxisAlignment: CrossAxisAlignment.start,
-      //       children: [
-      //         Center(
-      //           child: Container(
-      //             child: Column(
-      //               mainAxisAlignment: MainAxisAlignment.start,
-      //               children: [
-      //                 Wrap(
-      //                   spacing: 8.0,
-      //                   runSpacing: 8.0,
-      //                   alignment: WrapAlignment.start,
-      //                   children: [
-      //                     GestureDetector(
-      //                       onTap: () => {
-      //                         Navigator.push(
-      //                             context,
-      //                             MaterialPageRoute(
-      //                                 builder: (context) => LeadListView()))
-      //                       },
-      //                       child: Card(
-      //                         elevation: 2,
-      //                         color: const Color(0xFFFECE9F2),
-      //                         shape: RoundedRectangleBorder(
-      //                           borderRadius: BorderRadius.circular(15),
-      //                         ),
-      //                         child: Container(
-      //                           width: 155,
-      //                           padding: const EdgeInsets.all(16),
-      //                           decoration: BoxDecoration(
-      //                             borderRadius: BorderRadius.circular(15),
-      //                             image: const DecorationImage(
-      //                               image: AssetImage(
-      //                                 "assets/images/img1.png",
-      //                               ), // Add your image path
-      //                               fit: BoxFit.cover, // Cover entire card
-      //                             ),
-      //                           ),
-      //                           child: Column(
-      //                             crossAxisAlignment: CrossAxisAlignment.center,
-      //                             children: [
-      //                               Container(
-      //                                 width: 30,
-      //                                 child:
-      //                                     Image.asset("assets/images/lead.png"),
-      //                               ),
-      //                               Container(height: 7),
-      //                               const Text(
-      //                                 "All Lead",
-      //                                 style: TextStyle(
-      //                                   color: Color(0xFFF223A73),
-      //                                   fontSize: 14,
-      //                                   fontWeight: FontWeight.w600,
-      //                                 ),
-      //                               ),
-      //                               Container(height: 7),
-      //                               Padding(
-      //                                 padding: const EdgeInsets.only(left: 10),
-      //                                 child: Row(
-      //                                   mainAxisAlignment:
-      //                                       MainAxisAlignment.start,
-      //                                   children: [
-      //                                     RichText(
-      //                                       text: TextSpan(
-      //                                         text: countNewLeads.toString(),
-      //                                         style: const TextStyle(
-      //                                           color: Color(0xFFF00A1E4),
-      //                                           fontSize: 30,
-      //                                           fontWeight: FontWeight.w700,
-      //                                         ),
-      //                                         children: const [
-      //                                           TextSpan(
-      //                                             text: '/ Total',
-      //                                             style: TextStyle(
-      //                                               color: Color(0xFFF223A73),
-      //                                               fontWeight: FontWeight.bold,
-      //                                               fontSize: 14,
-      //                                             ),
-      //                                           ),
-      //                                         ],
-      //                                       ),
-      //                                     ),
-      //                                   ],
-      //                                 ),
-      //                               ),
-      //                             ],
-      //                           ),
-      //                         ),
-      //                       ),
-      //                     ),
-      //                     GestureDetector(
-      //                       onTap: () => {
-      //                         Navigator.push(
-      //                             context,
-      //                             MaterialPageRoute(
-      //                                 builder: (context) => CampaignListView()))
-      //                       },
-      //                       child: Card(
-      //                         elevation: 2,
-      //                         color: const Color(0xFFFECE9F2),
-      //                         shape: RoundedRectangleBorder(
-      //                           borderRadius: BorderRadius.circular(15),
-      //                         ),
-      //                         child: Container(
-      //                           width: 155,
-      //                           padding: const EdgeInsets.all(16),
-      //                           decoration: BoxDecoration(
-      //                             borderRadius: BorderRadius.circular(15),
-      //                             image: const DecorationImage(
-      //                               image: AssetImage(
-      //                                 "assets/images/img2.png",
-      //                               ), // Add your image path
-      //                               fit: BoxFit.cover, // Cover entire card
-      //                             ),
-      //                           ),
-      //                           child: Column(
-      //                             crossAxisAlignment: CrossAxisAlignment.center,
-      //                             children: [
-      //                               Container(
-      //                                 width: 30,
-      //                                 child: Image.asset(
-      //                                     "assets/images/campaing.png"),
-      //                               ),
-      //                               Container(height: 7),
-      //                               const Text(
-      //                                 "Pending Campa..",
-      //                                 style: TextStyle(
-      //                                   color: Color(0xFFF223A73),
-      //                                   fontSize: 14,
-      //                                   fontWeight: FontWeight.w600,
-      //                                 ),
-      //                               ),
-      //                               Container(height: 7),
-      //                               Padding(
-      //                                 padding: const EdgeInsets.only(right: 10),
-      //                                 child: Row(
-      //                                   mainAxisAlignment:
-      //                                       MainAxisAlignment.end,
-      //                                   children: [
-      //                                     RichText(
-      //                                       text: TextSpan(
-      //                                         text: campaignCount.toString(),
-      //                                         style: const TextStyle(
-      //                                           color: Color(0xFFF00A1E4),
-      //                                           fontSize: 30,
-      //                                           fontWeight: FontWeight.w700,
-      //                                         ),
-      //                                         children: const [
-      //                                           TextSpan(
-      //                                             text: '/ Total',
-      //                                             style: TextStyle(
-      //                                               color: Color(0xFFF223A73),
-      //                                               fontWeight: FontWeight.bold,
-      //                                               fontSize: 14,
-      //                                             ),
-      //                                           ),
-      //                                         ],
-      //                                       ),
-      //                                     ),
-      //                                   ],
-      //                                 ),
-      //                               ),
-      //                             ],
-      //                           ),
-      //                         ),
-      //                       ),
-      //                     ),
-      //                     GestureDetector(
-      //                       onTap: () => {
-      //                         Navigator.push(
-      //                             context,
-      //                             MaterialPageRoute(
-      //                                 builder: (context) => TempleteListView()))
-      //                       },
-      //                       child: Card(
-      //                         elevation: 2,
-      //                         color: const Color(0xFFFECE9F2),
-      //                         shape: RoundedRectangleBorder(
-      //                           borderRadius: BorderRadius.circular(15),
-      //                         ),
-      //                         child: Container(
-      //                           width: 155,
-      //                           padding: const EdgeInsets.all(16),
-      //                           decoration: BoxDecoration(
-      //                             borderRadius: BorderRadius.circular(15),
-      //                             image: const DecorationImage(
-      //                               image: AssetImage(
-      //                                 "assets/images/img3.png",
-      //                               ), // Add your image path
-      //                               fit: BoxFit.cover, // Cover entire card
-      //                             ),
-      //                           ),
-      //                           child: Column(
-      //                             crossAxisAlignment: CrossAxisAlignment.center,
-      //                             children: [
-      //                               Container(
-      //                                 width: 30,
-      //                                 child: Image.asset(
-      //                                     "assets/images/template.png"),
-      //                               ),
-      //                               Container(height: 7),
-      //                               const Text(
-      //                                 "Total Template",
-      //                                 style: TextStyle(
-      //                                   color: Color(0xFFF223A73),
-      //                                   fontSize: 14,
-      //                                   fontWeight: FontWeight.w600,
-      //                                 ),
-      //                               ),
-      //                               Container(height: 7),
-      //                               Padding(
-      //                                 padding: const EdgeInsets.only(left: 10),
-      //                                 child: Row(
-      //                                   mainAxisAlignment:
-      //                                       MainAxisAlignment.start,
-      //                                   children: [
-      //                                     RichText(
-      //                                       text: TextSpan(
-      //                                         text: templateCount.toString(),
-      //                                         style: const TextStyle(
-      //                                           color: Color(0xFFF00A1E4),
-      //                                           fontSize: 30,
-      //                                           fontWeight: FontWeight.w700,
-      //                                         ),
-      //                                         children: const [
-      //                                           TextSpan(
-      //                                             text: '/ Total',
-      //                                             style: TextStyle(
-      //                                               color: Color(0xFFF223A73),
-      //                                               fontWeight: FontWeight.bold,
-      //                                               fontSize: 14,
-      //                                             ),
-      //                                           ),
-      //                                         ],
-      //                                       ),
-      //                                     ),
-      //                                   ],
-      //                                 ),
-      //                               ),
-      //                             ],
-      //                           ),
-      //                         ),
-      //                       ),
-      //                     ),
-      //                     GestureDetector(
-      //                       // onTap: ()=>{
-      //                       //   Navigator.push(context, MaterialPageRoute(builder: (context)=>))
-      //                       // },
-      //                       child: Card(
-      //                         elevation: 2,
-      //                         color: const Color(0xFFFECE9F2),
-      //                         shape: RoundedRectangleBorder(
-      //                           borderRadius: BorderRadius.circular(15),
-      //                         ),
-      //                         child: Container(
-      //                           width: 155,
-      //                           padding: const EdgeInsets.all(16),
-      //                           decoration: BoxDecoration(
-      //                             borderRadius: BorderRadius.circular(15),
-      //                             image: const DecorationImage(
-      //                               image: AssetImage(
-      //                                 "assets/images/img4.png",
-      //                               ), // Add your image path
-      //                               fit: BoxFit.cover, // Cover entire card
-      //                             ),
-      //                           ),
-      //                           child: Column(
-      //                             crossAxisAlignment: CrossAxisAlignment.center,
-      //                             children: [
-      //                               Container(
-      //                                 width: 35,
-      //                                 child: Image.asset(
-      //                                     "assets/images/message.png"),
-      //                               ),
-      //                               Container(height: 7),
-      //                               const Text(
-      //                                 "Auto Message",
-      //                                 style: TextStyle(
-      //                                   color: Color(0xFFF223A73),
-      //                                   fontSize: 14,
-      //                                   fontWeight: FontWeight.w600,
-      //                                 ),
-      //                               ),
-      //                               Container(height: 7),
-      //                               Padding(
-      //                                 padding: const EdgeInsets.only(right: 10),
-      //                                 child: Row(
-      //                                   mainAxisAlignment:
-      //                                       MainAxisAlignment.end,
-      //                                   children: [
-      //                                     RichText(
-      //                                       text: TextSpan(
-      //                                         text: autoResponseCount ??
-      //                                             "", // Default text
-      //                                         style: const TextStyle(
-      //                                           color: Color(0xFFF00A1E4),
-      //                                           fontSize: 30,
-      //                                           fontWeight: FontWeight.w700,
-      //                                         ),
-      //                                         children: const [
-      //                                           TextSpan(
-      //                                             text: '/ Total',
-      //                                             style: TextStyle(
-      //                                               color: Color(0xFFF223A73),
-      //                                               fontWeight: FontWeight.bold,
-      //                                               fontSize: 14,
-      //                                             ),
-      //                                           ),
-      //                                         ],
-      //                                       ),
-      //                                     ),
-      //                                   ],
-      //                                 ),
-      //                               ),
-      //                             ],
-      //                           ),
-      //                         ),
-      //                       ),
-      //                     ),
-      //                   ],
-      //                 ),
-      //               ],
-      //             ),
-      //           ),
-      //         ),
-      //         Padding(
-      //           padding: const EdgeInsets.all(15),
-      //           child: Container(
-      //             // height: 5/00,
-      //             decoration: const BoxDecoration(
-      //               color: Color.fromARGB(255, 255, 255, 255),
-      //               borderRadius: BorderRadius.all(Radius.circular(15)),
-      //             ),
-      //             child: Column(
-      //               children: [
-      //                 Container(
-      //                   decoration: const BoxDecoration(
-      //                     color: AppColor.navBarIconColor,
-      //                     borderRadius: BorderRadius.all(
-      //                       Radius.circular(10),
-      //                     ),
-      //                   ),
-      //                   // width: 400,
-      //                   height: 50,
-      //                   child: const Center(
-      //                     child: Text(
-      //                       'Campaign',
-      //                       style: TextStyle(
-      //                         color: Color.fromARGB(255, 255, 255, 255),
-      //                         fontSize: 18,
-      //                       ),
-      //                     ),
-      //                   ),
-      //                 ),
-      //                 SfCircularChart(
-      //                     tooltipBehavior: _tooltipBehavior,
-      //                     legend: const Legend(
-      //                         isVisible: true,
-      //                         position: LegendPosition.top,
-      //                         overflowMode: LegendItemOverflowMode.wrap),
-      //                     series: <PieSeries<_SalesData, String>>[
-      //                       PieSeries<_SalesData, String>(
-      //                           legendIconType: LegendIconType.circle,
-      //                           radius: '100',
-      //                           dataSource: businessData,
-      //                           enableTooltip: true,
-      //                           pointColorMapper:
-      //                               (_SalesData sales, int index) =>
-      //                                   areaColor[index % areaColor.length],
-      //                           xValueMapper: (_SalesData sales, _) =>
-      //                               sales.status,
-      //                           yValueMapper: (_SalesData sales, _) =>
-      //                               sales.count)
-      //                     ]),
-      //                 Container(
-      //                   decoration: const BoxDecoration(
-      //                     color: AppColor.navBarIconColor,
-      //                     borderRadius: BorderRadius.all(
-      //                       Radius.circular(10),
-      //                     ),
-      //                   ),
-      //                   // width: 400,
-      //                   height: 50,
-      //                   child: const Center(
-      //                     child: Text(
-      //                       'Template',
-      //                       style: TextStyle(
-      //                         color: Color.fromARGB(255, 255, 255, 255),
-      //                         fontSize: 18,
-      //                       ),
-      //                     ),
-      //                   ),
-      //                 ),
-      //                 SfCircularChart(
-      //                     tooltipBehavior: _tooltipBehavior,
-      //                     legend: const Legend(
-      //                         isVisible: true,
-      //                         position: LegendPosition.top,
-      //                         overflowMode: LegendItemOverflowMode.wrap),
-      //                     series: <DoughnutSeries<Templatedata, String>>[
-      //                       DoughnutSeries<Templatedata, String>(
-      //                           radius: '100',
-      //                           dataSource: templatedata,
-      //                           enableTooltip: true,
-      //                           pointColorMapper:
-      //                               (Templatedata sales, int index) =>
-      //                                   areaColor[index % areaColor.length],
-      //                           xValueMapper: (Templatedata sales, _) =>
-      //                               sales.status,
-      //                           yValueMapper: (Templatedata sales, _) =>
-      //                               sales.count)
-      //                     ]),
-      //               ],
-      //             ),
-      //           ),
-      //         ),
-      //       ],
-      //     ),
-      //   ),
-      // ),
+
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -1141,25 +634,6 @@ class _HomeViewState extends State<HomeView> {
                         ),
                       ),
                     ),
-                    // SfCircularChart(
-                    //     tooltipBehavior: _tooltipBehavior,
-                    //     legend: const Legend(
-                    //         isVisible: true,
-                    //         position: LegendPosition.top,
-                    //         overflowMode: LegendItemOverflowMode.wrap),
-                    //     series: <DoughnutSeries<Templatedata, String>>[
-                    //       DoughnutSeries<Templatedata, String>(
-                    //           radius: '100',
-                    //           dataSource: templatedata,
-                    //           enableTooltip: true,
-                    //           pointColorMapper:
-                    //               (Templatedata sales, int index) =>
-                    //                   areaColor[index % areaColor.length],
-                    //           xValueMapper: (Templatedata sales, _) =>
-                    //               sales.status,
-                    //           yValueMapper: (Templatedata sales, _) =>
-                    //               sales.count)
-                    //     ]),
                     SfCircularChart(
                         tooltipBehavior: _tooltipBehavior,
                         legend: const Legend(
@@ -1247,7 +721,6 @@ class _HomeViewState extends State<HomeView> {
           int pending = int.parse(countagent.result?.pending ?? "0");
           int inProgress = int.parse(countagent.result?.inProgress ?? "0");
           int aborted = int.parse(countagent.result?.aborted ?? "0");
-          // Color color = AppColor.navBarIconColor;
 
           businessData.add(_SalesData("Pending", pending));
           businessData.add(_SalesData("In Progress", inProgress));
