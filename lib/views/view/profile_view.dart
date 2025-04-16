@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 
-import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+// import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +28,7 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
-  late NotchBottomBarController _controller;
+  // late NotchBottomBarController _controller;
   String? profileUrl;
   UserModel? userModel;
   GetUser? user;
@@ -82,7 +82,7 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   void initState() {
-    _controller = NotchBottomBarController();
+    // _controller = NotchBottomBarController();
     Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
     SharedPreferences.getInstance().then((prefs) {
       var userModel = AppUtils.getSessionUser(prefs);

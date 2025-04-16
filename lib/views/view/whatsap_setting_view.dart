@@ -1,4 +1,4 @@
-import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+// import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/models/whatsapp_setting_model/whatsapp_setting_model.dart';
@@ -158,7 +158,7 @@ class AnotherScreen extends StatefulWidget {
 }
 
 class _AnotherScreenState extends State<AnotherScreen> {
-  late NotchBottomBarController _controller;
+  // late NotchBottomBarController _controller;
   Widget recordDetails(String title, String? value) {
     return Padding(
       padding: const EdgeInsets.all(1),

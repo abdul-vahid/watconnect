@@ -1,4 +1,4 @@
-import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+// import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/utils/app_color.dart';
@@ -20,7 +20,7 @@ class UserDetailView extends StatefulWidget {
 }
 
 class _UserDetailView extends State<UserDetailView> {
-  late NotchBottomBarController _controller;
+  // late NotchBottomBarController _controller;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
