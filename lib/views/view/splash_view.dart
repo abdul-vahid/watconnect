@@ -29,8 +29,10 @@ class _SplashViewState extends State<SplashView> {
   void _isLoggedIn() {
     SharedPreferences.getInstance().then((prefs) {
       if (prefs.containsKey(SharedPrefsConstants.userKey)) {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const FooterNavbarPage()));
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const FooterNavbarPage()),
+            (Route<dynamic> route) => false);
       } else {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) => const LoginView()));

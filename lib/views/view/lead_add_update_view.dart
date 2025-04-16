@@ -106,6 +106,7 @@ class _Forms extends State<LeadAddView> {
   ];
 
   List<Map<String, String>> _countrycode = [
+    {"country": "India", "country_code": "+91"},
     {"country": "United Arab Emirates", "country_code": "+971"},
     {"country": "Afghanistan", "country_code": "+93"},
     {"country": "Albania", "country_code": "+355"},
@@ -166,7 +167,6 @@ class _Forms extends State<LeadAddView> {
     {"country": "Indonesia", "country_code": "+62"},
     {"country": "Ireland", "country_code": "+353"},
     {"country": "Israel", "country_code": "+972"},
-    {"country": "India", "country_code": "+91"},
     {"country": "Iraq", "country_code": "+964"},
     {"country": "Italy", "country_code": "+39"},
     {"country": "Jamaica", "country_code": "+1"},
@@ -273,8 +273,8 @@ class _Forms extends State<LeadAddView> {
       selectedCountry = countryCodeMap.keys.first;
     }
 
-    print("Dropdown  => $countryCodeMap");
-    print("Dial Code Map=> $code");
+    // print("Dropdown  => $countryCodeMap");
+    // print("Dial Code Map=> $code");
   }
 
   @override
@@ -284,6 +284,11 @@ class _Forms extends State<LeadAddView> {
     final model = widget.model;
     if (model != null) {
       isEdit = true;
+    }
+
+    if (isEdit) {
+      print("widget.model?.countryCode:::: ${widget.model?.countryCode}");
+      selectedCountry = widget.model?.countryCode;
     }
     fillCountryCodeMap();
     selectedCountry = countryCodeMap.keys.first;
@@ -974,6 +979,7 @@ class _Forms extends State<LeadAddView> {
         street: _street,
         state: _selectedState,
         country: _selectedCountry,
+        countryCode: selectedCountry,
         zipcode: _zipcode,
         description: _description,
         ownername: _asignStaff,
@@ -1087,6 +1093,7 @@ class _Forms extends State<LeadAddView> {
         street: _street,
         state: _selectedState,
         country: _selectedCountry,
+        countryCode: selectedCountry,
         zipcode: _zipcode,
         description: _description,
         // amount: _amount,

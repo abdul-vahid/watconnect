@@ -96,6 +96,7 @@ class UserDataModel extends BaseModel {
   String? phone;
   bool? isactive;
   String? password;
+  String? country_code;
   String? whatsappNumber;
 
   UserDataModel({
@@ -109,6 +110,7 @@ class UserDataModel extends BaseModel {
     this.password,
     this.userrole,
     this.phone,
+    this.country_code,
     this.isactive,
     this.whatsappNumber,
   });
@@ -125,6 +127,7 @@ class UserDataModel extends BaseModel {
         userrole: data['userrole'] as String?,
         phone: data['phone'] as String?,
         isactive: data['isactive'] as bool?,
+        country_code: data['country_code'] as String?,
         whatsappNumber: data['whatsapp_number'] as String?,
       );
   @override
@@ -145,6 +148,7 @@ class UserDataModel extends BaseModel {
       'userrole': userrole,
       'phone': phone,
       'isactive': isactive,
+      'country_code': country_code,
       'whatsapp_number': whatsappNumber,
     };
 
