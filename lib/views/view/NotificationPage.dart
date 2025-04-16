@@ -21,8 +21,7 @@ class _NotificationPageState extends State<NotificationPage> {
     unreadcountvm = Provider.of<UnreadCountVm>(context, listen: false);
     await unreadcountvm!.fetchunreadcount(number: "919530444240").then((_) {
       unreadcountvm!.viewModels.length;
-      print(
-          "dsssssssssssssssssssssssssssssssssssssss${unreadcountvm!.viewModels.length}");
+      print("djjdjdjdjdjj${unreadcountvm!.viewModels.length}");
 
       for (var i in unreadcountvm!.viewModels) {
         UnreadMsgModel datanread = i.model;

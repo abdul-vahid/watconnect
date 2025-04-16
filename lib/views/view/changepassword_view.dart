@@ -66,35 +66,21 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               child: Icon(Icons.person, size: 60, color: Colors.black54),
             ),
             SizedBox(height: 10),
-
             Text(widget.username,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             Text(widget.phone, style: TextStyle(color: Colors.grey)),
-
             SizedBox(height: 20),
-
-            // Password Fields
-            // _buildPasswordField(
-            //     "Current Password", _currentPasswordController, _isObscured1,
-            //     () {
-            //   setState(() => _isObscured1 = !_isObscured1);
-            // }),
-            // SizedBox(height: 10),
-
             _buildPasswordField(
                 "New Password", _newPasswordController, _isObscured2, () {
               setState(() => _isObscured2 = !_isObscured2);
             }),
             SizedBox(height: 20),
-
             _buildPasswordField(
                 "Confirm Password", _confirmPasswordController, _isObscured3,
                 () {
               setState(() => _isObscured3 = !_isObscured3);
             }),
-
             SizedBox(height: 40),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
