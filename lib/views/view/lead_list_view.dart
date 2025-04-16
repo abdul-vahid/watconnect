@@ -648,7 +648,7 @@ class _LeadListViewState extends State<LeadListView> {
     leadModelList = tempLeadModelList;
     if (filter == null) return;
     setState(() {
-      leadModelList = leadModelList
+      allLeads = allLeads
           .where(
               (lead) => lead.leadstatus?.toLowerCase() == filter.toLowerCase())
           .toList();
