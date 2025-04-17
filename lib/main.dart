@@ -35,28 +35,19 @@ import 'views/view/splash_view.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
+  // ErrorWidget.builder = (FlutterErrorDetails details) {
+  //   return Center(
+  //     child: Text(
+  //       'Something went wrong!',
+  //       style: TextStyle(color: Colors.red),
+  //     ),
+  //   );
+  // };
+
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  LocalNotificationService.initialize();
-  // FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-  // FirebaseMessaging messaging = FirebaseMessaging.instance;
-  // NotificationSettings settings = await messaging.requestPermission();
-  // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-  //   print('User granted permission');
-  // } else {
-  //   print('User declined or has not accepted permission');
-  // }
 
-  // // Get FCM Token
-  // final fcmtoken = await FirebaseMessaging.instance.getToken();
-  // print("FCM Token: $fcmtoken");
-
-  // Send FCM token to server if needed
-  // For example, send it to your server for later use
-  // sendFcmTokenToServer(fcmtoken);
-
-  // // Start the app
   runApp(const MyApp());
 }
 

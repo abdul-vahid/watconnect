@@ -857,9 +857,11 @@ class _CampaignListView extends State<CampaignListView> {
   @override
   Widget build(BuildContext context) {
     campaignlistvm = Provider.of<CampaignViewModel>(context);
-
+    print(
+        "campaignlistvm.viewModels:: ${campaignlistvm.viewModels}   ${campaignlistvm.viewModels.runtimeType}  ${campaignlistvm.viewModels.length}");
     for (var viewModel in campaignlistvm.viewModels) {
       var campginmodel = viewModel.model;
+      print("campginmodel::::${campginmodel}  ${campginmodel.runtimeType}");
       if (campginmodel?.records != null) {
         allCampaigns = [];
         for (var record in campginmodel!.records!) {

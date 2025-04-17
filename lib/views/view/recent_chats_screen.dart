@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:whatsapp/models/recent_chat_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
@@ -17,13 +18,13 @@ import 'lead_add_update_view.dart';
 import 'lead_detail_view.dart';
 import 'package:badges/badges.dart' as badges;
 
-class LeadListView extends StatefulWidget {
-  const LeadListView({super.key});
+class RecentChatView extends StatefulWidget {
+  const RecentChatView({super.key});
   @override
-  State<LeadListView> createState() => _LeadListViewState();
+  State<RecentChatView> createState() => _RecentChatViewState();
 }
 
-class _LeadListViewState extends State<LeadListView> {
+class _RecentChatViewState extends State<RecentChatView> {
   String finalResult = "";
   IO.Socket? socket;
   String token = "your_token_here";
@@ -45,7 +46,7 @@ class _LeadListViewState extends State<LeadListView> {
   String? selectuser;
   bool isRefresh = false;
   int countunread = 0;
-  List allLeads = [];
+  List allRecentChats = [];
   List unreadList = [];
   String? number;
   @override
@@ -55,7 +56,6 @@ class _LeadListViewState extends State<LeadListView> {
     getLeadList();
     super.initState();
     connectSocket();
-    // tempLeadModelList = leadModelList;
   }
 
   @override
@@ -70,7 +70,7 @@ class _LeadListViewState extends State<LeadListView> {
     number = prefs.getString('phoneNumber');
 
     if (!mounted) return;
-    Provider.of<LeadListViewModel>(context, listen: false).fetch();
+    // Provider.of<LeadListViewModel>(context, listen: false).fetchRecentChat();
     await Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number ?? "");
 
@@ -86,21 +86,35 @@ class _LeadListViewState extends State<LeadListView> {
     searchLead = searchLead.trim().toLowerCase();
 
     if (searchLead.isEmpty) {
+      List prioritizedLeads = [];
+      List otherLeads = [];
+
+      for (var lead in allRecentChats) {
+        bool hasUnread = unreadList.any(
+          (unread) =>
+              unread.whatsappNumber.toString().contains(lead.whatsapp_number),
+        );
+
+        if (hasUnread) {
+          prioritizedLeads.add(lead);
+        } else {
+          otherLeads.add(lead);
+        }
+      }
+
+      allRecentChats = [...prioritizedLeads, ...otherLeads];
+
       // setState(() {
       //   allLeads = List.from(originalAllLeads); // restore original
       // });
     } else {
-      List<LeadModel> matched = [];
-      List<LeadModel> others = [];
+      List matched = [];
+      List others = [];
 
       for (var lead in tempLeadModelList) {
-        var firstName = lead.firstname?.toLowerCase() ?? '';
-        var lastName = lead.lastname?.toLowerCase() ?? '';
-        var leadStatus = lead.leadstatus?.toLowerCase() ?? '';
+        var firstName = lead.contactname?.toLowerCase() ?? '';
 
-        if (firstName.contains(searchLead) ||
-            lastName.contains(searchLead) ||
-            leadStatus.contains(searchLead)) {
+        if (firstName.contains(searchLead)) {
           matched.add(lead);
         } else {
           others.add(lead);
@@ -108,18 +122,18 @@ class _LeadListViewState extends State<LeadListView> {
       }
 
       setState(() {
-        allLeads = [...matched, ...others];
+        allRecentChats = [...matched, ...others];
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (leadlistvm != null) {
-      for (var viewModel in leadlistvm!.viewModels) {
-        _leadfilter.add(viewModel.model.leadstatus);
-      }
-    }
+    // if (leadlistvm != null) {
+    //   for (var viewModel in leadlistvm!.viewModels) {
+    //     _leadfilter.add(viewModel.model.leadstatus);
+    //   }
+    // }
 
     unreadCountVm = Provider.of<UnreadCountVm>(context);
     leadlistvm = Provider.of<LeadListViewModel>(context);
@@ -130,36 +144,36 @@ class _LeadListViewState extends State<LeadListView> {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: CircleAvatar(
-              backgroundColor: AppColor.navBarIconColor,
-              child: IconButton(
-                icon: const Icon(
-                  FontAwesomeIcons.add,
-                  size: 25,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LeadAddView(),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          //   child: CircleAvatar(
+          //     backgroundColor: AppColor.navBarIconColor,
+          //     child: IconButton(
+          //       icon: const Icon(
+          //         FontAwesomeIcons.add,
+          //         size: 25,
+          //         color: Colors.white,
+          //       ),
+          //       onPressed: () {
+          //         Navigator.push(
+          //           context,
+          //           MaterialPageRoute(
+          //             builder: (context) => LeadAddView(),
+          //           ),
+          //         );
+          //       },
+          //     ),
+          //   ),
+          // ),
         ],
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back,
-              color: Color.fromARGB(255, 255, 255, 255)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back,
+        //       color: Color.fromARGB(255, 255, 255, 255)),
+        //   onPressed: () => Navigator.of(context).pop(),
+        // ),
         automaticallyImplyLeading: false,
         title: const Text(
-          'Leads',
+          'Recent Chats',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
@@ -188,12 +202,12 @@ class _LeadListViewState extends State<LeadListView> {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: IconButton(
                     icon: const Icon(
-                      Icons.filter_list,
+                      Icons.search,
                       color: Color.fromARGB(255, 0, 0, 0),
                       size: 20,
                     ),
                     onPressed: () {
-                      _showFilterBottomSheet(context);
+                      // _showFilterBottomSheet(context);
                     },
                   ),
                 ),
@@ -356,7 +370,7 @@ class _LeadListViewState extends State<LeadListView> {
   Future<void> _pullRefresh() async {
     leads?.viewModels.clear();
 
-    Provider.of<LeadListViewModel>(context, listen: false).fetch();
+    Provider.of<LeadListViewModel>(context, listen: false).fetchRecentChat();
 
     Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number);
@@ -370,13 +384,13 @@ class _LeadListViewState extends State<LeadListView> {
       children: [
         Expanded(
             child: ListView.builder(
-          itemCount: allLeads.length,
+          itemCount: allRecentChats.length,
           itemBuilder: (context, index) {
             var unreadCount = "0";
-            var lead = allLeads[index];
+            var lead = allRecentChats[index];
 
             for (var p in unreadList) {
-              if (p.whatsappNumber.toString().contains(lead.whatsapp_number)) {
+              if (lead.full_number.toString().contains(p.whatsappNumber)) {
                 unreadCount = p.unreadMsgCount;
                 break;
               }
@@ -389,115 +403,36 @@ class _LeadListViewState extends State<LeadListView> {
     );
   }
 
-  List<Widget> getLeadWidgets() {
-    List<Widget> widgets = [];
-    Set<String> uniqueIds = {};
-
-    for (var viewModel in leadModelList) {
-      var msgCnt = "";
-      LeadModel model = viewModel;
-      var unreadRecord = unreadCountVm?.viewModels.firstWhere(
-        (unreadModel) {
-          var unreadMsgModel = unreadModel.model;
-
-          return unreadMsgModel.records?.any(
-                (record) => record.whatsappNumber == model.whatsapp_number,
-              ) ??
-              false;
-        },
-        orElse: () => null,
-      );
-
-      print("unreadRecord:::>>  ${unreadRecord}");
-      if (unreadRecord != null) {
-        var matchingRecords = unreadRecord.model.records?.where((record) {
-          msgCnt = record.unreadMsgCount;
-          print(
-              ' ${record.unreadMsgCount}  record.whatsappNumber: ${record.whatsappNumber}, model.whatsapp_number: ${model.whatsapp_number}');
-          return record.whatsappNumber == model.whatsapp_number;
-        }).toList();
-
-        var unreadMsgCount =
-            matchingRecords != null && matchingRecords.isNotEmpty
-                ? matchingRecords.first.unreadMsgCount
-                : "";
-
-        print("unreadMsgCount::::: ${unreadMsgCount}");
-
-        if (!uniqueIds.contains(model.id)) {
-          uniqueIds.add(model.id!);
-
-          widgets.add(Dismissible(
-            key: UniqueKey(),
-            onDismissed: (direction) async {
-              print("fiifififiifif${finalResult}");
-              var res = await _marksread(finalResult);
-            },
-            background: Container(
-              color: Colors.green,
-              alignment: Alignment.centerRight,
-              child: const Padding(
-                padding: EdgeInsets.only(right: 20),
-                child: Icon(Icons.chat_sharp, color: Colors.white),
-              ),
-            ),
-            child: leadRecordList(model, unreadMsgCount),
-          ));
-        }
-      } else {
-        if (!uniqueIds.contains(model.id)) {
-          uniqueIds.add(model.id!);
-          widgets.add(leadRecordList(model, ""));
-        }
-      }
-    }
-    return widgets;
-  }
-
-  Widget leadRecordList(LeadModel model, String unreadMsgCount) {
+  Widget leadRecordList(Records model, String unreadMsgCount) {
     Color statusColor;
-    switch (model.leadstatus) {
-      case 'Contacted':
-        statusColor = const Color.fromARGB(255, 46, 198, 69);
-        break;
-      case 'Open - Not Contacted && Working - Contacted':
-        statusColor = Colors.lightBlue.withOpacity(0.7);
-        break;
-      case 'Closed - Converted && Closed - Not Converted':
-        statusColor = AppColor.motivationCar1Color;
-        break;
-      default:
-        statusColor = Colors.lightBlue.withOpacity(0.7);
-        break;
-    }
+    statusColor = Colors.lightBlue.withOpacity(0.7);
+    // switch (model.leadstatus) {
+    //   case 'Contacted':
+    //     statusColor = const Color.fromARGB(255, 46, 198, 69);
+    //     break;
+    //   case 'Open - Not Contacted && Working - Contacted':
+    //     statusColor = Colors.lightBlue.withOpacity(0.7);
+    //     break;
+    //   case 'Closed - Converted && Closed - Not Converted':
+    //     statusColor = AppColor.motivationCar1Color;
+    //     break;
+    //   default:
+    //     statusColor = Colors.lightBlue.withOpacity(0.7);
+    //     break;
+    // }
 
     return Dismissible(
       key: UniqueKey(),
       onDismissed: (direction) {
-        print("model=>${model.toMap()}");
-        var num = "";
-        if (model.whatsapp_number!.contains("+")) {
-          num = model.whatsapp_number ?? "";
-        } else {
-          num = "${model.countryCode}${model.whatsapp_number}";
-        }
-        print("model  finalResult=>${model.whatsapp_number}");
-        if (model.whatsapp_number != null) {
-          _marksread(num);
+        if (model.full_number != null) {
+          _marksread(model.full_number ?? "");
 
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ChatScreen(
-                leadName:
-                    (model.firstname != null && model.firstname!.isNotEmpty)
-                        ? '${model.firstname} ${model.lastname ?? ""}'
-                        : (model.lastname != null && model.lastname!.isNotEmpty)
-                            ? model.lastname!
-                            : "No Name Available",
-                wpnumber: model.whatsapp_number!.contains("+")
-                    ? model.whatsapp_number ?? ""
-                    : "${model.countryCode}${model.whatsapp_number ?? ""}",
+                leadName: model.contactname ?? "",
+                wpnumber: model.full_number,
                 id: model.id,
               ),
             ),
@@ -513,7 +448,8 @@ class _LeadListViewState extends State<LeadListView> {
           });
 
           leads?.viewModels.clear();
-          Provider.of<LeadListViewModel>(context, listen: false).fetch();
+          Provider.of<LeadListViewModel>(context, listen: false)
+              .fetchRecentChat();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -555,23 +491,23 @@ class _LeadListViewState extends State<LeadListView> {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
           child: InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LeadDetailView(
-                    model: model,
-                  ),
-                ),
-              );
-            },
+            // onTap: () {
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(
+            //       builder: (context) => LeadDetailView(
+
+            //       ),
+            //     ),
+            //   );
+            // },
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: AppColor.navBarIconColor,
                   child: Text(
-                    "${model.firstname?.isNotEmpty == true ? model.firstname![0].toUpperCase() : '?'}",
+                    "${model.contactname?.isNotEmpty == true ? model.contactname![0].toUpperCase() : '?'}",
                     style: const TextStyle(
                       fontSize: 20,
                       color: Colors.white,
@@ -582,42 +518,25 @@ class _LeadListViewState extends State<LeadListView> {
                 const SizedBox(width: 12),
 
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number!.contains("+") ? model.whatsapp_number ?? "" : "${model.countryCode}${model.whatsapp_number ?? ""}" : ''}",
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      Text(
-                        "${model.email?.isNotEmpty == true ? model.email : ''}",
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(100),
-                          color: Colors.lightBlue.withOpacity(0.7),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: Text(
-                            "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Colors.white,
-                            ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${model.contactname}",
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                    ],
+                        Text(
+                          "${model.full_number}",
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+                    ),
                   ),
                 ),
                 // Arrow and Badge
@@ -652,7 +571,7 @@ class _LeadListViewState extends State<LeadListView> {
     leadModelList = tempLeadModelList;
     if (filter == null) return;
     setState(() {
-      allLeads = allLeads
+      allRecentChats = allRecentChats
           .where(
               (lead) => lead.leadstatus?.toLowerCase() == filter.toLowerCase())
           .toList();
@@ -715,20 +634,30 @@ class _LeadListViewState extends State<LeadListView> {
   }
 
   Future<void> getLeadList() async {
+    print("getLeadList:::getLeadList{}4");
     // leadlistvm = Provider.of<LeadListViewModel>(context, listen: false);
     await Provider.of<LeadListViewModel>(context, listen: false)
-        .fetch()
+        .fetchRecentChat()
         .then((onValue) {
-      allLeads = [];
+      print(
+          " dbfjsdlvdsl}::: }  ${leadlistvm.viewModels}   ${leadlistvm.viewModels.runtimeType}   ${leadlistvm.viewModels.length} ");
 
-      for (var viewModel in leadlistvm!.viewModels) {
-        tempLeadModelList.add(viewModel.model);
-        allLeads.add(viewModel.model);
+      for (var viewModel in leadlistvm.viewModels ?? []) {
+        var recentMsgmodel = viewModel.model;
+        if (recentMsgmodel?.records != null) {
+          allRecentChats = [];
+          for (var record in recentMsgmodel!.records!) {
+            allRecentChats.add(record);
+            tempLeadModelList.add(record);
+          }
+        }
       }
+
+      print(" dbfjsdlvdsl${allRecentChats}");
       List prioritizedLeads = [];
       List otherLeads = [];
 
-      for (var lead in allLeads) {
+      for (var lead in allRecentChats) {
         bool hasUnread = unreadList.any(
           (unread) =>
               unread.whatsappNumber.toString().contains(lead.whatsapp_number),
@@ -741,7 +670,7 @@ class _LeadListViewState extends State<LeadListView> {
         }
       }
 
-      allLeads = [...prioritizedLeads, ...otherLeads];
+      allRecentChats = [...prioritizedLeads, ...otherLeads];
 
       setState(() {});
     });

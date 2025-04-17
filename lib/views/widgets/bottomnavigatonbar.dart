@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
 import 'package:whatsapp/models/user_model/user_model.dart';
 import 'package:whatsapp/utils/app_utils.dart';
+import 'package:whatsapp/views/view/recent_chats_screen.dart';
 
 import '../../utils/app_color.dart';
 import '../../utils/notification_utils.dart';
@@ -34,7 +35,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
 
   @override
   void initState() {
-    NotificationUtil(context).initialize();
+    // NotificationUtil(context).initialize();
 
     SharedPreferences.getInstance().then((prefs) {
       userModelData = AppUtils.getSessionUser(prefs);
@@ -143,6 +144,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       ProfileView(),
       if (userModelData?.userrole == "ADMIN") const UserListView(),
       const Whtsapphone(),
+      const RecentChatView(),
     ];
     // print("dsfffffffffffffffffffffffffff=>${userModelData?.userrole}");
     return WillPopScope(
@@ -181,6 +183,11 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
             BottomBarItem(
               icon: const Icon(Icons.phone),
               title: const Text('Phone'),
+              backgroundColor: Colors.white,
+            ),
+            BottomBarItem(
+              icon: const Icon(Icons.chat),
+              title: const Text('Chats'),
               backgroundColor: Colors.white,
             ),
           ],

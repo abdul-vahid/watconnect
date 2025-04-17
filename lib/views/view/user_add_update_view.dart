@@ -27,6 +27,14 @@ class _Forms extends State<UserAddView> {
   bool? isactive;
   @override
   void initState() {
+    final model = widget.model;
+    if (model != null) {
+      isEdit = true;
+    }
+    if (isEdit) {
+      print("model courntry::: ${widget.model?.country_code}");
+      selectedCountry = widget.model?.country_code;
+    }
     fillCountryCodeMap();
     Provider.of<UserDataListViewModel>(context, listen: false).fetchUser();
     isactive = widget.model?.isactive ?? false;
@@ -43,11 +51,6 @@ class _Forms extends State<UserAddView> {
       print("aya ky ");
       isCreateMode = false;
     }
-
-    final model = widget.model;
-    if (model != null) {
-      isEdit = true;
-    }
   }
 
   final List<String> _roles = [
@@ -56,6 +59,7 @@ class _Forms extends State<UserAddView> {
     "USER",
   ];
   List<Map<String, String>> _countrycode = [
+    {"country": "India", "country_code": "+91"},
     {"country": "United Arab Emirates", "country_code": "+971"},
     {"country": "Afghanistan", "country_code": "+93"},
     {"country": "Albania", "country_code": "+355"},
@@ -116,7 +120,6 @@ class _Forms extends State<UserAddView> {
     {"country": "Indonesia", "country_code": "+62"},
     {"country": "Ireland", "country_code": "+353"},
     {"country": "Israel", "country_code": "+972"},
-    {"country": "India", "country_code": "+91"},
     {"country": "Iraq", "country_code": "+964"},
     {"country": "Italy", "country_code": "+39"},
     {"country": "Jamaica", "country_code": "+1"},
@@ -223,8 +226,8 @@ class _Forms extends State<UserAddView> {
       selectedCountry = countryCodeMap.keys.first;
     }
 
-    print("Dropdown  => $countryCodeMap");
-    print("Dial Code Map=> $code");
+    // print("Dropdown  => $countryCodeMap");
+    // print("Dial Code Map=> $code");
   }
 
   var baseViewModels;
@@ -562,6 +565,7 @@ class _Forms extends State<UserAddView> {
           userrole: _role,
           isactive: isactive,
           managername: _selectedaccountname,
+          country_code: selectedCountry,
           managerid: accountId);
       AppUtils.onLoading(context, "Saving, please wait...");
       _getcontactData?.addUser(adduserModel).then((value) {
@@ -599,6 +603,7 @@ class _Forms extends State<UserAddView> {
   }
 
   Future<void> updateData() async {
+    print("country_code:::: ${selectedCountry}");
     var accountId;
     if (_addleadFormKey.currentState!.validate()) {
       _addleadFormKey.currentState!.save();
@@ -609,16 +614,16 @@ class _Forms extends State<UserAddView> {
       debug('userId====>$id');
 
       UserDataModel contactModel = UserDataModel(
-        id: id,
-        firstname: _firstname,
-        lastname: _lastname,
-        email: _email,
-        userrole: _role,
-        managerid: accountId,
-        managername: _selectedaccountname,
-        isactive: isactive,
-        whatsappNumber: _whatsappPhone,
-      );
+          id: id,
+          firstname: _firstname,
+          lastname: _lastname,
+          email: _email,
+          userrole: _role,
+          managerid: accountId,
+          managername: _selectedaccountname,
+          isactive: isactive,
+          whatsappNumber: _whatsappPhone,
+          country_code: selectedCountry);
 
       AppUtils.onLoading(context, "Updating, please wait...");
       Provider.of<UserDataListViewModel>(context, listen: false)

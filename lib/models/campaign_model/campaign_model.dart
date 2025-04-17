@@ -28,16 +28,10 @@ class CampaignModel extends BaseModel {
         'records': records?.map((e) => e.toMap()).toList(),
       };
 
-  /// `dart:convert`
-  ///
-  /// Parses the string and returns the resulting Json object as [CampaignModel].
   @override
   factory CampaignModel.fromJson(String data) {
     return CampaignModel.fromMap(json.decode(data) as Map<String, dynamic>);
   }
 
-  /// `dart:convert`
-  ///
-  /// Converts [CampaignModel] to a JSON string.
   String toJson() => json.encode(toMap());
 }
