@@ -10,6 +10,10 @@ abstract class SharedPrefsConstants {
   static const String accountKey = "account";
   static const String userDecodedTokenKey = "decoded_token_key";
   static const String userrolekey = "userrole";
+
+  static const String idTokenKey = 'id_token';
+  // static const String accessTokenKey = 'access_token';
+  // static const String refreshTokenKey = 'refresh_token';
 }
 
 abstract class ResultStatus {
@@ -37,6 +41,16 @@ abstract class ProfileConstants {
 
 //
 abstract class AppConstants {
+  // ========================salesforce credntial===============
+
+  static const String clientId =
+      "3MVG9HDaKRUgW3VrsUI_RKn2LNGsiiJ8tIi0IyP8kE2a5AvSJvZc7YUk0YcTHH_kB1E6WwLoXA0fs3UG91Ky_";
+  static const String issuer = "https://test.salesforce.com/";
+  static const String clientSecret =
+      "1B0F7E206C74DBCB338CA79605EB64CA159675AE6C5E4B6CAE0D6558ADE52C5E";
+  static const String redirectUri = 'com.wat.connect://login-callback';
+
+  // ======================================================
   static const String channelId = "spark";
   static const String channelName = "Spark";
   static const String channelDescription = " Spark";

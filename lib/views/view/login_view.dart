@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/views/view/loginwithsalesforce.dart';
 
 import '../../models/user_model/user_model.dart';
 import '../../utils/app_constants.dart';
@@ -52,17 +53,10 @@ class _LoginViewState extends State<LoginView> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Container(
-                      height: 50,
-                    ),
+                    Container(height: 50),
 
-                    Image.asset(
-                      "assets/images/wp.png",
-                      height: 70,
-                    ),
-                    Container(
-                      height: 30,
-                    ),
+                    Image.asset("assets/images/wp.png", height: 70),
+                    Container(height: 30),
                     // Email Input Field
                     TextFormField(
                       validator: (value) {
@@ -88,7 +82,6 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
                     const SizedBox(height: 18),
-
                     // Password Input Field
                     TextFormField(
                       validator: (value) {
@@ -193,8 +186,9 @@ class _LoginViewState extends State<LoginView> {
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                               ),
-                              onPressed: () =>
-                                  {print("salesforce login functionality")},
+                              onPressed: () => {
+                                SalesforceAuth.loginWithSalesforce(context),
+                              },
                             ),
                           ),
                         ),
@@ -281,8 +275,11 @@ class _LoginViewState extends State<LoginView> {
 
       UserListViewModel userListViewModel = UserListViewModel();
       userListViewModel
-          .login(_emailController.text, _passwordController.text,
-              _tcodeController.text)
+          .login(
+        _emailController.text,
+        _passwordController.text,
+        _tcodeController.text,
+      )
           .then((records) {
         print("records::: ${records}   ${records.runtimeType}");
         if (records.runtimeType == String) {
@@ -297,24 +294,35 @@ class _LoginViewState extends State<LoginView> {
           var userModel = records[0].model as UserModel;
           {
             AppUtils.onLoading(context, "Logging You, please wait...");
-            print("userModel::: ${userModel.success}   ${records[0].model}");
+            print(
+              "userModel::: ${userModel.success}   ${records[0].model}",
+            );
             if (!userListViewModel.isError && records.isNotEmpty) {
               var userModel = records[0].model as UserModel;
               SharedPreferences.getInstance().then((prefs) {
                 prefs.setString(
-                    SharedPrefsConstants.userKey, userModel.toJson());
+                  SharedPrefsConstants.userKey,
+                  userModel.toJson(),
+                );
               });
               AppUtils.getToken();
               Navigator.pop(context);
               Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const FooterNavbarPage()),
-                  (Route<dynamic> route) => false);
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FooterNavbarPage(),
+                ),
+                (Route<dynamic> route) => false,
+              );
             } else {
-              List<String> errorMessages =
-                  AppUtils.getErrorMessages("Invalid User Name and Password!");
-              AppUtils.getAlert(context, errorMessages, title: "Error Alert");
+              List<String> errorMessages = AppUtils.getErrorMessages(
+                "Invalid User Name and Password!",
+              );
+              AppUtils.getAlert(
+                context,
+                errorMessages,
+                title: "Error Alert",
+              );
             }
           }
         }
@@ -329,11 +337,7 @@ class _LoginViewState extends State<LoginView> {
         color: Color(0xFF00A1E4),
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        icon,
-        color: Colors.white,
-        size: 24,
-      ),
+      child: Icon(icon, color: Colors.white, size: 24),
     );
   }
 }

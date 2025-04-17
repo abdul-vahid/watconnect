@@ -11,7 +11,9 @@ plugins {
 android {
     namespace = "com.wat.connect"
     compileSdk = flutter.compileSdkVersion
-    buildToolsVersion "30.0.3"
+    // buildToolsVersion "30.0.3"
+    buildToolsVersion '26.0.3'
+
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -29,9 +31,14 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdkVersion 23
-        targetSdkVersion 33
+        
+        targetSdkVersion 34
         versionCode = flutter.versionCode   
         versionName = flutter.versionName
+        
+        manifestPlaceholders += [
+                'appAuthRedirectScheme': 'com.wat.connect'
+        ]
     }
 
     buildTypes {
