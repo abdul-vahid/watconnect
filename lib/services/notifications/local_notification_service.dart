@@ -201,7 +201,7 @@ class LocalNotificationService {
           wpnumber: matchedModel.whatsapp_number!.contains("+")
               ? matchedModel.whatsapp_number ?? ""
               : "${matchedModel.countryCode}${matchedModel.whatsapp_number ?? ""}",
-          model: matchedModel,
+          id: matchedModel.id,
         ),
       ),
     );

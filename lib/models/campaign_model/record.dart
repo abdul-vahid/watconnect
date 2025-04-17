@@ -65,15 +65,9 @@ class Record {
         'file_description': fileDescription,
       };
 
-  /// `dart:convert`
-  ///
-  /// Parses the string and returns the resulting Json object as [Record].
   factory Record.fromJson(String data) {
     return Record.fromMap(json.decode(data) as Map<String, dynamic>);
   }
 
-  /// `dart:convert`
-  ///
-  /// Converts [Record] to a JSON string.
   String toJson() => json.encode(toMap());
 }

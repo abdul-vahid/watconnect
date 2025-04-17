@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:whatsapp/models/recent_chat_model.dart';
 import '../core/models/base_list_view_model.dart';
 import '../models/lead_model.dart';
 import '../utils/app_constants.dart';
@@ -9,9 +10,17 @@ class LeadListViewModel extends BaseListViewModel {
   @override
   BuildContext context;
   LeadListViewModel(this.context);
+
+  get record => null;
+
   Future<void> fetch() async {
     String url = AppUtils.getUrl(AppConstants.leadAPIPath);
     await get(url: url, baseModel: LeadModel());
+  }
+
+  Future<void> fetchRecentChat() async {
+    String url = AppUtils.getUrl(AppConstants.recentChat);
+    await get(url: url, baseModel: RecentChatModel());
   }
 
   Future<dynamic> addlead(LeadModel addleadModel) async {

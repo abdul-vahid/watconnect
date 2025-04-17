@@ -45,13 +45,12 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 class ChatScreen extends StatefulWidget {
   final String? leadName;
   final String? wpnumber;
-  final LeadModel model;
-  const ChatScreen({
-    Key? key,
-    this.leadName,
-    this.wpnumber,
-    required this.model,
-  }) : super(key: key);
+  String? id;
+  // final LeadModel model;
+  ChatScreen({Key? key, this.leadName, this.wpnumber, this.id
+      // required this.model,
+      })
+      : super(key: key);
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -467,7 +466,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "text": {"preview_url": false, "body": text}
     };
     Map<String, dynamic> msgmobilebody = {
-      "parent_id": widget.model.id,
+      "parent_id": widget.id,
       "name": widget.leadName,
       "message_template_id": null,
       "whatsapp_number": leadnumber,
@@ -591,7 +590,7 @@ class _ChatScreenState extends State<ChatScreen> {
             print("value=== template>${value['messages'][0]['id']}");
             messageid = value['messages'][0]['id'];
             Map<String, dynamic> msghistorydata = {
-              "parent_id": widget.model.id,
+              "parent_id": widget.id,
               "name": widget.leadName,
               "message_template_id": templeteidmessage,
               "whatsapp_number": leadnumber,
@@ -794,7 +793,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Map<String, dynamic> imagebody = {
           "messaging_product": "whatsapp",
           "recipient_type": "individual",
-          "to": widget.model.whatsapp_number,
+          "to": widget.wpnumber,
           "type": type,
           type: {"id": doucmentid, "caption": caps ?? "Caption"}
         };
@@ -805,7 +804,7 @@ class _ChatScreenState extends State<ChatScreen> {
           return null;
         });
 
-        String? leadid = widget.model.id;
+        String? leadid = widget.id;
         print("video sedn video send sned lead id=>$leadid");
 
         String? sendimagedatabase = await messageViewModel
@@ -910,12 +909,11 @@ class _ChatScreenState extends State<ChatScreen> {
         String? doucmentid = jsonResponse['id'];
 
         debugPrint('Uploaded File ID: $doucmentid');
-        debugPrint(
-            "widget.model.whatsapp_number${widget.model.whatsapp_number}");
+        debugPrint("widget.model.whatsapp_number${widget.wpnumber}");
         Map<String, dynamic> imagebody = {
           "messaging_product": "whatsapp",
           "recipient_type": "individual",
-          "to": widget.model.whatsapp_number,
+          "to": widget.wpnumber,
           "type": type,
           type: {"id": doucmentid, "caption": caps ?? "Image caption"}
         };
@@ -926,7 +924,7 @@ class _ChatScreenState extends State<ChatScreen> {
           print("value----->$value");
         });
 
-        String? leadid = widget.model.id;
+        String? leadid = widget.id;
         print("leadid=>$leadid");
 
         String? sendimagedatabase = await messageViewModel
@@ -997,7 +995,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Map<String, dynamic> imagebody = {
           "messaging_product": "whatsapp",
           "recipient_type": "individual",
-          "to": widget.model.whatsapp_number,
+          "to": widget.wpnumber,
           "type": type,
           type: {"id": doucmentid, "caption": caps ?? "Caption"}
         };
@@ -1007,7 +1005,7 @@ class _ChatScreenState extends State<ChatScreen> {
           print("document send value----->$value");
         });
 
-        String? leadid = widget.model.id;
+        String? leadid = widget.id;
         print("document sned lead id=>$leadid");
 
         String? sendimagedatabase = await messageViewModel
@@ -1538,16 +1536,19 @@ class _ChatScreenState extends State<ChatScreen> {
                     ],
                   ),
                 ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 148, 188, 206),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.code, color: Colors.white),
-                    onPressed: () {
-                      _getBootmSheet();
-                    },
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 148, 188, 206),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.code, color: Colors.white),
+                      onPressed: () {
+                        _getBootmSheet();
+                      },
+                    ),
                   ),
                 ),
                 allMessages.isEmpty
@@ -2144,7 +2145,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                           await SharedPreferences.getInstance();
                                       String? number =
                                           prefs.getString('phoneNumber');
-                                      String? leadid = widget.model.id;
+                                      String? leadid = widget.id;
                                       // String? sendimagedatabase =
                                       await messageViewModel
                                           .uploadFiledb(image!, number, leadid)
@@ -2203,7 +2204,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                           await SharedPreferences.getInstance();
                                       String? number =
                                           prefs.getString('phoneNumber');
-                                      String? leadid = widget.model.id;
+                                      String? leadid = widget.id;
                                       String? sendimagedatabase =
                                           await messageViewModel
                                               .uploadFiledb(
@@ -2563,7 +2564,7 @@ class _ChatScreenState extends State<ChatScreen> {
     print("value=== template>$sendTemplateResponse");
 
     Map<String, dynamic> msgmobilebody = {
-      "parent_id": widget.model.id,
+      "parent_id": widget.id,
       "name": widget.leadName,
       "message_template_id": templeteidmessage,
       "whatsapp_number": leadnumber,
@@ -2779,7 +2780,7 @@ class _ChatScreenState extends State<ChatScreen> {
       messageid = templateSendResponse['messages'][0]['id'];
 
       Map<String, dynamic> msgmobilebody = {
-        "parent_id": widget.model.id,
+        "parent_id": widget.id,
         "name": widget.leadName,
         "message_template_id": templeteidmessage,
         "whatsapp_number": leadnumber,
@@ -2900,7 +2901,7 @@ class _ChatScreenState extends State<ChatScreen> {
             messageid = value['messages'][0]['id'];
 
             Map<String, dynamic> msgmobilebody = {
-              "parent_id": widget.model.id,
+              "parent_id": widget.id,
               "name": widget.leadName,
               "message_template_id": templeteidmessage,
               "whatsapp_number": leadnumber,

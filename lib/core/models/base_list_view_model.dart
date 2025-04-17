@@ -32,17 +32,18 @@ class BaseListViewModel extends ChangeNotifier {
     try {
       final jsonObject = await BaseService().get(url: url);
       await _refreshToken(url, jsonKey);
-      log("Response Data == $jsonObject                   ${url}");
+      log("Response Data == $jsonObject        ${url}");
       var records = jsonObject;
       if (jsonObject is! List) {
         debug("not an array");
         records = [jsonObject];
         // return records;
       }
-
+      print("${records}   ${records.runtimeType}");
       var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
       viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
-      debug("execute");
+
+      debug("execute  ${viewModels}  ");
       status = "Completed";
     } on UnauthorisedException {
       AppUtils.getAlert(AppUtils.currentContext!, [

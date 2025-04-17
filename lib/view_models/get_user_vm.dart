@@ -14,7 +14,10 @@ class GetUserViewModel extends BaseListViewModel {
   fetchUser() async {
     String url = AppUtils.getUrl(AppConstants.getUserAPIPath);
     debug(' check===$url');
-    get(url: url, baseModel: GetUser());
+    get(
+      url: url,
+      baseModel: GetUser(),
+    );
   }
 
   Future<dynamic> updateProfile(String? id, GetUser updateUser) async {
