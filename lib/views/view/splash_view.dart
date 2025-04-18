@@ -16,6 +16,7 @@ import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
+import 'package:whatsapp/view_models/user_list_vm.dart';
 import 'package:whatsapp/views/view/login_view.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
 import '../widgets/bottomnavigatonbar.dart';
@@ -32,8 +33,12 @@ class SplashView extends StatefulWidget {
 
 class _SplashViewState extends State<SplashView> {
   @override
+  static FirebaseMessaging? _firebaseMessaging;
   void initState() {
+    _firebaseMessaging = FirebaseMessaging.instance;
+    _firebaseMessaging?.requestPermission();
     super.initState();
+    registerToken();
     startTimer();
     setupFirebase();
   }
@@ -242,5 +247,18 @@ class _SplashViewState extends State<SplashView> {
         bodydata: bodydata,
       );
     }
+  }
+
+  static void registerToken() async {
+    _firebaseMessaging?.getToken().then((token) {
+      debug("registerToken value => $token");
+      UserListViewModel().registerFCMToken(token!).then((value) {
+        debug("FCM token registered to backend => $value");
+      }, onError: (error, stackTrace) {
+        debug("FCM token registration error => $error");
+      });
+    }).catchError((e) {
+      debug("FCM getToken error => $e");
+    });
   }
 }
