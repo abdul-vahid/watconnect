@@ -611,6 +611,7 @@ class _RecentChatViewState extends State<RecentChatView> {
 
       socket!.on("receivedwhatsappmessage", (data) {
         print(" New WhatsApp message: $data");
+        getLeadList();
         _getUnreadCount();
       });
 
