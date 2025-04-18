@@ -17,7 +17,8 @@ class SalesforceAuth {
           await _appAuth.authorizeAndExchangeCode(
         AuthorizationTokenRequest(
           AppConstants.clientId,
-          AppConstants.redirectUri,
+          // AppConstants.redirectUri,
+          "https://watconnect.com/",
           clientSecret: AppConstants.clientSecret,
           issuer: AppConstants.issuer,
           scopes: ['openid', 'offline_access', 'api'],
