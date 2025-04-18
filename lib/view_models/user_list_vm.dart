@@ -133,33 +133,33 @@ class UserListViewModel extends BaseListViewModel {
       debug("Request Fields: ${request.fields}");
       debug("Request Files: ${request.files}");
 
-      // ✅ Print Request Details
-      print("🔹 API URL: $api");
-      print("🔹 Headers: ${request.headers}");
-      print("🔹 Form Data:");
+      //  Print Request Details
+      print(" API URL: $api");
+      print(" Headers: ${request.headers}");
+      print(" Form Data:");
       request.fields.forEach((key, value) {
         print("   - $key: $value");
       });
       print(
-          "🔹 Attached File: ${multipartFile.filename} (${multipartFile.length} bytes)");
+          " Attached File: ${multipartFile.filename} (${multipartFile.length} bytes)");
 
       // Send the request
       var response = await request.send();
 
       // Print raw response
-      print("🔹 Response Status: ${response.statusCode}");
+      print("Response Status: ${response.statusCode}");
 
       // Get response body
       var responseBody = await response.stream.bytesToString();
-      print("🔹 Response Body: $responseBody");
+      print("Response Body: $responseBody");
 
       if (response.statusCode == 200) {
-        print("✅ File uploaded successfully!");
+        print("File uploaded successfully!");
       } else {
-        print("❌ Upload failed: ${response.statusCode} - $responseBody");
+        print("Upload failed: ${response.statusCode} - $responseBody");
       }
     } catch (e) {
-      print("❌ Error: $e");
+      print(" Error: $e");
     }
   }
 
