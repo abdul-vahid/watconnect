@@ -1119,7 +1119,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       istTimee, now.subtract(const Duration(days: 1)))) {
                     dayLabel = 'Yesterday';
                   } else {
-                    dayLabel = DateFormat('EEEE').format(istTimee);
+                    dayLabel = DateFormat('d MMMM yyyy').format(istTimee);
                   }
 
                   String finalFormattedTime = '$dayLabel';
