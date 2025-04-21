@@ -446,4 +446,9 @@ class AppUtils {
       ),
     );
   }
+
+  static Future<String?> getRefreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(SharedPrefsConstants.refreshTokenKey);
+  }
 }

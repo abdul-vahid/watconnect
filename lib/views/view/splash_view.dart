@@ -38,14 +38,13 @@ class _SplashViewState extends State<SplashView> {
     _firebaseMessaging = FirebaseMessaging.instance;
     _firebaseMessaging?.requestPermission();
     super.initState();
-    registerToken();
+    // registerToken();
     startTimer();
     setupFirebase();
   }
 
   Future<void> setupFirebase() async {
     await Firebase.initializeApp();
-
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initializationSettings =
@@ -59,7 +58,7 @@ class _SplashViewState extends State<SplashView> {
       if (leadId.isNotEmpty) {
         NavigationFunc(leadId, navigatorKey.currentContext!);
       }
-        });
+    });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       debug(" Foreground notification: ${message.notification?.title}");
