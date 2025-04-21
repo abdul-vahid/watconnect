@@ -4,7 +4,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/views/view/templete_list_view.dart';
 import 'package:whatsapp/views/view/whatsap_setting_view.dart';
 import 'package:whatsapp/views/widgets/bottomnavigatonbar.dart';

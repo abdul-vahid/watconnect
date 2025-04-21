@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
@@ -14,8 +13,6 @@ import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import '../../view_models/lead_list_vm.dart';
 import '../../view_models/user_data_list_vm.dart';
-import 'lead_add_update_view.dart';
-import 'lead_detail_view.dart';
 import 'package:badges/badges.dart' as badges;
 
 class RecentChatView extends StatefulWidget {

@@ -214,22 +214,18 @@ class _HomeViewState extends State<HomeView> {
         UnreadMsgModel unreadvm = viewModel.model as UnreadMsgModel;
         var records = unreadvm.records ?? [];
         print("recorcccccccccccds${records.length}");
-        if (records != null) {
-          for (var data in records) {
-            String? unreadCount = data.unreadMsgCount;
+        for (var data in records) {
+          String? unreadCount = data.unreadMsgCount;
 
-            if (unreadCount != null) {
-              // Safely convert String to int
-              int count = int.tryParse(unreadCount) ?? 0;
-              setState(() {
-                totalUnreadCount = records.length;
-              });
-            }
+          if (unreadCount != null) {
+            // Safely convert String to int
+            int count = int.tryParse(unreadCount) ?? 0;
+            setState(() {
+              totalUnreadCount = records.length;
+            });
           }
-        } else {
-          print("No records found.");
         }
-      } else {
+            } else {
         print("Model is not UnreadMsgModel: ${viewModel.model.runtimeType}");
       }
     }

@@ -58,9 +58,7 @@ abstract class AppConstants {
   // static const String baseUrl = "https://admin.watconnect.com/ibs";
   static const bool kDebugMode = true;
   // ==================Login Api==================
-
   static const String loginAPIPath = '/api/auth/login';
-
   // ==================Lead Api===================
   static const String leadcountagentAPIPath =
       '/api/reports/byname/lead_count_by_agent';
@@ -68,7 +66,6 @@ abstract class AppConstants {
       '/api/reports/byname/month_wise_lead_report';
   static const String leadCountAPIPath = '/api/whatsapp/common/leadcount';
   static const String leadAPIPath = '/api/leads';
-
   // =========================Campaign Api==============================
   static const String campaignCountAPIPath =
       '/api/whatsapp/common/campaignstatus';

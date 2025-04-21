@@ -102,7 +102,7 @@ class _ChatScreenState extends State<ChatScreen> {
   var selectedHeader;
   var selectedBody;
   var selectedFooter;
-  dynamic? selectedButtons;
+  dynamic selectedButtons;
   late VideoPlayerController _Vcontroller;
   TempleteListViewModel? templateVM;
   final List<String> imageUrls = [
@@ -922,6 +922,7 @@ class _ChatScreenState extends State<ChatScreen> {
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
             .then((value) {
           print("value----->$value");
+          return null;
         });
 
         String? leadid = widget.id;
@@ -937,6 +938,7 @@ class _ChatScreenState extends State<ChatScreen> {
           fileid = response['records']?[0]['id'];
 
           print("ID: $fileid");
+          return null;
         });
 
         Map<String, dynamic> imagehistorydata = {
@@ -961,6 +963,7 @@ class _ChatScreenState extends State<ChatScreen> {
         )
             .then((value) {
           print("\x1B[32msendhistoryimagesendhistoryimage${value}\x1B[0m");
+          return null;
         });
       } else {
         debugPrint('Image upload failed or response was null');
@@ -1003,6 +1006,7 @@ class _ChatScreenState extends State<ChatScreen> {
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
             .then((value) {
           print("document send value----->$value");
+          return null;
         });
 
         String? leadid = widget.id;
@@ -1018,6 +1022,7 @@ class _ChatScreenState extends State<ChatScreen> {
           fileid = response['records']?[0]['id'];
 
           print("ID: $fileid");
+          return null;
         });
         debug("widget.leadNamewidget.leadName${widget.leadName}");
         Map<String, dynamic> imagehistorydata = {
@@ -1042,6 +1047,7 @@ class _ChatScreenState extends State<ChatScreen> {
         )
             .then((value) {
           print("\x1B[32msendhistoryimagesendhistoryimage${value}\x1B[0m");
+          return null;
         });
       } else {
         debugPrint('Image upload failed or response was null');
@@ -1726,7 +1732,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Provider.of<TempleteListViewModel>(context, listen: false);
 
     // Check if templeteViewModel is not null and contains viewModels
-    if (templeteViewModel != null && templeteViewModel.viewModels.isNotEmpty) {
+    if (templeteViewModel.viewModels.isNotEmpty) {
       for (var viewModel in templeteViewModel.viewModels) {
         var campaignModel = viewModel.model;
         if (campaignModel?.data != null) {
@@ -1751,7 +1757,7 @@ class _ChatScreenState extends State<ChatScreen> {
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
 
-    if (templeteViewModel != null && templeteViewModel.viewModels.isNotEmpty) {
+    if (templeteViewModel.viewModels.isNotEmpty) {
       for (var viewModel in templeteViewModel.viewModels) {
         var campaignModel = viewModel.model;
         if (campaignModel?.data != null) {
@@ -2418,11 +2424,11 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: ElevatedButton(
                         style: ButtonStyle(
                           minimumSize:
-                              MaterialStateProperty.all(const Size(10, 20)),
-                          padding: MaterialStateProperty.all(
+                              WidgetStateProperty.all(const Size(10, 20)),
+                          padding: WidgetStateProperty.all(
                               const EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 10)),
-                          backgroundColor: MaterialStateProperty.all(
+                          backgroundColor: WidgetStateProperty.all(
                               AppColor.navBarIconColor),
                         ),
                         onPressed: () {

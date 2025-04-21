@@ -52,16 +52,14 @@ class _SplashViewState extends State<SplashView> {
         InitializationSettings(android: initializationSettingsAndroid);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: (payload) {
-      if (payload != null) {
-        debug("::::: Data: ${payload.payload}  ${payload.payload.runtimeType}");
-        var body = jsonDecode(payload.payload ?? "");
-        print("body::: ${body}   ${body['lead_id']} ");
-        String leadId = body['lead_id'] ?? "";
-        if (leadId.isNotEmpty) {
-          NavigationFunc(leadId, navigatorKey.currentContext!);
-        }
+      debug("::::: Data: ${payload.payload}  ${payload.payload.runtimeType}");
+      var body = jsonDecode(payload.payload ?? "");
+      print("body::: ${body}   ${body['lead_id']} ");
+      String leadId = body['lead_id'] ?? "";
+      if (leadId.isNotEmpty) {
+        NavigationFunc(leadId, navigatorKey.currentContext!);
       }
-    });
+        });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       debug(" Foreground notification: ${message.notification?.title}");
@@ -235,7 +233,7 @@ class _SplashViewState extends State<SplashView> {
     final prefs = await SharedPreferences.getInstance();
     var number = prefs.getString('phoneNumber');
     if (number != null) {
-      String whatsappNumber = matchedModel!.whatsapp_number!.contains("+")
+      String whatsappNumber = matchedModel.whatsapp_number!.contains("+")
           ? matchedModel.whatsapp_number ?? ""
           : "${matchedModel.countryCode}${matchedModel.whatsapp_number ?? ""}";
       Map<String, String>? bodydata = {"whatsapp_number": whatsappNumber};

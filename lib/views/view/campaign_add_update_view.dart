@@ -59,7 +59,7 @@ class _Forms extends State<CampaignAddUpdateView> {
   var selectedHeader;
   var selectedBody;
   var selectedFooter;
-  dynamic? selectedButtons;
+  dynamic selectedButtons;
   CampaignModel? campData = CampaignModel();
   File? image;
   // File? image;
@@ -591,8 +591,7 @@ class _Forms extends State<CampaignAddUpdateView> {
       if (_name == null || _name.toString().isEmpty) {
         EasyLoading.showToast("Campaign Name is required");
         return;
-      } else if (_dateStartInput.text == null ||
-          _dateStartInput.text.toString().isEmpty) {
+      } else if (_dateStartInput.text.toString().isEmpty) {
         EasyLoading.showToast("Start date time is required");
         return;
       } else if (SelectedTemplateCategory == null ||
@@ -654,7 +653,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
 
-    if (templeteViewModel != null && templeteViewModel.viewModels.isNotEmpty) {
+    if (templeteViewModel.viewModels.isNotEmpty) {
       for (var viewModel in templeteViewModel.viewModels) {
         var campaignModel = viewModel.model;
         if (campaignModel?.data != null) {
