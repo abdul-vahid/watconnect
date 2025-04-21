@@ -150,22 +150,24 @@ class NotificationUtil {
         final filePath =
             await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
         print("filePath:  remoteMessage:: ${filePath}   ${message}");
-        await showImageNotification(
-            message, filePath); // Show notification with image
+        await showImageNotification(message, filePath);
       } catch (e) {
         debugPrint("Image download failed, fallback to text notification: $e");
-        LocalNotificationService.displayNotification(
-            message); // Fallback if image download fails
+        LocalNotificationService.displayNotification(message);
       }
     } else {
-      LocalNotificationService.displayNotification(
-          message); // Normal notification if no image
+      LocalNotificationService.displayNotification(message);
     }
   }
 
   static Future<void> deleteFCMTokenOnLogout() async {
     try {
-      await _firebaseMessaging?.deleteToken();
+      print("deleting the token::::");
+      _firebaseMessaging?.deleteToken().then((_) {
+        print("Token deleted");
+      }).catchError((e) {
+        print("Error deleting token: $e");
+      });
     } catch (e) {
       debugPrint("Failed to delete FCM token: $e");
     }
