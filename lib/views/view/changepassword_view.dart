@@ -3,7 +3,6 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_utils.dart';
-import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/user_data_list_vm.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
