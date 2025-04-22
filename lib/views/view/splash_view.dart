@@ -36,7 +36,15 @@ class _SplashViewState extends State<SplashView> {
   static FirebaseMessaging? _firebaseMessaging;
   void initState() {
     _firebaseMessaging = FirebaseMessaging.instance;
-    _firebaseMessaging?.requestPermission();
+    _firebaseMessaging?.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
     super.initState();
     // registerToken();
     startTimer();
@@ -45,6 +53,13 @@ class _SplashViewState extends State<SplashView> {
 
   Future<void> setupFirebase() async {
     await Firebase.initializeApp();
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initializationSettings =
