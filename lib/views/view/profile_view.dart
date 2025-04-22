@@ -66,29 +66,66 @@ class _ProfileViewState extends State<ProfileView> {
     return selectedImage;
   }
 
+  // void getProfileData() async {
+  //   final prefs = await SharedPreferences.getInstance();
+
+  //   MessageController msgController =
+  //       Provider.of<MessageController>(context, listen: false);
+
+  //   setState(() {
+  //     userModel = AppUtils.getSessionUser(prefs);
+  //     msgController.setUsrProfile(
+  //         "https://sandbox.watconnect.com/public/demo/users/${userModel?.id}");
+  //     print("logourl::: ${userModel?.logourl ?? ""}");
+  //   });
+  // }
   void getProfileData() async {
     final prefs = await SharedPreferences.getInstance();
 
     MessageController msgController =
         Provider.of<MessageController>(context, listen: false);
 
-    setState(() {
-      userModel = AppUtils.getSessionUser(prefs);
+    UserModel? tempModel = AppUtils.getSessionUser(prefs);
+
+    if (tempModel != null) {
+      setState(() {
+        userModel = tempModel;
+      });
       msgController.setUsrProfile(
-          "https://sandbox.watconnect.com/public/demo/users/${userModel?.id}");
-      print("logourl::: ${userModel?.logourl ?? ""}");
-    });
+          "https://sandbox.watconnect.com/public/demo/users/${tempModel.id}");
+      print("logourl::: ${tempModel.logourl ?? ""}");
+    } else {
+      debugPrint("No user session found in getProfileData.");
+      // You can show a message or keep userModel null silently
+    }
   }
 
   @override
+  // void initState() {
+  //   // _controller = NotchBottomBarController();
+  //   Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
+  //   SharedPreferences.getInstance().then((prefs) {
+  //     var userModel = AppUtils.getSessionUser(prefs);
+  //     userModel ?? AppUtils.logout(context);
+  //   });
+
+  //   getProfileData();
+  //   super.initState();
+  // }
+  @override
   void initState() {
-    // _controller = NotchBottomBarController();
     Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
     SharedPreferences.getInstance().then((prefs) {
-      var userModel = AppUtils.getSessionUser(prefs);
-      userModel ?? AppUtils.logout(context);
+      var tempUserModel = AppUtils.getSessionUser(prefs);
+      if (tempUserModel == null) {
+        debugPrint("User session is null, but not logging out.");
+      } else {
+        print("hi this is sisiisis");
+        setState(() {
+          userModel = tempUserModel;
+        });
+      }
     });
-
     getProfileData();
     super.initState();
   }

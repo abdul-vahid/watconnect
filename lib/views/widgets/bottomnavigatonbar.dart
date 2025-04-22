@@ -11,6 +11,7 @@ import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/views/view/recent_chats_screen.dart';
 
 import '../../utils/app_color.dart';
+import '../../utils/notification_utils.dart';
 import '../view/home_view.dart';
 import '../view/profile_view.dart' show ProfileView;
 import '../view/user_list_view.dart';
@@ -34,7 +35,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
 
   @override
   void initState() {
-    // NotificationUtil(context).initialize();
+    NotificationUtil(context).initialize();
 
     SharedPreferences.getInstance().then((prefs) {
       userModelData = AppUtils.getSessionUser(prefs);

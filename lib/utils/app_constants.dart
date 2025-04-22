@@ -45,11 +45,12 @@ abstract class AppConstants {
 
   static const String clientId =
       "3MVG9HDaKRUgW3VrsUI_RKn2LNGsiiJ8tIi0IyP8kE2a5AvSJvZc7YUk0YcTHH_kB1E6WwLoXA0fs3UG91Ky_";
-  static const String issuer = "https://test.sale sforce.com/";
+  static const String issuer = "https://test.salesforce.com/";
   static const String clientSecret =
       "1B0F7E206C74DBCB338CA79605EB64CA159675AE6C5E4B6CAE0D6558ADE52C5E";
   static const String redirectUri = 'com.wat.connect://login-callback';
-
+  static const String refreshTokenAPIPath =
+      "https://test.salesforce.com/services/oauth2/token";
   // ======================================================
   static const String channelId = "spark";
   static const String channelName = "Spark";

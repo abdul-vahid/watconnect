@@ -1,8 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/views/view/home_view.dart';
 
+import '../../core/apis/app_exception.dart';
 import '../../utils/app_constants.dart';
+import '../../utils/app_utils.dart';
 import '../../utils/function_lib.dart';
+import '../widgets/bottomnavigatonbar.dart';
 
 class SalesforceAuth {
   static Future<void> loginWithSalesforce(
@@ -17,8 +22,8 @@ class SalesforceAuth {
           await _appAuth.authorizeAndExchangeCode(
         AuthorizationTokenRequest(
           AppConstants.clientId,
-          // AppConstants.redirectUri,
-          "https://watconnect.com/",
+          AppConstants.redirectUri,
+          // "https://watconnect.com/",
           clientSecret: AppConstants.clientSecret,
           issuer: AppConstants.issuer,
           scopes: ['openid', 'offline_access', 'api'],
@@ -45,9 +50,21 @@ class SalesforceAuth {
             SharedPrefsConstants.accessTokenKey,
             result.accessToken ?? '',
           );
+          if (result.accessToken?.isNotEmpty == true) {
+            await prefs.setString(
+              SharedPrefsConstants.accessTokenKey,
+              result.accessToken ?? '',
+            );
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => FooterNavbarPage()),
+            );
+          }
         }
 
         debug('Access Token: ${result.accessToken}');
+        debug('resulttt : ${result.refreshToken}');
       } else {
         throw Exception("Authorization failed");
       }
@@ -56,4 +73,47 @@ class SalesforceAuth {
       rethrow;
     }
   }
+
+  // Future<void> refreshToken(BuildContext context) async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final refreshToken = await AppUtils.getRefreshToken();
+
+  //     if (refreshToken == null || refreshToken.isEmpty) {
+  //       throw Exception("Refresh token is missing");
+  //     }
+
+  //     Map<String, String> body = {
+  //       'grant_type': 'refresh_token',
+  //       'client_id': AppConstants.clientId,
+  //       'client_secret': AppConstants.clientSecret,
+  //       'refresh_token': refreshToken
+  //     };
+
+  //     // var response = await postAsUrlEncoded(
+  //     //   url: AppConstants.refreshTokenAPIPath,
+  //     //   body: body,
+  //     // );
+  //     print("resposne=>${response}");
+  //     final newAccessToken = response["access_token"];
+
+  //     if (newAccessToken != null && newAccessToken.toString().isNotEmpty) {
+  //       debug("New access token => $newAccessToken");
+  //       await prefs.setString(
+  //         SharedPrefsConstants.accessTokenKey,
+  //         newAccessToken,
+  //       );
+  //     } else {
+  //       throw Exception("Access token not found in response");
+  //     }
+  //   } on UnauthorisedException {
+  //     debug("Unauthorised: Invalid refresh token or session expired");
+
+  //     throw Exception("Unauthorised Error");
+  //   } catch (e, stackTrace) {
+  //     debug("Error occurred in refreshToken: $e");
+  //     debug("Stack trace: $stackTrace");
+  //     throw Exception("Error occurred");
+  //   }
+  // }
 }
