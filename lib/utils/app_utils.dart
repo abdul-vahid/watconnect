@@ -302,13 +302,16 @@ class AppUtils {
       {context}) {
     if (baseListViewModel.status == "Loading") {
       return AppUtils.getLoader();
-    } else if (baseListViewModel.status == "Error") {
-      Widget widget = AppUtils.getErrorWidget(baseListViewModel.exception);
-      Timer(Duration.zero, () {
-        isLoggedOut(context);
-      });
-      return widget;
-    } else if (baseListViewModel.viewModels.isNotEmpty) {
+    }
+    //  else if (baseListViewModel.status == "Error") {
+    //   Widget widget = AppUtils.getErrorWidget(baseListViewModel.exception);
+    //   Timer(Duration.zero, () {
+    //     isLoggedOut(context);
+    //   });
+
+    //   return widget;
+    // }
+    else if (baseListViewModel.viewModels.isNotEmpty) {
       return callBack();
     } else {
       return AppUtils.getNoRecordWidget();

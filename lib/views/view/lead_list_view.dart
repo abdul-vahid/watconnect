@@ -115,11 +115,9 @@ class _LeadListViewState extends State<LeadListView> {
 
   @override
   Widget build(BuildContext context) {
-    if (leadlistvm != null) {
-      for (var viewModel in leadlistvm!.viewModels) {
-        _leadfilter.add(viewModel.model.leadstatus);
-      }
-    }
+    // if (leadlistvm != null) {
+    //   for (var viewModel in leadlistvm!.viewModels) {}
+    // }
 
     unreadCountVm = Provider.of<UnreadCountVm>(context);
     leadlistvm = Provider.of<LeadListViewModel>(context);
@@ -606,7 +604,8 @@ class _LeadListViewState extends State<LeadListView> {
                           color: Colors.lightBlue.withOpacity(0.7),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(2.0),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 4.0, horizontal: 8),
                           child: Text(
                             "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
                             style: const TextStyle(
@@ -722,6 +721,7 @@ class _LeadListViewState extends State<LeadListView> {
       allLeads = [];
 
       for (var viewModel in leadlistvm!.viewModels) {
+        _leadfilter.add(viewModel.model.leadstatus);
         tempLeadModelList.add(viewModel.model);
         allLeads.add(viewModel.model);
       }

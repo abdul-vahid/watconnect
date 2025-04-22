@@ -326,8 +326,7 @@ class _HomeViewState extends State<HomeView> {
                               children: [
                                 RichText(
                                   text: TextSpan(
-                                    text: countNewLeads
-                                        .toString(), // Default text
+                                    text: (countNewLeads ?? 0).toString(),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 30,
@@ -398,7 +397,7 @@ class _HomeViewState extends State<HomeView> {
                               children: [
                                 RichText(
                                   text: TextSpan(
-                                    text: campaignCount
+                                    text: (campaignCount ?? 0)
                                         .toString(), // Default text
                                     style: const TextStyle(
                                       color: Colors.white,
@@ -470,7 +469,7 @@ class _HomeViewState extends State<HomeView> {
                               children: [
                                 RichText(
                                   text: TextSpan(
-                                    // Text: (templateCount ?? 0).toString(),
+                                    text: (templateCount ?? 0).toString(),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 30,
