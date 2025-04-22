@@ -379,23 +379,27 @@ class _RecentChatViewState extends State<RecentChatView> {
   Widget _pageBody() {
     return Column(
       children: [
-        Expanded(
-            child: ListView.builder(
-          itemCount: allRecentChats.length,
-          itemBuilder: (context, index) {
-            var unreadCount = "0";
-            var lead = allRecentChats[index];
+        allRecentChats.isEmpty
+            ? Text("No rec found")
+            : Expanded(
+                child: ListView.builder(
+                itemCount: allRecentChats.length,
+                itemBuilder: (context, index) {
+                  var unreadCount = "0";
+                  var lead = allRecentChats[index];
 
-            for (var p in unreadList) {
-              if (lead.full_number.toString().contains(p.whatsappNumber)) {
-                unreadCount = p.unreadMsgCount;
-                break;
-              }
-            }
+                  for (var p in unreadList) {
+                    if (lead.full_number
+                        .toString()
+                        .contains(p.whatsappNumber)) {
+                      unreadCount = p.unreadMsgCount;
+                      break;
+                    }
+                  }
 
-            return leadRecordList(lead, unreadCount);
-          },
-        ))
+                  return leadRecordList(lead, unreadCount);
+                },
+              ))
       ],
     );
   }
