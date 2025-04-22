@@ -225,7 +225,7 @@ class _HomeViewState extends State<HomeView> {
             });
           }
         }
-            } else {
+      } else {
         print("Model is not UnreadMsgModel: ${viewModel.model.runtimeType}");
       }
     }
@@ -470,8 +470,7 @@ class _HomeViewState extends State<HomeView> {
                               children: [
                                 RichText(
                                   text: TextSpan(
-                                    text: templateCount
-                                        .toString(), // Default text
+                                    // Text: (templateCount ?? 0).toString(),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 30,
