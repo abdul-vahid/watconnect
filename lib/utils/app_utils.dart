@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -355,18 +356,58 @@ class AppUtils {
     return string[0].toUpperCase() + string.substring(1);
   }
 
-  static void logout(context) {
-    onLoading(context, "Logging out...");
+  // static void logout(context) {
+  //   onLoading(context, "Logging out...");
 
-    SharedPreferences.getInstance().then((prefs) {
+  //   SharedPreferences.getInstance().then((prefs) {
+  //     NotificationUtil.deleteFCMTokenOnLogout();
+  //     prefs.clear();
+  //     Navigator.pushAndRemoveUntil(
+  //         context,
+  //         MaterialPageRoute(builder: (context) => const LoginView()),
+  //         (route) => false);
+  //     //viewPush(context, const LoginHome());
+  //   });
+  // }
+  static Future<void> _refreshToken() async {
+    final url =
+        Uri.parse('https://sandbox.watconnect.com/swp/api/auth/refresh');
+    final response = await http.post(
+      url,
+      body: {
+        'refresh_token': SharedPrefsConstants.refreshTokenKey,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print("response.bodyyyyyyyyyyy=>${response.body}");
+      final responseData = json.decode(response.body);
+      final newToken = responseData['token'];
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('auth_token', newToken);
+
+      print('Token refreshed successfully!');
+    } else {
+      print('Failed to refresh token');
+    }
+  }
+
+  static Future<void> logout(context) async {
+    onLoading(context, "Logging out...");
+    try {
+      // await _refreshToken();
       NotificationUtil.deleteFCMTokenOnLogout();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.clear();
       Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginView()),
-          (route) => false);
-      //viewPush(context, const LoginHome());
-    });
+        context,
+        MaterialPageRoute(builder: (context) => const LoginView()),
+        (route) => false,
+      );
+    } catch (e) {
+      print("Error during logout: $e");
+    }
   }
 
   static void isLoggedOut(context) {
@@ -374,13 +415,6 @@ class AppUtils {
       logout(context);
     }
   }
-  /* static FutureOr<void> makePhoneCall(String phoneNumber) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: phoneNumber,
-    );
-    await launchUrl(launchUri);
-  } */
 
   static FutureOr<dynamic> getSimpleDialog(BuildContext context,
       {required String title, List<Widget>? children}) {

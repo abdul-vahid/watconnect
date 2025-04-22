@@ -32,7 +32,7 @@ class BaseListViewModel extends ChangeNotifier {
     try {
       final jsonObject = await BaseService().get(url: url);
       await _refreshToken(url, jsonKey);
-      log("Response Data == $jsonObject        ${url}");
+      log("Response Data == $jsonObject ${url}");
       var records = jsonObject;
       if (jsonObject is! List) {
         debug("not an array");
