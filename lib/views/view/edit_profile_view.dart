@@ -201,13 +201,12 @@ class _EditProfileView extends State<EditProfileView> {
     if (model != null) {
       isEdit = true;
     }
-
+    fillCountryCodeMap();
+    selectedCountry = countryCodeMap.keys.first;
     if (isEdit) {
       print("widget.model?.countryCode----- ${model?.countrycode}");
       selectedCountry = model.countrycode;
     }
-    fillCountryCodeMap();
-    selectedCountry = countryCodeMap.keys.first;
   }
 
   // ---country code -----
@@ -465,6 +464,7 @@ class _EditProfileView extends State<EditProfileView> {
   }
 
   Future<void> updateData() async {
+    print("selectedCountry::: ${selectedCountry}");
     if (_profileFormKey.currentState!.validate()) {
       _profileFormKey.currentState!.save();
       // AppUtils.onLoading(context, "Updating, please wait...");

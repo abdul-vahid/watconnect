@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:whatsapp/main.dart';
 
 import 'function_lib.dart';
 import '../models/lead_model.dart';
@@ -40,10 +41,11 @@ class NotificationUtil {
       if (remoteMessage != null) {
         final leadId = remoteMessage.data['lead_id'];
         if (leadId != null) {
-          await Provider.of<LeadListViewModel>(context, listen: false)
+          await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+                  listen: false)
               .fetch()
               .then((val) {
-            NavigationFunc(leadId.toString(), context);
+            NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
           });
         }
       }
@@ -79,10 +81,11 @@ class NotificationUtil {
       final leadId = remoteMessage?.data['lead_id'];
 
       if (leadId != null) {
-        await Provider.of<LeadListViewModel>(context, listen: false)
+        await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+                listen: false)
             .fetch()
             .then((val) {
-          NavigationFunc(leadId.toString(), context);
+          NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
         });
       }
     });
@@ -140,7 +143,8 @@ class NotificationUtil {
   // }
   static Future<void> firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
-    debug("Background FCM: ${message.notification?.title}");
+    print("message firebaseMessagingBackgroundHandler::: ");
+    debug("Background FCM:  ${message} ${message.notification?.title}");
 
     // Check for image URL in the background message
     final imageUrl = message.data['fileUrl'];
@@ -195,9 +199,9 @@ Future<void> showImageNotification(
 
   final AndroidNotificationDetails androidPlatformChannelSpecifics =
       AndroidNotificationDetails(
-    'your_channel_id',
-    'your_channel_name',
-    channelDescription: 'your_channel_description',
+    'spark',
+    'Spark',
+    channelDescription: 'spark',
     styleInformation: bigPictureStyleInformation,
     importance: Importance.max,
     priority: Priority.high,

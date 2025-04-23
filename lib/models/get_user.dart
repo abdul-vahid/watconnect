@@ -61,7 +61,7 @@ class GetUser extends BaseModel {
         if (managerid != null) 'managerid': managerid,
         if (whatsapp_number != null) 'whatsapp_number': whatsapp_number,
         if (managername != null) 'managername': managername,
-        if (countrycode != null) 'managername': countrycode,
+        if (countrycode != null) 'country_code': countrycode,
       };
 
   /// `dart:convert`

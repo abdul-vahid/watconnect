@@ -36,19 +36,19 @@ class _SplashViewState extends State<SplashView> {
   static FirebaseMessaging? _firebaseMessaging;
   void initState() {
     _firebaseMessaging = FirebaseMessaging.instance;
-    _firebaseMessaging?.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
+    // _firebaseMessaging?.requestPermission(
+    //   alert: true,
+    //   announcement: false,
+    //   badge: true,
+    //   carPlay: false,
+    //   criticalAlert: false,
+    //   provisional: false,
+    //   sound: true,
+    // );
     super.initState();
     // registerToken();
     startTimer();
-    setupFirebase();
+    // setupFirebase();
   }
 
   Future<void> setupFirebase() async {
@@ -111,8 +111,8 @@ class _SplashViewState extends State<SplashView> {
           notification.body,
           NotificationDetails(
             android: AndroidNotificationDetails(
-              'channel_id',
-              'channel_name',
+              'spark',
+              'Spark',
               importance: Importance.max,
               priority: Priority.high,
               styleInformation: bigPictureStyle,
