@@ -1632,15 +1632,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                               leadnumber: leadnumber,
                                               number: number);
                                     });
+                                  } else if (_controller.text
+                                      .trim()
+                                      .isNotEmpty) {
+                                    showLoader = false;
+                                    EasyLoading.showToast(
+                                        "please Type a Message");
+                                    print(
+                                        "⚠ No file or text entered. Doing nothing.");
                                   } else {
                                     showLoader = false;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          "Please Type a Message",
-                                          selectionColor: Colors.green,
-                                        ),
-                                      ),
+                                    EasyLoading.showToast(
+                                      "Please type a message",
+                                      toastPosition:
+                                          EasyLoadingToastPosition.center,
                                     );
                                     print(
                                         "⚠ No file or text entered. Doing nothing.");
