@@ -31,7 +31,7 @@ class BaseListViewModel extends ChangeNotifier {
     log("get api url>>> ${url}   ");
     try {
       final jsonObject = await BaseService().get(url: url);
-      await _refreshToken(url, jsonKey);
+      // await _refreshToken(url, jsonKey);
       log("Response Data == $jsonObject ${url}");
       var records = jsonObject;
       if (jsonObject is! List) {
@@ -46,16 +46,18 @@ class BaseListViewModel extends ChangeNotifier {
       debug("execute  ${viewModels}  ");
       status = "Completed";
     } on UnauthorisedException {
-      AppUtils.getAlert(AppUtils.currentContext!, [
-        "You have been logged out!",
-      ], onPressed: () {
-        Navigator.pop(AppUtils.currentContext!);
-        AppUtils.logout(AppUtils.currentContext);
-      });
-      Navigator.push(
-          context!, MaterialPageRoute(builder: (context) => const LoginView()));
-      status = "Error";
-      exception = Exception("UnauthorisedException");
+      await _refreshToken(url);
+
+      final jsonObjectRequest = await BaseService().get(url: url);
+      var records = jsonObjectRequest;
+      if (jsonObjectRequest is! List) {
+        records = [jsonObjectRequest];
+      }
+      debug("Response Data === $records");
+      //AppUtils.printDebug("Response Data === $records");
+      var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
+      viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
+      status = "Completed";
     } on AppException catch (error) {
       status = "Error";
       exception = error;
@@ -72,9 +74,8 @@ class BaseListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _refreshToken(String url, String jsonKey) async {
-    String refreshTokenUrl = "";
-    //AppUtils.getUrl(AppConstants.refreshTokenAPIPath);
+  Future<void> _refreshToken(String url) async {
+    String refreshTokenUrl = AppUtils.getUrl(AppConstants.refreshTokenAPIPath);
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String refreshToken = "";
@@ -83,29 +84,29 @@ class BaseListViewModel extends ChangeNotifier {
         refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!;
       }
       //if (prefs.containsKey(SharedPrefsConstants.sessionTimeKey)) {
-      String sessionTime;
-      int minutes = 0;
-      if (prefs.containsKey(SharedPrefsConstants.sessionTimeKey)) {
-        sessionTime = prefs.getString(SharedPrefsConstants.sessionTimeKey)!;
-        var sessionDT = DateFormat('yyyy-MM-dd HH:mm:ss').parse(sessionTime);
-        minutes = DateTime.now().difference(sessionDT).inMinutes;
-      }
+      // String sessionTime;
+      // int minutes = 0;
+      // if (prefs.containsKey(SharedPrefsConstants.sessionTimeKey)) {
+      //   sessionTime = prefs.getString(SharedPrefsConstants.sessionTimeKey)!;
+      //   var sessionDT = DateFormat('yyyy-MM-dd HH:mm:ss').parse(sessionTime);
+      //   minutes = DateTime.now().difference(sessionDT).inMinutes;
+      // }
 
-      if (minutes > 119) {
-        Map<String, String> body = {"refresh_token": refreshToken};
-        final jsonObject =
-            await post(url: refreshTokenUrl, body: jsonEncode(body));
+      // if (minutes > 119) {
+      Map<String, String> body = {"refreshToken": refreshToken};
+      debug("rftgyhjuhgtfrderftghyjkjhygttgyhuj${body}");
+      final jsonObject = await postForRefreshToken(
+          url: refreshTokenUrl, body: jsonEncode(body));
 
-        accessToken = jsonObject["access_token"];
-        refreshToken = jsonObject["refresh_token"];
-        // debug("Refresh Token == $refreshToken");
-
-        await prefs.setString(SharedPrefsConstants.accessTokenKey, accessToken);
-        await prefs.setString(
-            SharedPrefsConstants.refreshTokenKey, refreshToken);
-        await prefs.setString(
-            SharedPrefsConstants.sessionTimeKey, DateTime.now().toString());
-      }
+      accessToken = jsonObject["authToken"];
+      refreshToken = jsonObject["refreshToken"];
+      // debug("Refresh Token == $refreshToken");
+      // debugLog("zauuu Token == $accessToken");
+      await prefs.setString(SharedPrefsConstants.accessTokenKey, accessToken);
+      await prefs.setString(SharedPrefsConstants.refreshTokenKey, refreshToken);
+      await prefs.setString(
+          SharedPrefsConstants.sessionTimeKey, DateTime.now().toString());
+      // }
     } on UnauthorisedException {
       //showAlert and Logout
       AppUtils.getAlert(AppUtils.currentContext!, [
@@ -128,6 +129,23 @@ class BaseListViewModel extends ChangeNotifier {
     }
   }
 
+  // ------------
+  Future<dynamic> postForRefreshToken({
+    required String url,
+    required String body,
+  }) async {
+    try {
+      return await BaseService().post(url: url, body: body);
+    } on UnauthorisedException {
+      AppUtils.getAlert(AppUtils.currentContext!, [
+        "You have been logged out!",
+      ], onPressed: () {
+        Navigator.pop(AppUtils.currentContext!);
+        AppUtils.logout(AppUtils.currentContext);
+      });
+    }
+  }
+
   Future<dynamic> post(
       {required String url,
       required String body,
@@ -139,7 +157,7 @@ class BaseListViewModel extends ChangeNotifier {
       log("response=>$r    api>>> ${url}");
       return r;
     } on UnauthorisedException {
-      await _refreshToken(url, jsonKey);
+      await _refreshToken(url);
       return await BaseService().post(url: url, body: body);
     }
   }
@@ -152,7 +170,7 @@ class BaseListViewModel extends ChangeNotifier {
       print("bodyyy user update=>$body");
       return await BaseService().put(url: url, body: body);
     } on UnauthorisedException {
-      await _refreshToken(url, jsonKey);
+      await _refreshToken(url);
       return await BaseService().put(url: url, body: body);
     }
   }
@@ -162,7 +180,7 @@ class BaseListViewModel extends ChangeNotifier {
       print("bdoodododododoy=>$body");
       return await BaseService().delete(url: url, body: body);
     } on UnauthorisedException {
-      // await _refreshToken(url, jsonKey);
+      await _refreshToken(url);
       return await BaseService().delete(url: url, body: body);
     }
   }
@@ -188,7 +206,7 @@ class BaseListViewModel extends ChangeNotifier {
       viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
       status = "Completed";
     } on UnauthorisedException {
-      await _refreshToken(url, jsonKey);
+      await _refreshToken(url);
       final jsonObject = await BaseService().post(url: url, body: body);
       print("jsonObject['errors'] error::::::${jsonObject['errors']}");
       if (jsonObject['errors'] != null) {

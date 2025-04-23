@@ -1129,8 +1129,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   }
 
                   String finalFormattedTime = '$dayLabel';
-                  print(
-                      "finalFormattedTime::: ${finalFormattedTime}  ${isSameDay}");
+                  // print(
+                  //     "finalFormattedTime::: ${finalFormattedTime}  ${isSameDay}");
                   String title = allMessages[index].title ?? "";
                   String msghistoryid = allMessages[index].id;
 
@@ -2428,8 +2428,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           padding: WidgetStateProperty.all(
                               const EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 10)),
-                          backgroundColor: WidgetStateProperty.all(
-                              AppColor.navBarIconColor),
+                          backgroundColor:
+                              WidgetStateProperty.all(AppColor.navBarIconColor),
                         ),
                         onPressed: () {
                           print(

@@ -283,6 +283,10 @@ class _LeadListViewState extends State<LeadListView> {
                             value: 'Closed - Not Converted',
                             child: Text('Closed - Not Converted'),
                           ),
+                          DropdownMenuItem(
+                            value: 'Proposal Stage',
+                            child: Text('Proposal Stage'),
+                          ),
                         ],
                         onChanged: (String? newValue) {
                           setState(() {
@@ -695,7 +699,7 @@ class _LeadListViewState extends State<LeadListView> {
       });
 
       socket!.onDisconnect((_) {
-        print(" WebSocket Disconnected");
+        // print(" WebSocket Disconnected");
       });
 
       socket!.onError((error) {

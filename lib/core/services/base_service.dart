@@ -15,7 +15,7 @@ class BaseService {
 
   Future<dynamic> post({required String url, required String body}) async {
     var token = await AppUtils.getToken();
-    // debug("Token == $token");
+    debugLog("Token a == $token");
     token ??= "";
     // printLongString("body base service send= $body");
     final responseJsonData = await _apiService.postResponse(url, body, token);

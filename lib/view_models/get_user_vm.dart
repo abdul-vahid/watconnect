@@ -23,7 +23,7 @@ class GetUserViewModel extends BaseListViewModel {
   Future<dynamic> updateProfile(String? id, GetUser updateUser) async {
     String url =
         AppUtils.getUrl("${AppConstants.updateUserAPIPath}/${updateUser.id}");
-    debug(updateUser.toJson());
+    debug("=================>>>>>>>>>>>>${updateUser.toJson()}");
     var result = put(url: url, body: updateUser.toJson());
     debug('updateProfile==$url');
     debug('result===$result');

@@ -216,7 +216,6 @@ class _UserListView extends State<UserListView> {
       enableDrag: false,
       builder: (BuildContext context) {
         List<String> uniqUserRoles = _paymentterms.toSet().toList();
-
         return Container(
           height: 200,
           width: double.infinity,
@@ -256,16 +255,17 @@ class _UserListView extends State<UserListView> {
                 ),
                 const SizedBox(height: 16),
                 Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.black,
-                      width: 0.2,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  // decoration: BoxDecoration(
+                  //   border: Border.all(
+                  //     color: Colors.black,
+                  //     width: 0.2,
+                  //   ),
+                  //   borderRadius: BorderRadius.circular(8),
+                  // ),
                   child: StatefulBuilder(
                     builder: (context, setState) {
                       return DropdownButton<String>(
+                        isDense: true,
                         hint: Text(
                           selectedRole ?? 'Select Role',
                           style: const TextStyle(color: Colors.black),
@@ -285,17 +285,15 @@ class _UserListView extends State<UserListView> {
                         isExpanded: true,
                         icon: const Icon(
                           Icons.arrow_drop_down,
-                          color: Colors.black, // Ensure icon is visible
+                          color: Colors.black,
                         ),
-                        underline:
-                            SizedBox(), // Removes default dropdown underline
+                        // underline: SizedBox(),
                       );
                     },
                   ),
                 ),
                 Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.end, // Align to the right
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     ElevatedButton(
                       onPressed: () {

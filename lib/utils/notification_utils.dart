@@ -162,7 +162,12 @@ class NotificationUtil {
 
   static Future<void> deleteFCMTokenOnLogout() async {
     try {
-      await _firebaseMessaging?.deleteToken();
+      print("deleting the token::::");
+      _firebaseMessaging?.deleteToken().then((_) {
+        print("Token deleted");
+      }).catchError((e) {
+        print("Error deleting token: $e");
+      });
     } catch (e) {
       debugPrint("Failed to delete FCM token: $e");
     }

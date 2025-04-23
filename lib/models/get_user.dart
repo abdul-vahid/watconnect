@@ -14,6 +14,7 @@ class GetUser extends BaseModel {
   String? managername;
   String? whatsapp_number;
   String? whatsapp_settings;
+  String? countrycode;
 
   GetUser(
       {this.id,
@@ -26,7 +27,8 @@ class GetUser extends BaseModel {
       this.managerid,
       this.managername,
       this.whatsapp_number,
-      this.whatsapp_settings});
+      this.whatsapp_settings,
+      this.countrycode});
 
   factory GetUser.fromMap(Map<String, dynamic> data) => GetUser(
         id: data['id']?.toString(),
@@ -40,6 +42,7 @@ class GetUser extends BaseModel {
         managerid: data['managerid']?.toString(),
         managername: data['managername']?.toString(),
         whatsapp_settings: data['whatsapp_settings']?.toString(),
+        countrycode: data['country_code']?.toString(),
       );
   @override
   GetUser fromMap(Map<String, dynamic> data) {
@@ -58,6 +61,7 @@ class GetUser extends BaseModel {
         if (managerid != null) 'managerid': managerid,
         if (whatsapp_number != null) 'whatsapp_number': whatsapp_number,
         if (managername != null) 'managername': managername,
+        if (countrycode != null) 'managername': countrycode,
       };
 
   /// `dart:convert`
