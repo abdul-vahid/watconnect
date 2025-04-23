@@ -6,6 +6,7 @@ import 'permission.dart';
 class UserModel extends BaseModel {
   bool? success;
   String? authToken;
+  String? refreshToken;
   String? username;
   String? userrole;
   String? companyname;
@@ -17,6 +18,7 @@ class UserModel extends BaseModel {
   UserModel({
     this.success,
     this.authToken,
+    this.refreshToken,
     this.username,
     this.userrole,
     this.companyname,
@@ -29,6 +31,7 @@ class UserModel extends BaseModel {
   factory UserModel.fromMap(Map<String, dynamic> data) => UserModel(
         success: data['success'] as bool?,
         authToken: data['authToken'] as String?,
+        refreshToken: data['refreshToken'] as String?,
         username: (data['username'] as String?)?.trim(), // Trimmed
         userrole: (data['userrole'] as String?)?.trim(), // Trimmed
         companyname: (data['companyname'] as String?)?.trim(), // Trimmed
@@ -49,6 +52,7 @@ class UserModel extends BaseModel {
   Map<String, dynamic> toMap() => {
         'success': success,
         'authToken': authToken,
+        'refreshToken': refreshToken,
         'username': username?.trim(), // Trimmed
         'userrole': userrole?.trim(), // Trimmed
         'companyname': companyname?.trim(), // Trimmed

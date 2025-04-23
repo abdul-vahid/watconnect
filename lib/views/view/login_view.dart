@@ -291,17 +291,27 @@ class _LoginViewState extends State<LoginView> {
           var userModel = records[0].model as UserModel;
           {
             AppUtils.onLoading(context, "Logging You, please wait...");
-            print(
-              "userModel::: ${userModel.success}   ${records[0].model}",
-            );
+            // print(
+            //   "userModel::: ${userModel.success}   ${records[0].model}",
+            // );
             if (!userListViewModel.isError && records.isNotEmpty) {
               var userModel = records[0].model as UserModel;
+
               SharedPreferences.getInstance().then((prefs) {
                 prefs.setString(
                   SharedPrefsConstants.userKey,
                   userModel.toJson(),
                 );
+                prefs.setString(
+                  SharedPrefsConstants.refreshTokenKey,
+                  userModel.refreshToken ?? '',
+                );
+                prefs.setString(
+                  SharedPrefsConstants.accessTokenKey,
+                  userModel.authToken ?? '',
+                );
               });
+
               AppUtils.getToken();
               Navigator.pop(context);
               Navigator.pushAndRemoveUntil(

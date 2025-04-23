@@ -205,7 +205,8 @@ class AppUtils {
       // debug(
       //     "refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!  ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!}");
       //var loginModelMap = records.map((item) => UserModel.fromMap(item)).toList();
-
+      userModel.authToken =
+          prefs.getString(SharedPrefsConstants.accessTokenKey);
       return userModel.authToken;
     } else {
       return null;
@@ -302,13 +303,16 @@ class AppUtils {
       {context}) {
     if (baseListViewModel.status == "Loading") {
       return AppUtils.getLoader();
-    } else if (baseListViewModel.status == "Error") {
-      Widget widget = AppUtils.getErrorWidget(baseListViewModel.exception);
-      Timer(Duration.zero, () {
-        isLoggedOut(context);
-      });
-      return widget;
-    } else if (baseListViewModel.viewModels.isNotEmpty) {
+    }
+    //  else if (baseListViewModel.status == "Error") {
+    //   Widget widget = AppUtils.getErrorWidget(baseListViewModel.exception);
+    //   Timer(Duration.zero, () {
+    //     isLoggedOut(context);
+    //   });
+
+    //   return widget;
+    // }
+    else if (baseListViewModel.viewModels.isNotEmpty) {
       return callBack();
     } else {
       return AppUtils.getNoRecordWidget();
@@ -323,12 +327,12 @@ class AppUtils {
     return '${AppConstants.baseUrl}${AppConstants.publicPath}/$logoUrl';
   }
 
-  static void viewPush(BuildContext context, Widget view) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => view),
-    );
-  }
+  // static void viewPush(BuildContext context, Widget view) {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => view),
+  //   );
+  // }
 
   static String getUrl(String path) {
     return AppConstants.baseUrl + path;

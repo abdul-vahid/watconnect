@@ -10,13 +10,12 @@ import '../utils/function_lib.dart';
 class APIService {
   Future getResponse(String url, String token) async {
     debug("url ----> $url");
-    debug("API Serivce URL = ${url.substring(6)}");
     dynamic responseJson;
     try {
       final response = await http.get(Uri.parse(url), headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': token,
+        'Authorization': 'Bearer $token',
       });
       responseJson = returnResponse(response);
     } on SocketException {
@@ -27,17 +26,18 @@ class APIService {
   }
 
   Future<dynamic> postResponse(String url, var body, String token) async {
-    // print("dataaa=>>>>>>>>>>>>>>>$body");
+    print("url=>>>>>>>>>>>>>>> $url");
     //debug("API Serivce URL = ${url.substring(6)}");
     dynamic responseJson;
     try {
       final response = await http.post(Uri.parse(url), body: body, headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': token,
+        'Authorization': 'Bearer $token',
       });
 
       responseJson = returnResponse(response);
+      print("url=>>>>>>>>>>>>>>>111 $url");
     } on SocketException {
       throw FetchDataException('No Internet Connection');
     }

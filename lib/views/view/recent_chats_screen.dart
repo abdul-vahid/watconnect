@@ -132,42 +132,14 @@ class _RecentChatViewState extends State<RecentChatView> {
     //   }
     // }
 
-    unreadCountVm = Provider.of<UnreadCountVm>(context);
+    // unreadCountVm = Provider.of<UnreadCountVm>(context);
     leadlistvm = Provider.of<LeadListViewModel>(context);
-    userlistvm = Provider.of<UserDataListViewModel>(context);
+    // userlistvm = Provider.of<UserDataListViewModel>(context);
 
     // print("unreadCountVm::: ${unreadCountVm?.viewModels[0].toString()}");
 
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          //   child: CircleAvatar(
-          //     backgroundColor: AppColor.navBarIconColor,
-          //     child: IconButton(
-          //       icon: const Icon(
-          //         FontAwesomeIcons.add,
-          //         size: 25,
-          //         color: Colors.white,
-          //       ),
-          //       onPressed: () {
-          //         Navigator.push(
-          //           context,
-          //           MaterialPageRoute(
-          //             builder: (context) => LeadAddView(),
-          //           ),
-          //         );
-          //       },
-          //     ),
-          //   ),
-          // ),
-        ],
-        // leading: IconButton(
-        //   icon: const Icon(Icons.arrow_back,
-        //       color: Color.fromARGB(255, 255, 255, 255)),
-        //   onPressed: () => Navigator.of(context).pop(),
-        // ),
         automaticallyImplyLeading: false,
         title: const Text(
           'Recent Chats',
@@ -216,7 +188,7 @@ class _RecentChatViewState extends State<RecentChatView> {
       ),
       body: RefreshIndicator(
         onRefresh: _pullRefresh,
-        child: AppUtils.getAppBody(leadlistvm!, _pageBody),
+        child: AppUtils.getAppBody(leadlistvm, _pageBody),
       ),
     );
   }
@@ -644,35 +616,40 @@ class _RecentChatViewState extends State<RecentChatView> {
       print(
           " dbfjsdlvdsl}::: }  ${leadlistvm.viewModels}   ${leadlistvm.viewModels.runtimeType}   ${leadlistvm.viewModels.length} ");
 
-      for (var viewModel in leadlistvm.viewModels ?? []) {
-        var recentMsgmodel = viewModel.model;
-        if (recentMsgmodel?.records != null) {
-          allRecentChats = [];
-          for (var record in recentMsgmodel!.records!) {
-            allRecentChats.add(record);
-            tempLeadModelList.add(record);
+      try {
+        for (var viewModel in leadlistvm.viewModels ?? []) {
+          var recentMsgmodel = viewModel.model;
+          if (recentMsgmodel?.records != null) {
+            allRecentChats = [];
+            for (var record in recentMsgmodel!.records!) {
+              allRecentChats.add(record);
+              tempLeadModelList.add(record);
+            }
           }
         }
+      } catch (e) {
+        print("e:::::::: ${e}");
+        allRecentChats = [];
       }
 
       print(" dbfjsdlvdsl${allRecentChats}");
-      List prioritizedLeads = [];
-      List otherLeads = [];
+      // List prioritizedLeads = [];
+      // List otherLeads = [];
 
-      for (var lead in allRecentChats) {
-        bool hasUnread = unreadList.any(
-          (unread) =>
-              unread.whatsappNumber.toString().contains(lead.whatsapp_number),
-        );
+      // for (var lead in allRecentChats) {
+      //   bool hasUnread = unreadList.any(
+      //     (unread) =>
+      //         unread.whatsappNumber.toString().contains(lead.whatsapp_number),
+      //   );
 
-        if (hasUnread) {
-          prioritizedLeads.add(lead);
-        } else {
-          otherLeads.add(lead);
-        }
-      }
+      //   if (hasUnread) {
+      //     prioritizedLeads.add(lead);
+      //   } else {
+      //     otherLeads.add(lead);
+      //   }
+      // }
 
-      allRecentChats = [...prioritizedLeads, ...otherLeads];
+      // allRecentChats = [...prioritizedLeads, ...otherLeads];
 
       setState(() {});
     });

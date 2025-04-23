@@ -41,6 +41,7 @@ class _ProfileViewState extends State<ProfileView> {
   String? email;
   String? phone;
   String? id;
+  String? countrycode;
 
   String? contactName;
   String? userRole;
@@ -142,8 +143,12 @@ class _ProfileViewState extends State<ProfileView> {
       lName = model.lastname ?? "";
       email = model.email ?? "";
       phone = model.phone ?? "";
+      countrycode = model.countrycode ?? "";
+      print("countyr code ${model.countrycode}");
       print(
           "viewModel.model:::>>>>> ${model.whatsapp_number}   ${model.whatsapp_settings}");
+
+      print("phonephonephone${phone}");
     }
 
     AppUtils.currentContext = context;
@@ -168,6 +173,7 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _getBody() {
+    String fullPhone = "${user!.countrycode} ${user!.whatsapp_number}";
     String fullname = fName! + lName!;
     print("this func call when refresh");
 
@@ -308,17 +314,19 @@ class _ProfileViewState extends State<ProfileView> {
                               size: 23, color: Colors.white),
                           onSelected: (value) {
                             if (value == 'edit') {
+                              print(
+                                  "phone===>Phone==>Pjp${user!.whatsapp_number}");
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => EditProfileView(
-                                    id: id,
-                                    user: user,
-                                    firstName: fName,
-                                    lastName: lName,
-                                    email: email,
-                                    phone: phone,
-                                  ),
+                                      id: id,
+                                      user: user,
+                                      firstName: fName,
+                                      lastName: lName,
+                                      email: email,
+                                      phone: user!.whatsapp_number,
+                                      countrycode: countrycode),
                                 ),
                               ).then((value) => Provider.of<GetUserViewModel>(
                                       context,
@@ -354,7 +362,7 @@ class _ProfileViewState extends State<ProfileView> {
                       const Divider(),
                       getRow("Email", email),
                       const Divider(),
-                      getRow("Phone", phone),
+                      getRow("Phone", fullPhone),
                     ],
                   ),
                 ],
