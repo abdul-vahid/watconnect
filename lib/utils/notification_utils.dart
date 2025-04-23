@@ -24,7 +24,6 @@ class NotificationUtil {
   NotificationUtil(this.context);
 
   void initialize() {
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     LocalNotificationService.initialize();
     registerToken();
 
@@ -121,6 +120,7 @@ class NotificationUtil {
       debug("No matching lead found for ID: $leadId");
       return;
     }
+    print("From Page ::: 2");
     Navigator.push(
       cntxt,
       MaterialPageRoute(
@@ -141,6 +141,8 @@ class NotificationUtil {
   //   debug("Background FCM: ${message.notification?.title}");
   //   LocalNotificationService.displayNotification(message);
   // }
+
+  @pragma('vm:entry-point')
   static Future<void> firebaseMessagingBackgroundHandler(
       RemoteMessage message) async {
     print("message firebaseMessagingBackgroundHandler::: ");
@@ -178,6 +180,7 @@ class NotificationUtil {
   }
 }
 
+@pragma('vm:entry-point')
 Future<String> downloadAndSaveImage(String url, String fileName) async {
   final directory = await getApplicationDocumentsDirectory();
   final filePath = '${directory.path}/$fileName';
@@ -187,6 +190,7 @@ Future<String> downloadAndSaveImage(String url, String fileName) async {
   return filePath;
 }
 
+@pragma('vm:entry-point')
 Future<void> showImageNotification(
     RemoteMessage message, String filePath) async {
   final BigPictureStyleInformation bigPictureStyleInformation =

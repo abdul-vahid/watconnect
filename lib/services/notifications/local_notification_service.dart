@@ -88,6 +88,7 @@ class LocalNotificationService {
   }
 
   static Future<void> displayNotification(RemoteMessage message) async {
+    print("is this called once::::::::::::::::::::");
     try {
       final int id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -123,9 +124,9 @@ class LocalNotificationService {
 
       final NotificationDetails notificationDetails = NotificationDetails(
         android: AndroidNotificationDetails(
-          'i_digi_school',
-          'iDigiSchool',
-          channelDescription: 'iDigiSchool Notifications',
+          'spark',
+          'Spark',
+          channelDescription: 'Spark',
           playSound: true,
           priority: Priority.high,
           importance: Importance.max,
@@ -192,7 +193,7 @@ class LocalNotificationService {
       debug("No matching lead found for ID: $leadId");
       return;
     }
-
+    print("From Page ::: 1");
     Navigator.push(
       cntxt,
       MaterialPageRoute(

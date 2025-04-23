@@ -1,11 +1,15 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 // import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:whatsapp/services/notifications/local_notification_service.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:whatsapp/utils/function_lib.dart';
+import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
 import 'package:whatsapp/view_models/campaign_chart_vm.dart';
 import 'package:whatsapp/view_models/groups_view_model.dart';
@@ -43,6 +47,7 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   runApp(const MyApp());
 }
 
@@ -92,5 +97,28 @@ class MyApp extends StatelessWidget {
         home: const SplashView(),
       ),
     );
+  }
+}
+
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("message firebaseMessagingBackgroundHandler::: ");
+  debug("Background FCM:  ${message} ${message.notification?.title}");
+
+  // Check for image URL in the background message
+  final imageUrl = message.data['fileUrl'];
+
+  if (imageUrl != null && imageUrl.isNotEmpty) {
+    try {
+      final filePath = await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
+      print("filePath:  remoteMessage:: ${filePath}   ${message}");
+      await showImageNotification(message, filePath);
+    } catch (e) {
+      debugPrint("Image download failed, fallback to text notification: $e");
+      LocalNotificationService.displayNotification(message);
+    }
+  } else {
+    print("inside the elsee::::");
+    LocalNotificationService.displayNotification(message);
   }
 }
