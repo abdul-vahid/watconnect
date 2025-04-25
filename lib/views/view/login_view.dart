@@ -150,9 +150,9 @@ class _LoginViewState extends State<LoginView> {
                             margin: const EdgeInsets.symmetric(horizontal: 10),
                             height: 50,
                             child: ElevatedButton.icon(
-                              icon: const Icon(Icons.code),
+                              // icon: const Icon(Icons.code),
                               label: const Text(
-                                'Node.js',
+                                'Login',
                                 style: TextStyle(fontSize: 16),
                               ),
                               style: ElevatedButton.styleFrom(
@@ -166,29 +166,29 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
                         ),
-                        Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 10),
-                            height: 50,
-                            child: ElevatedButton.icon(
-                              icon: const Icon(Icons.cloud),
-                              label: const Text(
-                                'Salesforce',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: const Color(0xFF233A73),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                              ),
-                              onPressed: () => {
-                                SalesforceAuth.loginWithSalesforce(context),
-                              },
-                            ),
-                          ),
-                        ),
+                        // Expanded(
+                        //   child: Container(
+                        //     margin: const EdgeInsets.symmetric(horizontal: 10),
+                        //     height: 50,
+                        //     child: ElevatedButton.icon(
+                        //       icon: const Icon(Icons.cloud),
+                        //       label: const Text(
+                        //         'Salesforce',
+                        //         style: TextStyle(fontSize: 16),
+                        //       ),
+                        //       style: ElevatedButton.styleFrom(
+                        //         foregroundColor: Colors.white,
+                        //         backgroundColor: const Color(0xFF233A73),
+                        //         shape: RoundedRectangleBorder(
+                        //           borderRadius: BorderRadius.circular(30),
+                        //         ),
+                        //       ),
+                        //       onPressed: () => {
+                        //         SalesforceAuth.loginWithSalesforce(context),
+                        //       },
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                     const SizedBox(height: 40),
