@@ -351,65 +351,73 @@ class _UserListView extends State<UserListView> {
     return Column(
       children: [
         Expanded(
-          child: ListView.builder(
-              itemCount: allUsers.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(
-                        vertical: 0.1, horizontal: 7),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: const Border(
-                        left: BorderSide(
-                          color: AppColor.navBarIconColor,
-                          width: 5,
+          child: allUsers.isEmpty
+              ? Center(
+                  child: Text(
+                    "No Users Available",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: allUsers.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 0.1, horizontal: 7),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: const Border(
+                            left: BorderSide(
+                              color: AppColor.navBarIconColor,
+                              width: 5,
+                            ),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 2,
+                              spreadRadius: 2,
+                              offset: const Offset(2, 4),
+                            ),
+                          ],
                         ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 2,
-                          spreadRadius: 2,
-                          offset: const Offset(2, 4),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 10, bottom: 8),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => UserDetailView(
-                                        model: allUsers[index],
-                                      )));
-                        },
-                        child: ListTile(
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "${allUsers[index].firstname} ${allUsers[index].lastname}",
-                                style: const TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.bold),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 10, bottom: 8),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => UserDetailView(
+                                            model: allUsers[index],
+                                          )));
+                            },
+                            child: ListTile(
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${allUsers[index].firstname} ${allUsers[index].lastname}",
+                                    style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    allUsers[index].userrole ?? "",
+                                    style: const TextStyle(
+                                        fontSize: 14, height: 1.5),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                allUsers[index].userrole ?? "",
-                                style:
-                                    const TextStyle(fontSize: 14, height: 1.5),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                );
-              }),
+                    );
+                  }),
           //     child: ListView(
           //   children: getLeadWidgets(),
           // )

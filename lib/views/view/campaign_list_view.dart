@@ -818,6 +818,9 @@ class _CampaignListView extends State<CampaignListView> {
   double? _progress;
   final List<String> _paymentterms = [];
   List allCampaigns = [];
+
+  List tempCampaigns = [];
+
   CampaignModel? campginmodel;
   CampaignViewModel? campaign;
   List<CampaignViewModel> campginModelList = [];
@@ -868,7 +871,9 @@ class _CampaignListView extends State<CampaignListView> {
           if (record.campaignStatus != null) {
             _paymentterms.add(record.campaignStatus!);
             print("selectedcampaign:::${selectedcampaign}");
-            if (selectedcampaign != null) {
+            if (selectedcampaign == 'All') {
+              allCampaigns.add(record);
+            } else if (selectedcampaign != null) {
               print(
                   "record.campaignStatus.toString()::: ${record.campaignStatus.toString()}");
               if (record.campaignStatus.toString().toLowerCase() ==
@@ -878,6 +883,7 @@ class _CampaignListView extends State<CampaignListView> {
             } else {
               allCampaigns.add(record);
             }
+
             if (searchcampaign.isNotEmpty) {
               List tempUsers = allCampaigns;
               allCampaigns = [];
@@ -890,6 +896,8 @@ class _CampaignListView extends State<CampaignListView> {
             }
           }
         }
+
+        tempCampaigns = allCampaigns;
         setState(() {});
         print(
             "Record Campaign allCampaigns: ${allCampaigns.length}   ${allCampaigns.runtimeType}");
@@ -1020,6 +1028,7 @@ class _CampaignListView extends State<CampaignListView> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             List<String> uniquePaymentTerms = _paymentterms.toSet().toList();
+            uniquePaymentTerms.add("All");
             print("uniqq=>$uniquePaymentTerms");
             return Container(
               height: 220,
@@ -1124,6 +1133,7 @@ class _CampaignListView extends State<CampaignListView> {
   }
 
   void _searchLeads(String filter) {
+    print("filyerL:::: ${filter}");
     searchcampaign = filter.trim().toLowerCase();
     setState(() {});
   }
@@ -1133,22 +1143,31 @@ class _CampaignListView extends State<CampaignListView> {
         "filter:::::${filter}  ${tempLeadModelList.length} ${campginModelList.length}  ${allCampaigns.length}  ${allCampaigns.runtimeType}");
 
     if (filter == null || filter.isEmpty) return;
-    setState(() {
-      allCampaigns.forEach(
-        (element) {
-          print("element camp staus:: ${element.campaignStatus}");
-        },
-      );
-      allCampaigns = [];
 
-      allCampaigns = allCampaigns.where((lead) {
-        print('Checking campaign: ${lead}');
-        return lead.campaignStatus?.toLowerCase() == filter.toLowerCase();
-      }).toList();
-
-      print("cammam${allCampaigns.length}");
+    if (filter == 'All') {
+      allCampaigns = tempCampaigns;
       Navigator.pop(context);
-    });
+
+      setState(() {});
+      return;
+    } else {
+      setState(() {
+        allCampaigns.forEach(
+          (element) {
+            print("element camp staus:: ${element.campaignStatus}");
+          },
+        );
+        allCampaigns = [];
+
+        allCampaigns = allCampaigns.where((lead) {
+          print('Checking campaign: ${lead}');
+          return lead.campaignStatus?.toLowerCase() == filter.toLowerCase();
+        }).toList();
+
+        print("cammam${allCampaigns.length}");
+        Navigator.pop(context);
+      });
+    }
   }
 //   String getCampaignStatus(String? startDate, String? endDate) {
 //   if (startDate == null || endDate == null) return "Unknown";

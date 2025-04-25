@@ -433,39 +433,45 @@ class _LeadListViewState extends State<LeadListView> {
     return Column(
       children: [
         Expanded(
-          child: noMatchedLeads || noRecordFound
+          child: updateLoader
               ? Center(
-                  child: Text(
-                    "No Record Found",
-                    style: TextStyle(fontSize: 20),
-                  ),
-                )
-              : allLeads.isEmpty
+                  child: Container(
+                      height: 50,
+                      width: 50,
+                      child: CircularProgressIndicator()))
+              : noMatchedLeads || noRecordFound
                   ? Center(
                       child: Text(
-                        "No Leads Available..",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
+                        "No Record Found",
+                        style: TextStyle(fontSize: 20),
                       ),
                     )
-                  : ListView.builder(
-                      itemCount: allLeads.length,
-                      itemBuilder: (context, index) {
-                        var unreadCount = "0";
-                        var lead = allLeads[index];
+                  : allLeads.isEmpty
+                      ? Center(
+                          child: Text(
+                            "No Leads Available..",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: allLeads.length,
+                          itemBuilder: (context, index) {
+                            var unreadCount = "0";
+                            var lead = allLeads[index];
 
-                        for (var p in unreadList) {
-                          if (p.whatsappNumber
-                              .toString()
-                              .contains(lead.whatsapp_number)) {
-                            unreadCount = p.unreadMsgCount;
-                            break;
-                          }
-                        }
+                            for (var p in unreadList) {
+                              if (p.whatsappNumber
+                                  .toString()
+                                  .contains(lead.whatsapp_number)) {
+                                unreadCount = p.unreadMsgCount;
+                                break;
+                              }
+                            }
 
-                        return leadRecordList(lead, unreadCount);
-                      },
-                    ),
+                            return leadRecordList(lead, unreadCount);
+                          },
+                        ),
         ),
       ],
     );
@@ -735,21 +741,23 @@ class _LeadListViewState extends State<LeadListView> {
   bool filterLeads(String? filter) {
     leadModelList = tempLeadModelList;
     if (filter == null) return false;
-    List<dynamic> matchleads = leadModelList
-        .where((lead) => lead.leadstatus?.toLowerCase() == filter.toLowerCase())
-        .toList();
+
     if (filter == 'All') {
       allLeads = tempLeadModelList;
       setState(() {});
-      return;
+      return false;
+    } else {
+      List<dynamic> matchleads = leadModelList
+          .where(
+              (lead) => lead.leadstatus?.toLowerCase() == filter.toLowerCase())
+          .toList();
+      setState(() {
+        allLeads = matchleads;
+        noRecordFound = matchleads.isEmpty;
+      });
+      print("matchleadsmatchleads${matchleads}");
+      return matchleads.isEmpty;
     }
-    setState(() {
-      allLeads = matchleads;
-      noRecordFound = matchleads.isEmpty;
-    });
-    print("matchleadsmatchleads${matchleads}");
-
-    return matchleads.isEmpty;
   }
 
   Future<void> connectSocket() async {
@@ -807,8 +815,11 @@ class _LeadListViewState extends State<LeadListView> {
     }
   }
 
+  bool updateLoader = false;
   Future<void> getLeadList() async {
-    // leadlistvm = Provider.of<LeadListViewModel>(context, listen: false);
+    setState(() {
+      updateLoader = true;
+    });
     await Provider.of<LeadListViewModel>(context, listen: false)
         .fetch()
         .then((onValue) {
@@ -819,6 +830,7 @@ class _LeadListViewState extends State<LeadListView> {
         tempLeadModelList.add(viewModel.model);
         allLeads.add(viewModel.model);
       }
+
       List prioritizedLeads = [];
       List otherLeads = [];
 
@@ -836,8 +848,14 @@ class _LeadListViewState extends State<LeadListView> {
       }
 
       allLeads = [...prioritizedLeads, ...otherLeads];
-
+      setState(() {
+        updateLoader = false;
+      });
       setState(() {});
+    });
+
+    setState(() {
+      updateLoader = false;
     });
   }
 }

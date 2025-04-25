@@ -257,7 +257,7 @@ class _Forms extends State<LeadAddView> {
   Map<String, String> code = {};
   bool isEdit = false;
   String? selectedCountry;
-
+  String? leadStatus;
 // ---country code -----
   void fillCountryCodeMap() {
     for (var item in _countrycode) {
@@ -289,6 +289,9 @@ class _Forms extends State<LeadAddView> {
     if (isEdit) {
       print("widget.model?.countryCode:::: ${widget.model?.countryCode}");
       selectedCountry = widget.model?.countryCode;
+    } else {
+      leadStatus = _leadsstatus[0];
+      _leadstatus = _leadsstatus[0];
     }
     fillCountryCodeMap();
     selectedCountry = countryCodeMap.keys.first;
@@ -630,7 +633,7 @@ class _Forms extends State<LeadAddView> {
                       validator: (value) =>
                           value == null ? 'Please Provide Status' : null,
                       data: _leadsstatus,
-                      value: widget.model?.leadstatus,
+                      value: leadStatus ?? widget.model?.leadstatus,
                     ),
                     const SizedBox(height: 10),
                     const Text('Assigned User'),
@@ -958,6 +961,7 @@ class _Forms extends State<LeadAddView> {
   }
 
   void onButtonPressed() {
+    print("_leadstatus::: ${_leadstatus}");
     // ignore: prefer_typing_uninitialized_variables
     var userId;
     if (_addleadFormKey.currentState!.validate()) {
@@ -1066,6 +1070,7 @@ class _Forms extends State<LeadAddView> {
   // }
 
   Future<void> updateData() async {
+    print("_leadstatus:::${_leadstatus}");
     var userId;
     userId = userMap.keys
         .firstWhere((k) => userMap[k] == _asignStaff, orElse: () => null);
