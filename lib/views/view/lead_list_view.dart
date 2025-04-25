@@ -287,6 +287,10 @@ class _LeadListViewState extends State<LeadListView> {
                             value: 'Proposal Stage',
                             child: Text('Proposal Stage'),
                           ),
+                          DropdownMenuItem(
+                            value: 'All',
+                            child: Text('All'),
+                          ),
                         ],
                         onChanged: (String? newValue) {
                           setState(() {
@@ -371,22 +375,32 @@ class _LeadListViewState extends State<LeadListView> {
     return Column(
       children: [
         Expanded(
-            child: ListView.builder(
-          itemCount: allLeads.length,
-          itemBuilder: (context, index) {
-            var unreadCount = "0";
-            var lead = allLeads[index];
+            child: allLeads.isEmpty
+                ? Center(
+                    child: Text(
+                      "No Leads Available..",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: allLeads.length,
+                    itemBuilder: (context, index) {
+                      var unreadCount = "0";
+                      var lead = allLeads[index];
 
-            for (var p in unreadList) {
-              if (p.whatsappNumber.toString().contains(lead.whatsapp_number)) {
-                unreadCount = p.unreadMsgCount;
-                break;
-              }
-            }
+                      for (var p in unreadList) {
+                        if (p.whatsappNumber
+                            .toString()
+                            .contains(lead.whatsapp_number)) {
+                          unreadCount = p.unreadMsgCount;
+                          break;
+                        }
+                      }
 
-            return leadRecordList(lead, unreadCount);
-          },
-        ))
+                      return leadRecordList(lead, unreadCount);
+                    },
+                  ))
       ],
     );
   }
@@ -654,8 +668,13 @@ class _LeadListViewState extends State<LeadListView> {
   void filterLeads(String? filter) {
     leadModelList = tempLeadModelList;
     if (filter == null) return;
+    if (filter == 'All') {
+      allLeads = tempLeadModelList;
+      setState(() {});
+      return;
+    }
     setState(() {
-      allLeads = allLeads
+      allLeads = tempLeadModelList
           .where(
               (lead) => lead.leadstatus?.toLowerCase() == filter.toLowerCase())
           .toList();
