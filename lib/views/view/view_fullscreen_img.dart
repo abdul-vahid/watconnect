@@ -30,7 +30,6 @@ class _PreviewImageState extends State<PreviewImage> {
       } else {
         throw Exception("Unsupported platform");
       }
-
       if (!await directory.exists()) {
         await directory.create(recursive: true);
       }
