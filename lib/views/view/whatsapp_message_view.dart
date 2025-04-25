@@ -31,6 +31,7 @@ import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
+import 'package:whatsapp/views/view/open_docs.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
 import 'package:whatsapp/views/view/view_fullscreen_img.dart';
@@ -717,9 +718,11 @@ class _ChatScreenState extends State<ChatScreen> {
       ],
     );
     if (pickedFile != null) {
+      EasyLoading.showToast("Picked Successfully");
       setState(() {
         file = pickedFile.files.first;
         image = File(file!.path!);
+        isImageSent = false;
         print("image::: ${image}");
         fileNameController.text = file!.name;
       });
@@ -1545,10 +1548,17 @@ class _ChatScreenState extends State<ChatScreen> {
                                       decoration: BoxDecoration(
                                         borderRadius:
                                             BorderRadius.circular(8.0),
-                                        image: DecorationImage(
-                                          image: FileImage(image!),
-                                          fit: BoxFit.cover,
-                                        ),
+                                        // image: DecorationImage(
+                                        //   image: FileImage(image!),
+                                        //   fit: BoxFit.cover,
+                                        // ),
+                                      ),
+                                      child: Image.asset(
+                                        "assets/images/file.png",
+                                        width: 50,
+                                        height: 50,
+                                        fit: BoxFit
+                                            .cover, // Ensures full coverage
                                       ),
                                     )
                           : const SizedBox.shrink(),
@@ -1639,6 +1649,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       .isNotEmpty) {
                                     setState(() {
                                       showLoader = false;
+
                                       image = null;
                                       getHistory();
                                     });
@@ -2975,7 +2986,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildAttachmentWidget(String url) {
     String fileType = url.split('.').last.toLowerCase();
-
+    print("printing:: file type::: ${fileType}");
     switch (fileType) {
       case 'pdf':
         return InkWell(
@@ -2989,6 +3000,46 @@ class _ChatScreenState extends State<ChatScreen> {
             },
             child: Image.asset("assets/images/pdf.png",
                 height: 120, width: MediaQuery.of(context).size.width * 0.65));
+
+      case 'docx':
+      case 'doc':
+        return InkWell(
+            onTap: () {
+              openDocument(context, url);
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) => OpenAllDocs(
+              //               url: url,
+              //             )));
+            },
+            child: Image.asset("assets/images/doc.png",
+                height: 120, width: MediaQuery.of(context).size.width * 0.65));
+
+      case 'pptx':
+      case 'ppt':
+        return InkWell(
+            onTap: () {
+              openDocument(context, url);
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) => OpenAllDocs(
+              //               url: url,
+              //             )));
+            },
+            child: Image.asset("assets/images/powerpoint.png",
+                height: 120, width: MediaQuery.of(context).size.width * 0.65));
+
+      case 'xlsx':
+      case 'xls':
+        return InkWell(
+            onTap: () {
+              openDocument(context, url);
+            },
+            child: Image.asset("assets/images/excel.png",
+                height: 120, width: MediaQuery.of(context).size.width * 0.65));
+
       case 'mp4':
         return InkWell(
             onTap: () {
@@ -3011,74 +3062,18 @@ class _ChatScreenState extends State<ChatScreen> {
                       builder: (context) => PreviewImage(
                             imgUrl: url,
                           )));
-
-              // showDialog(
-              //   context: context,
-              //   builder: (BuildContext context) {
-              //     return AlertDialog(
-              //       title: const Text("Image Details"),
-              //       content: Column(
-              //         mainAxisSize: MainAxisSize.min,
-              //         children: [
-              //           Image.network(
-              //             url,
-              //             height: 300,
-              //             width: 300,
-              //             fit: BoxFit.cover,
-              //             loadingBuilder: (BuildContext context, Widget child,
-              //                 ImageChunkEvent? loadingProgress) {
-              //               if (loadingProgress == null) {
-              //                 return child;
-              //               } else {
-              //                 return Center(
-              //                   child: CircularProgressIndicator(
-              //                     value: loadingProgress.expectedTotalBytes !=
-              //                             null
-              //                         ? loadingProgress.cumulativeBytesLoaded /
-              //                             (loadingProgress.expectedTotalBytes ??
-              //                                 1)
-              //                         : null,
-              //                   ),
-              //                 );
-              //               }
-              //             },
-              //             errorBuilder: (context, error, stackTrace) {
-              //               return const SizedBox.shrink();
-              //             },
-              //           ),
-              //         ],
-              //       ),
-              //       actions: <Widget>[
-              //         TextButton(
-              //           onPressed: () {
-              //             Navigator.of(context).pop();
-              //           },
-              //           child: Container(
-              //             padding: const EdgeInsets.symmetric(
-              //                 vertical: 8, horizontal: 16),
-              //             decoration: BoxDecoration(
-              //               color: AppColor.navBarIconColor,
-              //               borderRadius: BorderRadius.circular(8),
-              //             ),
-              //             child: const Text(
-              //               "Close",
-              //               style: TextStyle(
-              //                 color: Colors.white,
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //       ],
-              //     );
-              //   },
-              // );
             },
             child: Image.network(url,
                 height: 120,
                 width: MediaQuery.of(context).size.width * 0.65,
                 fit: BoxFit.cover));
       default:
-        return SizedBox.shrink();
+        return InkWell(
+            onTap: () {
+              openDocument(context, url);
+            },
+            child: Image.asset("assets/images/file.png",
+                height: 120, width: MediaQuery.of(context).size.width * 0.65));
     }
   }
 
@@ -3192,7 +3187,6 @@ class _ChatScreenState extends State<ChatScreen> {
       case "DOCUMENT":
         return InkWell(
           onTap: () {
-            // print("headerBody>>> ${headerBody}");
             try {
               Navigator.push(
                   context,
@@ -3336,5 +3330,35 @@ class _ChatScreenState extends State<ChatScreen> {
     return date1.year == date2.year &&
         date1.month == date2.month &&
         date1.day == date2.day;
+  }
+
+  void openDocument(BuildContext context, String url) async {
+    final filename = url.split('/').last;
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/$filename');
+
+    // Show loading dialog (optional)
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // Check and download
+    if (!await file.exists()) {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        await file.writeAsBytes(response.bodyBytes);
+      } else {
+        Navigator.pop(context); // remove loader
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to download file')),
+        );
+        return;
+      }
+    }
+
+    Navigator.pop(context); // remove loader
+    OpenFile.open(file.path); // open the file
   }
 }

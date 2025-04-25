@@ -818,6 +818,9 @@ class _CampaignListView extends State<CampaignListView> {
   double? _progress;
   final List<String> _paymentterms = [];
   List allCampaigns = [];
+
+  List tempCampaigns = [];
+
   CampaignModel? campginmodel;
   CampaignViewModel? campaign;
   List<CampaignViewModel> campginModelList = [];
@@ -868,7 +871,9 @@ class _CampaignListView extends State<CampaignListView> {
           if (record.campaignStatus != null) {
             _paymentterms.add(record.campaignStatus!);
             print("selectedcampaign:::${selectedcampaign}");
-            if (selectedcampaign != null) {
+            if (selectedcampaign == 'All') {
+              allCampaigns.add(record);
+            } else if (selectedcampaign != null) {
               print(
                   "record.campaignStatus.toString()::: ${record.campaignStatus.toString()}");
               if (record.campaignStatus.toString().toLowerCase() ==
@@ -878,6 +883,7 @@ class _CampaignListView extends State<CampaignListView> {
             } else {
               allCampaigns.add(record);
             }
+
             if (searchcampaign.isNotEmpty) {
               List tempUsers = allCampaigns;
               allCampaigns = [];
@@ -890,6 +896,8 @@ class _CampaignListView extends State<CampaignListView> {
             }
           }
         }
+
+        tempCampaigns = allCampaigns;
         setState(() {});
         print(
             "Record Campaign allCampaigns: ${allCampaigns.length}   ${allCampaigns.runtimeType}");
@@ -1020,6 +1028,7 @@ class _CampaignListView extends State<CampaignListView> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             List<String> uniquePaymentTerms = _paymentterms.toSet().toList();
+            uniquePaymentTerms.add("All");
             print("uniqq=>$uniquePaymentTerms");
             return Container(
               height: 220,
@@ -1124,6 +1133,7 @@ class _CampaignListView extends State<CampaignListView> {
   }
 
   void _searchLeads(String filter) {
+    print("filyerL:::: ${filter}");
     searchcampaign = filter.trim().toLowerCase();
     setState(() {});
   }
@@ -1133,22 +1143,31 @@ class _CampaignListView extends State<CampaignListView> {
         "filter:::::${filter}  ${tempLeadModelList.length} ${campginModelList.length}  ${allCampaigns.length}  ${allCampaigns.runtimeType}");
 
     if (filter == null || filter.isEmpty) return;
-    setState(() {
-      allCampaigns.forEach(
-        (element) {
-          print("element camp staus:: ${element.campaignStatus}");
-        },
-      );
-      allCampaigns = [];
 
-      allCampaigns = allCampaigns.where((lead) {
-        print('Checking campaign: ${lead}');
-        return lead.campaignStatus?.toLowerCase() == filter.toLowerCase();
-      }).toList();
-
-      print("cammam${allCampaigns.length}");
+    if (filter == 'All') {
+      allCampaigns = tempCampaigns;
       Navigator.pop(context);
-    });
+
+      setState(() {});
+      return;
+    } else {
+      setState(() {
+        allCampaigns.forEach(
+          (element) {
+            print("element camp staus:: ${element.campaignStatus}");
+          },
+        );
+        allCampaigns = [];
+
+        allCampaigns = allCampaigns.where((lead) {
+          print('Checking campaign: ${lead}');
+          return lead.campaignStatus?.toLowerCase() == filter.toLowerCase();
+        }).toList();
+
+        print("cammam${allCampaigns.length}");
+        Navigator.pop(context);
+      });
+    }
   }
 //   String getCampaignStatus(String? startDate, String? endDate) {
 //   if (startDate == null || endDate == null) return "Unknown";
@@ -1173,197 +1192,217 @@ class _CampaignListView extends State<CampaignListView> {
     return Column(
       children: [
         Expanded(
-          child: ListView.builder(
-            itemCount: allCampaigns.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 1),
-                child: Container(
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 1, horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    border: const Border(
-                      left:
-                          BorderSide(color: AppColor.navBarIconColor, width: 5),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 2,
-                        spreadRadius: 2,
-                        offset: const Offset(2, 4),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 1, bottom: 2),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                CampaignDetailView(record: allCampaigns[index]),
+          child: allCampaigns.isEmpty
+              ? Center(
+                  child: Text(
+                  "No Campaign Found...",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ))
+              : ListView.builder(
+                  itemCount: allCampaigns.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 1),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 1, horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: const Border(
+                            left: BorderSide(
+                                color: AppColor.navBarIconColor, width: 5),
                           ),
-                        );
-                      },
-                      child: ListTile(
-                        title: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 2,
+                              spreadRadius: 2,
+                              offset: const Offset(2, 4),
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 1, bottom: 2),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CampaignDetailView(
+                                      record: allCampaigns[index]),
+                                ),
+                              );
+                            },
+                            child: ListTile(
+                              title: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    allCampaigns[index].campaignName ?? "",
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          allCampaigns[index].campaignName ??
+                                              "",
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          allCampaigns[index].campaignType ??
+                                              "",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.lightBlue
+                                                .withOpacity(0.7),
+                                          ),
+                                        ),
+                                        Text(
+                                          allCampaigns[index].campaignStatus ??
+                                              "",
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        // Text(
+                                        //   getCampaignStatus(
+                                        //       allCampaigns[index].startDate,
+                                        //       allCampaigns[index].endDate),
+                                        //   style: const TextStyle(
+                                        //     fontSize: 14,
+                                        //     fontWeight: FontWeight.bold,
+                                        //     color: Colors.black,
+                                        //   ),
+                                        // ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    allCampaigns[index].campaignType ?? "",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.lightBlue.withOpacity(0.7),
-                                    ),
-                                  ),
-                                  Text(
-                                    allCampaigns[index].campaignStatus ?? "",
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  // Text(
-                                  //   getCampaignStatus(
-                                  //       allCampaigns[index].startDate,
-                                  //       allCampaigns[index].endDate),
-                                  //   style: const TextStyle(
-                                  //     fontSize: 14,
-                                  //     fontWeight: FontWeight.bold,
-                                  //     color: Colors.black,
-                                  //   ),
-                                  // ),
+                                  const SizedBox(width: 10),
+                                  allCampaigns[index].fileTitle == null
+                                      ? SizedBox()
+                                      : GestureDetector(
+                                          onTap: () async {
+                                            print(
+                                                "Download started::: https://sandbox.watconnect.com/swp/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}");
+                                            var token =
+                                                await AppUtils.getToken();
+                                            FileDownloader.downloadFile(
+                                              url:
+                                                  "https://sandbox.watconnect.com/swp/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}",
+                                              name:
+                                                  allCampaigns[index].fileTitle,
+                                              headers: {
+                                                'Authorization': token ?? ""
+                                              },
+                                              downloadDestination:
+                                                  DownloadDestinations
+                                                      .publicDownloads,
+                                              notificationType:
+                                                  NotificationType.all,
+                                              onDownloadCompleted: (path) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                        'Download Complete'),
+                                                    backgroundColor:
+                                                        Colors.green,
+                                                  ),
+                                                );
+                                              },
+                                              onProgress: (fileName, progress) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content:
+                                                        Text('Downloading..'),
+                                                    backgroundColor:
+                                                        Colors.green,
+                                                  ),
+                                                );
+                                              },
+                                            );
+
+                                            // FileDownloader.downloadFile(
+                                            //     downloadDestination:
+                                            //         DownloadDestinations
+                                            //             .publicDownloads,
+                                            //     name: allCampaigns[index].fileTitle,
+                                            //     notificationType:
+                                            //         NotificationType.all,
+                                            //     url:
+                                            //         'https://sandbox.watconnect.com/swp/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}',
+                                            //     onProgress: (name, progress) {
+                                            //       setState(() {
+                                            //         _progress = progress;
+                                            //       });
+                                            //     },
+                                            //     onDownloadCompleted: (value) {
+                                            //       ScaffoldMessenger.of(context)
+                                            //           .showSnackBar(
+                                            //         const SnackBar(
+                                            //           content: Text(
+                                            //               'Downloadded Complete'),
+                                            //           backgroundColor: Colors.green,
+                                            //         ),
+                                            //       );
+                                            //       debug('path  $value ');
+                                            //       setState(() {
+                                            //         _progress = null;
+                                            //       });
+                                            //       AlertDialog alert = AlertDialog(
+                                            //         title: Text(
+                                            //           "Download",
+                                            //         ),
+                                            //         content: Text(
+                                            //           'path$value',
+                                            //         ),
+                                            //         actions: [
+                                            //           TextButton(
+                                            //             child: Text(
+                                            //               "Ok",
+                                            //               style: TextStyle(
+                                            //                   color: AppColor
+                                            //                       .navBarIconColor),
+                                            //               selectionColor: AppColor
+                                            //                   .navBarIconColor,
+                                            //             ),
+                                            //             onPressed: () {
+                                            //               Navigator.pop(context);
+                                            //             },
+                                            //           ),
+                                            //         ],
+                                            //       );
+                                            //     });
+
+                                            print("Download request sent...");
+                                          },
+                                          child: Container(
+                                            child: Image.asset(
+                                              'assets/images/download.png',
+                                              height: 30,
+                                              width: 30,
+                                            ),
+                                          ),
+                                        ),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            allCampaigns[index].fileTitle == null
-                                ? SizedBox()
-                                : GestureDetector(
-                                    onTap: () async {
-                                      print(
-                                          "Download started::: https://sandbox.watconnect.com/swp/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}");
-                                      var token = await AppUtils.getToken();
-                                      FileDownloader.downloadFile(
-                                        url:
-                                            "https://sandbox.watconnect.com/swp/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}",
-                                        name: allCampaigns[index].fileTitle,
-                                        headers: {'Authorization': token ?? ""},
-                                        downloadDestination:
-                                            DownloadDestinations
-                                                .publicDownloads,
-                                        notificationType: NotificationType.all,
-                                        onDownloadCompleted: (path) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content:
-                                                  Text('Download Complete'),
-                                              backgroundColor: Colors.green,
-                                            ),
-                                          );
-                                        },
-                                        onProgress: (fileName, progress) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text('Downloading..'),
-                                              backgroundColor: Colors.green,
-                                            ),
-                                          );
-                                        },
-                                      );
-
-                                      // FileDownloader.downloadFile(
-                                      //     downloadDestination:
-                                      //         DownloadDestinations
-                                      //             .publicDownloads,
-                                      //     name: allCampaigns[index].fileTitle,
-                                      //     notificationType:
-                                      //         NotificationType.all,
-                                      //     url:
-                                      //         'https://sandbox.watconnect.com/swp/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}',
-                                      //     onProgress: (name, progress) {
-                                      //       setState(() {
-                                      //         _progress = progress;
-                                      //       });
-                                      //     },
-                                      //     onDownloadCompleted: (value) {
-                                      //       ScaffoldMessenger.of(context)
-                                      //           .showSnackBar(
-                                      //         const SnackBar(
-                                      //           content: Text(
-                                      //               'Downloadded Complete'),
-                                      //           backgroundColor: Colors.green,
-                                      //         ),
-                                      //       );
-                                      //       debug('path  $value ');
-                                      //       setState(() {
-                                      //         _progress = null;
-                                      //       });
-                                      //       AlertDialog alert = AlertDialog(
-                                      //         title: Text(
-                                      //           "Download",
-                                      //         ),
-                                      //         content: Text(
-                                      //           'path$value',
-                                      //         ),
-                                      //         actions: [
-                                      //           TextButton(
-                                      //             child: Text(
-                                      //               "Ok",
-                                      //               style: TextStyle(
-                                      //                   color: AppColor
-                                      //                       .navBarIconColor),
-                                      //               selectionColor: AppColor
-                                      //                   .navBarIconColor,
-                                      //             ),
-                                      //             onPressed: () {
-                                      //               Navigator.pop(context);
-                                      //             },
-                                      //           ),
-                                      //         ],
-                                      //       );
-                                      //     });
-
-                                      print("Download request sent...");
-                                    },
-                                    child: Container(
-                                      child: Image.asset(
-                                        'assets/images/download.png',
-                                        height: 30,
-                                        width: 30,
-                                      ),
-                                    ),
-                                  ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
           // child: ListView(
           //   children: getContactWidgets(),
           // ),

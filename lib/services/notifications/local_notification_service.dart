@@ -20,6 +20,8 @@ class LocalNotificationService {
       FlutterLocalNotificationsPlugin();
 
   static void initialize() {
+    print("inititalise is called");
+
     const androidInit = AndroidInitializationSettings("@mipmap/ic_launcher");
     const iOSInit = DarwinInitializationSettings();
 
@@ -88,6 +90,7 @@ class LocalNotificationService {
   }
 
   static Future<void> displayNotification(RemoteMessage message) async {
+    print("is this called once::::::::::::::::::::");
     try {
       final int id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -123,9 +126,9 @@ class LocalNotificationService {
 
       final NotificationDetails notificationDetails = NotificationDetails(
         android: AndroidNotificationDetails(
-          'i_digi_school',
-          'iDigiSchool',
-          channelDescription: 'iDigiSchool Notifications',
+          'spark',
+          'Spark',
+          channelDescription: 'Spark',
           playSound: true,
           priority: Priority.high,
           importance: Importance.max,
@@ -176,6 +179,7 @@ class LocalNotificationService {
   static FlutterLocalNotificationsPlugin get instance => _notificationsPlugin;
 
   static void NavigationFunc(String leadId, BuildContext cntxt) {
+    print("NavigationFunc ::: 1");
     debug("NavigationFunc called with leadId dsfcsf: $leadId");
     LeadModel? matchedModel;
     var leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
@@ -192,7 +196,7 @@ class LocalNotificationService {
       debug("No matching lead found for ID: $leadId");
       return;
     }
-
+    print("From Page ::: 1");
     Navigator.push(
       cntxt,
       MaterialPageRoute(

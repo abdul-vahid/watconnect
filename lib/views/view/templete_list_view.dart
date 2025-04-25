@@ -1,4 +1,6 @@
 // import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -68,9 +70,12 @@ class _TempleteListView extends State<TempleteListView> {
       var campginmodel = viewModel.model;
       if (campginmodel?.data != null) {
         allTemplates = [];
+        log("selecttemplte:::: ${selecttemplte}");
         for (var record in campginmodel!.data!) {
           if (record.status != null) {
-            if (selecttemplte != null) {
+            if (selecttemplte == 'All') {
+              allTemplates.add(record);
+            } else if (selecttemplte != null) {
               if (record.status.toString().toLowerCase() ==
                   selecttemplte?.toLowerCase()) {
                 allTemplates.add(record);
@@ -166,7 +171,7 @@ class _TempleteListView extends State<TempleteListView> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             List<String> uniqtempletestatus = templetefilter.toSet().toList();
-
+            uniqtempletestatus.add("All");
             return Container(
               height: 220,
               width: double.infinity,
@@ -271,119 +276,129 @@ class _TempleteListView extends State<TempleteListView> {
     return Column(
       children: [
         Expanded(
-          child: ListView.builder(
-              itemCount: allTemplates.length,
-              itemBuilder: (context, index) {
-                Color statusColor = Colors.red;
-                String statusText = "";
+          child: allTemplates.isEmpty
+              ? Center(
+                  child: Text(
+                    "No Templates Available..",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: allTemplates.length,
+                  itemBuilder: (context, index) {
+                    Color statusColor = Colors.red;
+                    String statusText = "";
 
-                if (allTemplates[index].status == "APPROVED") {
-                  print("shshhsshshh");
-                  statusColor = AppColor.navBarIconColor;
-                  statusText = "Approved";
-                } else if (allTemplates[index].status == 'REJECTED') {
-                  print("kisisisiisiisi");
-                  statusColor = Colors.red;
-                  statusText = "Rejected";
-                } else {
-                  statusColor = Colors.grey;
-                  statusText = "Unknown";
-                }
+                    if (allTemplates[index].status == "APPROVED") {
+                      print("shshhsshshh");
+                      statusColor = AppColor.navBarIconColor;
+                      statusText = "Approved";
+                    } else if (allTemplates[index].status == 'REJECTED') {
+                      print("kisisisiisiisi");
+                      statusColor = Colors.red;
+                      statusText = "Rejected";
+                    } else {
+                      statusColor = Colors.grey;
+                      statusText = "Unknown";
+                    }
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 7.0, horizontal: 10.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: const Border(
-                        left: BorderSide(
-                          color: AppColor.navBarIconColor,
-                          width: 5,
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 7.0, horizontal: 10.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: const Border(
+                            left: BorderSide(
+                              color: AppColor.navBarIconColor,
+                              width: 5,
+                            ),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 2,
+                              spreadRadius: 2,
+                              offset: const Offset(2, 4),
+                            ),
+                          ],
                         ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 2,
-                          spreadRadius: 2,
-                          offset: const Offset(2, 4),
-                        ),
-                      ],
-                    ),
-                    child: InkWell(
-                      onTap: () {},
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 10),
-                        child: Column(
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        child: InkWell(
+                          onTap: () {},
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 10),
+                            child: Column(
                               children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        allTemplates[index].name ?? "",
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        allTemplates[index].category ?? "",
-                                        style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w800,
-                                            color: AppColor.containerBoxColor),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        allTemplates[index].language ?? "",
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.black.withOpacity(0.7),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Column(
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 10, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: statusColor,
-                                        borderRadius: BorderRadius.circular(4),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            allTemplates[index].name ?? "",
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            allTemplates[index].category ?? "",
+                                            style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w800,
+                                                color:
+                                                    AppColor.containerBoxColor),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            allTemplates[index].language ?? "",
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color:
+                                                  Colors.black.withOpacity(0.7),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      child: Text(
-                                        statusText,
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Column(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: statusColor,
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            statusText,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ),
                                   ],
                                 ),
                               ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                );
-              }),
+                    );
+                  }),
           // child: ListView(
           //   children: getContactWidgets(),
           // ),
