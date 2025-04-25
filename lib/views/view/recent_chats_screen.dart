@@ -62,6 +62,9 @@ class _RecentChatViewState extends State<RecentChatView> {
     super.dispose();
   }
 
+  bool noMatchedLeads = false;
+  List matched = [];
+  List others = [];
   Future<void> _getUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
@@ -85,7 +88,7 @@ class _RecentChatViewState extends State<RecentChatView> {
     if (searchLead.isEmpty) {
       List prioritizedLeads = [];
       List otherLeads = [];
-
+      noMatchedLeads = false;
       for (var lead in allRecentChats) {
         bool hasUnread = unreadList.any(
           (unread) =>
@@ -101,13 +104,11 @@ class _RecentChatViewState extends State<RecentChatView> {
 
       allRecentChats = [...prioritizedLeads, ...otherLeads];
 
+      setState(() {});
       // setState(() {
       //   allLeads = List.from(originalAllLeads); // restore original
       // });
     } else {
-      List matched = [];
-      List others = [];
-
       for (var lead in tempLeadModelList) {
         var firstName = lead.contactname?.toLowerCase() ?? '';
 
@@ -120,6 +121,7 @@ class _RecentChatViewState extends State<RecentChatView> {
 
       setState(() {
         allRecentChats = [...matched, ...others];
+        noMatchedLeads = matched.isEmpty ? true : false;
       });
     }
   }
@@ -352,7 +354,17 @@ class _RecentChatViewState extends State<RecentChatView> {
     return Column(
       children: [
         allRecentChats.isEmpty
-            ? Text("No rec found")
+            ? Center(
+                child: Text(
+                "No Chat Found..",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ))
+            // : noMatchedLeads || noRecordFound
+            //     ? Center(
+            //         child: Text(
+            //         "No Chat Found..",
+            //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            //       ))
             : Expanded(
                 child: ListView.builder(
                 itemCount: allRecentChats.length,
@@ -540,14 +552,18 @@ class _RecentChatViewState extends State<RecentChatView> {
     );
   }
 
+  bool noRecordFound = false;
   void filterLeads(String? filter) {
     leadModelList = tempLeadModelList;
     if (filter == null) return;
     setState(() {
-      allRecentChats = allRecentChats
+      List<dynamic> matchleads = leadModelList
           .where(
               (lead) => lead.leadstatus?.toLowerCase() == filter.toLowerCase())
           .toList();
+
+      allRecentChats = matchleads;
+      noRecordFound = matchleads.isEmpty;
     });
   }
 

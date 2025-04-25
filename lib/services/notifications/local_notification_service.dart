@@ -20,6 +20,8 @@ class LocalNotificationService {
       FlutterLocalNotificationsPlugin();
 
   static void initialize() {
+    print("inititalise is called");
+
     const androidInit = AndroidInitializationSettings("@mipmap/ic_launcher");
     const iOSInit = DarwinInitializationSettings();
 
@@ -177,6 +179,7 @@ class LocalNotificationService {
   static FlutterLocalNotificationsPlugin get instance => _notificationsPlugin;
 
   static void NavigationFunc(String leadId, BuildContext cntxt) {
+    print("NavigationFunc ::: 1");
     debug("NavigationFunc called with leadId dsfcsf: $leadId");
     LeadModel? matchedModel;
     var leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);

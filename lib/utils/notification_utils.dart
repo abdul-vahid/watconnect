@@ -68,26 +68,27 @@ class NotificationUtil {
             LocalNotificationService.displayNotification(remoteMessage);
           }
         } else {
-          LocalNotificationService.displayNotification(remoteMessage);
+          print("else case displasy notification");
+          // LocalNotificationService.displayNotification(remoteMessage);
         }
       }
     });
 
-    FirebaseMessaging.onMessageOpenedApp
-        .listen((RemoteMessage? remoteMessage) async {
-      print(
-          "onMessageOpenedApp triggered (background)  ${remoteMessage?.data}");
-      final leadId = remoteMessage?.data['lead_id'];
+    // FirebaseMessaging.onMessageOpenedApp
+    //     .listen((RemoteMessage? remoteMessage) async {
+    //   print(
+    //       "onMessageOpenedApp triggered (background)  ${remoteMessage?.data}");
+    //   final leadId = remoteMessage?.data['lead_id'];
 
-      if (leadId != null) {
-        await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
-                listen: false)
-            .fetch()
-            .then((val) {
-          NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
-        });
-      }
-    });
+    //   if (leadId != null) {
+    //     await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+    //             listen: false)
+    //         .fetch()
+    //         .then((val) {
+    //       NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
+    //     });
+    //   }
+    // });
 
     isInitialized = true;
   }
@@ -106,6 +107,7 @@ class NotificationUtil {
   }
 
   void NavigationFunc(String leadId, BuildContext cntxt) {
+    print("NavigationFunc ::: 2");
     debug("NavigationFunc called with leadId: $leadId");
     LeadModel? matchedModel;
     var leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
@@ -142,29 +144,29 @@ class NotificationUtil {
   //   LocalNotificationService.displayNotification(message);
   // }
 
-  @pragma('vm:entry-point')
-  static Future<void> firebaseMessagingBackgroundHandler(
-      RemoteMessage message) async {
-    print("message firebaseMessagingBackgroundHandler::: ");
-    debug("Background FCM:  ${message} ${message.notification?.title}");
+  // @pragma('vm:entry-point')
+  // static Future<void> firebaseMessagingBackgroundHandler(
+  //     RemoteMessage message) async {
+  //   print("message firebaseMessagingBackgroundHandler::: ");
+  //   debug("Background FCM:  ${message} ${message.notification?.title}");
 
-    // Check for image URL in the background message
-    final imageUrl = message.data['fileUrl'];
+  //   // Check for image URL in the background message
+  //   final imageUrl = message.data['fileUrl'];
 
-    if (imageUrl != null && imageUrl.isNotEmpty) {
-      try {
-        final filePath =
-            await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
-        print("filePath:  remoteMessage:: ${filePath}   ${message}");
-        await showImageNotification(message, filePath);
-      } catch (e) {
-        debugPrint("Image download failed, fallback to text notification: $e");
-        LocalNotificationService.displayNotification(message);
-      }
-    } else {
-      LocalNotificationService.displayNotification(message);
-    }
-  }
+  //   if (imageUrl != null && imageUrl.isNotEmpty) {
+  //     try {
+  //       final filePath =
+  //           await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
+  //       print("filePath:  remoteMessage:: ${filePath}   ${message}");
+  //       await showImageNotification(message, filePath);
+  //     } catch (e) {
+  //       debugPrint("Image download failed, fallback to text notification: $e");
+  //       LocalNotificationService.displayNotification(message);
+  //     }
+  //   } else {
+  //     LocalNotificationService.displayNotification(message);
+  //   }
+  // }
 
   static Future<void> deleteFCMTokenOnLogout() async {
     try {
@@ -213,11 +215,11 @@ Future<void> showImageNotification(
 
   final NotificationDetails platformChannelSpecifics =
       NotificationDetails(android: androidPlatformChannelSpecifics);
-
-  await LocalNotificationService.instance.show(
-    0,
-    message.notification?.title,
-    message.notification?.body,
-    platformChannelSpecifics,
-  );
+  // print("is showing form hererbhebrjerfne");
+  // await LocalNotificationService.instance.show(
+  //   0,
+  //   message.notification?.title,
+  //   message.notification?.body,
+  //   platformChannelSpecifics,
+  // );
 }

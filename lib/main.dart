@@ -104,8 +104,6 @@ class MyApp extends StatelessWidget {
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("message firebaseMessagingBackgroundHandler::: ");
   debug("Background FCM:  ${message} ${message.notification?.title}");
-
-  // Check for image URL in the background message
   final imageUrl = message.data['fileUrl'];
 
   if (imageUrl != null && imageUrl.isNotEmpty) {
