@@ -1,4 +1,9 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
 class ViewVideo extends StatefulWidget {
@@ -39,6 +44,42 @@ class _ViewVideoState extends State<ViewVideo> {
     });
   }
 
+  Future<void> downloadFile(String url, String fileName) async {
+    try {
+      EasyLoading.showToast("Downloading...");
+
+      Directory directory;
+
+      if (Platform.isAndroid) {
+        directory = Directory('/storage/emulated/0/Download');
+      } else if (Platform.isIOS) {
+        directory = await getApplicationDocumentsDirectory();
+      } else {
+        throw Exception("Unsupported platform");
+      }
+
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+
+      String filePath = '${directory.path}/$fileName';
+
+      Dio dio = Dio();
+      await dio.download(url, filePath, onReceiveProgress: (received, total) {
+        if (total != -1) {
+          print(
+              'Download progress: ${(received / total * 100).toStringAsFixed(0)}%');
+        }
+      });
+      EasyLoading.showToast("File downloaded to: $filePath");
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //     // SnackBar(content: Text("File downloaded to: $filePath")),
+      //     );
+    } catch (e) {
+      EasyLoading.showToast("Download Failed");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,6 +90,16 @@ class _ViewVideoState extends State<ViewVideo> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text("Video", style: TextStyle(color: Colors.white)),
+        actions: [
+          IconButton(
+            tooltip: "Download PDF",
+            onPressed: () {
+              final filename = widget.videoUrl.split('/').last;
+              downloadFile(widget.videoUrl, filename);
+            },
+            icon: const Icon(Icons.download, color: Colors.white),
+          ),
+        ],
       ),
       body: Center(
         child: _controller.value.isInitialized
@@ -79,16 +130,8 @@ class _ViewVideoState extends State<ViewVideo> {
                     ),
                 ],
               )
-            : const CircularProgressIndicator(), // Show loader while video loads
+            : const CircularProgressIndicator(),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: Colors.blue,
-      //   onPressed: _togglePlayPause,
-      //   child: Icon(
-      //     _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-      //     color: Colors.white,
-      //   ),
-      // ),
     );
   }
 }

@@ -691,7 +691,30 @@ class _ChatScreenState extends State<ChatScreen> {
     final pickedFile = await FilePicker.platform.pickFiles(
       allowMultiple: false,
       type: FileType.custom,
-      allowedExtensions: ["jpg", 'png', 'pdf', 'html', 'mp4', 'mov', 'avi'],
+      allowedExtensions: [
+        "jpg",
+        "jpeg",
+        "png",
+        "gif",
+        "pdf",
+        "html",
+        "txt",
+        "doc",
+        "docx",
+        "ppt",
+        "pptx",
+        "xls",
+        "xlsx",
+        "mp4",
+        "mov",
+        "avi",
+        "mkv",
+        "csv",
+        "rtf",
+        "odt",
+        "zip",
+        "rar",
+      ],
     );
     if (pickedFile != null) {
       setState(() {
@@ -1450,10 +1473,12 @@ class _ChatScreenState extends State<ChatScreen> {
       await Provider.of<MessageViewModel>(context, listen: false)
           .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
       // Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("deleted sucefully"),
-        backgroundColor: Colors.green,
-      ));
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   content: Text("deleted sucefully"),
+      //   backgroundColor: Colors.green,
+      // )
+      // );
+      EasyLoading.showToast("Deleted Succeffuly");
 
       MessageController msgController =
           Provider.of<MessageController>(context, listen: false);
@@ -1707,7 +1732,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent, // Red for delete action
+                backgroundColor: Colors.redAccent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

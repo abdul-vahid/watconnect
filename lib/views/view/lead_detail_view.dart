@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
@@ -392,16 +393,17 @@ class _LeadDetailViewState extends State<LeadDetailView> {
       );
       return;
     }
-
     LeadListViewModel(context).deleteById(leadidd).then((value) {
       print("working enter");
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lead deleted successfully.'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text('Lead deleted successfully.'),
+      //     backgroundColor: Colors.green,
+      //   ),
+      // );
+
+      EasyLoading.showToast("Deleted Succeffuly");
 
       Provider.of<LeadListViewModel>(context, listen: false).fetch();
 

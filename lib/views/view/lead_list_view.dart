@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -82,13 +84,45 @@ class _LeadListViewState extends State<LeadListView> {
     setState(() {});
   }
 
+  bool noMatchedLeads = false;
+  // void _filterLeads(String searchLead) {
+  //   searchLead = searchLead.trim().toLowerCase();
+
+  //   if (searchLead.isEmpty) {
+  //     setState(() {
+  //       allLeads = List.from(tempLeadModelList);
+  //     });
+  //   } else {
+  //     List<LeadModel> matched = [];
+  //     List<LeadModel> others = [];
+
+  //     for (var lead in tempLeadModelList) {
+  //       var firstName = lead.firstname?.toLowerCase() ?? '';
+  //       var lastName = lead.lastname?.toLowerCase() ?? '';
+  //       var leadStatus = lead.leadstatus?.toLowerCase() ?? '';
+
+  //       if (firstName.contains(searchLead) ||
+  //           lastName.contains(searchLead) ||
+  //           leadStatus.contains(searchLead)) {
+  //         matched.add(lead);
+  //       } else {
+  //         others.add(lead);
+  //       }
+  //     }
+  //     print("othersothers+++++===>>>>>>>>@@@@@@${jsonEncode(others)}");
+  //     setState(() {
+  //       allLeads = [...matched, ...others];
+  //     });
+  //   }
+  // }
   void _filterLeads(String searchLead) {
     searchLead = searchLead.trim().toLowerCase();
 
     if (searchLead.isEmpty) {
-      // setState(() {
-      //   allLeads = List.from(originalAllLeads); // restore original
-      // });
+      setState(() {
+        allLeads = List.from(tempLeadModelList);
+        noMatchedLeads = false;
+      });
     } else {
       List<LeadModel> matched = [];
       List<LeadModel> others = [];
@@ -109,6 +143,7 @@ class _LeadListViewState extends State<LeadListView> {
 
       setState(() {
         allLeads = [...matched, ...others];
+        noMatchedLeads = matched.isEmpty;
       });
     }
   }
@@ -258,7 +293,6 @@ class _LeadListViewState extends State<LeadListView> {
                       ],
                     ),
                     const SizedBox(height: 16),
-
                     // Payment Term Dropdown
                     Container(
                       decoration: BoxDecoration(
@@ -367,26 +401,60 @@ class _LeadListViewState extends State<LeadListView> {
     return Future<void>.delayed(const Duration(seconds: 1));
   }
 
+  // Widget _pageBody() {
+  //   return Column(
+  //     children: [
+  //       Expanded(
+  //           child: ListView.builder(
+  //         itemCount: allLeads.length,
+  //         itemBuilder: (context, index) {
+  //           var unreadCount = "0";
+  //           var lead = allLeads[index];
+
+  //           for (var p in unreadList) {
+  //             if (p.whatsappNumber.toString().contains(lead.whatsapp_number)) {
+  //               unreadCount = p.unreadMsgCount;
+  //               break;
+  //             }
+  //           }
+
+  //           return leadRecordList(lead, unreadCount);
+  //         },
+  //       ))
+  //     ],
+  //   );
+  // }
+
   Widget _pageBody() {
     return Column(
       children: [
         Expanded(
-            child: ListView.builder(
-          itemCount: allLeads.length,
-          itemBuilder: (context, index) {
-            var unreadCount = "0";
-            var lead = allLeads[index];
+          child: noMatchedLeads || noRecordFound
+              ? Center(
+                  child: Text(
+                    "No Record Found",
+                    style: TextStyle(fontSize: 20),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: allLeads.length,
+                  itemBuilder: (context, index) {
+                    var unreadCount = "0";
+                    var lead = allLeads[index];
 
-            for (var p in unreadList) {
-              if (p.whatsappNumber.toString().contains(lead.whatsapp_number)) {
-                unreadCount = p.unreadMsgCount;
-                break;
-              }
-            }
+                    for (var p in unreadList) {
+                      if (p.whatsappNumber
+                          .toString()
+                          .contains(lead.whatsapp_number)) {
+                        unreadCount = p.unreadMsgCount;
+                        break;
+                      }
+                    }
 
-            return leadRecordList(lead, unreadCount);
-          },
-        ))
+                    return leadRecordList(lead, unreadCount);
+                  },
+                ),
+        ),
       ],
     );
   }
@@ -651,15 +719,20 @@ class _LeadListViewState extends State<LeadListView> {
     );
   }
 
-  void filterLeads(String? filter) {
+  bool noRecordFound = false;
+  bool filterLeads(String? filter) {
     leadModelList = tempLeadModelList;
-    if (filter == null) return;
+    if (filter == null) return false;
+    List<dynamic> matchleads = leadModelList
+        .where((lead) => lead.leadstatus?.toLowerCase() == filter.toLowerCase())
+        .toList();
     setState(() {
-      allLeads = allLeads
-          .where(
-              (lead) => lead.leadstatus?.toLowerCase() == filter.toLowerCase())
-          .toList();
+      allLeads = matchleads;
+      noRecordFound = matchleads.isEmpty;
     });
+    print("matchleadsmatchleads${matchleads}");
+
+    return matchleads.isEmpty;
   }
 
   Future<void> connectSocket() async {
