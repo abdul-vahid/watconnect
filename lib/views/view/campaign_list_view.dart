@@ -828,7 +828,7 @@ class _CampaignListView extends State<CampaignListView> {
   String? number;
   List<CampaignViewModel> tempLeadModelList = [];
   String? selectedcampaign;
-
+  bool nomatchescampaign = false;
   String searchcampaign = "";
   void getProfileData() async {
     final prefs = await SharedPreferences.getInstance();

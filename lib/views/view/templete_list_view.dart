@@ -212,6 +212,8 @@ class _TempleteListView extends State<TempleteListView> {
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       isDense: true,
+                      // isExpanded: true,
+                      // menuMaxHeight: 10,
                       hint: const Text('Select Template Status'),
                       items: uniqtempletestatus.map((String value) {
                         return DropdownMenuItem<String>(

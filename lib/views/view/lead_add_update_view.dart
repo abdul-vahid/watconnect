@@ -632,6 +632,7 @@ class _Forms extends State<LeadAddView> {
                       data: _leadsstatus,
                       value: widget.model?.leadstatus,
                     ),
+                    const SizedBox(height: 10),
                     const Text('Assigned User'),
                     const SizedBox(height: 10),
                     AppUtils.getDropdown(
