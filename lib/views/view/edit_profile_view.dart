@@ -214,16 +214,12 @@ class _EditProfileView extends State<EditProfileView> {
     for (var item in _countrycode) {
       final country = item['country']!;
       final countryCode = item['country_code']!;
-
       countryCodeMap[countryCode] = "$country ($countryCode)";
-
       code[countryCode] = countryCode;
     }
-
     if (!isEdit && countryCodeMap.isNotEmpty) {
       selectedCountry = countryCodeMap.keys.first;
     }
-
     // print("Dropdown  => $countryCodeMap");
     // print("Dial Code Map=> $code");
   }

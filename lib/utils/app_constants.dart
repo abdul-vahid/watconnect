@@ -90,13 +90,11 @@ abstract class AppConstants {
       '/api/webhook_template/approved/template?whatsapp_setting_number';
   static const String templetesend =
       "/api/webhook_template/message?whatsapp_setting_number";
-
   static const String proxy =
       '/api/webhook_template/proxy?whatsapp_setting_number';
-
   static const String historycreate = "/api/whatsapp/message/history";
   static const String createtemplet = "/api/whatsapp/message/template";
-// ================home page api============================
+  // ================home page api============================
 
   static const String templatehomepage =
       "/api/webhook_template/approved/template?whatsapp_setting_number";

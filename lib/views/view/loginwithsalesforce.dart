@@ -55,8 +55,14 @@ class SalesforceAuth {
               SharedPrefsConstants.accessTokenKey,
               result.accessToken ?? '',
             );
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => FooterNavbarPage()),
+            );
           }
         }
+
         debug('Access Token: ${result.accessToken}');
         debug('resulttt : ${result.refreshToken}');
       } else {

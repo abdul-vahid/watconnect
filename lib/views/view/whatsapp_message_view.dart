@@ -359,6 +359,8 @@ class _ChatScreenState extends State<ChatScreen> {
     msgdelete
         .msghistorydelete(leadnumber: widget.wpnumber, number: number)
         .then((value) => {
+              msgdelete.Fetchmsghistorydata(
+                  leadnumber: widget.wpnumber, number: number),
               print("deeeelete sucefulyyy"),
             });
   }
@@ -500,13 +502,13 @@ class _ChatScreenState extends State<ChatScreen> {
             getHistory();
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Message sent successfully'),
-              duration: Duration(seconds: 3),
-              backgroundColor: Colors.green,
-            ),
-          );
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   const SnackBar(
+          //     content: Text('Message sent successfully'),
+          //     duration: Duration(seconds: 3),
+          //     backgroundColor: Colors.green,
+          //   ),
+          // );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1640,15 +1642,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                               leadnumber: leadnumber,
                                               number: number);
                                     });
+                                  } else if (_controller.text
+                                      .trim()
+                                      .isNotEmpty) {
+                                    showLoader = false;
+                                    EasyLoading.showToast(
+                                        "please Type a Message");
+                                    print(
+                                        "⚠ No file or text entered. Doing nothing.");
                                   } else {
                                     showLoader = false;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          "Please Type a Message",
-                                          selectionColor: Colors.green,
-                                        ),
-                                      ),
+                                    EasyLoading.showToast(
+                                      "Please type a message",
+                                      toastPosition:
+                                          EasyLoadingToastPosition.center,
                                     );
                                     print(
                                         "⚠ No file or text entered. Doing nothing.");
