@@ -22,6 +22,8 @@ class _TempleteListView extends State<TempleteListView> {
   var templetevm;
   String searchTemp = "";
   List allTemplates = [];
+
+  List tempTemplates = [];
   List<String> templetefilter = [];
   // late NotchBottomBarController _controller;
   TextEditingController textController = TextEditingController();
@@ -57,6 +59,7 @@ class _TempleteListView extends State<TempleteListView> {
   void initState() {
     super.initState();
     allTemplates = [];
+    tempTemplates = [];
     searchTemp = "";
     // _controller = NotchBottomBarController();
     _getNumberFromPreferences();
@@ -75,13 +78,22 @@ class _TempleteListView extends State<TempleteListView> {
           if (record.status != null) {
             if (selecttemplte == 'All') {
               allTemplates.add(record);
-            } else if (selecttemplte != null) {
+              tempTemplates.add(record);
+            } else if (selecttemplte != null &&
+                selecttemplte != '' &&
+                selecttemplte?.toLowerCase() != "approved") {
               if (record.status.toString().toLowerCase() ==
                   selecttemplte?.toLowerCase()) {
                 allTemplates.add(record);
               }
             } else {
-              allTemplates.add(record);
+              selecttemplte = null;
+              log("this is the condition which got true");
+              if (record.status.toString().toLowerCase() == "approved") {
+                if (record.status.toString().toLowerCase() == "approved") {
+                  allTemplates.add(record);
+                }
+              }
             }
 
             if (searchTemp.isNotEmpty) {
@@ -229,25 +241,54 @@ class _TempleteListView extends State<TempleteListView> {
                       value: selecttemplte,
                     ),
                     SizedBox(height: 7),
-                    ElevatedButton(
-                      onPressed: () {
-                        filterLeads(selecttemplte);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.navBarIconColor,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            selecttemplte = "";
+                            filterLeads("");
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Clear Filters',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Apply Filters',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
+                        SizedBox(
+                          width: 8,
                         ),
-                      ),
+                        ElevatedButton(
+                          onPressed: () {
+                            filterLeads(selecttemplte);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Filters',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     )
                   ],
                 ),
@@ -274,7 +315,17 @@ class _TempleteListView extends State<TempleteListView> {
 
   Widget _pageBody() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        allTemplates.isEmpty
+            ? SizedBox()
+            : Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "${allTemplates.length} Records Found",
+                  textAlign: TextAlign.left,
+                ),
+              ),
         Expanded(
           child: allTemplates.isEmpty
               ? Center(

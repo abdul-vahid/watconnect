@@ -76,7 +76,7 @@ class _CampaignListView extends State<CampaignListView> {
           if (record.campaignStatus != null) {
             _paymentterms.add(record.campaignStatus!);
             print("selectedcampaign:::${selectedcampaign}");
-            if (selectedcampaign == 'All') {
+            if (selectedcampaign == 'All' || selectedcampaign == '') {
               allCampaigns.add(record);
             } else if (selectedcampaign != null) {
               print(
@@ -233,7 +233,11 @@ class _CampaignListView extends State<CampaignListView> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             List<String> uniquePaymentTerms = _paymentterms.toSet().toList();
-            uniquePaymentTerms.add("All");
+            if (uniquePaymentTerms.contains("All")) {
+            } else {
+              uniquePaymentTerms.add("All");
+            }
+
             print("uniqq=>$uniquePaymentTerms");
             return Container(
               height: 220,
@@ -307,6 +311,30 @@ class _CampaignListView extends State<CampaignListView> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
+                            selectedcampaign = 'All';
+                            _filterLeads('All');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Clear Filters',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
                             _filterLeads(selectedcampaign);
                           },
                           style: ElevatedButton.styleFrom(
@@ -347,9 +375,9 @@ class _CampaignListView extends State<CampaignListView> {
     print(
         "filter:::::${filter}  ${tempLeadModelList.length} ${campginModelList.length}  ${allCampaigns.length}  ${allCampaigns.runtimeType}");
 
-    if (filter == null || filter.isEmpty) return;
+    if (filter == null) return;
 
-    if (filter == 'All') {
+    if (filter == 'All' || filter.isEmpty) {
       allCampaigns = tempCampaigns;
       Navigator.pop(context);
 
@@ -395,7 +423,17 @@ class _CampaignListView extends State<CampaignListView> {
 
   Widget _pageBody() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        allCampaigns.isEmpty
+            ? SizedBox()
+            : Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "${allCampaigns.length} Records Found",
+                  textAlign: TextAlign.left,
+                ),
+              ),
         Expanded(
           child: allCampaigns.isEmpty
               ? Center(
