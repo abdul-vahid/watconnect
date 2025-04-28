@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
+import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
 
 import 'package:whatsapp/view_models/unread_count_vm.dart';
@@ -141,6 +142,61 @@ class _HomeViewState extends State<HomeView> {
         .autoResponseFetch();
   }
 
+  void whatsappSettingNumber(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select Options'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: itemsMap.length,
+                  itemBuilder: (context, index) {
+                    String key = itemsMap.keys.elementAt(index);
+                    String value = itemsMap[key]!;
+
+                    return Column(
+                      children: [
+                        ListTile(
+                          title: Text(value),
+                          onTap: () async {
+                            setState(() {
+                              selectedWhatsAppNumber = key;
+                            });
+                            Provider.of<CampaignCountViewModel>(context,
+                                    listen: false)
+                                .fetchCampaignCount(
+                                    number: selectedWhatsAppNumber);
+
+                            Provider.of<TempleteListViewModel>(context,
+                                    listen: false)
+                                .templeteCountfetch(
+                                    number: selectedWhatsAppNumber);
+
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setString(
+                                'phoneNumber', selectedWhatsAppNumber ?? "");
+
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        const Divider(),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     itemsMap = {};
@@ -183,32 +239,7 @@ class _HomeViewState extends State<HomeView> {
     getTemplateData();
 
     int totalUnreadCount = 0;
-    // for (var viewModel in unreadcountvm!.viewModels) {
-    //   UnreadMsgModel unreadvm = viewModel.model;
-    //   var records = unreadvm.records;
 
-    //   if (records != null) {
-    //     print("Records : $records");
-
-    //     for (var data in records) {
-    //       print("dattat: $data");
-
-    //       var unreadCount = data.unreadMsgCount;
-
-    //       if (unreadCount != null) {
-    //         print("unrnnrnr$unreadCount");
-    //         int count = int.tryParse(unreadCount) ?? 0;
-    //         setState(() {
-    //           totalUnreadCount += count;
-    //         });
-    //       }
-    //     }
-    //   } else {
-    //     print("No records found.");
-    //   }
-    // }
-
-    // int totalUnreadCount = 0;
     for (var viewModel in unreadcountvm!.viewModels) {
       if (viewModel.model is UnreadMsgModel) {
         UnreadMsgModel unreadvm = viewModel.model as UnreadMsgModel;
@@ -218,7 +249,6 @@ class _HomeViewState extends State<HomeView> {
           String? unreadCount = data.unreadMsgCount;
 
           if (unreadCount != null) {
-            // Safely convert String to int
             int count = int.tryParse(unreadCount) ?? 0;
             setState(() {
               totalUnreadCount = records.length;
@@ -248,7 +278,8 @@ class _HomeViewState extends State<HomeView> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const NotificationPage()),
+                  builder: (context) => const NotificationPage(),
+                ),
               );
             },
             icon: badges.Badge(
@@ -269,12 +300,36 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
           ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
+            itemBuilder: (BuildContext context) {
+              return [
+                const PopupMenuItem<String>(
+                  value: '919919191919',
+                  child: Text('919919191919'),
+                ),
+                const PopupMenuItem<String>(
+                  value: '8768768686',
+                  child: Text('8768768686'),
+                ),
+              ];
+            },
+          ),
         ],
       ),
 
       body: SingleChildScrollView(
         child: Column(
           children: [
+            SizedBox(height: 12),
+            // Container(
+            //   width: 300,
+            //   child: AppUtils.getDropdown(
+            //     'Select Category',
+            //     data: dropdownItems,
+            //     onChanged: (String? selectedCategory) {},
+            //   ),
+            // ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Wrap(
@@ -660,16 +715,16 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildCircleIcon(IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: const BoxDecoration(
-        color: Color(0xFF00A1E4),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(icon, color: Colors.white, size: 24),
-    );
-  }
+  // Widget _buildCircleIcon(IconData icon) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(10),
+  //     decoration: const BoxDecoration(
+  //       color: Color(0xFF00A1E4),
+  //       shape: BoxShape.circle,
+  //     ),
+  //     child: Icon(icon, color: Colors.white, size: 24),
+  //   );
+  // }
 
   void getTemplateData() {
     Map<String, int> categoryCount = {};

@@ -89,8 +89,8 @@ class _TempleteListView extends State<TempleteListView> {
               allTemplates = [];
               allTemplates = tempUsers.where((user) {
                 var firstName = user.name?.toLowerCase() ?? '';
-                print(
-                    "Checking user: ${user.name}, Result: ${firstName.contains(searchTemp)}");
+                // print(
+                //     "Checking user: ${user.name}, Result: ${firstName.contains(searchTemp)}");
                 return firstName.contains(searchTemp);
               }).toList();
             }

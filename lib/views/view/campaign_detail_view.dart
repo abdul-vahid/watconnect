@@ -52,8 +52,7 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
           ),
         ),
         actions: [
-          if (widget.record?.campaignStatus !=
-              'Completed') // Hide the icon if status is 'Completed'
+          if (widget.record?.campaignStatus != 'Completed')
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
               onSelected: (value) {
@@ -223,7 +222,7 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
 
                     // const Divider(),
                     const SizedBox(height: 15),
-                    // _messageHistoryRow(),
+                    _messageHistoryRow(),
                   ],
                 ),
               ),

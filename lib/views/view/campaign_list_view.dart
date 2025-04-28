@@ -870,7 +870,7 @@ class _CampaignListView extends State<CampaignListView> {
         for (var record in campginmodel!.records!) {
           if (record.campaignStatus != null) {
             _paymentterms.add(record.campaignStatus!);
-            print("selectedcampaign:::${selectedcampaign}");
+            // print("selectedcampaign:::${selectedcampaign}");
             if (selectedcampaign == 'All') {
               allCampaigns.add(record);
             } else if (selectedcampaign != null) {
@@ -889,8 +889,8 @@ class _CampaignListView extends State<CampaignListView> {
               allCampaigns = [];
               allCampaigns = tempUsers.where((user) {
                 var firstName = user.campaignName?.toLowerCase() ?? '';
-                print(
-                    "Checking user: ${user.campaignName}, Result: ${firstName.contains(searchcampaign)}");
+                // print(
+                //     "Checking user: ${user.campaignName}, Result: ${firstName.contains(searchcampaign)}");
                 return firstName.contains(searchcampaign);
               }).toList();
             }
@@ -1240,49 +1240,93 @@ class _CampaignListView extends State<CampaignListView> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    child: Row(
                                       children: [
-                                        Text(
-                                          allCampaigns[index].campaignName ??
-                                              "",
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              allCampaigns[index]
+                                                      .campaignName ??
+                                                  "",
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              allCampaigns[index]
+                                                      .campaignType ??
+                                                  "",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.lightBlue
+                                                    .withOpacity(0.7),
+                                              ),
+                                            ),
+                                            Text(
+                                              allCampaigns[index]
+                                                      .campaignStatus ??
+                                                  "",
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            // Text(
+                                            //   getCampaignStatus(
+                                            //       allCampaigns[index].startDate,
+                                            //       allCampaigns[index].endDate),
+                                            //   style: const TextStyle(
+                                            //     fontSize: 14,
+                                            //     fontWeight: FontWeight.bold,
+                                            //     color: Colors.black,
+                                            //   ),
+                                            // ),
+                                          ],
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          allCampaigns[index].campaignType ??
-                                              "",
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.lightBlue
-                                                .withOpacity(0.7),
-                                          ),
-                                        ),
-                                        Text(
-                                          allCampaigns[index].campaignStatus ??
-                                              "",
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        // Text(
-                                        //   getCampaignStatus(
-                                        //       allCampaigns[index].startDate,
-                                        //       allCampaigns[index].endDate),
-                                        //   style: const TextStyle(
-                                        //     fontSize: 14,
-                                        //     fontWeight: FontWeight.bold,
-                                        //     color: Colors.black,
-                                        //   ),
-                                        // ),
+                                        Spacer(),
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        CampaignAddUpdateView(
+                                                            model: allCampaigns[
+                                                                index]),
+                                                  ),
+                                                );
+                                              },
+                                              child: Container(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 7, vertical: 8),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.blue,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  'Clone',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        )
                                       ],
                                     ),
                                   ),

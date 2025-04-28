@@ -193,24 +193,74 @@ class _Forms extends State<CampaignAddUpdateView> {
         onRefresh: _pullRefresh,
         child: AppUtils.getAppBody(_getaccountData!, _pageBody),
       ),
+      // bottomNavigationBar: Container(
+      //   height: 49,
+      //   color: Colors.white,
+      //   padding: const EdgeInsets.symmetric(horizontal: 10),
+      //   child: Row(
+      //     children: [
+      //       Expanded(
+      //         child: ElevatedButton(
+      //           style: ElevatedButton.styleFrom(
+      //             backgroundColor: AppColor.cardsColor,
+      //             padding: const EdgeInsets.symmetric(vertical: 10),
+      //           ),
+      //           onPressed: isEdit ? updateData : cloneCampaign,
+      //           child: Text(
+      //             isEdit ? "Update" : "Submit",
+      //             style: const TextStyle(
+      //               fontSize: 14,
+      //               fontWeight: FontWeight.w600,
+      //               color: Colors.white,
+      //             ),
+      //           ),
+      //         ),
+      //       ),
+      //       const SizedBox(width: 10),
+      //       Expanded(
+      //         child: OutlinedButton(
+      //           onPressed: () {
+      //             Navigator.pop(context);
+      //           },
+      //           style: OutlinedButton.styleFrom(
+      //             padding: const EdgeInsets.symmetric(vertical: 10),
+      //             side: const BorderSide(
+      //               width: 1.0,
+      //               color: Colors.black,
+      //             ),
+      //           ),
+      //           child: const Text(
+      //             'Cancel',
+      //             style: TextStyle(
+      //               fontSize: 14,
+      //               fontWeight: FontWeight.w500,
+      //               color: Colors.black,
+      //             ),
+      //           ),
+      //         ),
+      //       ),
+      //     ],
+      //   ),
+      // ),
       bottomNavigationBar: Container(
-        // decoration: InputDecoration(border: Border.all(12)),
         height: 49,
         color: Colors.white,
-
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Row(
           children: [
-            // First button (Submit/Update)
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.cardsColor,
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
-                onPressed: isEdit ? updateData : onButtonPressed,
+                onPressed: isEdit
+                    ? updateData
+                    : cloneCampaign, // Conditional call to either update or clone
                 child: Text(
-                  isEdit ? "Update" : "Submit",
+                  isEdit
+                      ? "Update"
+                      : "Submit", // Text changes based on isEdit state
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -219,13 +269,12 @@ class _Forms extends State<CampaignAddUpdateView> {
                 ),
               ),
             ),
-
             const SizedBox(width: 10),
-
             Expanded(
               child: OutlinedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.pop(
+                      context); // Navigates back (usually to the previous screen)
                 },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 10),
@@ -1269,6 +1318,123 @@ class _Forms extends State<CampaignAddUpdateView> {
     print("selected button::: ${selectedButtons} ");
   }
 
+// clone campaign
+
+  Future<void> cloneCampaign() async {
+    Map<String, String> bodyTextParams = {};
+    List compoTextParams = [];
+    List numberedCampParam = [];
+
+    bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
+    if (anyEmpty) {
+      EasyLoading.showToast('All fields are required');
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    File? imageFile;
+    String docId = "";
+    for (int i = 0; i < controllers.length; i++) {
+      bodyTextParams[(i + 1).toString()] = controllers[i].text;
+      Map body = {"type": "text", "text": controllers[i].text};
+      compoTextParams.add(body);
+      numberedCampParam.add(bodyTextParams);
+    }
+
+    String templateToSend = selectedTemplateName ?? "";
+
+    print("selected header:: >><><>< ${selectedHeader}");
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Send the text template with the selected body parameters
+    await sendTextTemplate(
+            templateToSend, compoTextParams, isChecked, bodyTextParams)
+        .then((onValue) {
+      setState(() {
+        _isLoading = false;
+        image = null;
+
+        CampaignViewModel getaccountData = CampaignViewModel(context);
+
+        // Creating the new campaign object for cloning
+        Map<String, dynamic> camp = {
+          'name': _name,
+          'template_id': selectedTemplateId,
+          'template_name': selectedTemplateName,
+          'status': 'Pending',
+          'business_number': number,
+          'type': _type,
+          'startDate': _dateStartInput.text,
+          'group_ids': selectedGroups,
+          'description': _description,
+        };
+
+        // Cloning the campaign data
+        getaccountData.addCampaign(camp).then((value) async {
+          if (value is Map<String, dynamic>) {
+            String? campaignId = value["record"]?["id"];
+            print("campaignId>>>  ${campaignId}");
+
+            // If campaign ID is missing, abort the operation
+            if (campaignId == null) {
+              debug("Campaign ID is null. File upload skipped.");
+              return;
+            } else {
+              Map<String, dynamic> paramBody = {
+                "campaign_id": campaignId, // New campaign ID
+                "body_text_params": bodyTextParams,
+                "msg_history_id": null,
+                "file_id": fileid,
+                "whatsapp_number_admin": "7590889022"
+              };
+
+              MessageViewModel mstemp = MessageViewModel(context);
+              var campaignResponse =
+                  await mstemp.sendCampParam(campParambody: paramBody);
+            }
+
+            debug("Uploading file with new Campaign ID: $campaignId");
+
+            // Additional file upload logic can go here
+            // await getFileData.addFiles(image!, campaignId, fileData);
+          }
+
+          // Navigate to Campaign List View after successfully cloning
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MultiProvider(
+                providers: [
+                  ChangeNotifierProvider(
+                    create: (_) => CampaignViewModel(context),
+                  ),
+                ],
+                child: const CampaignListView(),
+              ),
+            ),
+            (Route<dynamic> route) => route.isFirst,
+          );
+        }).catchError((error, stackTrace) {
+          debug("Error: $error");
+          Navigator.pop(context);
+          AppUtils.getAlert(
+            context,
+            AppUtils.getErrorMessages(error),
+            title: "Error Alert",
+          );
+        });
+      });
+    });
+
+    print("selected button::: ${selectedButtons}");
+  }
+
+// =======================
   Future<void> sendTextTemplate(
     String templateToSend,
     List compoTextParams,

@@ -10,6 +10,8 @@ class Record {
   String? totalRecords;
   String? successCount;
   String? failedCount;
+  String? deliveryStatus;
+  String? errormsg;
 
   Record({
     this.id,
@@ -21,6 +23,8 @@ class Record {
     this.totalRecords,
     this.successCount,
     this.failedCount,
+    this.deliveryStatus,
+    this.errormsg,
   });
 
   factory Record.fromMap(Map<String, dynamic> data) => Record(
@@ -33,6 +37,8 @@ class Record {
         totalRecords: data['total_records'] as String?,
         successCount: data['success_count'] as String?,
         failedCount: data['failed_count'] as String?,
+        deliveryStatus: data['delivery_status'] as String?,
+        errormsg: data['err_message'] as String?,
       );
 
   Map<String, dynamic> toMap() => {
@@ -45,6 +51,8 @@ class Record {
         'total_records': totalRecords,
         'success_count': successCount,
         'failed_count': failedCount,
+        'delivery_status': deliveryStatus,
+        'err_message': errormsg,
       };
 
   /// `dart:convert`

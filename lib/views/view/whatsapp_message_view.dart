@@ -31,6 +31,7 @@ import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
+import 'package:whatsapp/views/view/lead_detail_view.dart';
 import 'package:whatsapp/views/view/open_docs.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
@@ -210,7 +211,15 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           title: GestureDetector(
             onTap: () {
-              _showProfileDialog(context);
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => LeadDetailView(
+              //       model: lead,
+              //     ),
+              //   ),
+              // );
+              // _showProfileDialog(context);
             },
             child: Row(
               children: [
@@ -290,67 +299,67 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  void _showProfileDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Center(
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundImage: NetworkImage(
-                      'https://www.w3schools.com/w3images/avatar2.png',
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Center(
-                  child: Text(
-                    widget.leadName ?? "No Name Provided",
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Center(
-                  child: Text(
-                    widget.wpnumber ?? "No Name Provided",
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: AppColor.navBarIconColor,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  "Close",
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // void _showProfileDialog(BuildContext context) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         content: SingleChildScrollView(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               const Center(
+  //                 child: CircleAvatar(
+  //                   radius: 50,
+  //                   backgroundImage: NetworkImage(
+  //                     'https://www.w3schools.com/w3images/avatar2.png',
+  //                   ),
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 10),
+  //               Center(
+  //                 child: Text(
+  //                   widget.leadName ?? "No Name Provided",
+  //                   style: const TextStyle(
+  //                       fontWeight: FontWeight.bold, fontSize: 18),
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 10),
+  //               Center(
+  //                 child: Text(
+  //                   widget.wpnumber ?? "No Name Provided",
+  //                   style: const TextStyle(
+  //                       fontWeight: FontWeight.bold, fontSize: 18),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: Container(
+  //               padding:
+  //                   const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+  //               decoration: BoxDecoration(
+  //                 color: AppColor.navBarIconColor,
+  //                 borderRadius: BorderRadius.circular(8),
+  //               ),
+  //               child: const Text(
+  //                 "Close",
+  //                 style: TextStyle(
+  //                   color: Colors.white,
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   void deletechat() async {
     print("delete function callin g working");

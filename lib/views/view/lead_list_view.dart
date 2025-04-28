@@ -559,103 +559,94 @@ class _LeadListViewState extends State<LeadListView> {
         break;
     }
 
-    return Dismissible(
-      key: UniqueKey(),
-      onDismissed: (direction) {
-        print("model=>${model.toMap()}");
-        var num = "";
-        if (model.whatsapp_number!.contains("+")) {
-          num = model.whatsapp_number ?? "";
-        } else {
-          num = "${model.countryCode}${model.whatsapp_number}";
-        }
-        print("model  finalResult=>${model.whatsapp_number}");
-        if (model.whatsapp_number != null) {
-          _marksread(num);
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border(
+          left: BorderSide(
+            color: statusColor,
+            width: 5,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 5,
+            spreadRadius: 3,
+            offset: const Offset(2, 4),
+          ),
+        ],
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
+        child: InkWell(
+          onTap: () {
+            print("model=>${model.toMap()}");
+            var num = "";
+            if (model.whatsapp_number!.contains("+")) {
+              num = model.whatsapp_number ?? "";
+            } else {
+              num = "${model.countryCode}${model.whatsapp_number}";
+            }
+            print("model  finalResult=>${model.whatsapp_number}");
+            if (model.whatsapp_number != null) {
+              _marksread(num);
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ChatScreen(
-                leadName:
-                    (model.firstname != null && model.firstname!.isNotEmpty)
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatScreen(
+                    leadName: (model.firstname != null &&
+                            model.firstname!.isNotEmpty)
                         ? '${model.firstname} ${model.lastname ?? ""}'
                         : (model.lastname != null && model.lastname!.isNotEmpty)
                             ? model.lastname!
                             : "No Name Available",
-                wpnumber: model.whatsapp_number!.contains("+")
-                    ? model.whatsapp_number ?? ""
-                    : "${model.countryCode}${model.whatsapp_number ?? ""}",
-                id: model.id,
-              ),
-            ),
-          ).then((_) {
-            _getUnreadCount();
-            Provider.of<UnreadCountVm>(context, listen: false)
-                .fetchunreadcount(number: number ?? "");
-            setState(() {
-              unreadMsgCount = "0";
-              unreadMsgCount = "";
-            });
-            print("unreadMsgCount====${unreadMsgCount}  ");
-          });
-
-          leads?.viewModels.clear();
-          Provider.of<LeadListViewModel>(context, listen: false).fetch();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No Phone Number '),
-              duration: Duration(seconds: 3),
-              backgroundColor: AppColor.motivationCar1Color,
-            ),
-          );
-        }
-      },
-      background: Container(
-        color: Colors.green,
-        alignment: Alignment.centerRight,
-        child: const Padding(
-          padding: EdgeInsets.only(right: 20),
-          child: Icon(Icons.chat_sharp, color: Colors.white),
-        ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border(
-            left: BorderSide(
-              color: statusColor,
-              width: 5,
-            ),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
-              spreadRadius: 3,
-              offset: const Offset(2, 4),
-            ),
-          ],
-        ),
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LeadDetailView(
-                    model: model,
+                    wpnumber: model.whatsapp_number!.contains("+")
+                        ? model.whatsapp_number ?? ""
+                        : "${model.countryCode}${model.whatsapp_number ?? ""}",
+                    id: model.id,
                   ),
                 ),
+              ).then((_) {
+                _getUnreadCount();
+                Provider.of<UnreadCountVm>(context, listen: false)
+                    .fetchunreadcount(number: number ?? "");
+                setState(() {
+                  unreadMsgCount = "0";
+                  unreadMsgCount = "";
+                });
+                print("unreadMsgCount====${unreadMsgCount}  ");
+              });
+
+              leads?.viewModels.clear();
+              Provider.of<LeadListViewModel>(context, listen: false).fetch();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('No Phone Number '),
+                  duration: Duration(seconds: 3),
+                  backgroundColor: AppColor.motivationCar1Color,
+                ),
               );
-            },
-            child: Row(
-              children: [
-                CircleAvatar(
+            }
+          },
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LeadDetailView(
+                        model: model,
+                      ),
+                    ),
+                  );
+                },
+                child: CircleAvatar(
                   radius: 20,
                   backgroundColor: AppColor.navBarIconColor,
                   child: Text(
@@ -667,70 +658,75 @@ class _LeadListViewState extends State<LeadListView> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+              ),
+              const SizedBox(width: 12),
 
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number!.contains("+") ? model.whatsapp_number ?? "" : "${model.countryCode}${model.whatsapp_number ?? ""}" : ''}",
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      Text(
-                        "${model.email?.isNotEmpty == true ? model.email : ''}",
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(100),
-                          color: Colors.lightBlue.withOpacity(0.7),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 4.0, horizontal: 8),
-                          child: Text(
-                            "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                    ],
-                  ),
-                ),
-                // Arrow and Badge
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
-                      badges.Badge(
-                        badgeStyle: badges.BadgeStyle(
-                          badgeColor: Colors.green,
-                        ),
-                        badgeContent: Text(
-                          unreadMsgCount,
+                    Text(
+                      "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number!.contains("+") ? model.whatsapp_number ?? "" : "${model.countryCode}${model.whatsapp_number ?? ""}" : ''}",
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    Text(
+                      "${model.email?.isNotEmpty == true ? model.email : ''}",
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(100),
+                        color: Colors.lightBlue.withOpacity(0.7),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4.0, horizontal: 8),
+                        child: Text(
+                          "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
                           style: const TextStyle(
+                            fontSize: 10,
                             color: Colors.white,
                           ),
                         ),
-                      )
-                    else
-                      const SizedBox.shrink(),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                   ],
                 ),
-              ],
-            ),
+              ),
+              // Arrow and Badge
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
+                    badges.Badge(
+                      badgeStyle: badges.BadgeStyle(
+                        badgeColor: Colors.green,
+                      ),
+                      badgeContent: Text(
+                        unreadMsgCount,
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox.shrink(),
+                  // Icon(
+                  //   Icons.wechat_sharp,
+                  //   color: Colors.lightBlue.withOpacity(0.7),
+                  //   size: 30,
+                  // ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

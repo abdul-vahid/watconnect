@@ -143,7 +143,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       HomeView(),
       ProfileView(),
       if (userModelData?.userrole == "ADMIN") const UserListView(),
-      const Whtsapphone(),
+      // const Whtsapphone(),
       const RecentChatView(),
     ];
     // print("dsfffffffffffffffffffffffffff=>${userModelData?.userrole}");
@@ -180,11 +180,11 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
                 title: const Text('User'),
                 backgroundColor: Colors.white,
               ),
-            BottomBarItem(
-              icon: const Icon(Icons.phone),
-              title: const Text('Phone'),
-              backgroundColor: Colors.white,
-            ),
+            // BottomBarItem(
+            //   icon: const Icon(Icons.phone),
+            //   title: const Text('Phone'),
+            //   backgroundColor: Colors.white,
+            // ),
             BottomBarItem(
               icon: const Icon(Icons.chat),
               title: const Text('Chats'),

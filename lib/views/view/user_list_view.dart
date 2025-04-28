@@ -87,8 +87,8 @@ class _UserListView extends State<UserListView> {
         allUsers = [];
         allUsers = tempUsers.where((user) {
           var firstName = user.firstname?.toLowerCase() ?? '';
-          print(
-              "Checking user: ${user.firstname}, Result: ${firstName.contains(selectedUser)}");
+          // print(
+          //     "Checking user: ${user.firstname}, Result: ${firstName.contains(selectedUser)}");
           return firstName.contains(selectedUser);
         }).toList();
       }
@@ -198,8 +198,8 @@ class _UserListView extends State<UserListView> {
         allUsers = [];
         allUsers = tempUsers.where((user) {
           var firstName = user.firstname?.toLowerCase() ?? '';
-          print(
-              "Checking user: ${user.firstname}, Result: ${firstName.contains(searchLead)}");
+          // print(
+          //     "Checking user: ${user.firstname}, Result: ${firstName.contains(searchLead)}");
           return firstName.contains(searchLead);
         }).toList();
       }
