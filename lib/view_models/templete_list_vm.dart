@@ -15,7 +15,7 @@ class TempleteListViewModel extends BaseListViewModel {
   Future<dynamic> templetefetch({required String? number}) async {
     String url = AppUtils.getUrl("${AppConstants.templeteAPIPath}=$number");
     print("uddlld=>TEE$url");
-    get(url: url, baseModel: TemplateModel());
+    await get(url: url, baseModel: TemplateModel());
   }
 
   Future<dynamic> templeteCountfetch({String? number = ''}) async {

@@ -2,6 +2,8 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/models/template_model/template_model.dart';
@@ -32,7 +34,7 @@ class _TempleteListView extends State<TempleteListView> {
   TempleteListViewModel? contacts;
   bool isRefresh = false;
   UserModel? userModel;
-
+  List<String> selectTempList = [];
   void getProfileData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -46,7 +48,7 @@ class _TempleteListView extends State<TempleteListView> {
     print("number fetch===>$number");
 
     if (number != null) {
-      Provider.of<TempleteListViewModel>(context, listen: false)
+      await Provider.of<TempleteListViewModel>(context, listen: false)
           .templetefetch(number: number);
     } else {
       print('Number not found in SharedPreferences');
@@ -60,60 +62,15 @@ class _TempleteListView extends State<TempleteListView> {
     super.initState();
     allTemplates = [];
     tempTemplates = [];
+    selectTempList = [];
     searchTemp = "";
     // _controller = NotchBottomBarController();
     _getNumberFromPreferences();
+    getAllTemp();
   }
 
   @override
   Widget build(BuildContext context) {
-    templeteViewModel = Provider.of<TempleteListViewModel>(context);
-
-    for (var viewModel in templeteViewModel!.viewModels) {
-      var campginmodel = viewModel.model;
-      if (campginmodel?.data != null) {
-        allTemplates = [];
-        log("selecttemplte:::: ${selecttemplte}");
-        for (var record in campginmodel!.data!) {
-          if (record.status != null) {
-            if (selecttemplte == 'All') {
-              allTemplates.add(record);
-              tempTemplates.add(record);
-            } else if (selecttemplte != null &&
-                selecttemplte != '' &&
-                selecttemplte?.toLowerCase() != "approved") {
-              if (record.status.toString().toLowerCase() ==
-                  selecttemplte?.toLowerCase()) {
-                allTemplates.add(record);
-              }
-            } else {
-              selecttemplte = null;
-              log("this is the condition which got true");
-              if (record.status.toString().toLowerCase() == "approved") {
-                if (record.status.toString().toLowerCase() == "approved") {
-                  allTemplates.add(record);
-                }
-              }
-            }
-
-            if (searchTemp.isNotEmpty) {
-              List tempUsers = allTemplates;
-              allTemplates = [];
-              allTemplates = tempUsers.where((user) {
-                var firstName = user.name?.toLowerCase() ?? '';
-                print(
-                    "Checking user: ${user.name}, Result: ${firstName.contains(searchTemp)}");
-                return firstName.contains(searchTemp);
-              }).toList();
-            }
-            templetefilter.add(record.status!);
-            print("Record templetettetete Status: ${record.status}");
-          }
-        }
-        setState(() {});
-      }
-    }
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -185,7 +142,7 @@ class _TempleteListView extends State<TempleteListView> {
             List<String> uniqtempletestatus = templetefilter.toSet().toList();
             uniqtempletestatus.add("All");
             return Container(
-              height: 220,
+              // height: 220,
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -222,24 +179,76 @@ class _TempleteListView extends State<TempleteListView> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      isDense: true,
-                      // isExpanded: true,
-                      // menuMaxHeight: 10,
-                      hint: const Text('Select Template Status'),
-                      items: uniqtempletestatus.map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selecttemplte = newValue;
-                        });
-                      },
-                      value: selecttemplte,
-                    ),
+                    Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            MultiSelectDialogField<String>(
+                              items: uniqtempletestatus
+                                  .map((e) => MultiSelectItem<String>(e, e))
+                                  .toList(),
+                              title: const Text(
+                                "Select Template Status",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              buttonText: const Text("Select Leads Status"),
+                              searchable: true,
+                              dialogWidth: 300,
+                              dialogHeight: 250,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              onConfirm: (List<String> selected) {
+                                setState(() {
+                                  // Update selectleadList with the confirmed selections
+                                  selectTempList = selected;
+                                });
+                              },
+                              initialValue: [],
+                            ),
+                            SizedBox(height: 16),
+                            Wrap(
+                              spacing: 8.0,
+                              children: selectTempList.map((selectedItem) {
+                                return Chip(
+                                  label: Text(selectedItem),
+                                  deleteIcon: Icon(Icons.close),
+                                  onDeleted: () {
+                                    setState(() {
+                                      selectTempList.remove(selectedItem);
+                                    });
+                                  },
+                                  backgroundColor: Colors.blue.withOpacity(0.2),
+                                  labelStyle: TextStyle(color: Colors.blue),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        )),
+                    // DropdownButtonFormField<String>(
+                    //   isDense: true,
+                    //   // isExpanded: true,
+                    //   // menuMaxHeight: 10,
+                    //   hint: const Text('Select Template Status'),
+                    //   items: uniqtempletestatus.map((String value) {
+                    //     return DropdownMenuItem<String>(
+                    //       value: value,
+                    //       child: Text(value),
+                    //     );
+                    //   }).toList(),
+                    //   onChanged: (String? newValue) {
+                    //     setState(() {
+                    //       selecttemplte = newValue;
+                    //     });
+                    //   },
+                    //   value: selecttemplte,
+                    // ),
                     SizedBox(height: 7),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -247,7 +256,8 @@ class _TempleteListView extends State<TempleteListView> {
                         ElevatedButton(
                           onPressed: () {
                             selecttemplte = "";
-                            filterLeads("");
+                            selectTempList = ['approved'];
+                            filterLeads(selectTempList);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColor.cardsColor,
@@ -270,7 +280,7 @@ class _TempleteListView extends State<TempleteListView> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            filterLeads(selecttemplte);
+                            filterLeads(selectTempList);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColor.cardsColor,
@@ -300,9 +310,29 @@ class _TempleteListView extends State<TempleteListView> {
     );
   }
 
-  void filterLeads(String? filter) {
-    Navigator.pop(context);
-    setState(() {});
+  void filterLeads(List filter) {
+    print(
+        "filter:::::${filter}  ${tempTemplates.length} ${allTemplates.length}  ${allTemplates.length}  ${allTemplates.runtimeType}");
+
+    if (filter.contains('All') || filter.isEmpty) {
+      allTemplates = tempTemplates;
+      Navigator.pop(context);
+
+      setState(() {});
+      return;
+    } else {
+      List<dynamic> matchleads = tempTemplates.where((lead) {
+        return filter
+            .map((e) => e.toLowerCase())
+            .contains(lead.status?.toLowerCase());
+      }).toList();
+      setState(() {
+        allTemplates = matchleads;
+      });
+      print("cammam   ${matchleads.length}");
+      Navigator.pop(context);
+      return;
+    }
   }
 
   Future<void> _pullRefresh() async {
@@ -588,5 +618,56 @@ class _TempleteListView extends State<TempleteListView> {
   void searchLeads(String value) {
     searchTemp = value.trim().toLowerCase();
     setState(() {});
+  }
+
+  void getAllTemp() {
+    templeteViewModel =
+        Provider.of<TempleteListViewModel>(context, listen: false);
+
+    for (var viewModel in templeteViewModel!.viewModels) {
+      var campginmodel = viewModel.model;
+      if (campginmodel?.data != null) {
+        allTemplates = [];
+        log("selecttemplte:::: ${selecttemplte}");
+        for (var record in campginmodel!.data!) {
+          if (record.status != null) {
+            tempTemplates.add(record);
+            templetefilter.add(record.status!);
+            if (selecttemplte == 'All') {
+              allTemplates.add(record);
+            } else if (selecttemplte != null &&
+                selecttemplte != '' &&
+                selecttemplte?.toLowerCase() != "approved") {
+              if (record.status.toString().toLowerCase() ==
+                  selecttemplte?.toLowerCase()) {
+                allTemplates.add(record);
+              }
+            } else {
+              selecttemplte = null;
+              log("this is the condition which got true");
+              if (record.status.toString().toLowerCase() == "approved") {
+                if (record.status.toString().toLowerCase() == "approved") {
+                  allTemplates.add(record);
+                }
+              }
+            }
+
+            if (searchTemp.isNotEmpty) {
+              List tempUsers = allTemplates;
+              allTemplates = [];
+              allTemplates = tempUsers.where((user) {
+                var firstName = user.name?.toLowerCase() ?? '';
+                print(
+                    "Checking user: ${user.name}, Result: ${firstName.contains(searchTemp)}");
+                return firstName.contains(searchTemp);
+              }).toList();
+            }
+
+            print("Record templetettetete Status: ${record.status}");
+          }
+        }
+        setState(() {});
+      }
+    }
   }
 }

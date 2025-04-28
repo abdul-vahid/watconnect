@@ -2,6 +2,8 @@
 // import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/campaign_model/campaign_model.dart';
@@ -25,7 +27,7 @@ class _CampaignListView extends State<CampaignListView> {
   List allCampaigns = [];
 
   List tempCampaigns = [];
-
+  List<String> selectCampList = [];
   CampaignModel? campginmodel;
   CampaignViewModel? campaign;
   List<CampaignViewModel> campginModelList = [];
@@ -45,17 +47,16 @@ class _CampaignListView extends State<CampaignListView> {
     });
   }
 
-  Future<void> saveNumberData() async {
-    final prefs = await SharedPreferences.getInstance();
-    number = prefs.getString('phoneNumber');
-    Provider.of<CampaignViewModel>(context, listen: false)
-        .fetchCampaign(number: number ?? "");
-  }
+  Future<void> saveNumberData() async {}
 
   @override
   void initState() {
-    allCampaigns = [];
     saveNumberData();
+    getCampignList();
+    allCampaigns = [];
+
+    selectCampList = [];
+
     getProfileData();
     searchcampaign = "";
     tempLeadModelList = campginModelList;
@@ -64,51 +65,6 @@ class _CampaignListView extends State<CampaignListView> {
 
   @override
   Widget build(BuildContext context) {
-    campaignlistvm = Provider.of<CampaignViewModel>(context);
-    print(
-        "campaignlistvm.viewModels:: ${campaignlistvm.viewModels}   ${campaignlistvm.viewModels.runtimeType}  ${campaignlistvm.viewModels.length}");
-    for (var viewModel in campaignlistvm.viewModels) {
-      var campginmodel = viewModel.model;
-      print("campginmodel::::${campginmodel}  ${campginmodel.runtimeType}");
-      if (campginmodel?.records != null) {
-        allCampaigns = [];
-        for (var record in campginmodel!.records!) {
-          if (record.campaignStatus != null) {
-            _paymentterms.add(record.campaignStatus!);
-            print("selectedcampaign:::${selectedcampaign}");
-            if (selectedcampaign == 'All' || selectedcampaign == '') {
-              allCampaigns.add(record);
-            } else if (selectedcampaign != null) {
-              print(
-                  "record.campaignStatus.toString()::: ${record.campaignStatus.toString()}");
-              if (record.campaignStatus.toString().toLowerCase() ==
-                  selectedcampaign?.toLowerCase()) {
-                allCampaigns.add(record);
-              }
-            } else {
-              allCampaigns.add(record);
-            }
-
-            if (searchcampaign.isNotEmpty) {
-              List tempUsers = allCampaigns;
-              allCampaigns = [];
-              allCampaigns = tempUsers.where((user) {
-                var firstName = user.campaignName?.toLowerCase() ?? '';
-                print(
-                    "Checking user: ${user.campaignName}, Result: ${firstName.contains(searchcampaign)}");
-                return firstName.contains(searchcampaign);
-              }).toList();
-            }
-          }
-        }
-
-        tempCampaigns = allCampaigns;
-        setState(() {});
-        print(
-            "Record Campaign allCampaigns: ${allCampaigns.length}   ${allCampaigns.runtimeType}");
-      }
-    }
-
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -240,7 +196,7 @@ class _CampaignListView extends State<CampaignListView> {
 
             print("uniqq=>$uniquePaymentTerms");
             return Container(
-              height: 220,
+              // height: 220,
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -281,29 +237,78 @@ class _CampaignListView extends State<CampaignListView> {
 
                     // Payment Term Dropdown
                     Container(
-                      decoration: BoxDecoration(
-                        // border: Border.all(
-                        //   color: Colors.black,
-                        //   width: 0.2,
+                        decoration: BoxDecoration(
+                          // border: Border.all(
+                          //   color: Colors.black,
+                          //   width: 0.2,
+                          // ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            MultiSelectDialogField<String>(
+                              items: uniquePaymentTerms
+                                  .map((e) => MultiSelectItem<String>(e, e))
+                                  .toList(),
+                              title: const Text(
+                                "Select Leads Status",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              buttonText: const Text("Select Leads Status"),
+                              searchable: true,
+                              dialogWidth: 300,
+                              dialogHeight: 250,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              onConfirm: (List<String> selected) {
+                                setState(() {
+                                  // Update selectleadList with the confirmed selections
+                                  selectCampList = selected;
+                                });
+                              },
+                              initialValue: [],
+                            ),
+                            SizedBox(height: 16),
+                            Wrap(
+                              spacing: 8.0,
+                              children: selectCampList.map((selectedItem) {
+                                return Chip(
+                                  label: Text(selectedItem),
+                                  deleteIcon: Icon(Icons.close),
+                                  onDeleted: () {
+                                    setState(() {
+                                      selectCampList.remove(selectedItem);
+                                    });
+                                  },
+                                  backgroundColor: Colors.blue.withOpacity(0.2),
+                                  labelStyle: TextStyle(color: Colors.blue),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        )
+
+                        //  DropdownButtonFormField<String>(
+                        //   hint: const Text('Select Status'),
+                        //   items: uniquePaymentTerms.map((String value) {
+                        //     return DropdownMenuItem<String>(
+                        //       value: value,
+                        //       child: Text(value),
+                        //     );
+                        //   }).toList(),
+                        //   onChanged: (String? newValue) {
+                        //     setState(() {
+                        //       selectedcampaign = newValue;
+                        //     });
+                        //   },
+                        //   value: selectedcampaign,
                         // ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButtonFormField<String>(
-                        hint: const Text('Select Status'),
-                        items: uniquePaymentTerms.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectedcampaign = newValue;
-                          });
-                        },
-                        value: selectedcampaign,
-                      ),
-                    ),
+                        ),
                     const SizedBox(height: 24),
 
                     Row(
@@ -312,7 +317,8 @@ class _CampaignListView extends State<CampaignListView> {
                         ElevatedButton(
                           onPressed: () {
                             selectedcampaign = 'All';
-                            _filterLeads('All');
+                            selectCampList = [];
+                            _filterLeads(selectCampList);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColor.cardsColor,
@@ -335,7 +341,7 @@ class _CampaignListView extends State<CampaignListView> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            _filterLeads(selectedcampaign);
+                            _filterLeads(selectCampList);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColor.cardsColor,
@@ -371,35 +377,28 @@ class _CampaignListView extends State<CampaignListView> {
     setState(() {});
   }
 
-  void _filterLeads(String? filter) {
+  void _filterLeads(List filter) {
     print(
-        "filter:::::${filter}  ${tempLeadModelList.length} ${campginModelList.length}  ${allCampaigns.length}  ${allCampaigns.runtimeType}");
+        "filter:::::${filter}  ${tempCampaigns.length} ${campginModelList.length}  ${allCampaigns.length}  ${allCampaigns.runtimeType}");
 
-    if (filter == null) return;
-
-    if (filter == 'All' || filter.isEmpty) {
+    if (filter.contains('All') || filter.isEmpty) {
       allCampaigns = tempCampaigns;
       Navigator.pop(context);
 
       setState(() {});
       return;
     } else {
+      List<dynamic> matchleads = tempCampaigns.where((lead) {
+        return filter
+            .map((e) => e.toLowerCase())
+            .contains(lead.campaignStatus?.toLowerCase());
+      }).toList();
       setState(() {
-        allCampaigns.forEach(
-          (element) {
-            print("element camp staus:: ${element.campaignStatus}");
-          },
-        );
-        allCampaigns = [];
-
-        allCampaigns = allCampaigns.where((lead) {
-          print('Checking campaign: ${lead}');
-          return lead.campaignStatus?.toLowerCase() == filter.toLowerCase();
-        }).toList();
-
-        print("cammam${allCampaigns.length}");
-        Navigator.pop(context);
+        allCampaigns = matchleads;
       });
+      print("cammam   ${matchleads.length}");
+      Navigator.pop(context);
+      return;
     }
   }
 //   String getCampaignStatus(String? startDate, String? endDate) {
@@ -874,5 +873,60 @@ class _CampaignListView extends State<CampaignListView> {
     }
 
     return widgets;
+  }
+
+  Future<void> getCampignList() async {
+    campaignlistvm = Provider.of<CampaignViewModel>(context, listen: false);
+
+    final prefs = await SharedPreferences.getInstance();
+    number = prefs.getString('phoneNumber');
+    await Provider.of<CampaignViewModel>(context, listen: false)
+        .fetchCampaign(number: number ?? "");
+    print(
+        "campaignlistvm.viewModels:: ${campaignlistvm.viewModels}   ${campaignlistvm.viewModels.runtimeType}  ${campaignlistvm.viewModels.length}");
+    for (var viewModel in campaignlistvm.viewModels) {
+      var campginmodel = viewModel.model;
+      print("campginmodel::::${campginmodel}  ${campginmodel.runtimeType}");
+      if (campginmodel?.records != null) {
+        allCampaigns = [];
+        for (var record in campginmodel!.records!) {
+          if (record.campaignStatus != null) {
+            _paymentterms.add(record.campaignStatus!);
+            print("selectedcampaign:::${selectedcampaign}  ${selectCampList}");
+            if (selectedcampaign == 'All' ||
+                selectCampList.isEmpty ||
+                selectedcampaign == '') {
+              print("here in 1 condition");
+              tempCampaigns.add(record);
+              allCampaigns.add(record);
+            } else if (selectedcampaign != null) {
+              print(
+                  "record.campaignStatus.toString()::: ${record.campaignStatus.toString()}");
+              if (record.campaignStatus.toString().toLowerCase() ==
+                  selectedcampaign?.toLowerCase()) {
+                allCampaigns.add(record);
+              }
+            } else {
+              allCampaigns.add(record);
+            }
+
+            if (searchcampaign.isNotEmpty) {
+              List tempUsers = allCampaigns;
+              allCampaigns = [];
+              allCampaigns = tempUsers.where((user) {
+                var firstName = user.campaignName?.toLowerCase() ?? '';
+                print(
+                    "Checking user: ${user.campaignName}, Result: ${firstName.contains(searchcampaign)}");
+                return firstName.contains(searchcampaign);
+              }).toList();
+            }
+          }
+        }
+
+        setState(() {});
+        print(
+            "Record Campaign allCampaigns: ${allCampaigns.length}   ${allCampaigns.runtimeType}");
+      }
+    }
   }
 }
