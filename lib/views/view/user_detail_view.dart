@@ -326,6 +326,7 @@ class _UserDetailView extends State<UserDetailView> {
                                         widget.model?.username ?? "",
                                         widget.model?.whatsappNumber ?? "",
                                         userId ?? ""
+
                                         // '', // Ensure it's not null
                                         // _obscurePassword1,
                                         // _passwordController,

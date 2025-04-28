@@ -1,4 +1,228 @@
-// notification_util.dart
+// // notification_util.dart
+
+// import 'dart:io';
+// import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:path_provider/path_provider.dart';
+// import 'package:provider/provider.dart';
+// import 'package:whatsapp/main.dart';
+
+// import 'function_lib.dart';
+// import '../models/lead_model.dart';
+// import '../services/notifications/local_notification_service.dart';
+// import '../view_models/lead_list_vm.dart';
+// import '../view_models/user_list_vm.dart';
+// import '../views/view/whatsapp_message_view.dart';
+
+// class NotificationUtil {
+//   static FirebaseMessaging? _firebaseMessaging;
+//   BuildContext context;
+//   static bool isInitialized = false;
+
+//   NotificationUtil(this.context);
+
+//   void initialize() {
+//     LocalNotificationService.initialize();
+//     registerToken();
+
+//     if (isInitialized) return;
+
+//     _firebaseMessaging = FirebaseMessaging.instance;
+//     _firebaseMessaging?.requestPermission();
+
+//     _firebaseMessaging
+//         ?.getInitialMessage()
+//         .then((RemoteMessage? remoteMessage) async {
+//       debug(
+//           "getInitialMessage triggered (terminated state) ${remoteMessage?.data}");
+//       if (remoteMessage != null) {
+//         final leadId = remoteMessage.data['lead_id'];
+//         if (leadId != null) {
+//           await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+//                   listen: false)
+//               .fetch()
+//               .then((val) {
+//             NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
+//           });
+//         }
+//       }
+//     });
+
+//     FirebaseMessaging.onMessage.listen((RemoteMessage? remoteMessage) async {
+//       debugPrint("Foreground received >>> ${remoteMessage?.data}");
+
+//       if (remoteMessage != null) {
+//         final imageUrl = remoteMessage.data['fileUrl'];
+
+//         if (imageUrl != null && imageUrl.isNotEmpty) {
+//           try {
+//             final filePath =
+//                 await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
+//             print("filePath:  remoteMessage:: ${filePath}   ${remoteMessage}");
+//             await showImageNotification(remoteMessage, filePath);
+//           } catch (e) {
+//             debugPrint(
+//                 "Image download failed, fallback to text notification: $e");
+//             LocalNotificationService.displayNotification(remoteMessage);
+//           }
+//         } else {
+//           print("else case displasy notification");
+//           // LocalNotificationService.displayNotification(remoteMessage);
+//         }
+//       }
+//     });
+
+//     FirebaseMessaging.onMessageOpenedApp
+//         .listen((RemoteMessage? remoteMessage) async {
+//       print(
+//           "onMessageOpenedApp triggered (background)  ${remoteMessage?.data}");
+//       final leadId = remoteMessage?.data['lead_id'];
+
+//       if (leadId != null) {
+//         await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+//                 listen: false)
+//             .fetch()
+//             .then((val) {
+//           NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
+//         });
+//       }
+//     });
+
+//     isInitialized = true;
+//   }
+
+//   static void registerToken() async {
+//     _firebaseMessaging?.getToken().then((token) {
+//       debug("registerToken value => $token");
+//       UserListViewModel().registerFCMToken(token!).then((value) {
+//         debug("FCM token registered to backend => $value");
+//       }, onError: (error, stackTrace) {
+//         debug("FCM token registration error => $error");
+//       });
+//     }).catchError((e) {
+//       debug("FCM getToken error => $e");
+//     });
+//   }
+
+//   void NavigationFunc(String leadId, BuildContext cntxt) {
+//     print("NavigationFunc ::: 2");
+//     debug("NavigationFunc called with leadId: $leadId");
+//     LeadModel? matchedModel;
+//     var leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
+//     for (var viewModel in leadlistvm.viewModels) {
+//       debug("Found lead ID: ${viewModel.model.id}");
+//       if (viewModel.model.id.toString() == leadId) {
+//         matchedModel = viewModel.model;
+//         break;
+//       }
+//     }
+//     if (matchedModel == null) {
+//       debug("No matching lead found for ID: $leadId");
+//       return;
+//     }
+//     print("From Page ::: 2");
+//     Navigator.push(
+//       cntxt,
+//       MaterialPageRoute(
+//         builder: (_) => ChatScreen(
+//           leadName: "${matchedModel!.firstname} ${matchedModel.lastname}",
+//           wpnumber: matchedModel.whatsapp_number!.contains("+")
+//               ? matchedModel.whatsapp_number ?? ""
+//               : "${matchedModel.countryCode}${matchedModel.whatsapp_number ?? ""}",
+//           id: matchedModel.id,
+//         ),
+//       ),
+//     );
+//   }
+
+//   // static Future<void> _firebaseMessagingBackgroundHandler(
+//   //     RemoteMessage message) async {
+//   //   print("_firebaseMessagingBackgroundHandler>>>> ${message.data}");
+//   //   debug("Background FCM: ${message.notification?.title}");
+//   //   LocalNotificationService.displayNotification(message);
+//   // }
+
+//   // @pragma('vm:entry-point')
+//   // static Future<void> firebaseMessagingBackgroundHandler(
+//   //     RemoteMessage message) async {
+//   //   print("message firebaseMessagingBackgroundHandler::: ");
+//   //   debug("Background FCM:  ${message} ${message.notification?.title}");
+
+//   //   // Check for image URL in the background message
+//   //   final imageUrl = message.data['fileUrl'];
+
+//   //   if (imageUrl != null && imageUrl.isNotEmpty) {
+//   //     try {
+//   //       final filePath =
+//   //           await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
+//   //       print("filePath:  remoteMessage:: ${filePath}   ${message}");
+//   //       await showImageNotification(message, filePath);
+//   //     } catch (e) {
+//   //       debugPrint("Image download failed, fallback to text notification: $e");
+//   //       LocalNotificationService.displayNotification(message);
+//   //     }
+//   //   } else {
+//   //     LocalNotificationService.displayNotification(message);
+//   //   }
+//   // }
+
+//   static Future<void> deleteFCMTokenOnLogout() async {
+//     try {
+//       print("deleting the token::::");
+//       _firebaseMessaging?.deleteToken().then((_) {
+//         print("Token deleted");
+//       }).catchError((e) {
+//         print("Error deleting token: $e");
+//       });
+//     } catch (e) {
+//       debugPrint("Failed to delete FCM token: $e");
+//     }
+//   }
+// }
+
+// @pragma('vm:entry-point')
+// Future<String> downloadAndSaveImage(String url, String fileName) async {
+//   final directory = await getApplicationDocumentsDirectory();
+//   final filePath = '${directory.path}/$fileName';
+//   final response = await http.get(Uri.parse(url));
+//   final file = File(filePath);
+//   await file.writeAsBytes(response.bodyBytes);
+//   return filePath;
+// }
+
+// @pragma('vm:entry-point')
+// Future<void> showImageNotification(
+//     RemoteMessage message, String filePath) async {
+//   final BigPictureStyleInformation bigPictureStyleInformation =
+//       BigPictureStyleInformation(
+//     FilePathAndroidBitmap(filePath),
+//     largeIcon: FilePathAndroidBitmap(filePath),
+//     contentTitle: message.notification?.title ?? '',
+//     summaryText: message.notification?.body ?? '',
+//   );
+
+//   final AndroidNotificationDetails androidPlatformChannelSpecifics =
+//       AndroidNotificationDetails(
+//     'spark',
+//     'Spark',
+//     channelDescription: 'spark',
+//     styleInformation: bigPictureStyleInformation,
+//     importance: Importance.max,
+//     priority: Priority.high,
+//   );
+
+//   final NotificationDetails platformChannelSpecifics =
+//       NotificationDetails(android: androidPlatformChannelSpecifics);
+//   // print("is showing form hererbhebrjerfne");
+//   // await LocalNotificationService.instance.show(
+//   //   0,
+//   //   message.notification?.title,
+//   //   message.notification?.body,
+//   //   platformChannelSpecifics,
+//   // );
+// }
 
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -60,7 +284,7 @@ class NotificationUtil {
           try {
             final filePath =
                 await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
-            print("filePath:  remoteMessage:: ${filePath}   ${remoteMessage}");
+            print("filePath: $filePath, remoteMessage: $remoteMessage");
             await showImageNotification(remoteMessage, filePath);
           } catch (e) {
             debugPrint(
@@ -68,27 +292,27 @@ class NotificationUtil {
             LocalNotificationService.displayNotification(remoteMessage);
           }
         } else {
-          print("else case displasy notification");
-          // LocalNotificationService.displayNotification(remoteMessage);
+          debugPrint("Displaying text notification");
+          LocalNotificationService.displayNotification(remoteMessage);
         }
       }
     });
 
-    // FirebaseMessaging.onMessageOpenedApp
-    //     .listen((RemoteMessage? remoteMessage) async {
-    //   print(
-    //       "onMessageOpenedApp triggered (background)  ${remoteMessage?.data}");
-    //   final leadId = remoteMessage?.data['lead_id'];
+    FirebaseMessaging.onMessageOpenedApp
+        .listen((RemoteMessage? remoteMessage) async {
+      debugPrint(
+          "onMessageOpenedApp triggered (background)  ${remoteMessage?.data}");
+      final leadId = remoteMessage?.data['lead_id'];
 
-    //   if (leadId != null) {
-    //     await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
-    //             listen: false)
-    //         .fetch()
-    //         .then((val) {
-    //       NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
-    //     });
-    //   }
-    // });
+      if (leadId != null) {
+        await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+                listen: false)
+            .fetch()
+            .then((val) {
+          NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
+        });
+      }
+    });
 
     isInitialized = true;
   }
@@ -107,12 +331,10 @@ class NotificationUtil {
   }
 
   void NavigationFunc(String leadId, BuildContext cntxt) {
-    print("NavigationFunc ::: 2");
     debug("NavigationFunc called with leadId: $leadId");
     LeadModel? matchedModel;
     var leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
     for (var viewModel in leadlistvm.viewModels) {
-      debug("Found lead ID: ${viewModel.model.id}");
       if (viewModel.model.id.toString() == leadId) {
         matchedModel = viewModel.model;
         break;
@@ -122,7 +344,6 @@ class NotificationUtil {
       debug("No matching lead found for ID: $leadId");
       return;
     }
-    print("From Page ::: 2");
     Navigator.push(
       cntxt,
       MaterialPageRoute(
@@ -136,37 +357,6 @@ class NotificationUtil {
       ),
     );
   }
-
-  // static Future<void> _firebaseMessagingBackgroundHandler(
-  //     RemoteMessage message) async {
-  //   print("_firebaseMessagingBackgroundHandler>>>> ${message.data}");
-  //   debug("Background FCM: ${message.notification?.title}");
-  //   LocalNotificationService.displayNotification(message);
-  // }
-
-  // @pragma('vm:entry-point')
-  // static Future<void> firebaseMessagingBackgroundHandler(
-  //     RemoteMessage message) async {
-  //   print("message firebaseMessagingBackgroundHandler::: ");
-  //   debug("Background FCM:  ${message} ${message.notification?.title}");
-
-  //   // Check for image URL in the background message
-  //   final imageUrl = message.data['fileUrl'];
-
-  //   if (imageUrl != null && imageUrl.isNotEmpty) {
-  //     try {
-  //       final filePath =
-  //           await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
-  //       print("filePath:  remoteMessage:: ${filePath}   ${message}");
-  //       await showImageNotification(message, filePath);
-  //     } catch (e) {
-  //       debugPrint("Image download failed, fallback to text notification: $e");
-  //       LocalNotificationService.displayNotification(message);
-  //     }
-  //   } else {
-  //     LocalNotificationService.displayNotification(message);
-  //   }
-  // }
 
   static Future<void> deleteFCMTokenOnLogout() async {
     try {
@@ -215,11 +405,11 @@ Future<void> showImageNotification(
 
   final NotificationDetails platformChannelSpecifics =
       NotificationDetails(android: androidPlatformChannelSpecifics);
-  // print("is showing form hererbhebrjerfne");
-  // await LocalNotificationService.instance.show(
-  //   0,
-  //   message.notification?.title,
-  //   message.notification?.body,
-  //   platformChannelSpecifics,
-  // );
+
+  await LocalNotificationService.instance.show(
+    0,
+    message.notification?.title,
+    message.notification?.body,
+    platformChannelSpecifics,
+  );
 }

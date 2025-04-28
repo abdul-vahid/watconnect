@@ -527,7 +527,7 @@ class _ProfileViewState extends State<ProfileView> {
         print("Error uploading file: $error");
       });
     } else {
-      Navigator.pop(context);
+      // Navigator.pop(context);
     }
   }
 }
