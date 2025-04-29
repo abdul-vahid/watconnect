@@ -380,14 +380,15 @@ class _RecentChatViewState extends State<RecentChatView> {
                     }
                   }
 
-                  return leadRecordList(lead, unreadCount);
+                  return leadRecordList(lead, lead, unreadCount);
                 },
               ))
       ],
     );
   }
 
-  Widget leadRecordList(Records model, String unreadMsgCount) {
+  Widget leadRecordList(
+      LeadModel modell, Records model, String unreadMsgCount) {
     Color statusColor;
     statusColor = Colors.lightBlue.withOpacity(0.7);
     // switch (model.leadstatus) {
@@ -405,146 +406,140 @@ class _RecentChatViewState extends State<RecentChatView> {
     //     break;
     // }
 
-    return Dismissible(
-      key: UniqueKey(),
-      onDismissed: (direction) {
-        if (model.full_number != null) {
-          _marksread(model.full_number ?? "");
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ChatScreen(
-                leadName: model.contactname ?? "",
-                wpnumber: model.full_number,
-                id: model.id,
-              ),
-            ),
-          ).then((_) {
-            _getUnreadCount();
-            // Provider.of<UnreadCountVm>(context, listen: false)
-            //     .fetchunreadcount(number: number ?? "");
-            setState(() {
-              unreadMsgCount = "0";
-              unreadMsgCount = "";
-            });
-            print("unreadMsgCount====${unreadMsgCount}  ");
-          });
-
-          leads?.viewModels.clear();
-          Provider.of<LeadListViewModel>(context, listen: false)
-              .fetchRecentChat();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No Phone Number '),
-              duration: Duration(seconds: 3),
-              backgroundColor: AppColor.motivationCar1Color,
-            ),
-          );
-        }
-      },
-      background: Container(
-        color: Colors.green,
-        alignment: Alignment.centerRight,
-        child: const Padding(
-          padding: EdgeInsets.only(right: 20),
-          child: Icon(Icons.chat_sharp, color: Colors.white),
-        ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border(
-            left: BorderSide(
-              color: statusColor,
-              width: 5,
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border(
+          left: BorderSide(
+            color: statusColor,
+            width: 5,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
-              spreadRadius: 3,
-              offset: const Offset(2, 4),
-            ),
-          ],
         ),
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
-          child: InkWell(
-            // onTap: () {
-            //   Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //       builder: (context) => LeadDetailView(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 5,
+            spreadRadius: 3,
+            offset: const Offset(2, 4),
+          ),
+        ],
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
+        child: InkWell(
+          onTap: () {
+            print("model=>${model.toMap()}");
+            var num = "";
+            if (model.whatsapp_number!.contains("+")) {
+              num = model.whatsapp_number ?? "";
+            } else {
+              num = "${modell.countryCode}${model.whatsapp_number}";
+            }
+            print("model  finalResult=>${model.whatsapp_number}");
+            if (model.whatsapp_number != null) {
+              _marksread(num);
 
-            //       ),
-            //     ),
-            //   );
-            // },
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: AppColor.navBarIconColor,
-                  child: Text(
-                    "${model.contactname?.isNotEmpty == true ? model.contactname![0].toUpperCase() : '?'}",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatScreen(
+                    leadName: (modell.firstname != null &&
+                            modell.firstname!.isNotEmpty)
+                        ? '${modell.firstname} ${modell.lastname ?? ""}'
+                        : (modell.lastname != null &&
+                                modell.lastname!.isNotEmpty)
+                            ? modell.lastname!
+                            : "No Name Available",
+                    wpnumber: model.whatsapp_number!.contains("+")
+                        ? model.whatsapp_number ?? ""
+                        : "${modell.countryCode}${model.whatsapp_number ?? ""}",
+                    id: model.id,
                   ),
                 ),
-                const SizedBox(width: 12),
+              ).then((_) {
+                _getUnreadCount();
+                Provider.of<UnreadCountVm>(context, listen: false)
+                    .fetchunreadcount(number: number ?? "");
+                setState(() {
+                  unreadMsgCount = "0";
+                  unreadMsgCount = "";
+                });
+                print("unreadMsgCount====${unreadMsgCount}  ");
+              });
 
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "${model.contactname}",
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "${model.full_number}",
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        const SizedBox(height: 4),
-                      ],
-                    ),
+              leads?.viewModels.clear();
+              Provider.of<LeadListViewModel>(context, listen: false).fetch();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('No Phone Number '),
+                  duration: Duration(seconds: 3),
+                  backgroundColor: AppColor.motivationCar1Color,
+                ),
+              );
+            }
+          },
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: AppColor.navBarIconColor,
+                child: Text(
+                  "${model.contactname?.isNotEmpty == true ? model.contactname![0].toUpperCase() : '?'}",
+                  style: const TextStyle(
+                    fontSize: 20,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                // Arrow and Badge
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
-                      badges.Badge(
-                        badgeStyle: badges.BadgeStyle(
-                          badgeColor: Colors.green,
+              ),
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${model.contactname}",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
                         ),
-                        badgeContent: Text(
-                          unreadMsgCount,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                      )
-                    else
-                      const SizedBox.shrink(),
-                  ],
+                      ),
+                      Text(
+                        "${model.full_number}",
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+              // Arrow and Badge
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
+                    badges.Badge(
+                      badgeStyle: badges.BadgeStyle(
+                        badgeColor: Colors.green,
+                      ),
+                      badgeContent: Text(
+                        unreadMsgCount,
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox.shrink(),
+                ],
+              ),
+            ],
           ),
         ),
       ),

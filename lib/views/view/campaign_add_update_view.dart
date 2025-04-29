@@ -1444,12 +1444,8 @@ class _Forms extends State<CampaignAddUpdateView> {
             }
 
             debug("Uploading file with new Campaign ID: $campaignId");
-
-            // Additional file upload logic can go here
-            // await getFileData.addFiles(image!, campaignId, fileData);
           }
 
-          // Navigate to Campaign List View after successfully cloning
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
@@ -1476,7 +1472,7 @@ class _Forms extends State<CampaignAddUpdateView> {
       });
     });
 
-    print("selected button::: ${selectedButtons}");
+    print("selected button ${selectedButtons}");
   }
 
 // =======================
