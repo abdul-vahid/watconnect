@@ -177,7 +177,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
             if (userModelData?.userrole == "ADMIN")
               BottomBarItem(
                 icon: const Icon(Icons.settings_accessibility_outlined),
-                title: const Text('User'),
+                title: const Text('Users'),
                 backgroundColor: Colors.white,
               ),
             // BottomBarItem(

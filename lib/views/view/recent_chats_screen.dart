@@ -1116,7 +1116,6 @@ class _RecentChatViewState extends State<RecentChatView> {
                 });
                 print("unreadMsgCount====${unreadMsgCount}  ");
               });
-
               leads?.viewModels.clear();
               Provider.of<LeadListViewModel>(context, listen: false)
                   .fetchRecentChat();
