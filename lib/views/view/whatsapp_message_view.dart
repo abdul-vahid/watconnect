@@ -31,6 +31,7 @@ import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
+import 'package:whatsapp/views/view/lead_detail_view.dart';
 import 'package:whatsapp/views/view/open_docs.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
@@ -211,6 +212,9 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           title: GestureDetector(
             onTap: () async {
+              if (widget.model == null) {
+                return;
+              }
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
