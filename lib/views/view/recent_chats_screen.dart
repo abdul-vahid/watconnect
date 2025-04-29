@@ -70,7 +70,6 @@ class _RecentChatViewState extends State<RecentChatView> {
     number = prefs.getString('phoneNumber');
 
     if (!mounted) return;
-    // Provider.of<LeadListViewModel>(context, listen: false).fetchRecentChat();
     await Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number ?? "");
 
@@ -423,8 +422,8 @@ class _RecentChatViewState extends State<RecentChatView> {
             ),
           ).then((_) {
             _getUnreadCount();
-            Provider.of<UnreadCountVm>(context, listen: false)
-                .fetchunreadcount(number: number ?? "");
+            // Provider.of<UnreadCountVm>(context, listen: false)
+            //     .fetchunreadcount(number: number ?? "");
             setState(() {
               unreadMsgCount = "0";
               unreadMsgCount = "";

@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
@@ -49,10 +51,11 @@ class _LeadListViewState extends State<LeadListView> {
   int countunread = 0;
   List allLeads = [];
   List unreadList = [];
+  List<String> selectleadList = [];
   String? number;
   @override
   void initState() {
-    // _marksread();
+    selectleadList = [];
     _getUnreadCount();
     getLeadList();
     super.initState();
@@ -120,14 +123,14 @@ class _LeadListViewState extends State<LeadListView> {
 
     if (searchLead.isEmpty) {
       setState(() {
-        allLeads = List.from(tempLeadModelList);
+        // allLeads = List.from(tempLeadModelList);
         noMatchedLeads = false;
       });
     } else {
       List<LeadModel> matched = [];
       List<LeadModel> others = [];
 
-      for (var lead in tempLeadModelList) {
+      for (var lead in allLeads) {
         var firstName = lead.firstname?.toLowerCase() ?? '';
         var lastName = lead.lastname?.toLowerCase() ?? '';
         var leadStatus = lead.leadstatus?.toLowerCase() ?? '';
@@ -255,7 +258,7 @@ class _LeadListViewState extends State<LeadListView> {
             List<String> uniquePaymentTerms = _leadfilter.toSet().toList();
 
             return Container(
-              height: 220,
+              // height: 220,
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -293,47 +296,108 @@ class _LeadListViewState extends State<LeadListView> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    // Payment Term Dropdown
+
                     Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButtonFormField<String>(
-                        hint: const Text('Select Leads Status'),
-                        items: [
-                          DropdownMenuItem(
-                            value: 'Working - Contacted',
-                            child: Text('Working - Contacted'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Open - Not Contacted',
-                            child: Text('Open - Not Contacted'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Closed - Converted',
-                            child: Text('Closed - Converted'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Closed - Not Converted',
-                            child: Text('Closed - Not Converted'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Proposal Stage',
-                            child: Text('Proposal Stage'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'All',
-                            child: Text('All'),
-                          ),
-                        ],
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectlead = newValue;
-                          });
-                        },
-                        value: selectlead,
-                      ),
-                    ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            MultiSelectDialogField<String>(
+                              items: [
+                                'All',
+                                'Working - Contacted',
+                                'Open - Not Contacted',
+                                'Closed - Converted',
+                                'Closed - Not Converted',
+                                'Proposal Stage',
+                              ]
+                                  .map((e) => MultiSelectItem<String>(e, e))
+                                  .toList(),
+                              title: const Text(
+                                "Select Leads Status",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              buttonText: const Text("Select Leads Status"),
+                              searchable: true,
+                              dialogWidth: 300,
+                              dialogHeight: 250,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              onConfirm: (List<String> selected) {
+                                setState(() {
+                                  // Update selectleadList with the confirmed selections
+                                  selectleadList = selected;
+                                });
+                              },
+                              initialValue: [],
+                            ),
+                            SizedBox(height: 16),
+                            Wrap(
+                              spacing: 8.0,
+                              children: selectleadList.map((selectedItem) {
+                                return Chip(
+                                  label: Text(selectedItem),
+                                  deleteIcon: Icon(Icons.close),
+                                  onDeleted: () {
+                                    setState(() {
+                                      selectleadList.remove(selectedItem);
+                                    });
+                                  },
+                                  backgroundColor: Colors.blue.withOpacity(0.2),
+                                  labelStyle: TextStyle(color: Colors.blue),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        )),
+
+                    // Payment Term Dropdown
+                    // Container(
+                    //   decoration: BoxDecoration(
+                    //     borderRadius: BorderRadius.circular(8),
+                    //   ),
+                    //   child: DropdownButtonFormField<String>(
+                    //     hint: const Text('Select Leads Status'),
+                    //     items: [
+                    //       DropdownMenuItem(
+                    //         value: 'Working - Contacted',
+                    //         child: Text('Working - Contacted'),
+                    //       ),
+                    //       DropdownMenuItem(
+                    //         value: 'Open - Not Contacted',
+                    //         child: Text('Open - Not Contacted'),
+                    //       ),
+                    //       DropdownMenuItem(
+                    //         value: 'Closed - Converted',
+                    //         child: Text('Closed - Converted'),
+                    //       ),
+                    //       DropdownMenuItem(
+                    //         value: 'Closed - Not Converted',
+                    //         child: Text('Closed - Not Converted'),
+                    //       ),
+                    //       DropdownMenuItem(
+                    //         value: 'Proposal Stage',
+                    //         child: Text('Proposal Stage'),
+                    //       ),
+                    //       DropdownMenuItem(
+                    //         value: 'All',
+                    //         child: Text('All'),
+                    //       ),
+                    //     ],
+                    //     onChanged: (String? newValue) {
+                    //       setState(() {
+                    //         selectlead = newValue;
+                    //       });
+                    //     },
+                    //     value: selectlead,
+                    //   ),
+                    // ),
 
                     const SizedBox(height: 24),
 
@@ -342,7 +406,33 @@ class _LeadListViewState extends State<LeadListView> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            filterLeads(selectlead);
+                            selectleadList = [];
+                            filterLeads(selectleadList);
+                            Navigator.pop(context);
+                            // Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Clear Filters',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            filterLeads(selectleadList);
                             Navigator.pop(context);
                             // Navigator.of(context).pop();
                           },
@@ -431,7 +521,17 @@ class _LeadListViewState extends State<LeadListView> {
 
   Widget _pageBody() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        allLeads.isEmpty
+            ? SizedBox()
+            : Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "${allLeads.length} Records Found",
+                  textAlign: TextAlign.left,
+                ),
+              ),
         Expanded(
           child: updateLoader
               ? Center(
@@ -734,19 +834,29 @@ class _LeadListViewState extends State<LeadListView> {
   }
 
   bool noRecordFound = false;
-  bool filterLeads(String? filter) {
+  bool filterLeads(List filter) {
+    print("filter::: ${filter}");
     leadModelList = tempLeadModelList;
-    if (filter == null) return false;
+    if (filter.isEmpty) {
+      leadModelList = tempLeadModelList;
 
-    if (filter == 'All') {
+      setState(() {
+        allLeads = leadModelList;
+      });
+      return false;
+    }
+
+    if (filter.contains('All')) {
       allLeads = tempLeadModelList;
       setState(() {});
       return false;
     } else {
-      List<dynamic> matchleads = leadModelList
-          .where(
-              (lead) => lead.leadstatus?.toLowerCase() == filter.toLowerCase())
-          .toList();
+      List<dynamic> matchleads = leadModelList.where((lead) {
+        return filter
+            .map((e) => e.toLowerCase())
+            .contains(lead.leadstatus?.toLowerCase());
+      }).toList();
+
       setState(() {
         allLeads = matchleads;
         noRecordFound = matchleads.isEmpty;

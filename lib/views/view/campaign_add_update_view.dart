@@ -50,6 +50,7 @@ class _Forms extends State<CampaignAddUpdateView> {
   var number;
   List<String> GroupsName = [];
   List<String> selectedGroups = [];
+  List<String> selectedGroupNames = [];
   String? selectedTemplateName;
   String? SelectedTemplateCategory;
   String? selectedTemplateId;
@@ -83,10 +84,20 @@ class _Forms extends State<CampaignAddUpdateView> {
     final model = widget.model;
     if (model != null) {
       isEdit = true;
+      _name = widget.model?.campaignName ?? "";
+    }
+
+    if (isEdit == false) {
+      selectedGroups = [];
+      selectedGroupNames = [];
     }
     if (widget.model?.groups != null) {
       selectedGroups = widget.model!.groups
           .map<String>((group) => group['id'].toString())
+          .toList();
+
+      selectedGroupNames = widget.model!.groups
+          .map<String>((group) => group['name'].toString())
           .toList();
     }
 
@@ -438,16 +449,15 @@ class _Forms extends State<CampaignAddUpdateView> {
               if (isEdit == false)
                 AppUtils.getDropdown(
                   'Select Category',
-                  data: tempateCategory, // Static categories
+                  data: tempateCategory,
                   onChanged: (p0) {
                     setState(() {
                       SelectedTemplateCategory = p0;
-                      selectedTemplateName = null; // Reset template dropdown
+                      selectedTemplateName = null;
 
                       if (p0 != null) {
                         templateName1 = [];
-                        String categoryKey =
-                            p0.toLowerCase(); // Convert category to lowercase
+                        String categoryKey = p0.toLowerCase();
                         debug("Selected Category: $categoryKey");
                         templateName1 = [
                           ...allTemplatesMap[categoryKey]?.values ?? [],
@@ -456,7 +466,6 @@ class _Forms extends State<CampaignAddUpdateView> {
                           "Updated Template List after selecting category: $templateName1",
                         );
 
-                        // If templates are empty, debug
                         if (templateName1.isEmpty) {
                           debug(
                             "No templates found for the selected category: $categoryKey",
@@ -496,34 +505,68 @@ class _Forms extends State<CampaignAddUpdateView> {
                 'Group Name',
               ),
               const SizedBox(height: 5),
-              MultiSelectDialogField(
-                dialogHeight: 160,
-                items: groupsNameSet
-                    .map(
-                      (group) => MultiSelectItem<String>(
-                        group['id']!,
-                        group['name']!,
-                      ),
-                    )
-                    .toList(),
-                initialValue: selectedGroups,
-                title: Text("Select Groups"),
-                selectedColor: Colors.blue,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blue, width: 1),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                buttonText: Text("Select Groups"),
-                onConfirm: (results) {
-                  print("results:::: ${results}");
-                  // Update selectedGroups with selected items
-                  setState(() {
-                    selectedGroups = results.cast<String>();
-                  });
-                  debug(
-                    "Selected groups: $selectedGroups",
-                  ); // debug selected groups
-                },
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MultiSelectDialogField(
+                    dialogHeight: 160,
+                    items: groupsNameSet
+                        .map(
+                          (group) => MultiSelectItem<String>(
+                            group['id']!,
+                            group['name']!,
+                          ),
+                        )
+                        .toList(),
+                    initialValue: [],
+                    title: Text("Select Groups"),
+                    selectedColor: Colors.blue,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.blue, width: 1),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    buttonText: Text("Select Groups"),
+                    onConfirm: (results) {
+                      print("results:::: ${results}");
+                      setState(() {
+                        selectedGroups = results.cast<String>();
+
+                        selectedGroupNames = selectedGroups
+                            .map((groupId) =>
+                                groupsNameSet.firstWhere(
+                                  (group) => group['id'] == groupId,
+                                  orElse: () => {'name': 'Unknown'},
+                                )['name'] ??
+                                "")
+                            .toList();
+                      });
+                      debug("Selected groups: $selectedGroups");
+                      debug("Selected group names: $selectedGroupNames");
+                    },
+                  ),
+                  Wrap(
+                    spacing: 8.0,
+                    children: selectedGroupNames.map((selectedGroupName) {
+                      final groupId = groupsNameSet.firstWhere(
+                        (group) => group['name'] == selectedGroupName,
+                        orElse: () => {'id': 'Unknown'},
+                      )['id'];
+
+                      return Chip(
+                        label: Text(selectedGroupName),
+                        deleteIcon: Icon(Icons.close),
+                        onDeleted: () {
+                          setState(() {
+                            selectedGroupNames.remove(selectedGroupName);
+                            selectedGroups.remove(groupId);
+                          });
+                        },
+                        backgroundColor: Colors.blue.withOpacity(0.2),
+                        labelStyle: TextStyle(color: Colors.blue),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
               if (isEdit == false) const SizedBox(height: 10),
               if (isEdit == false)
@@ -672,13 +715,15 @@ class _Forms extends State<CampaignAddUpdateView> {
         'group_ids': selectedGroups,
       };
       print("camp before siending::: ${camp}");
-      AppUtils.onLoading(context, "Updating, please wait...");
+      // AppUtils.onLoading(context, "Updating, please wait...");
       Provider.of<CampaignViewModel>(context, listen: false)
           .updateCampaign(id, camp)
           .then((value) {
         debug('campaignUpdate==$value');
 
-        Navigator.push(
+        // Navigator.pop(context);
+        // Navigator.pop(context);
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => MultiProvider(
