@@ -80,7 +80,6 @@ dependencies:
   firebase_analytics: ^11.4.4
   flutter_pdfview: ^1.4.0
   flutter_html: ^3.0.0
-  # flutter_file_downloader: ^2.0.0
   syncfusion_flutter_pdfviewer: ^28.2.3
   video_player: ^2.9.3
   open_file: ^3.5.10
@@ -93,7 +92,7 @@ dependencies:
   device_info_plus: ^11.3.3
   flutter_appauth: ^9.0.0
   pdf: ^3.11.3
-  video_thumbnail: ^0.5.3
+  # video_thumbnail: ^0.5.3/
 
 
 dev_dependencies:
