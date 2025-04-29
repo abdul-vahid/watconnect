@@ -1254,7 +1254,11 @@ class _ChatScreenState extends State<ChatScreen> {
                                                   allMessages[index].status),
                                               child: Column(
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                                    allMessages[index].status ==
+                                                            "Outgoing"
+                                                        ? CrossAxisAlignment.end
+                                                        : CrossAxisAlignment
+                                                            .start,
                                                 children: [
                                                   Text(
                                                     allMessages[index].status ==

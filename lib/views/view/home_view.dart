@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as badges;
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -48,6 +49,7 @@ class _HomeViewState extends State<HomeView> {
   // List of items for the dropdown
   String? lastAddedId;
   Map<String, String> itemsMap = {};
+  List allNums = [];
   String? selectedWhatsAppNumber;
   UnreadCountVm? unreadCountVm;
   // ignore: prefer_typing_uninitialized_variables
@@ -94,6 +96,8 @@ class _HomeViewState extends State<HomeView> {
     return phoneNumber;
   }
 
+  String selectedNumber = "";
+
   @override
   void initState() {
     _tooltipBehavior = TooltipBehavior(enable: true);
@@ -106,11 +110,8 @@ class _HomeViewState extends State<HomeView> {
   void fetch() async {
     final prefs = await SharedPreferences.getInstance();
     String? selectedWhatsAppNumber = prefs.getString('phoneNumber');
-
+    await Provider.of<WhatsappSettingViewModel>(context, listen: false).fetch();
     if (selectedWhatsAppNumber == null || selectedWhatsAppNumber.isEmpty) {
-      await Provider.of<WhatsappSettingViewModel>(context, listen: false)
-          .fetch();
-
       if (Provider.of<WhatsappSettingViewModel>(context, listen: false)
           .viewModels
           .isNotEmpty) {
@@ -118,28 +119,34 @@ class _HomeViewState extends State<HomeView> {
           context,
           listen: false,
         ).viewModels[0].model.record[0].phone;
-
+        selectedNumber = selectedWhatsAppNumber ?? "";
         await prefs.setString('phoneNumber', selectedWhatsAppNumber ?? "");
       }
+    } else {
+      selectedNumber = selectedWhatsAppNumber;
     }
+    print("selectedNumber:::>>>> ${selectedNumber}");
+    setState(() {});
 
     debugPrint('Selected WhatsApp Number: $selectedWhatsAppNumber');
 
-    Provider.of<CampaignChartViewModel>(context, listen: false)
+    await Provider.of<CampaignChartViewModel>(context, listen: false)
         .fetchCampaignChart(number: selectedWhatsAppNumber);
     // Provider.of<ApprovedTemplateViewModel>(context, listen: false)
     //     .fetchTemplatechart(number: selectedWhatsAppNumber);
-    Provider.of<TempleteListViewModel>(context, listen: false)
+    await Provider.of<TempleteListViewModel>(context, listen: false)
         .templeteCountfetch(number: selectedWhatsAppNumber);
-    Provider.of<TempleteListViewModel>(context, listen: false)
+    await Provider.of<TempleteListViewModel>(context, listen: false)
         .templetefetch(number: selectedWhatsAppNumber);
-    Provider.of<CampaignCountViewModel>(context, listen: false)
+    await Provider.of<CampaignCountViewModel>(context, listen: false)
         .fetchCampaignCount(number: selectedWhatsAppNumber);
 
     Provider.of<ChartListViewModel>(context, listen: false).fetchLeadsMonth();
     Provider.of<LeadCountViewModel>(context, listen: false).countNewLead();
     Provider.of<AutoResponseViewModel>(context, listen: false)
         .autoResponseFetch();
+
+    EasyLoading.dismiss();
   }
 
   void whatsappSettingNumber(BuildContext context) {
@@ -210,7 +217,7 @@ class _HomeViewState extends State<HomeView> {
     chartListVM = Provider.of<CampaignChartViewModel>(context);
     unreadcountvm = Provider.of<UnreadCountVm>(context);
     approveddataVM = Provider.of<ApprovedTemplateViewModel>(context);
-
+    _updateItemsMap();
     WidgetStateProperty.all(AppColor.navBarIconColor);
 
     for (var viewModel in leadCountVM!.viewModels) {
@@ -301,18 +308,36 @@ class _HomeViewState extends State<HomeView> {
             ),
           ),
           PopupMenuButton<String>(
+            position: PopupMenuPosition.under,
             icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
             itemBuilder: (BuildContext context) {
-              return [
-                const PopupMenuItem<String>(
-                  value: '919919191919',
-                  child: Text('919919191919'),
-                ),
-                const PopupMenuItem<String>(
-                  value: '8768768686',
-                  child: Text('8768768686'),
-                ),
-              ];
+              return allNums.map((number) {
+                final isSelected = number.phone == selectedNumber;
+                return PopupMenuItem<String>(
+                  value: number.phone,
+                  child: Text(
+                    "${number.name} ${number.phone} ",
+                    style: TextStyle(
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? Colors.blue : Colors.black,
+                    ),
+                  ),
+                );
+              }).toList();
+            },
+            onSelected: (value) async {
+              print('Selected: $value');
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString('phoneNumber', value);
+
+              EasyLoading.showToast("${value} marked as selected",
+                  toastPosition: EasyLoadingToastPosition.bottom);
+              selectedNumber = value;
+              EasyLoading.show();
+              fetch();
+
+              setState(() {});
             },
           ),
         ],
@@ -780,6 +805,19 @@ class _HomeViewState extends State<HomeView> {
         debugPrint("Unexpected model type: ${viewModel.model.runtimeType}");
       }
     }
+  }
+
+  void _updateItemsMap() {
+    itemsMap.clear();
+    allNums = [];
+    for (var viewModel in whatsAppSettingVM!.viewModels) {
+      var nmodel = viewModel.model;
+      for (var record in nmodel?.record ?? []) {
+        allNums.add(record);
+        itemsMap[record.phone] = "${record.name} ${record.phone}";
+      }
+    }
+    print("itemsMap::: ${itemsMap}   ${allNums}");
   }
 }
 

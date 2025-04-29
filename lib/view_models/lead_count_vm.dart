@@ -13,6 +13,6 @@ class LeadCountViewModel extends BaseListViewModel {
 
   void countNewLead() async {
     String url = AppUtils.getUrl(AppConstants.leadCountAPIPath);
-    get(url: url, baseModel: NewLeadCountModel());
+    await get(url: url, baseModel: NewLeadCountModel());
   }
 }

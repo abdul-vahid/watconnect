@@ -14,7 +14,7 @@ class CampaignCountViewModel extends BaseListViewModel {
   Future<void> fetchCampaignCount({String? number = ''}) async {
     String url =
         AppUtils.getUrl("${AppConstants.campaignCountAPIPath}/$number");
-    get(url: url, baseModel: CampaignCountModel());
+    await get(url: url, baseModel: CampaignCountModel());
     // notifyListeners();
   }
 }

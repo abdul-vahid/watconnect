@@ -16,6 +16,6 @@ class ChartListViewModel extends BaseListViewModel {
   void fetchLeadsMonth() async {
     String url = AppUtils.getUrl(AppConstants.leadsmonthAPIPath);
     debug("url1 = > $url");
-    get(url: url, baseModel: Leadsmonthmodel());
+    await get(url: url, baseModel: Leadsmonthmodel());
   }
 }
