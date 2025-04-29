@@ -15,7 +15,8 @@ class UnreadCountVm extends BaseListViewModel {
   Future<void> fetchunreadcount({
     String? number = '',
   }) async {
-    print("numberrr=>${number}");
+    print(
+        "numberrr=>${number}   url of the api ${AppConstants.unreadcountpath}$number");
     String url = AppUtils.getUrl("${AppConstants.unreadcountpath}$number");
     debug("urldata=>$url");
     await get(url: url, baseModel: UnreadMsgModel());

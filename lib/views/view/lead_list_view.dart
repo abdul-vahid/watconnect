@@ -577,70 +577,70 @@ class _LeadListViewState extends State<LeadListView> {
     );
   }
 
-  List<Widget> getLeadWidgets() {
-    List<Widget> widgets = [];
-    Set<String> uniqueIds = {};
+  // List<Widget> getLeadWidgets() {
+  //   List<Widget> widgets = [];
+  //   Set<String> uniqueIds = {};
 
-    for (var viewModel in leadModelList) {
-      var msgCnt = "";
-      LeadModel model = viewModel;
-      var unreadRecord = unreadCountVm?.viewModels.firstWhere(
-        (unreadModel) {
-          var unreadMsgModel = unreadModel.model;
+  //   for (var viewModel in leadModelList) {
+  //     var msgCnt = "";
+  //     LeadModel model = viewModel;
+  //     var unreadRecord = unreadCountVm?.viewModels.firstWhere(
+  //       (unreadModel) {
+  //         var unreadMsgModel = unreadModel.model;
 
-          return unreadMsgModel.records?.any(
-                (record) => record.whatsappNumber == model.whatsapp_number,
-              ) ??
-              false;
-        },
-        orElse: () => null,
-      );
+  //         return unreadMsgModel.records?.any(
+  //               (record) => record.whatsappNumber == model.whatsapp_number,
+  //             ) ??
+  //             false;
+  //       },
+  //       orElse: () => null,
+  //     );
 
-      print("unreadRecord:::>>  ${unreadRecord}");
-      if (unreadRecord != null) {
-        var matchingRecords = unreadRecord.model.records?.where((record) {
-          msgCnt = record.unreadMsgCount;
-          print(
-              ' ${record.unreadMsgCount}  record.whatsappNumber: ${record.whatsappNumber}, model.whatsapp_number: ${model.whatsapp_number}');
-          return record.whatsappNumber == model.whatsapp_number;
-        }).toList();
+  //     print("unreadRecord:::>>  ${unreadRecord}");
+  //     if (unreadRecord != null) {
+  //       var matchingRecords = unreadRecord.model.records?.where((record) {
+  //         msgCnt = record.unreadMsgCount;
+  //         print(
+  //             ' ${record.unreadMsgCount}  record.whatsappNumber: ${record.whatsappNumber}, model.whatsapp_number: ${model.whatsapp_number}');
+  //         return record.whatsappNumber == model.whatsapp_number;
+  //       }).toList();
 
-        var unreadMsgCount =
-            matchingRecords != null && matchingRecords.isNotEmpty
-                ? matchingRecords.first.unreadMsgCount
-                : "";
+  //       var unreadMsgCount =
+  //           matchingRecords != null && matchingRecords.isNotEmpty
+  //               ? matchingRecords.first.unreadMsgCount
+  //               : "";
 
-        print("unreadMsgCount::::: ${unreadMsgCount}");
+  //       print("unreadMsgCount::::: ${unreadMsgCount}");
 
-        if (!uniqueIds.contains(model.id)) {
-          uniqueIds.add(model.id!);
+  //       if (!uniqueIds.contains(model.id)) {
+  //         uniqueIds.add(model.id!);
 
-          widgets.add(Dismissible(
-            key: UniqueKey(),
-            onDismissed: (direction) async {
-              print("fiifififiifif${finalResult}");
-              var res = await _marksread(finalResult);
-            },
-            background: Container(
-              color: Colors.green,
-              alignment: Alignment.centerRight,
-              child: const Padding(
-                padding: EdgeInsets.only(right: 20),
-                child: Icon(Icons.chat_sharp, color: Colors.white),
-              ),
-            ),
-            child: leadRecordList(model, unreadMsgCount),
-          ));
-        }
-      } else {
-        if (!uniqueIds.contains(model.id)) {
-          uniqueIds.add(model.id!);
-          widgets.add(leadRecordList(model, ""));
-        }
-      }
-    }
-    return widgets;
-  }
+  //         widgets.add(Dismissible(
+  //           key: UniqueKey(),
+  //           onDismissed: (direction) async {
+  //             print("fiifififiifif${finalResult}");
+  //             var res = await _marksread(finalResult);
+  //           },
+  //           background: Container(
+  //             color: Colors.green,
+  //             alignment: Alignment.centerRight,
+  //             child: const Padding(
+  //               padding: EdgeInsets.only(right: 20),
+  //               child: Icon(Icons.chat_sharp, color: Colors.white),
+  //             ),
+  //           ),
+  //           child: leadRecordList(model, unreadMsgCount),
+  //         ));
+  //       }
+  //     } else {
+  //       if (!uniqueIds.contains(model.id)) {
+  //         uniqueIds.add(model.id!);
+  //         widgets.add(leadRecordList(model, ""));
+  //       }
+  //     }
+  //   }
+  //   return widgets;
+  // }
 
   Widget leadRecordList(LeadModel model, String unreadMsgCount) {
     Color statusColor;
@@ -931,7 +931,7 @@ class _LeadListViewState extends State<LeadListView> {
         .then((onValue) {
       allLeads = [];
 
-      for (var viewModel in leadlistvm!.viewModels) {
+      for (var viewModel in leadlistvm.viewModels) {
         _leadfilter.add(viewModel.model.leadstatus);
         tempLeadModelList.add(viewModel.model);
         allLeads.add(viewModel.model);
