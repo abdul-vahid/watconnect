@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
+import 'package:whatsapp/view_models/whatsapp_setting_vm.dart';
 import 'package:whatsapp/views/view/user_list_view.dart';
 
 import '../../models/user_data_model/user_data_model.dart';
@@ -26,7 +27,9 @@ class _Forms extends State<UserAddView> {
   bool isEdit = false;
   bool? isactive;
   @override
+  WhatsappSettingViewModel? whatsAppSettingVM;
   void initState() {
+    getNumbers();
     final model = widget.model;
     if (model != null) {
       isEdit = true;
@@ -41,6 +44,11 @@ class _Forms extends State<UserAddView> {
     _role = widget.model?.userrole != '' && widget.model?.userrole != null
         ? widget.model?.userrole
         : null;
+
+    _phone = widget.model?.phone != '' && widget.model?.phone != null
+        ? widget.model?.phone
+        : null;
+
     _selectedaccountname =
         widget.model?.managername != '' && widget.model?.managername != null
             ? widget.model?.managername
@@ -58,6 +66,9 @@ class _Forms extends State<UserAddView> {
     "ADMIN",
     "USER",
   ];
+
+  final List<String> whatsAppNums = [];
+
   List<Map<String, String>> _countrycode = [
     {"country": "India", "country_code": "+91"},
     {"country": "United Arab Emirates", "country_code": "+971"},
@@ -247,6 +258,8 @@ class _Forms extends State<UserAddView> {
 
   @override
   Widget build(BuildContext context) {
+    whatsAppSettingVM = Provider.of<WhatsappSettingViewModel>(context);
+
     _getcontactData = UserDataListViewModel(context);
     baseViewModels = Provider.of<UserDataListViewModel>(context);
     accounts.length = 0;
@@ -512,6 +525,23 @@ class _Forms extends State<UserAddView> {
                 value: _role,
                 validator: (value) => value == null ? 'Role is required' : null,
               ),
+
+              const SizedBox(height: 10),
+              const Text('Select Wh Number'),
+              const SizedBox(height: 5),
+              AppUtils.getDropdown(
+                'Select',
+                data: whatsAppNums,
+                onChanged: (p0) {
+                  setState(() {
+                    _phone = p0;
+                    // _userType = null;
+                  });
+                },
+                value: _phone,
+                validator: (value) => value == null ? 'Role is required' : null,
+              ),
+
               const SizedBox(height: 10),
               const Text('Manager'),
               const SizedBox(height: 5),
@@ -566,6 +596,7 @@ class _Forms extends State<UserAddView> {
           isactive: isactive,
           managername: _selectedaccountname,
           country_code: selectedCountry,
+          phone: _phone,
           managerid: accountId);
       AppUtils.onLoading(context, "Saving, please wait...");
       _getcontactData?.addUser(adduserModel).then((value) {
@@ -623,6 +654,7 @@ class _Forms extends State<UserAddView> {
           managername: _selectedaccountname,
           isactive: isactive,
           whatsappNumber: _whatsappPhone,
+          phone: _phone,
           country_code: selectedCountry);
 
       AppUtils.onLoading(context, "Updating, please wait...");
@@ -652,5 +684,18 @@ class _Forms extends State<UserAddView> {
         );
       });
     }
+  }
+
+  Future<void> getNumbers() async {
+    await Provider.of<WhatsappSettingViewModel>(context, listen: false).fetch();
+    print("whatsAppSettingVM ::: ${whatsAppSettingVM}");
+    for (var viewModel in whatsAppSettingVM!.viewModels) {
+      var nmodel = viewModel.model;
+      for (var record in nmodel?.record ?? []) {
+        whatsAppNums.add(record.phone);
+        // itemsMap[record.phone] = "${record.name} ${record.phone}";
+      }
+    }
+    setState(() {});
   }
 }

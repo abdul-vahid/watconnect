@@ -1,0 +1,2 @@
+C:/Users/iBirds/Desktop/watconnect/android/app/.cxx/RelWithDebInfo/2o1y5466/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/iBirds/Desktop/watconnect/android/app/.cxx/RelWithDebInfo/2o1y5466/x86_64/CMakeFiles/rebuild_cache.dir

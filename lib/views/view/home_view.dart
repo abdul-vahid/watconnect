@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
 import 'package:whatsapp/utils/app_utils.dart';
+import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
 
 import 'package:whatsapp/view_models/unread_count_vm.dart';
@@ -50,6 +51,8 @@ class _HomeViewState extends State<HomeView> {
   String? lastAddedId;
   Map<String, String> itemsMap = {};
   List allNums = [];
+
+  List allWhNums = [];
   String? selectedWhatsAppNumber;
   UnreadCountVm? unreadCountVm;
   // ignore: prefer_typing_uninitialized_variables
@@ -101,7 +104,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     _tooltipBehavior = TooltipBehavior(enable: true);
-
+    NotificationUtil.registerToken();
     getPhoneNumber();
     fetch();
     super.initState();
@@ -149,6 +152,7 @@ class _HomeViewState extends State<HomeView> {
     EasyLoading.dismiss();
   }
 
+  String? _phone;
   void whatsappSettingNumber(BuildContext context) {
     showDialog(
       context: context,
@@ -309,7 +313,7 @@ class _HomeViewState extends State<HomeView> {
           ),
           PopupMenuButton<String>(
             position: PopupMenuPosition.under,
-            icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
+            icon: const Icon(Icons.phone, size: 23, color: Colors.white),
             itemBuilder: (BuildContext context) {
               return allNums.map((number) {
                 final isSelected = number.phone == selectedNumber;
@@ -347,6 +351,22 @@ class _HomeViewState extends State<HomeView> {
         child: Column(
           children: [
             SizedBox(height: 12),
+
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 15.0),
+            //   child: AppUtils.getDropdown(
+            //     'Select',
+            //     data: allWhNums,
+            //     onChanged: (p0) {
+            //       setState(() {
+            //         _phone = p0;
+            //         // _userType = null;
+            //       });
+            //     },
+            //     value: _phone,
+            //     validator: (value) => value == null ? 'Role is required' : null,
+            //   ),
+            // ),
             // Container(
             //   width: 300,
             //   child: AppUtils.getDropdown(
@@ -814,6 +834,7 @@ class _HomeViewState extends State<HomeView> {
       var nmodel = viewModel.model;
       for (var record in nmodel?.record ?? []) {
         allNums.add(record);
+        allWhNums.add("${record.name} ${record.phone}");
         itemsMap[record.phone] = "${record.name} ${record.phone}";
       }
     }

@@ -422,13 +422,17 @@ class _LeadDetailViewState extends State<LeadDetailView> {
     });
   }
 
-  void _navigateToEdit() {
-    Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => LeadAddView(model: widget.model),
-            ))
-        .then((value) =>
-            Provider.of<LeadListViewModel>(context, listen: false).fetch());
+  Future<void> _navigateToEdit() async {
+    Provider.of<LeadListViewModel>(context, listen: false).fetch();
+    final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LeadAddView(model: widget.model),
+        ));
+
+    if (result == true) {
+      print("result on detailesss:::: ");
+      Navigator.pop(context, true);
+    }
   }
 }

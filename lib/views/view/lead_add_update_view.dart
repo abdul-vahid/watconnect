@@ -1109,17 +1109,21 @@ class _Forms extends State<LeadAddView> {
       Provider.of<LeadListViewModel>(context, listen: false)
           .update(id, leadModel)
           .then((value) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => MultiProvider(
-                    providers: [
-                      ChangeNotifierProvider(
-                          create: (_) => LeadListViewModel(context))
-                    ],
-                    child: const LeadListView(),
-                  )),
-        );
+        Navigator.pop(context);
+        Future.delayed(Duration(milliseconds: 100), () {
+          Navigator.pop(context, true);
+        });
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //       builder: (context) => MultiProvider(
+        //             providers: [
+        //               ChangeNotifierProvider(
+        //                   create: (_) => LeadListViewModel(context))
+        //             ],
+        //             child: const LeadListView(),
+        //           )),
+        // );
         // ScaffoldMessenger.of(context).showSnackBar(
         //   const SnackBar(
         //     content: Text('Your record has been updated.'),

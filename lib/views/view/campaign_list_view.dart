@@ -252,10 +252,10 @@ class _CampaignListView extends State<CampaignListView> {
                                   .map((e) => MultiSelectItem<String>(e, e))
                                   .toList(),
                               title: const Text(
-                                "Select Leads Status",
+                                "Select Campaign Status",
                                 style: TextStyle(fontSize: 18),
                               ),
-                              buttonText: const Text("Select Leads Status"),
+                              buttonText: const Text("Select Campaign Status"),
                               searchable: true,
                               dialogWidth: 300,
                               dialogHeight: 250,
@@ -475,14 +475,19 @@ class _CampaignListView extends State<CampaignListView> {
                             child: Padding(
                               padding: const EdgeInsets.only(top: 1, bottom: 2),
                               child: InkWell(
-                                onTap: () {
-                                  Navigator.push(
+                                onTap: () async {
+                                  final result = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => CampaignDetailView(
                                           record: allCampaigns[index]),
                                     ),
                                   );
+                                  if (result == true) {
+                                    print("is result getting true.........?");
+                                    saveNumberData();
+                                    getCampignList();
+                                  }
                                 },
                                 child: ListTile(
                                   title: Row(
@@ -541,48 +546,57 @@ class _CampaignListView extends State<CampaignListView> {
                                               ],
                                             ),
                                             Spacer(),
-                                            Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: [
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            CampaignAddUpdateView(
-                                                          model: allCampaigns[
-                                                              index],
-                                                          isClone: true,
+                                            allCampaigns[index]
+                                                        .campaignStatus ==
+                                                    'Completed'
+                                                ? SizedBox()
+                                                : Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    children: [
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  CampaignAddUpdateView(
+                                                                model:
+                                                                    allCampaigns[
+                                                                        index],
+                                                                isClone: true,
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                        child: Container(
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                                  horizontal: 7,
+                                                                  vertical: 8),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.blue,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8),
+                                                          ),
+                                                          child: Text(
+                                                            'Clone',
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 12,
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
-                                                    );
-                                                  },
-                                                  child: Container(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            horizontal: 7,
-                                                            vertical: 8),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.blue,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8),
-                                                    ),
-                                                    child: Text(
-                                                      'Clone',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 12,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            )
+                                                    ],
+                                                  )
                                           ],
                                         ),
                                       ),
