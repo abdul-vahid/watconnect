@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/recent_chat_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
@@ -70,10 +71,12 @@ class _RecentChatViewState extends State<RecentChatView> {
     number = prefs.getString('phoneNumber');
 
     if (!mounted) return;
+    Provider.of<LeadListViewModel>(context, listen: false).fetch();
     await Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number ?? "");
 
     var unreadMsgModel;
+    print(" unreadCountVm?.viewModels ::: ${unreadCountVm?.viewModels}");
     for (var unreadModel in unreadCountVm?.viewModels ?? []) {
       unreadMsgModel = unreadModel.model as UnreadMsgModel;
     }
@@ -133,7 +136,7 @@ class _RecentChatViewState extends State<RecentChatView> {
     //   }
     // }
 
-    // unreadCountVm = Provider.of<UnreadCountVm>(context);
+    unreadCountVm = Provider.of<UnreadCountVm>(context);
     leadlistvm = Provider.of<LeadListViewModel>(context);
     // userlistvm = Provider.of<UserDataListViewModel>(context);
 
@@ -624,18 +627,17 @@ class _RecentChatViewState extends State<RecentChatView> {
 
   Future<void> getLeadList() async {
     print("getLeadList:::getLeadList{}4");
-    // leadlistvm = Provider.of<LeadListViewModel>(context, listen: false);
-    await Provider.of<LeadListViewModel>(context, listen: false)
+    await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+            listen: false)
         .fetchRecentChat()
         .then((onValue) {
       print(
           " dbfjsdlvdsl}::: }  ${leadlistvm.viewModels}   ${leadlistvm.viewModels.runtimeType}   ${leadlistvm.viewModels.length} ");
-
+      allRecentChats = [];
       try {
-        for (var viewModel in leadlistvm.viewModels ?? []) {
+        for (var viewModel in leadlistvm.viewModels) {
           var recentMsgmodel = viewModel.model;
           if (recentMsgmodel?.records != null) {
-            allRecentChats = [];
             for (var record in recentMsgmodel!.records!) {
               allRecentChats.add(record);
               tempLeadModelList.add(record);
@@ -646,27 +648,9 @@ class _RecentChatViewState extends State<RecentChatView> {
         print("e:::::::: ${e}");
         allRecentChats = [];
       }
+      // setState(() {});
 
       print(" dbfjsdlvdsl${allRecentChats}");
-      // List prioritizedLeads = [];
-      // List otherLeads = [];
-
-      // for (var lead in allRecentChats) {
-      //   bool hasUnread = unreadList.any(
-      //     (unread) =>
-      //         unread.whatsappNumber.toString().contains(lead.whatsapp_number),
-      //   );
-
-      //   if (hasUnread) {
-      //     prioritizedLeads.add(lead);
-      //   } else {
-      //     otherLeads.add(lead);
-      //   }
-      // }
-
-      // allRecentChats = [...prioritizedLeads, ...otherLeads];
-
-      setState(() {});
     });
   }
 }
