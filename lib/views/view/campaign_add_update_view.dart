@@ -1422,19 +1422,17 @@ class _Forms extends State<CampaignAddUpdateView> {
           'description': _description,
         };
 
-        // Cloning the campaign data
         getaccountData.addCampaign(camp).then((value) async {
           if (value is Map<String, dynamic>) {
             String? campaignId = value["record"]?["id"];
             print("campaignId>>>  ${campaignId}");
 
-            // If campaign ID is missing, abort the operation
             if (campaignId == null) {
               debug("Campaign ID is null. File upload skipped.");
               return;
             } else {
               Map<String, dynamic> paramBody = {
-                "campaign_id": campaignId, // New campaign ID
+                "campaign_id": campaignId,
                 "body_text_params": bodyTextParams,
                 "msg_history_id": null,
                 "file_id": fileid,
