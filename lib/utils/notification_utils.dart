@@ -353,6 +353,7 @@ class NotificationUtil {
               ? matchedModel.whatsapp_number ?? ""
               : "${matchedModel.countryCode}${matchedModel.whatsapp_number ?? ""}",
           id: matchedModel.id,
+          model: matchedModel,
         ),
       ),
     );

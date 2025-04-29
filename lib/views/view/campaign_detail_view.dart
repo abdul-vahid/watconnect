@@ -55,16 +55,20 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
           if (widget.record?.campaignStatus != 'Completed')
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
-              onSelected: (value) {
+              onSelected: (value) async {
                 if (value == 'edit') {
                   if (widget.record != null) {
-                    Navigator.push(
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
                             CampaignAddUpdateView(model: widget.record),
                       ),
                     );
+                    if (result == true) {
+                      print("result on detailesss:::: ");
+                      Navigator.pop(context, true);
+                    }
                   }
                 }
               },

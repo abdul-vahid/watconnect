@@ -31,6 +31,7 @@ import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
+import 'package:whatsapp/views/view/lead_detail_view.dart';
 import 'package:whatsapp/views/view/open_docs.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
@@ -46,9 +47,10 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 class ChatScreen extends StatefulWidget {
   final String? leadName;
   final String? wpnumber;
+  LeadModel? model;
   String? id;
   // final LeadModel model;
-  ChatScreen({Key? key, this.leadName, this.wpnumber, this.id
+  ChatScreen({Key? key, this.leadName, this.wpnumber, this.id, this.model
       // required this.model,
       })
       : super(key: key);
@@ -209,7 +211,23 @@ class _ChatScreenState extends State<ChatScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           title: GestureDetector(
-            onTap: () {
+            onTap: () async {
+              if (widget.model == null) {
+                return;
+              }
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LeadDetailView(
+                    model: widget.model,
+                  ),
+                ),
+              );
+
+              if (result == true) {
+                print("result on detailesss:::: ");
+                Navigator.pop(context, true);
+              }
               // Navigator.push(
               //   context,
               //   MaterialPageRoute(

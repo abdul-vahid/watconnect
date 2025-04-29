@@ -52,7 +52,6 @@ class _Forms extends State<CampaignAddUpdateView> {
   var number;
   List<String> GroupsName = [];
   List<String> selectedGroups = [];
-  List<String> selectedGroupNames = [];
   String? selectedTemplateName;
   String? SelectedTemplateCategory;
   String? selectedTemplateId;
@@ -86,20 +85,12 @@ class _Forms extends State<CampaignAddUpdateView> {
     final model = widget.model;
     if (model != null) {
       isEdit = true;
-      _name = widget.model?.campaignName ?? "";
-    }
-
-    if (isEdit == false) {
-      selectedGroups = [];
-      selectedGroupNames = [];
+      _name = widget.model?.campaignName;
+      SelectedTemplateCategory = widget.model?.campaignType;
     }
     if (widget.model?.groups != null) {
       selectedGroups = widget.model!.groups
           .map<String>((group) => group['id'].toString())
-          .toList();
-
-      selectedGroupNames = widget.model!.groups
-          .map<String>((group) => group['name'].toString())
           .toList();
     }
 
@@ -195,7 +186,11 @@ class _Forms extends State<CampaignAddUpdateView> {
         elevation: 2,
         backgroundColor: AppColor.navBarIconColor,
         title: Text(
-          isEdit && widget.isClone == false ? "Edit Campaign" : "Add Campaign",
+          isEdit && widget.isClone == false
+              ? "Edit Campaign"
+              : widget.isClone
+                  ? "Clone Campaign"
+                  : "Add Campaign",
           style: const TextStyle(
               color: Color.fromARGB(255, 255, 255, 255),
               fontSize: 20,
@@ -206,61 +201,15 @@ class _Forms extends State<CampaignAddUpdateView> {
         onRefresh: _pullRefresh,
         child: AppUtils.getAppBody(_getaccountData!, _pageBody),
       ),
-      // bottomNavigationBar: Container(
-      //   height: 49,
-      //   color: Colors.white,
-      //   padding: const EdgeInsets.symmetric(horizontal: 10),
-      //   child: Row(
-      //     children: [
-      //       Expanded(
-      //         child: ElevatedButton(
-      //           style: ElevatedButton.styleFrom(
-      //             backgroundColor: AppColor.cardsColor,
-      //             padding: const EdgeInsets.symmetric(vertical: 10),
-      //           ),
-      //           onPressed: isEdit ? updateData : cloneCampaign,
-      //           child: Text(
-      //             isEdit ? "Update" : "Submit",
-      //             style: const TextStyle(
-      //               fontSize: 14,
-      //               fontWeight: FontWeight.w600,
-      //               color: Colors.white,
-      //             ),
-      //           ),
-      //         ),
-      //       ),
-      //       const SizedBox(width: 10),
-      //       Expanded(
-      //         child: OutlinedButton(
-      //           onPressed: () {
-      //             Navigator.pop(context);
-      //           },
-      //           style: OutlinedButton.styleFrom(
-      //             padding: const EdgeInsets.symmetric(vertical: 10),
-      //             side: const BorderSide(
-      //               width: 1.0,
-      //               color: Colors.black,
-      //             ),
-      //           ),
-      //           child: const Text(
-      //             'Cancel',
-      //             style: TextStyle(
-      //               fontSize: 14,
-      //               fontWeight: FontWeight.w500,
-      //               color: Colors.black,
-      //             ),
-      //           ),
-      //         ),
-      //       ),
-      //     ],
-      //   ),
-      // ),
       bottomNavigationBar: Container(
+        // decoration: InputDecoration(border: Border.all(12)),
         height: 49,
         color: Colors.white,
+
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Row(
           children: [
+            // First button (Submit/Update)
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -269,11 +218,9 @@ class _Forms extends State<CampaignAddUpdateView> {
                 ),
                 onPressed: isEdit && widget.isClone == false
                     ? updateData
-                    : cloneCampaign, // Conditional call to either update or clone
+                    : onButtonPressed,
                 child: Text(
-                  isEdit && widget.isClone == false
-                      ? "Update"
-                      : "Submit", // Text changes based on isEdit state
+                  isEdit && widget.isClone == false ? "Update" : "Submit",
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -282,12 +229,13 @@ class _Forms extends State<CampaignAddUpdateView> {
                 ),
               ),
             ),
+
             const SizedBox(width: 10),
+
             Expanded(
               child: OutlinedButton(
                 onPressed: () {
-                  Navigator.pop(
-                      context); // Navigates back (usually to the previous screen)
+                  Navigator.pop(context);
                 },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 10),
@@ -448,18 +396,19 @@ class _Forms extends State<CampaignAddUpdateView> {
                   'Select Template Category',
                 ),
               if (isEdit == false) const SizedBox(height: 5),
-              if (isEdit == false)
+              if (isEdit == false && widget.isClone == false)
                 AppUtils.getDropdown(
                   'Select Category',
-                  data: tempateCategory,
+                  data: tempateCategory, // Static categories
                   onChanged: (p0) {
                     setState(() {
                       SelectedTemplateCategory = p0;
-                      selectedTemplateName = null;
+                      selectedTemplateName = null; // Reset template dropdown
 
                       if (p0 != null) {
                         templateName1 = [];
-                        String categoryKey = p0.toLowerCase();
+                        String categoryKey =
+                            p0.toLowerCase(); // Convert category to lowercase
                         debug("Selected Category: $categoryKey");
                         templateName1 = [
                           ...allTemplatesMap[categoryKey]?.values ?? [],
@@ -468,6 +417,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                           "Updated Template List after selecting category: $templateName1",
                         );
 
+                        // If templates are empty, debug
                         if (templateName1.isEmpty) {
                           debug(
                             "No templates found for the selected category: $categoryKey",
@@ -507,68 +457,34 @@ class _Forms extends State<CampaignAddUpdateView> {
                 'Group Name',
               ),
               const SizedBox(height: 5),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  MultiSelectDialogField(
-                    dialogHeight: 160,
-                    items: groupsNameSet
-                        .map(
-                          (group) => MultiSelectItem<String>(
-                            group['id']!,
-                            group['name']!,
-                          ),
-                        )
-                        .toList(),
-                    initialValue: [],
-                    title: Text("Select Groups"),
-                    selectedColor: Colors.blue,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.blue, width: 1),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    buttonText: Text("Select Groups"),
-                    onConfirm: (results) {
-                      print("results:::: ${results}");
-                      setState(() {
-                        selectedGroups = results.cast<String>();
-
-                        selectedGroupNames = selectedGroups
-                            .map((groupId) =>
-                                groupsNameSet.firstWhere(
-                                  (group) => group['id'] == groupId,
-                                  orElse: () => {'name': 'Unknown'},
-                                )['name'] ??
-                                "")
-                            .toList();
-                      });
-                      debug("Selected groups: $selectedGroups");
-                      debug("Selected group names: $selectedGroupNames");
-                    },
-                  ),
-                  Wrap(
-                    spacing: 8.0,
-                    children: selectedGroupNames.map((selectedGroupName) {
-                      final groupId = groupsNameSet.firstWhere(
-                        (group) => group['name'] == selectedGroupName,
-                        orElse: () => {'id': 'Unknown'},
-                      )['id'];
-
-                      return Chip(
-                        label: Text(selectedGroupName),
-                        deleteIcon: Icon(Icons.close),
-                        onDeleted: () {
-                          setState(() {
-                            selectedGroupNames.remove(selectedGroupName);
-                            selectedGroups.remove(groupId);
-                          });
-                        },
-                        backgroundColor: Colors.blue.withOpacity(0.2),
-                        labelStyle: TextStyle(color: Colors.blue),
-                      );
-                    }).toList(),
-                  ),
-                ],
+              MultiSelectDialogField(
+                dialogHeight: 160,
+                items: groupsNameSet
+                    .map(
+                      (group) => MultiSelectItem<String>(
+                        group['id']!,
+                        group['name']!,
+                      ),
+                    )
+                    .toList(),
+                initialValue: selectedGroups,
+                title: Text("Select Groups"),
+                selectedColor: Colors.blue,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blue, width: 1),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                buttonText: Text("Select Groups"),
+                onConfirm: (results) {
+                  print("results:::: ${results}");
+                  // Update selectedGroups with selected items
+                  setState(() {
+                    selectedGroups = results.cast<String>();
+                  });
+                  debug(
+                    "Selected groups: $selectedGroups",
+                  ); // debug selected groups
+                },
               ),
               if (isEdit == false) const SizedBox(height: 10),
               if (isEdit == false)
@@ -722,22 +638,25 @@ class _Forms extends State<CampaignAddUpdateView> {
           .updateCampaign(id, camp)
           .then((value) {
         debug('campaignUpdate==$value');
+        Navigator.pop(context);
+        Navigator.pop(context);
+        Future.delayed(Duration(milliseconds: 100), () {
+          Navigator.pop(context, true);
+        });
 
-        // Navigator.pop(context);
-        // Navigator.pop(context);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MultiProvider(
-              providers: [
-                ChangeNotifierProvider(
-                  create: (_) => CampaignViewModel(context),
-                ),
-              ],
-              child: const CampaignListView(),
-            ),
-          ),
-        );
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) => MultiProvider(
+        //       providers: [
+        //         ChangeNotifierProvider(
+        //           create: (_) => CampaignViewModel(context),
+        //         ),
+        //       ],
+        //       child: const CampaignListView(),
+        //     ),
+        //   ),
+        // );
       });
     }
   }
@@ -1285,14 +1204,13 @@ class _Forms extends State<CampaignAddUpdateView> {
 
     String templateToSend = selectedTemplateName ?? "";
 
-    print("selected header:: >><><>< ${selectedHeader}");
+    print("selected header:: >><><>< ${selectedHeader}     ${templateToSend}");
 
     setState(() {
       _isLoading = true;
     });
-    await sendTextTemplate(
-            templateToSend, compoTextParams, isChecked, bodyTextParams)
-        .then((onValue) {
+
+    if (templateToSend.isEmpty) {
       setState(() {
         _isLoading = false;
         image = null;
@@ -1360,123 +1278,83 @@ class _Forms extends State<CampaignAddUpdateView> {
           );
         });
       });
-    });
+    } else {
+      await sendTextTemplate(
+              templateToSend, compoTextParams, isChecked, bodyTextParams)
+          .then((onValue) {
+        setState(() {
+          _isLoading = false;
+          image = null;
+
+          CampaignViewModel getaccountData = CampaignViewModel(context);
+
+          Map<String, dynamic> camp = {
+            'name': _name,
+            'template_id': selectedTemplateId,
+            'template_name': selectedTemplateName,
+            'status': 'Pending',
+            'business_number': number,
+            'type': _type,
+            'startDate': _dateStartInput.text,
+            'group_ids': selectedGroups,
+            'description': _description,
+          };
+
+          getaccountData.addCampaign(camp).then((value) async {
+            if (value is Map<String, dynamic>) {
+              String? campaignId = value["record"]?["id"];
+              print("campaignId>>>  ${campaignId}");
+              if (campaignId == null) {
+                debug("Campaign ID is null. File upload skipped.");
+                return;
+              } else {
+                Map<String, dynamic> paramBody = {
+                  "campaign_id": campaignId,
+                  "body_text_params": bodyTextParams,
+                  "msg_history_id": null,
+                  "file_id": fileid,
+                  "whatsapp_number_admin": "7590889022"
+                };
+
+                MessageViewModel mstemp = MessageViewModel(context);
+                var campaignResponse =
+                    await mstemp.sendCampParam(campParambody: paramBody);
+              }
+
+              debug("Uploading file with Campaign ID: $campaignId");
+
+              // await getFileData.addFiles(image!, campaignId, fileData);
+            }
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MultiProvider(
+                  providers: [
+                    ChangeNotifierProvider(
+                      create: (_) => CampaignViewModel(context),
+                    ),
+                  ],
+                  child: const CampaignListView(),
+                ),
+              ),
+              (Route<dynamic> route) => route.isFirst,
+            );
+          }).catchError((error, stackTrace) {
+            debug("Error: $error");
+            Navigator.pop(context);
+            AppUtils.getAlert(
+              context,
+              AppUtils.getErrorMessages(error),
+              title: "Error Alert",
+            );
+          });
+        });
+      });
+    }
 
     print("selected button::: ${selectedButtons} ");
   }
 
-// clone campaign
-
-  Future<void> cloneCampaign() async {
-    print("callinngggg clone campaign");
-    Map<String, String> bodyTextParams = {};
-    List compoTextParams = [];
-    List numberedCampParam = [];
-
-    bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
-    if (anyEmpty) {
-      EasyLoading.showToast('All fields are required');
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-
-    File? imageFile;
-    String docId = "";
-    for (int i = 0; i < controllers.length; i++) {
-      bodyTextParams[(i + 1).toString()] = controllers[i].text;
-      Map body = {"type": "text", "text": controllers[i].text};
-      compoTextParams.add(body);
-      numberedCampParam.add(bodyTextParams);
-    }
-
-    String templateToSend = selectedTemplateName ?? "";
-
-    print("selected header:: >><><>< ${selectedHeader}");
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Send the text template with the selected body parameters
-    await sendTextTemplate(
-            templateToSend, compoTextParams, isChecked, bodyTextParams)
-        .then((onValue) {
-      setState(() {
-        _isLoading = false;
-        image = null;
-
-        CampaignViewModel getaccountData = CampaignViewModel(context);
-
-        // Creating the new campaign object for cloning
-        Map<String, dynamic> camp = {
-          'name': _name,
-          'template_id': selectedTemplateId,
-          'template_name': selectedTemplateName,
-          'status': 'Pending',
-          'business_number': number,
-          'type': _type,
-          'startDate': _dateStartInput.text,
-          'group_ids': selectedGroups,
-          'description': _description,
-        };
-
-        getaccountData.addCampaign(camp).then((value) async {
-          if (value is Map<String, dynamic>) {
-            String? campaignId = value["record"]?["id"];
-            print("campaignId>>>  ${campaignId}");
-
-            if (campaignId == null) {
-              debug("Campaign ID is null. File upload skipped.");
-              return;
-            } else {
-              Map<String, dynamic> paramBody = {
-                "campaign_id": campaignId,
-                "body_text_params": bodyTextParams,
-                "msg_history_id": null,
-                "file_id": fileid,
-                "whatsapp_number_admin": "7590889022"
-              };
-
-              MessageViewModel mstemp = MessageViewModel(context);
-              var campaignResponse =
-                  await mstemp.sendCampParam(campParambody: paramBody);
-            }
-
-            debug("Uploading file with new Campaign ID: $campaignId");
-          }
-
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MultiProvider(
-                providers: [
-                  ChangeNotifierProvider(
-                    create: (_) => CampaignViewModel(context),
-                  ),
-                ],
-                child: const CampaignListView(),
-              ),
-            ),
-            (Route<dynamic> route) => route.isFirst,
-          );
-        }).catchError((error, stackTrace) {
-          debug("Error: $error");
-          Navigator.pop(context);
-          AppUtils.getAlert(
-            context,
-            AppUtils.getErrorMessages(error),
-            title: "Error Alert",
-          );
-        });
-      });
-    });
-
-    print("selected button ${selectedButtons}");
-  }
-
-// =======================
   Future<void> sendTextTemplate(
     String templateToSend,
     List compoTextParams,

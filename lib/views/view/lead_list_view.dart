@@ -682,7 +682,7 @@ class _LeadListViewState extends State<LeadListView> {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
         child: InkWell(
-          onTap: () {
+          onTap: () async {
             print("model=>${model.toMap()}");
             var num = "";
             if (model.whatsapp_number!.contains("+")) {
@@ -694,7 +694,7 @@ class _LeadListViewState extends State<LeadListView> {
             if (model.whatsapp_number != null) {
               _marksread(num);
 
-              Navigator.push(
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ChatScreen(
@@ -708,18 +708,24 @@ class _LeadListViewState extends State<LeadListView> {
                         ? model.whatsapp_number ?? ""
                         : "${model.countryCode}${model.whatsapp_number ?? ""}",
                     id: model.id,
+                    model: model,
                   ),
                 ),
-              ).then((_) {
+              );
+              if (result == true) {
+                print("is result getting true.........?");
                 _getUnreadCount();
-                Provider.of<UnreadCountVm>(context, listen: false)
-                    .fetchunreadcount(number: number ?? "");
-                setState(() {
-                  unreadMsgCount = "0";
-                  unreadMsgCount = "";
-                });
-                print("unreadMsgCount====${unreadMsgCount}  ");
+                getLeadList();
+              }
+
+              _getUnreadCount();
+              Provider.of<UnreadCountVm>(context, listen: false)
+                  .fetchunreadcount(number: number ?? "");
+              setState(() {
+                unreadMsgCount = "0";
+                unreadMsgCount = "";
               });
+              print("unreadMsgCount====${unreadMsgCount}  ");
 
               leads?.viewModels.clear();
               Provider.of<LeadListViewModel>(context, listen: false).fetch();
