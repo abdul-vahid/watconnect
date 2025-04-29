@@ -13,6 +13,6 @@ class AutoResponseViewModel extends BaseListViewModel {
 
   void autoResponseFetch() async {
     String url = AppUtils.getUrl(AppConstants.autoResponseAPIPath);
-    get(url: url, baseModel: AutoResponseModel());
+    await get(url: url, baseModel: AutoResponseModel());
   }
 }

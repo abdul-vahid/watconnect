@@ -14,6 +14,6 @@ class CampaignChartViewModel extends BaseListViewModel {
   Future<void> fetchCampaignChart({String? number = ''}) async {
     String url =
         AppUtils.getUrl("${AppConstants.campaignChartAPIPath}/$number");
-    get(url: url, baseModel: CampaignChartModel());
+    await get(url: url, baseModel: CampaignChartModel());
   }
 }

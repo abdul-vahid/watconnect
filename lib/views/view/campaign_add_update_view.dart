@@ -31,7 +31,9 @@ import 'package:whatsapp/models/campaign_model/record.dart';
 // ignore: must_be_immutable
 class CampaignAddUpdateView extends StatefulWidget {
   late Record? model;
-  CampaignAddUpdateView({Key? key, this.model}) : super(key: key);
+  bool isClone;
+  CampaignAddUpdateView({Key? key, this.model, this.isClone = false})
+      : super(key: key);
 
   @override
   State<CampaignAddUpdateView> createState() => _Forms();
@@ -193,7 +195,7 @@ class _Forms extends State<CampaignAddUpdateView> {
         elevation: 2,
         backgroundColor: AppColor.navBarIconColor,
         title: Text(
-          isEdit ? "Edit Campaign" : "Add Campaign",
+          isEdit && widget.isClone == false ? "Edit Campaign" : "Add Campaign",
           style: const TextStyle(
               color: Color.fromARGB(255, 255, 255, 255),
               fontSize: 20,
@@ -265,11 +267,11 @@ class _Forms extends State<CampaignAddUpdateView> {
                   backgroundColor: AppColor.cardsColor,
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
-                onPressed: isEdit
+                onPressed: isEdit && widget.isClone == false
                     ? updateData
                     : cloneCampaign, // Conditional call to either update or clone
                 child: Text(
-                  isEdit
+                  isEdit && widget.isClone == false
                       ? "Update"
                       : "Submit", // Text changes based on isEdit state
                   style: const TextStyle(
@@ -1366,6 +1368,7 @@ class _Forms extends State<CampaignAddUpdateView> {
 // clone campaign
 
   Future<void> cloneCampaign() async {
+    print("callinngggg clone campaign");
     Map<String, String> bodyTextParams = {};
     List compoTextParams = [];
     List numberedCampParam = [];
