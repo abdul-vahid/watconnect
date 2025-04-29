@@ -48,11 +48,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
       // Proceed to make API call for user deletion
       String? userId = widget.model?.id;
 
-      if (userId != null) {
-        // _deleteUser(userId, refreshToken);
-      } else {
-        print("User ID is missing.");
-      }
+      // _deleteUser(userId, refreshToken);
     });
 
     var createdDate = widget.model?.createddate;

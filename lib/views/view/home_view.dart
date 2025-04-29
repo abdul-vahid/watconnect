@@ -114,7 +114,7 @@ class _HomeViewState extends State<HomeView> {
     final prefs = await SharedPreferences.getInstance();
     String? selectedWhatsAppNumber = prefs.getString('phoneNumber');
     await Provider.of<WhatsappSettingViewModel>(context, listen: false).fetch();
-    if (selectedWhatsAppNumber == null || selectedWhatsAppNumber.isEmpty) {
+    if (selectedWhatsAppNumber!.isEmpty) {
       if (Provider.of<WhatsappSettingViewModel>(context, listen: false)
           .viewModels
           .isNotEmpty) {
@@ -126,7 +126,7 @@ class _HomeViewState extends State<HomeView> {
         await prefs.setString('phoneNumber', selectedWhatsAppNumber ?? "");
       }
     } else {
-      selectedNumber = selectedWhatsAppNumber;
+      selectedNumber = selectedWhatsAppNumber!;
     }
     print("selectedNumber:::>>>> ${selectedNumber}");
     setState(() {});
