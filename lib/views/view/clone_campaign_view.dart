@@ -121,7 +121,6 @@ class _Forms extends State<CampaignCloneview> {
   Future<void> _setSelectedTemplates() async {
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
-
     if (templeteViewModel.viewModels.isNotEmpty) {
       for (var viewModel in templeteViewModel.viewModels) {
         var campaignModel = viewModel.model;
