@@ -472,7 +472,7 @@ class _CampaignListView extends State<CampaignListView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        allCampaigns.isEmpty
+        allCampaigns.isEmpty || noMatchedLeads
             ? SizedBox()
             : Padding(
                 padding: const EdgeInsets.all(8.0),

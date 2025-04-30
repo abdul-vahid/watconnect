@@ -371,7 +371,7 @@ class _TempleteListView extends State<TempleteListView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        allTemplates.isEmpty
+        allTemplates.isEmpty || noMatchedLeads
             ? SizedBox()
             : Padding(
                 padding: const EdgeInsets.all(8.0),
