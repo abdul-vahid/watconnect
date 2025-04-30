@@ -31,6 +31,7 @@ import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
+import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/lead_detail_view.dart';
 import 'package:whatsapp/views/view/open_docs.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
@@ -3331,6 +3332,7 @@ class _ChatScreenState extends State<ChatScreen> {
       socket!.on("receivedwhatsappmessage", (data) {
         print("New WhatsApp message: $data");
         getHistory();
+        _marksread(widget.wpnumber ?? "");
       });
 
       socket!.onDisconnect((_) {
@@ -3386,5 +3388,24 @@ class _ChatScreenState extends State<ChatScreen> {
 
     Navigator.pop(context); // remove loader
     OpenFile.open(file.path); // open the file
+  }
+
+  Future<String?> _marksread(String whatsappNumber) async {
+    print("sajdjsahdjsah jhsjhkjdhakj${whatsappNumber}");
+
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+
+    if (number != null) {
+      Map<String, String>? bodydata = {"whatsapp_number": whatsappNumber};
+
+      var response = await Provider.of<UnreadCountVm>(context, listen: false)
+          .marksreadcountmsg(
+        leadnumber: whatsappNumber,
+        number: number,
+        bodydata: bodydata,
+      );
+    }
+    return null;
   }
 }

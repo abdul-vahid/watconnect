@@ -271,9 +271,11 @@ class _CampaignListView extends State<CampaignListView> {
                               items: uniquePaymentTerms
                                   .map((e) => MultiSelectItem<String>(e, e))
                                   .toList(),
-                              title: const Text(
-                                "Select Campaign Status",
-                                style: TextStyle(fontSize: 18),
+                              title: Flexible(
+                                child: const Text(
+                                  "Select Campaign Status",
+                                  style: TextStyle(fontSize: 18),
+                                ),
                               ),
                               buttonText: const Text("Select Campaign Status"),
                               searchable: true,
@@ -391,10 +393,36 @@ class _CampaignListView extends State<CampaignListView> {
     );
   }
 
+  bool noMatchedLeads = false;
   void _searchLeads(String filter) {
     print("filyerL:::: ${filter}");
     searchcampaign = filter.trim().toLowerCase();
-    setState(() {});
+    if (searchcampaign.isEmpty) {
+      allCampaigns = tempCampaigns;
+      noMatchedLeads = false;
+      setState(() {});
+    } else {
+      List matched = [];
+      List others = [];
+
+      for (var lead in allCampaigns) {
+        var firstName = lead.campaignName?.toLowerCase() ?? '';
+        var lastName = lead.campaignType?.toLowerCase() ?? '';
+        var leadStatus = lead.campaignStatus?.toLowerCase() ?? '';
+
+        if (firstName.contains(searchcampaign) ||
+            lastName.contains(searchcampaign) ||
+            leadStatus.contains(searchcampaign)) {
+          matched.add(lead);
+        } else {
+          others.add(lead);
+        }
+      }
+      setState(() {
+        allCampaigns = [...matched, ...others];
+        noMatchedLeads = matched.isEmpty;
+      });
+    }
   }
 
   void _filterLeads(List filter) {
@@ -413,6 +441,8 @@ class _CampaignListView extends State<CampaignListView> {
             .map((e) => e.toLowerCase())
             .contains(lead.campaignStatus?.toLowerCase());
       }).toList();
+
+      print("matchleads::::::::::::::::::::::::::::::::::::: ${matchleads}");
       setState(() {
         allCampaigns = matchleads;
       });
@@ -460,7 +490,7 @@ class _CampaignListView extends State<CampaignListView> {
                       height: 50,
                       width: 50,
                       child: CircularProgressIndicator()))
-              : allCampaigns.isEmpty
+              : allCampaigns.isEmpty || noMatchedLeads
                   ? Center(
                       child: Text(
                       "No Campaign Found...",
