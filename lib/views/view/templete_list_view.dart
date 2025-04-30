@@ -58,7 +58,7 @@ class _TempleteListView extends State<TempleteListView> {
     super.initState();
     allTemplates = [];
     tempTemplates = [];
-    selectTempList = [];
+    selectTempList = ['approved'];
     searchTemp = "";
     // _controller = NotchBottomBarController();
     _getNumberFromPreferences();
@@ -102,15 +102,33 @@ class _TempleteListView extends State<TempleteListView> {
                 ),
                 prefixIcon: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.filter_list,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      _showFilterBottomSheet(context);
-                    },
+                  child: Stack(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.filter_list,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          _showFilterBottomSheet(context);
+                        },
+                      ),
+                      selectTempList.isEmpty
+                          ? SizedBox()
+                          : Container(
+                              decoration: BoxDecoration(
+                                  color: AppColor.navBarIconColor,
+                                  shape: BoxShape.circle),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "${selectTempList.length}",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            )
+                    ],
                   ),
                 ),
                 prefixIconConstraints: const BoxConstraints(minWidth: 40),
