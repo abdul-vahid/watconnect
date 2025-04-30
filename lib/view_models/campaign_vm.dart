@@ -34,5 +34,9 @@ class CampaignViewModel extends BaseListViewModel {
     return result;
   }
 
-  void fetch() {}
+  Future<void> getcampaignbyid() async {
+    String url = AppUtils.getUrl("${AppConstants.getcampaignbyid}");
+    print("urll=>>getby comapy id>${url}");
+    await get(url: url, baseModel: CampaignModel());
+  }
 }

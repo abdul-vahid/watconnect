@@ -698,7 +698,6 @@ class _Forms extends State<CampaignAddUpdateView> {
                   }
                 }
 
-// Call setState once after processing all components
                 setState(() {});
 
                 log("components ::: ${selectedHeader}   ${selectedBody}  ${selectedButtons}");

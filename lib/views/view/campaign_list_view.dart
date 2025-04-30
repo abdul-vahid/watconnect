@@ -1,11 +1,13 @@
 // // -----------------End Code of Record List Method-------------------------
 // import 'package:flutter_file_downloader/flutter_file_downloader.dart';
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/views/view/clone_campaign_view.dart';
 import '../../models/campaign_model/campaign_model.dart';
 import '../../models/user_model/user_model.dart';
 import '../../utils/app_color.dart';
@@ -560,12 +562,9 @@ class _CampaignListView extends State<CampaignListView> {
                                                             context,
                                                             MaterialPageRoute(
                                                               builder: (context) =>
-                                                                  CampaignAddUpdateView(
-                                                                model:
-                                                                    allCampaigns[
-                                                                        index],
-                                                                isClone: true,
-                                                              ),
+                                                                  CampaignCloneview(
+                                                                      record: allCampaigns[
+                                                                          index]),
                                                             ),
                                                           );
                                                         },
