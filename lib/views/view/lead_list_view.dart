@@ -470,16 +470,14 @@ class _LeadListViewState extends State<LeadListView> {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
-    if (number != null) {
-      Map<String, String>? bodydata = {"whatsapp_number": whatsappNumber};
+    Map<String, String>? bodydata = {"whatsapp_number": whatsappNumber};
 
-      var response = await Provider.of<UnreadCountVm>(context, listen: false)
-          .marksreadcountmsg(
-        leadnumber: whatsappNumber,
-        number: number,
-        bodydata: bodydata,
-      );
-    }
+    var response = await Provider.of<UnreadCountVm>(context, listen: false)
+        .marksreadcountmsg(
+      leadnumber: whatsappNumber,
+      number: number,
+      bodydata: bodydata,
+    );
     return null;
   }
 

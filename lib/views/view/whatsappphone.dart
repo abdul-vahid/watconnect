@@ -52,7 +52,7 @@ class _WhtsapphoneState extends State<Whtsapphone> {
               .record[0]
               .phone;
 
-      if (savedPhoneNumber == null || savedPhoneNumber.isEmpty) {
+      if (savedPhoneNumber!.isEmpty) {
         savedPhoneNumber = firstPhone;
         await prefs.setString('phoneNumber', savedPhoneNumber);
       }

@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
+// import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
@@ -177,8 +177,10 @@ class _Forms extends State<CampaignAddUpdateView> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back,
-              color: Color.fromARGB(255, 255, 255, 255)),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Color.fromARGB(255, 255, 255, 255),
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         // automaticallyImplyLeading: true,
@@ -192,9 +194,10 @@ class _Forms extends State<CampaignAddUpdateView> {
                   ? "Clone Campaign"
                   : "Add Campaign",
           style: const TextStyle(
-              color: Color.fromARGB(255, 255, 255, 255),
-              fontSize: 20,
-              fontWeight: FontWeight.bold),
+            color: Color.fromARGB(255, 255, 255, 255),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: RefreshIndicator(
@@ -239,10 +242,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 10),
-                  side: const BorderSide(
-                    width: 1.0,
-                    color: Colors.black,
-                  ),
+                  side: const BorderSide(width: 1.0, color: Colors.black),
                 ),
                 child: const Text(
                   'Cancel',
@@ -307,9 +307,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                'Campaign Name',
-              ),
+              Text('Campaign Name'),
               const SizedBox(height: 5),
               AppUtils.getTextFormField(
                 'Enter Campaign Name',
@@ -330,9 +328,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 },
               ),
               const SizedBox(height: 10),
-              Text(
-                'Start Date & Time',
-              ),
+              Text('Start Date & Time'),
               const SizedBox(height: 5),
               TextFormField(
                 controller: _dateStartInput,
@@ -376,25 +372,20 @@ class _Forms extends State<CampaignAddUpdateView> {
                     context: context,
                   );
 
-                  if (dateTime != null) {
-                    // String formattedDate =
-                    //     DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                    //         .format(dateTime.toLocal());
-                    String formattedDate = formatDateWithTimezone(dateTime);
+                  // String formattedDate =
+                  //     DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                  //         .format(dateTime.toLocal());
+                  String formattedDate = formatDateWithTimezone(dateTime!);
 
-                    setState(() {
-                      _dateStartInput.text =
-                          formattedDate; //set output date to TextField value.
-                    });
-                    debug('dateTime==>$dateTime===>$formattedDate');
-                  } else {}
+                  setState(() {
+                    _dateStartInput.text =
+                        formattedDate; //set output date to TextField value.
+                  });
+                  debug('dateTime==>$dateTime===>$formattedDate');
                 },
               ),
               if (isEdit == false) const SizedBox(height: 10),
-              if (isEdit == false)
-                Text(
-                  'Select Template Category',
-                ),
+              if (isEdit == false) Text('Select Template Category'),
               if (isEdit == false) const SizedBox(height: 5),
               if (isEdit == false && widget.isClone == false)
                 AppUtils.getDropdown(
@@ -429,19 +420,14 @@ class _Forms extends State<CampaignAddUpdateView> {
                   value: SelectedTemplateCategory,
                 ),
               if (isEdit == false) const SizedBox(height: 10),
-              if (isEdit == false)
-                Text(
-                  'Template Name',
-                ),
+              if (isEdit == false) Text('Template Name'),
               if (isEdit == false) const SizedBox(height: 5),
               if (isEdit == false)
                 AppUtils.getDropdown(
                   'Select Template Name',
                   data: templateName1.isNotEmpty
                       ? templateName1
-                      : [
-                          'No Templates Available',
-                        ],
+                      : ['No Templates Available'],
                   onChanged: (p0) {
                     setState(() {
                       selectedTemplateName = p0;
@@ -453,9 +439,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                   value: selectedTemplateName,
                 ),
               const SizedBox(height: 10),
-              Text(
-                'Group Name',
-              ),
+              Text('Group Name'),
               const SizedBox(height: 5),
               MultiSelectDialogField(
                 dialogHeight: 160,
@@ -487,10 +471,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 },
               ),
               if (isEdit == false) const SizedBox(height: 10),
-              if (isEdit == false)
-                Text(
-                  'File Upload',
-                ),
+              if (isEdit == false) Text('File Upload'),
               const SizedBox(height: 05),
               if (isEdit == false)
                 TextFormField(
@@ -533,9 +514,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                   },
                 ),
               const SizedBox(height: 10),
-              Text(
-                'Type',
-              ),
+              Text('Type'),
               const SizedBox(height: 5),
               AppUtils.getDropdown(
                 'Select',
@@ -549,10 +528,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 value: _type,
               ),
               if (isEdit == false) const SizedBox(height: 10),
-              if (isEdit == false)
-                Text(
-                  'Description',
-                ),
+              if (isEdit == false) Text('Description'),
               if (isEdit == false) const SizedBox(height: 5),
               if (isEdit == false)
                 AppUtils.getTextFormField(
@@ -587,29 +563,30 @@ class _Forms extends State<CampaignAddUpdateView> {
   void onButtonPressed() async {
     print("selectedGroups>>> ${selectedGroups}");
     print(
-        "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}");
+      "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}",
+    );
 
     if (controllers.isNotEmpty) {
       bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
       if (anyEmpty) {
-        EasyLoading.showToast('All fields are required');
+        // EasyLoading.showToast('All fields are required');
         return;
       }
     }
 
     if (_addleadFormKey.currentState!.validate()) {
       if (_name == null || _name.toString().isEmpty) {
-        EasyLoading.showToast("Campaign Name is required");
+        // EasyLoading.showToast("Campaign Name is required");
         return;
       } else if (_dateStartInput.text.toString().isEmpty) {
-        EasyLoading.showToast("Start date time is required");
+        // EasyLoading.showToast("Start date time is required");
         return;
       } else if (SelectedTemplateCategory == null ||
           selectedTemplateName.toString().isEmpty) {
-        EasyLoading.showToast("Select Template Category");
+        // EasyLoading.showToast("Select Template Category");
         return;
       } else if (_type == null || _type.toString().isEmpty) {
-        EasyLoading.showToast("Select Template Type");
+        // EasyLoading.showToast("Select Template Type");
         return;
       }
       _addleadFormKey.currentState!.save();
@@ -634,9 +611,10 @@ class _Forms extends State<CampaignAddUpdateView> {
       };
       print("camp before siending::: ${camp}");
       // AppUtils.onLoading(context, "Updating, please wait...");
-      Provider.of<CampaignViewModel>(context, listen: false)
-          .updateCampaign(id, camp)
-          .then((value) {
+      Provider.of<CampaignViewModel>(
+        context,
+        listen: false,
+      ).updateCampaign(id, camp).then((value) {
         debug('campaignUpdate==$value');
         Navigator.pop(context);
         Navigator.pop(context);
@@ -679,9 +657,12 @@ class _Forms extends State<CampaignAddUpdateView> {
                 currentTemplate = record;
                 selectedTemplateId = currentTemplate.id;
                 selectedLanguage = currentTemplate.language;
-                log("current template::::: ${currentTemplate}  ${currentTemplate.name}");
+                log(
+                  "current template::::: ${currentTemplate}  ${currentTemplate.name}",
+                );
                 print(
-                    "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}");
+                  "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}",
+                );
                 components = currentTemplate.components;
                 print("Component info:: ${components.length} ${components}");
 
@@ -698,9 +679,15 @@ class _Forms extends State<CampaignAddUpdateView> {
                   }
                 }
 
+<<<<<<< HEAD
+=======
+                // Call setState once after processing all components
+>>>>>>> 7bdd2df902745c0a5a70325a2a5249529a6649bd
                 setState(() {});
 
-                log("components ::: ${selectedHeader}   ${selectedBody}  ${selectedButtons}");
+                log(
+                  "components ::: ${selectedHeader}   ${selectedBody}  ${selectedButtons}",
+                );
 
                 return;
               }
@@ -758,261 +745,278 @@ class _Forms extends State<CampaignAddUpdateView> {
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: SingleChildScrollView(
-              child: StatefulBuilder(builder: (context, setState) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Review Campaign",
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () => Navigator.pop(context),
-                          child: const Icon(
-                            Icons.highlight_remove_outlined,
-                            color: AppColor.navBarIconColor,
-                            size: 25,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(thickness: 1),
-                    const SizedBox(height: 5),
-                    Column(
-                      children: List.generate(count, (index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: TextField(
-                            controller: controllers[index],
-                            decoration: InputDecoration(
-                              labelText:
-                                  "Enter value for placeholder ${index + 1}",
-                              border: OutlineInputBorder(),
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Review Campaign",
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        );
-                      }),
-                    ),
-                    Card(
-                      elevation: 5,
-                      color: Color(0xffE3FFC9).withOpacity(0.5),
-                      shadowColor: Colors.black38,
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment
-                              .start, // Align content properly
-                          children: [
-                            if (selectedHeader != null &&
-                                selectedHeader.format != null)
-                              file != null && selectedHeader.format == 'IMAGE'
-                                  ? Image.file(image!)
-                                  : file != null &&
-                                          selectedHeader.format == 'VIDEO'
-                                      ? Container(
-                                          height: 150,
-                                          width: 150,
-                                          decoration: BoxDecoration(
+                          InkWell(
+                            onTap: () => Navigator.pop(context),
+                            child: const Icon(
+                              Icons.highlight_remove_outlined,
+                              color: AppColor.navBarIconColor,
+                              size: 25,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(thickness: 1),
+                      const SizedBox(height: 5),
+                      Column(
+                        children: List.generate(count, (index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: TextField(
+                              controller: controllers[index],
+                              decoration: InputDecoration(
+                                labelText:
+                                    "Enter value for placeholder ${index + 1}",
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                      Card(
+                        elevation: 5,
+                        color: Color(0xffE3FFC9).withOpacity(0.5),
+                        shadowColor: Colors.black38,
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment
+                                .start, // Align content properly
+                            children: [
+                              if (selectedHeader != null &&
+                                  selectedHeader.format != null)
+                                file != null && selectedHeader.format == 'IMAGE'
+                                    ? Image.file(image!)
+                                    : file != null &&
+                                            selectedHeader.format == 'VIDEO'
+                                        ? Container(
+                                            height: 150,
+                                            width: 150,
+                                            decoration: BoxDecoration(
                                               color: Colors.black,
                                               borderRadius:
-                                                  BorderRadius.circular(8)),
-                                          child: Center(
-                                            child: Icon(
-                                              Icons.play_arrow_rounded,
-                                              color: Colors.white,
-                                              size: 30,
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Center(
+                                              child: Icon(
+                                                Icons.play_arrow_rounded,
+                                                color: Colors.white,
+                                                size: 30,
+                                              ),
+                                            ),
+                                          )
+                                        : file != null &&
+                                                selectedHeader.format ==
+                                                    'DOCUMENT'
+                                            ? Image.asset(
+                                                "assets/images/pdf.png",
+                                                height: 100,
+                                              )
+                                            : _buildMediaWidget(
+                                                selectedHeader.format,
+                                                imgToShow,
+                                              ),
+                              if (selectedBody != null)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0,
+                                  ),
+                                  child: Text("${selectedBody.text}"),
+                                ),
+                              SizedBox(height: 10),
+                              if (selectedButtons != null)
+                                Wrap(
+                                  spacing: 10,
+                                  children: List.generate(
+                                    selectedButtons.buttons.length,
+                                    (index) {
+                                      return ElevatedButton(
+                                        onPressed: () {
+                                          print("Button ${index + 1} clicked");
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.grey[400],
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                            side: BorderSide(
+                                              color: AppColor.navBarIconColor,
                                             ),
                                           ),
-                                        )
-                                      : file != null &&
-                                              selectedHeader.format ==
-                                                  'DOCUMENT'
-                                          ? Image.asset(
-                                              "assets/images/pdf.png",
-                                              height: 100,
-                                            )
-                                          : _buildMediaWidget(
-                                              selectedHeader.format, imgToShow),
-                            if (selectedBody != null)
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Text("${selectedBody.text}"),
-                              ),
-                            SizedBox(height: 10),
-                            if (selectedButtons != null)
-                              Wrap(
-                                spacing: 10,
-                                children: List.generate(
-                                  selectedButtons.buttons.length,
-                                  (index) {
-                                    return ElevatedButton(
-                                      onPressed: () {
-                                        print("Button ${index + 1} clicked");
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.grey[400],
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                          side: BorderSide(
-                                              color: AppColor.navBarIconColor),
                                         ),
-                                      ),
-                                      child: Text(
-                                        selectedButtons.buttons[index].text,
-                                        style: TextStyle(
-                                            color: AppColor.navBarIconColor),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            SizedBox(height: 15),
-                            if (selectedFooter != null)
-                              Text(
-                                selectedFooter.text,
-                                style: TextStyle(color: Colors.grey),
-                                textAlign: TextAlign.left,
-                              ),
-                            SizedBox(height: 15),
-                            if (selectedHeader != null)
-                              selectedHeader.format == 'IMAGE' ||
-                                      selectedHeader.format == 'VIDEO' ||
-                                      selectedHeader.format == 'DOCUMENT'
-                                  ? InkWell(
-                                      onTap: () {
-                                        if (selectedHeader.format == 'IMAGE') {
-                                          _pickImaFromGallery().then((onValue) {
-                                            print("onValue>>> ${onValue}");
-                                            if (onValue != null) {
-                                              setState(() {
-                                                image = onValue;
-
-                                                isOtherFileSelected = true;
-                                              });
-                                            }
-                                          });
-                                        } else if (selectedHeader.format ==
-                                            'VIDEO') {
-                                          _pickVideoFromGallery()
-                                              .then((onValue) {
-                                            if (onValue != null) {
-                                              setState(() {
-                                                image = onValue;
-                                                isOtherFileSelected = true;
-                                              });
-                                            }
-                                          });
-                                        } else if (selectedHeader.format ==
-                                            'DOCUMENT') {
-                                          _pickDocFromGallery().then((onValue) {
-                                            if (onValue != null) {
-                                              setState(() {
-                                                image = onValue;
-                                                isOtherFileSelected = true;
-                                              });
-                                            }
-                                          });
-                                        }
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                            color: Colors.grey[400],
-                                            border: Border.all(
-                                                color:
-                                                    AppColor.navBarIconColor)),
-                                        child: Center(
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 8.0),
-                                            child: Text("Choose File"),
+                                        child: Text(
+                                          selectedButtons.buttons[index].text,
+                                          style: TextStyle(
+                                            color: AppColor.navBarIconColor,
                                           ),
                                         ),
-                                      ),
-                                    )
-                                  : SizedBox(),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: isChecked,
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      isChecked = value!;
-                                    });
-                                  },
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    "Send on login user WhatsApp number also",
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
+                                      );
+                                    },
                                   ),
-                                )
-                              ],
-                            ),
-                          ],
+                                ),
+                              SizedBox(height: 15),
+                              if (selectedFooter != null)
+                                Text(
+                                  selectedFooter.text,
+                                  style: TextStyle(color: Colors.grey),
+                                  textAlign: TextAlign.left,
+                                ),
+                              SizedBox(height: 15),
+                              if (selectedHeader != null)
+                                selectedHeader.format == 'IMAGE' ||
+                                        selectedHeader.format == 'VIDEO' ||
+                                        selectedHeader.format == 'DOCUMENT'
+                                    ? InkWell(
+                                        onTap: () {
+                                          if (selectedHeader.format ==
+                                              'IMAGE') {
+                                            _pickImaFromGallery()
+                                                .then((onValue) {
+                                              print("onValue>>> ${onValue}");
+                                              if (onValue != null) {
+                                                setState(() {
+                                                  image = onValue;
+
+                                                  isOtherFileSelected = true;
+                                                });
+                                              }
+                                            });
+                                          } else if (selectedHeader.format ==
+                                              'VIDEO') {
+                                            _pickVideoFromGallery().then((
+                                              onValue,
+                                            ) {
+                                              if (onValue != null) {
+                                                setState(() {
+                                                  image = onValue;
+                                                  isOtherFileSelected = true;
+                                                });
+                                              }
+                                            });
+                                          } else if (selectedHeader.format ==
+                                              'DOCUMENT') {
+                                            _pickDocFromGallery()
+                                                .then((onValue) {
+                                              if (onValue != null) {
+                                                setState(() {
+                                                  image = onValue;
+                                                  isOtherFileSelected = true;
+                                                });
+                                              }
+                                            });
+                                          }
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[400],
+                                            border: Border.all(
+                                              color: AppColor.navBarIconColor,
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                vertical: 8.0,
+                                              ),
+                                              child: Text("Choose File"),
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    : SizedBox(),
+                              SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: isChecked,
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        isChecked = value!;
+                                      });
+                                    },
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      "Send on login user WhatsApp number also",
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    InkWell(
-                      onTap: () {
-                        setState(() {});
-                        if (controllers.isNotEmpty) {
-                          bool anyEmpty = controllers
-                              .any((controller) => controller.text.isEmpty);
-                          if (anyEmpty) {
-                            EasyLoading.showToast('All fields are required');
+                      SizedBox(height: 15),
+                      InkWell(
+                        onTap: () {
+                          setState(() {});
+                          if (controllers.isNotEmpty) {
+                            bool anyEmpty = controllers.any(
+                              (controller) => controller.text.isEmpty,
+                            );
+                            if (anyEmpty) {
+                              // EasyLoading.showToast('All fields are required');
 
-                            return;
+                              return;
+                            }
                           }
-                        }
-                        Navigator.pop(context);
-                        print("image here:: ${image}  ${isOtherFileSelected}");
-                        // addCampaignTemplate(
-                        //     fileToSend: image, sendToAdmin: isChecked);
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
+                          Navigator.pop(context);
+                          print(
+                            "image here:: ${image}  ${isOtherFileSelected}",
+                          );
+                          // addCampaignTemplate(
+                          //     fileToSend: image, sendToAdmin: isChecked);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                                color: AppColor.navBarIconColor, width: 1.5)),
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8.0, horizontal: 8),
-                            child: Text(
-                              "Done",
-                              style: TextStyle(
+                              color: AppColor.navBarIconColor,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                                horizontal: 8,
+                              ),
+                              child: Text(
+                                "Done",
+                                style: TextStyle(
                                   color: AppColor.navBarIconColor,
-                                  fontWeight: FontWeight.w600),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                  ],
-                );
-              }),
+                      SizedBox(height: 20),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         );
@@ -1038,8 +1042,9 @@ class _Forms extends State<CampaignAddUpdateView> {
                 height: 150,
                 width: 150,
                 decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(8)),
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Center(
                   child: Icon(
                     Icons.play_arrow_rounded,
@@ -1065,11 +1070,8 @@ class _Forms extends State<CampaignAddUpdateView> {
                 },
                 child: Row(
                   children: [
-                    Image.asset(
-                      "assets/images/doc.png",
-                      height: 120,
-                      width: 120,
-                    ),
+                    Image.asset("assets/images/doc.png",
+                        height: 120, width: 120),
                   ],
                 ),
               )
@@ -1084,9 +1086,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     final pickedFile = await FilePicker.platform.pickFiles(
       allowMultiple: false,
       type: FileType.custom,
-      allowedExtensions: [
-        "pdf",
-      ],
+      allowedExtensions: ["pdf"],
     );
     if (pickedFile != null) {
       setState(() {
@@ -1107,10 +1107,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     final pickedFile = await FilePicker.platform.pickFiles(
       allowMultiple: false,
       type: FileType.custom,
-      allowedExtensions: [
-        "mp4",
-        'mov',
-      ],
+      allowedExtensions: ["mp4", 'mov'],
     );
     if (pickedFile != null) {
       setState(() {
@@ -1131,10 +1128,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     final pickedFile = await FilePicker.platform.pickFiles(
       allowMultiple: false,
       type: FileType.custom,
-      allowedExtensions: [
-        "jpg",
-        'png',
-      ],
+      allowedExtensions: ["jpg", 'png'],
     );
     if (pickedFile != null) {
       setState(() {
@@ -1168,7 +1162,7 @@ class _Forms extends State<CampaignAddUpdateView> {
       "example_body_text": {"sendToAdmin": send},
       "footer": footer,
       "buttons": ba,
-      "business_number": number
+      "business_number": number,
     };
 
     print("createtemp campaign:::: ${createtemp}");
@@ -1184,7 +1178,7 @@ class _Forms extends State<CampaignAddUpdateView> {
 
     bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
     if (anyEmpty) {
-      EasyLoading.showToast('All fields are required');
+      // EasyLoading.showToast('All fields are required');
 
       setState(() {
         _isLoading = false;
@@ -1241,12 +1235,13 @@ class _Forms extends State<CampaignAddUpdateView> {
                 "body_text_params": bodyTextParams,
                 "msg_history_id": null,
                 "file_id": fileid,
-                "whatsapp_number_admin": "7590889022"
+                "whatsapp_number_admin": "7590889022",
               };
 
               MessageViewModel mstemp = MessageViewModel(context);
-              var campaignResponse =
-                  await mstemp.sendCampParam(campParambody: paramBody);
+              var campaignResponse = await mstemp.sendCampParam(
+                campParambody: paramBody,
+              );
             }
 
             debug("Uploading file with Campaign ID: $campaignId");
@@ -1279,8 +1274,11 @@ class _Forms extends State<CampaignAddUpdateView> {
       });
     } else {
       await sendTextTemplate(
-              templateToSend, compoTextParams, isChecked, bodyTextParams)
-          .then((onValue) {
+        templateToSend,
+        compoTextParams,
+        isChecked,
+        bodyTextParams,
+      ).then((onValue) {
         setState(() {
           _isLoading = false;
           image = null;
@@ -1312,12 +1310,13 @@ class _Forms extends State<CampaignAddUpdateView> {
                   "body_text_params": bodyTextParams,
                   "msg_history_id": null,
                   "file_id": fileid,
-                  "whatsapp_number_admin": "7590889022"
+                  "whatsapp_number_admin": "7590889022",
                 };
 
                 MessageViewModel mstemp = MessageViewModel(context);
-                var campaignResponse =
-                    await mstemp.sendCampParam(campParambody: paramBody);
+                var campaignResponse = await mstemp.sendCampParam(
+                  campParambody: paramBody,
+                );
               }
 
               debug("Uploading file with Campaign ID: $campaignId");

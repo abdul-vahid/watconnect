@@ -47,12 +47,8 @@ class _TempleteListView extends State<TempleteListView> {
     String? number = prefs.getString('phoneNumber');
     print("number fetch===>$number");
 
-    if (number != null) {
-      await Provider.of<TempleteListViewModel>(context, listen: false)
-          .templetefetch(number: number);
-    } else {
-      print('Number not found in SharedPreferences');
-    }
+    await Provider.of<TempleteListViewModel>(context, listen: false)
+        .templetefetch(number: number);
 
     getProfileData();
   }
