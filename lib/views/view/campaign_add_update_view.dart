@@ -679,10 +679,6 @@ class _Forms extends State<CampaignAddUpdateView> {
                   }
                 }
 
-<<<<<<< HEAD
-=======
-                // Call setState once after processing all components
->>>>>>> 7bdd2df902745c0a5a70325a2a5249529a6649bd
                 setState(() {});
 
                 log(

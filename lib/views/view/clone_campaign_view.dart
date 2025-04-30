@@ -65,6 +65,7 @@ class _Forms extends State<CampaignCloneview> {
 
   @override
   void initState() {
+    getdatabyid();
     _dateStartInput.text = widget.record.startDate.toString();
     print("Ddddddddddddd${widget.record.campaignName}");
     super.initState();
@@ -96,11 +97,12 @@ class _Forms extends State<CampaignCloneview> {
     Provider.of<GroupsViewModel>(context, listen: false).fetchGroups();
   }
 
-//   Future<void> getdatabyid() async {
-//     CampaignViewModel camp =
-//         Provider.of<CampaignViewModel>(context).getcampaignbyid();
-// // await
-//   }
+  Future<void> getdatabyid() async {
+    CampaignViewModel campVM =
+        Provider.of<CampaignViewModel>(context, listen: false);
+    await campVM.getcampaignbyid(widget.record.campaignId.toString());
+    print("Data @@@@@ fetched: ${campVM.record}");
+  }
 
   Future<void> saveFileToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
@@ -150,9 +152,7 @@ class _Forms extends State<CampaignCloneview> {
                     selectedButtons = e.buttons;
                   }
                 }
-
                 setState(() {});
-
                 print(
                     "components ::: ${selectedHeader}   ${selectedBody}  ${selectedButtons}");
 
