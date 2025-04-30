@@ -727,7 +727,10 @@ class _LeadListViewState extends State<LeadListView> {
                     model: model,
                   ),
                 ),
-              );
+              ).then((onValue) {
+                _marksread(num);
+                _getUnreadCount();
+              });
               if (result == true) {
                 print("is result getting true.........?");
                 _getUnreadCount();
