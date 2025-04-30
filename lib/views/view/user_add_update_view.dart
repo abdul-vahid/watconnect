@@ -540,9 +540,11 @@ class _Forms extends State<UserAddView> {
                 items: whatsAppNums
                     .map((e) => MultiSelectItem<String>(e, e))
                     .toList(),
-                title: const Text(
-                  "Select Campaign Status",
-                  style: TextStyle(fontSize: 18),
+                title: Flexible(
+                  child: const Text(
+                    "Select Campaign Status",
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
                 buttonText: const Text("Select Campaign Status"),
                 searchable: true,

@@ -208,9 +208,15 @@ class _TempleteListView extends State<TempleteListView> {
                               items: uniqtempletestatus
                                   .map((e) => MultiSelectItem<String>(e, e))
                                   .toList(),
-                              title: const Text(
-                                "Select Template Status",
-                                style: TextStyle(fontSize: 18),
+                              title: Flexible(
+                                child: Flexible(
+                                  child: Text(
+                                    "Select Template Status",
+                                    style: TextStyle(fontSize: 18),
+                                    overflow: TextOverflow
+                                        .ellipsis, // Handles overflow with ellipsis
+                                  ),
+                                ),
                               ),
                               buttonText: const Text("Select Leads Status"),
                               searchable: true,
