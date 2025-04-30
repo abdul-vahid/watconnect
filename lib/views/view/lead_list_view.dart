@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -222,15 +220,33 @@ class _LeadListViewState extends State<LeadListView> {
                 ),
                 prefixIcon: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.filter_list,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      _showFilterBottomSheet(context);
-                    },
+                  child: Stack(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.filter_list,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          _showFilterBottomSheet(context);
+                        },
+                      ),
+                      selectleadList.isEmpty
+                          ? SizedBox()
+                          : Container(
+                              decoration: BoxDecoration(
+                                  color: AppColor.navBarIconColor,
+                                  shape: BoxShape.circle),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "${selectleadList.length}",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            )
+                    ],
                   ),
                 ),
                 prefixIconConstraints: const BoxConstraints(minWidth: 40),
@@ -847,7 +863,7 @@ class _LeadListViewState extends State<LeadListView> {
       leadModelList = tempLeadModelList;
 
       setState(() {
-        allLeads = leadModelList;
+        allLeads = tempLeadModelList;
       });
       return false;
     }

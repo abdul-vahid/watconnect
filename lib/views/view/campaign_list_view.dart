@@ -122,15 +122,33 @@ class _CampaignListView extends State<CampaignListView> {
                 ),
                 prefixIcon: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.filter_list,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      _showFilterBottomSheet(context);
-                    },
+                  child: Stack(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.filter_list,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          _showFilterBottomSheet(context);
+                        },
+                      ),
+                      selectCampList.isEmpty
+                          ? SizedBox()
+                          : Container(
+                              decoration: BoxDecoration(
+                                  color: AppColor.navBarIconColor,
+                                  shape: BoxShape.circle),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "${selectCampList.length}",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            )
+                    ],
                   ),
                 ),
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
 
 import 'package:provider/provider.dart';
 import 'package:whatsapp/view_models/whatsapp_setting_vm.dart';
@@ -26,6 +28,7 @@ class UserAddView extends StatefulWidget {
 class _Forms extends State<UserAddView> {
   bool isEdit = false;
   bool? isactive;
+  List<String> selectWhNumsList = [];
   @override
   WhatsappSettingViewModel? whatsAppSettingVM;
   void initState() {
@@ -37,6 +40,9 @@ class _Forms extends State<UserAddView> {
     if (isEdit) {
       print("model courntry::: ${widget.model?.country_code}");
       selectedCountry = widget.model?.country_code;
+      selectWhNumsList = widget.model?.whatsapp_settings ?? [];
+    } else {
+      selectWhNumsList = [];
     }
     fillCountryCodeMap();
     Provider.of<UserDataListViewModel>(context, listen: false).fetchUser();
@@ -529,18 +535,64 @@ class _Forms extends State<UserAddView> {
               const SizedBox(height: 10),
               const Text('Select Wh Number'),
               const SizedBox(height: 5),
-              AppUtils.getDropdown(
-                'Select',
-                data: whatsAppNums,
-                onChanged: (p0) {
+
+              MultiSelectDialogField<String>(
+                items: whatsAppNums
+                    .map((e) => MultiSelectItem<String>(e, e))
+                    .toList(),
+                title: const Text(
+                  "Select Campaign Status",
+                  style: TextStyle(fontSize: 18),
+                ),
+                buttonText: const Text("Select Campaign Status"),
+                searchable: true,
+                dialogWidth: 300,
+                dialogHeight: 250,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.grey,
+                  ),
+                ),
+                onConfirm: (List<String> selected) {
                   setState(() {
-                    _phone = p0;
-                    // _userType = null;
+                    // Update selectleadList with the confirmed selections
+                    selectWhNumsList = selected;
                   });
                 },
-                value: _phone,
-                validator: (value) => value == null ? 'Role is required' : null,
+                initialValue: [],
               ),
+              SizedBox(height: 16),
+
+              Wrap(
+                spacing: 8.0,
+                children: selectWhNumsList.map((selectedItem) {
+                  return Chip(
+                    label: Text(selectedItem),
+                    deleteIcon: Icon(Icons.close),
+                    onDeleted: () {
+                      setState(() {
+                        selectWhNumsList.remove(selectedItem);
+                      });
+                    },
+                    backgroundColor: Colors.blue.withOpacity(0.2),
+                    labelStyle: TextStyle(color: Colors.blue),
+                  );
+                }).toList(),
+              ),
+
+              // AppUtils.getDropdown(
+              //   'Select',
+              //   data: whatsAppNums,
+              //   onChanged: (p0) {
+              //     setState(() {
+              //       _phone = p0;
+              //       // _userType = null;
+              //     });
+              //   },
+              //   value: _phone,
+              //   validator: (value) => value == null ? 'Role is required' : null,
+              // ),
 
               const SizedBox(height: 10),
               const Text('Manager'),
@@ -597,6 +649,7 @@ class _Forms extends State<UserAddView> {
           managername: _selectedaccountname,
           country_code: selectedCountry,
           phone: _phone,
+          whatsapp_settings: selectWhNumsList,
           managerid: accountId);
       AppUtils.onLoading(context, "Saving, please wait...");
       _getcontactData?.addUser(adduserModel).then((value) {
@@ -654,7 +707,7 @@ class _Forms extends State<UserAddView> {
           managername: _selectedaccountname,
           isactive: isactive,
           whatsappNumber: _whatsappPhone,
-          phone: _phone,
+          whatsapp_settings: selectWhNumsList,
           country_code: selectedCountry);
 
       AppUtils.onLoading(context, "Updating, please wait...");
