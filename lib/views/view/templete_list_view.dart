@@ -381,7 +381,7 @@ class _TempleteListView extends State<TempleteListView> {
                 ),
               ),
         Expanded(
-          child: allTemplates.isEmpty
+          child: allTemplates.isEmpty || noMatchedLeads
               ? Center(
                   child: Text(
                     "No Templates Available..",
@@ -639,9 +639,36 @@ class _TempleteListView extends State<TempleteListView> {
     return widgets;
   }
 
+  bool noMatchedLeads = false;
   void searchLeads(String value) {
     searchTemp = value.trim().toLowerCase();
-    setState(() {});
+    if (searchTemp.isEmpty) {
+      allTemplates = tempTemplates;
+      noMatchedLeads = false;
+      setState(() {});
+    } else {
+      List matched = [];
+      List others = [];
+
+      for (var lead in allTemplates) {
+        var firstName = lead.name?.toLowerCase() ?? '';
+        var lastName = lead.category?.toLowerCase() ?? '';
+        var leadStatus = lead.language?.toLowerCase() ?? '';
+
+        if (firstName.contains(searchTemp) ||
+            lastName.contains(searchTemp) ||
+            leadStatus.contains(searchTemp)) {
+          matched.add(lead);
+        } else {
+          others.add(lead);
+        }
+      }
+
+      setState(() {
+        allTemplates = [...matched, ...others];
+        noMatchedLeads = matched.isEmpty;
+      });
+    }
   }
 
   void getAllTemp() {

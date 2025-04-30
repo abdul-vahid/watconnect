@@ -84,6 +84,7 @@ class _RecentChatViewState extends State<RecentChatView> {
     setState(() {});
   }
 
+  // bool noMatchedLeads = false;
   void _filterLeads(String searchLead) {
     searchLead = searchLead.trim().toLowerCase();
 
@@ -111,10 +112,14 @@ class _RecentChatViewState extends State<RecentChatView> {
       //   allLeads = List.from(originalAllLeads); // restore original
       // });
     } else {
+      matched = [];
+      others = [];
       for (var lead in tempLeadModelList) {
         var firstName = lead.contactname?.toLowerCase() ?? '';
+        var lastName = lead.full_number?.toLowerCase() ?? '';
+        // var leadStatus = lead.leadstatus?.toLowerCase() ?? '';
 
-        if (firstName.contains(searchLead)) {
+        if (firstName.contains(searchLead) || lastName.contains(searchLead)) {
           matched.add(lead);
         } else {
           others.add(lead);
@@ -123,7 +128,7 @@ class _RecentChatViewState extends State<RecentChatView> {
 
       setState(() {
         allRecentChats = [...matched, ...others];
-        noMatchedLeads = matched.isEmpty ? true : false;
+        noMatchedLeads = matched.isEmpty;
       });
     }
   }
@@ -355,37 +360,53 @@ class _RecentChatViewState extends State<RecentChatView> {
   Widget _pageBody() {
     return Column(
       children: [
-        allRecentChats.isEmpty
+        chatLoader
             ? Center(
-                child: Text(
-                "No Chat Found..",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                child: SizedBox(
+                child: Container(
+                  height: 50,
+                  width: 50,
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
               ))
-            // : noMatchedLeads || noRecordFound
-            //     ? Center(
-            //         child: Text(
-            //         "No Chat Found..",
-            //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            //       ))
-            : Expanded(
-                child: ListView.builder(
-                itemCount: allRecentChats.length,
-                itemBuilder: (context, index) {
-                  var unreadCount = "0";
-                  var lead = allRecentChats[index];
+            : allRecentChats.isEmpty || noMatchedLeads
+                ? Center(
+                    child: Container(
+                      child: Center(
+                          child: Text(
+                        "No Chat Found..",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
+                      )),
+                    ),
+                  )
+                // : noMatchedLeads || noRecordFound
+                //     ? Center(
+                //         child: Text(
+                //         "No Chat Found..",
+                //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                //       ))
+                : Expanded(
+                    child: ListView.builder(
+                    itemCount: allRecentChats.length,
+                    itemBuilder: (context, index) {
+                      var unreadCount = "0";
+                      var lead = allRecentChats[index];
 
-                  for (var p in unreadList) {
-                    if (lead.full_number
-                        .toString()
-                        .contains(p.whatsappNumber)) {
-                      unreadCount = p.unreadMsgCount;
-                      break;
-                    }
-                  }
+                      for (var p in unreadList) {
+                        if (lead.full_number
+                            .toString()
+                            .contains(p.whatsappNumber)) {
+                          unreadCount = p.unreadMsgCount;
+                          break;
+                        }
+                      }
 
-                  return leadRecordList(lead, unreadCount);
-                },
-              ))
+                      return leadRecordList(lead, unreadCount);
+                    },
+                  ))
       ],
     );
   }
@@ -613,7 +634,11 @@ class _RecentChatViewState extends State<RecentChatView> {
     }
   }
 
+  bool chatLoader = false;
   Future<void> getLeadList() async {
+    setState(() {
+      chatLoader = true;
+    });
     print("getLeadList:::getLeadList{}4");
     await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
             listen: false)
@@ -640,6 +665,10 @@ class _RecentChatViewState extends State<RecentChatView> {
       // setState(() {});
 
       print(" dbfjsdlvdsl${allRecentChats}");
+    });
+
+    setState(() {
+      chatLoader = false;
     });
   }
 }

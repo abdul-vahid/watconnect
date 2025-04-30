@@ -40,7 +40,7 @@ class _Forms extends State<UserAddView> {
     if (isEdit) {
       print("model courntry::: ${widget.model?.country_code}");
       selectedCountry = widget.model?.country_code;
-      selectWhNumsList = widget.model?.whatsapp_settings ?? [];
+      // selectWhNumsList = widget.model?.whatsapp_settings ?? [];
     } else {
       selectWhNumsList = [];
     }
@@ -651,7 +651,7 @@ class _Forms extends State<UserAddView> {
           managername: _selectedaccountname,
           country_code: selectedCountry,
           phone: _phone,
-          whatsapp_settings: selectWhNumsList,
+          // whatsapp_settings: selectWhNumsList,
           managerid: accountId);
       AppUtils.onLoading(context, "Saving, please wait...");
       _getcontactData?.addUser(adduserModel).then((value) {
@@ -709,7 +709,7 @@ class _Forms extends State<UserAddView> {
           managername: _selectedaccountname,
           isactive: isactive,
           whatsappNumber: _whatsappPhone,
-          whatsapp_settings: selectWhNumsList,
+          // whatsapp_settings: selectWhNumsList,
           country_code: selectedCountry);
 
       AppUtils.onLoading(context, "Updating, please wait...");
