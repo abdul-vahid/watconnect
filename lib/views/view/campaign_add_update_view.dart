@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
+// import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
@@ -569,24 +569,24 @@ class _Forms extends State<CampaignAddUpdateView> {
     if (controllers.isNotEmpty) {
       bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
       if (anyEmpty) {
-        EasyLoading.showToast('All fields are required');
+        // EasyLoading.showToast('All fields are required');
         return;
       }
     }
 
     if (_addleadFormKey.currentState!.validate()) {
       if (_name == null || _name.toString().isEmpty) {
-        EasyLoading.showToast("Campaign Name is required");
+        // EasyLoading.showToast("Campaign Name is required");
         return;
       } else if (_dateStartInput.text.toString().isEmpty) {
-        EasyLoading.showToast("Start date time is required");
+        // EasyLoading.showToast("Start date time is required");
         return;
       } else if (SelectedTemplateCategory == null ||
           selectedTemplateName.toString().isEmpty) {
-        EasyLoading.showToast("Select Template Category");
+        // EasyLoading.showToast("Select Template Category");
         return;
       } else if (_type == null || _type.toString().isEmpty) {
-        EasyLoading.showToast("Select Template Type");
+        // EasyLoading.showToast("Select Template Type");
         return;
       }
       _addleadFormKey.currentState!.save();
@@ -972,7 +972,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                               (controller) => controller.text.isEmpty,
                             );
                             if (anyEmpty) {
-                              EasyLoading.showToast('All fields are required');
+                              // EasyLoading.showToast('All fields are required');
 
                               return;
                             }
@@ -1175,7 +1175,7 @@ class _Forms extends State<CampaignAddUpdateView> {
 
     bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
     if (anyEmpty) {
-      EasyLoading.showToast('All fields are required');
+      // EasyLoading.showToast('All fields are required');
 
       setState(() {
         _isLoading = false;
