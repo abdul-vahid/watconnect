@@ -92,6 +92,8 @@ dependencies:
   device_info_plus: ^11.3.0
   flutter_appauth: ^9.0.0
   pdf: ^3.11.3
+  csv: ^6.0.0
+  path: ^1.9.1
   # video_thumbnail: ^0.5.3/
 
 

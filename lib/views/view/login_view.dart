@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:whatsapp/views/view/loginwithsalesforce.dart';
+import 'package:url_launcher/url_launcher.dart';
+// import 'package:whatsapp/views/view/loginwithsalesforce.dart';
 
 import '../../models/user_model/user_model.dart';
 import '../../utils/app_constants.dart';
@@ -247,11 +248,32 @@ class _LoginViewState extends State<LoginView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildCircleIcon(FontAwesomeIcons.facebook),
+                        InkWell(
+                            onTap: () async {
+                              String url =
+                                  "https://www.facebook.com/profile.php?id=61573568597186";
+                              if (await canLaunch(url)) {
+                                await launch(url);
+                              } else {
+                                throw 'Could not launch $url';
+                              }
+                            },
+                            child: _buildCircleIcon(FontAwesomeIcons.facebook)),
                         const SizedBox(width: 15),
                         // _buildCircleIcon(FontAwesomeIcons.twitter),
                         // SizedBox(width: 15),
-                        _buildCircleIcon(FontAwesomeIcons.instagram),
+                        InkWell(
+                            onTap: () async {
+                              String url =
+                                  "https://www.instagram.com/watconnect/";
+                              if (await canLaunch(url)) {
+                                await launch(url);
+                              } else {
+                                throw 'Could not launch $url';
+                              }
+                            },
+                            child:
+                                _buildCircleIcon(FontAwesomeIcons.instagram)),
                         const SizedBox(width: 15),
                         _buildCircleIcon(FontAwesomeIcons.linkedin),
                       ],

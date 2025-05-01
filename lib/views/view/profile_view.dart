@@ -508,7 +508,7 @@ class _ProfileViewState extends State<ProfileView> {
 
     var selectedImage = await chooseImage("Gallery");
     print("select mage=>$selectedImage");
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (selectedImage != null) {
       var url =

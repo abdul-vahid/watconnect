@@ -24,7 +24,7 @@ class CampaignListView extends StatefulWidget {
 }
 
 class _CampaignListView extends State<CampaignListView> {
-  double? _progress;
+  // double? _progress;
   final List<String> _paymentterms = [];
   List allCampaigns = [];
 

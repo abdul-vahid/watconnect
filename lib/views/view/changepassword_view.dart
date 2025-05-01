@@ -23,8 +23,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _isObscured1 = true;
   bool _isObscured2 = true;
   bool _isObscured3 = true;
-  final TextEditingController _currentPasswordController =
-      TextEditingController();
+  // final TextEditingController _currentPasswordController =
+  //     TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
@@ -33,7 +33,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Change Password",
           style: TextStyle(color: Colors.white),
         ),

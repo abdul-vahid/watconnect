@@ -19,7 +19,7 @@ class MessageCountListView extends StatefulWidget {
 }
 
 class _MessageCountListView extends State<MessageCountListView> {
-  double? _progress;
+  // double? _progress;
   final List<String> _paymentterms = [];
   UnreadMsgModel? campginmodel;
   UnreadCountVm? campaign;

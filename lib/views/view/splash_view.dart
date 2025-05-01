@@ -1,24 +1,16 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:whatsapp/main.dart';
-import 'package:whatsapp/models/lead_model.dart';
+
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/function_lib.dart';
-import 'package:whatsapp/view_models/lead_list_vm.dart';
-import 'package:whatsapp/view_models/unread_count_vm.dart';
+
 import 'package:whatsapp/view_models/user_list_vm.dart';
 import 'package:whatsapp/views/view/login_view.dart';
-import 'package:whatsapp/views/view/whatsapp_message_view.dart';
 import '../widgets/bottomnavigatonbar.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =

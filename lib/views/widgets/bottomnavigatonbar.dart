@@ -15,7 +15,6 @@ import '../../utils/notification_utils.dart';
 import '../view/home_view.dart';
 import '../view/profile_view.dart' show ProfileView;
 import '../view/user_list_view.dart';
-import '../view/whatsappphone.dart';
 
 class FooterNavbarPage extends StatefulWidget {
   const FooterNavbarPage({super.key});

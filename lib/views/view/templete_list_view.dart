@@ -232,20 +232,22 @@ class _TempleteListView extends State<TempleteListView> {
                               },
                               initialValue: [],
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Wrap(
                               spacing: 8.0,
                               children: selectTempList.map((selectedItem) {
                                 return Chip(
                                   label: Text(selectedItem),
-                                  deleteIcon: Icon(Icons.close),
+                                  deleteIcon: const Icon(Icons.close),
                                   onDeleted: () {
                                     setState(() {
                                       selectTempList.remove(selectedItem);
                                     });
                                   },
+                                  // ignore: deprecated_member_use
                                   backgroundColor: Colors.blue.withOpacity(0.2),
-                                  labelStyle: TextStyle(color: Colors.blue),
+                                  labelStyle:
+                                      const TextStyle(color: Colors.blue),
                                 );
                               }).toList(),
                             ),
@@ -269,7 +271,7 @@ class _TempleteListView extends State<TempleteListView> {
                     //   },
                     //   value: selecttemplte,
                     // ),
-                    SizedBox(height: 7),
+                    const SizedBox(height: 7),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -295,7 +297,7 @@ class _TempleteListView extends State<TempleteListView> {
                             ),
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 8,
                         ),
                         ElevatedButton(

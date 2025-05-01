@@ -182,7 +182,7 @@ class _Forms extends State<CampaignCloneview> {
               AppUtils.getTextFormField(
                 'Enter Campaign Name',
                 onSaved: (value) => _name = value,
-                initialValue: widget.record?.campaignName,
+                initialValue: widget.record.campaignName,
                 validator: (value) => value!.isEmpty ? 'Required' : null,
                 onChanged: (p0) => setState(() => _name = p0),
               ),

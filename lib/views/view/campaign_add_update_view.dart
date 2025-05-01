@@ -1,14 +1,19 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:path/path.dart' as p;
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
@@ -44,7 +49,10 @@ class _Forms extends State<CampaignAddUpdateView> {
   GroupsViewModel? groupsVM;
   List<TextEditingController> controllers = [];
   TextEditingController fileNameController = TextEditingController();
+  TextEditingController _templateController = TextEditingController();
+  late MessageViewModel messageViewModel;
   bool isEdit = false;
+  int count = 0;
   String? base64Img;
   ImagePicker picker = ImagePicker();
   XFile? pickedFile;
@@ -72,7 +80,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
     debug("this is my number $number");
-    Provider.of<TempleteListViewModel>(
+    await Provider.of<TempleteListViewModel>(
       context,
       listen: false,
     ).templetefetch(number: number ?? "");
@@ -82,6 +90,8 @@ class _Forms extends State<CampaignAddUpdateView> {
   void initState() {
     super.initState();
     saveNumberData();
+    _fetchTemplates();
+
     final model = widget.model;
     if (model != null) {
       isEdit = true;
@@ -102,11 +112,17 @@ class _Forms extends State<CampaignAddUpdateView> {
           widget.model?.campaignType != '' && widget.model?.campaignType != null
               ? widget.model?.campaignType
               : null;
+    } else {
+      _type = "Web";
+      count = 0;
+      templateNames.add("Select Template Name");
     }
 
     Provider.of<GroupsViewModel>(context, listen: false).fetchGroups();
   }
 
+  List<String> templateIds = [];
+  List<String> templateNames = [];
   CampaignViewModel? _getaccountData;
   List<dynamic> types = [
     'Advertisement',
@@ -119,7 +135,12 @@ class _Forms extends State<CampaignAddUpdateView> {
     'Web',
     'Other',
   ];
-  List<dynamic> tempateCategory = ['UTILITY', 'MARKETING'];
+  List<dynamic> tempateCategory = [
+    'All',
+    'UTILITY',
+    'MARKETING',
+    'AUTHENTICATION',
+  ];
   // Map<String, List<String>> allTemplatesMap = {};
   Map<String, Map<String, dynamic>> allTemplatesMap = {};
   List<dynamic> templateName1 = [];
@@ -133,26 +154,31 @@ class _Forms extends State<CampaignAddUpdateView> {
 
   final GlobalKey<FormState> _addleadFormKey = GlobalKey<FormState>();
   final TextEditingController _dateStartInput = TextEditingController();
-
+  final TextEditingController _tempController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     debug('hello $templateName1');
+    messageViewModel = Provider.of<MessageViewModel>(context);
     templateVM = Provider.of<TempleteListViewModel>(context);
     groupsVM = Provider.of<GroupsViewModel>(context);
     _getaccountData = Provider.of<CampaignViewModel>(context);
 
-    for (var viewModel in templateVM!.viewModels) {
-      TemplateModel tempmodel = viewModel.model;
-      for (var record in tempmodel.data ?? []) {
-        if (record.name != null && record.category != null) {
-          String categoryKey = record.category!.toLowerCase();
-          debug('categoryKey my : $categoryKey');
+    templateVM = Provider.of<TempleteListViewModel>(context);
 
-          allTemplatesMap.putIfAbsent(categoryKey, () => {});
-          allTemplatesMap[categoryKey]?[record.id] = (record.name!);
+    if (templateVM != null && templateVM?.viewModels != null)
+      for (var viewModel in templateVM!.viewModels) {
+        TemplateModel tempmodel = viewModel.model;
+        for (var record in tempmodel.data ?? []) {
+          if (record.name != null && record.category != null) {
+            String categoryKey = record.category!.toLowerCase();
+
+            allTemplatesMap.putIfAbsent(categoryKey, () => {});
+            allTemplatesMap[categoryKey]?[record.id] = (record.name!);
+          }
         }
       }
-    }
+    debug("All Templates Map Data: $allTemplatesMap");
+
     debug("All Templates Map Data: $allTemplatesMap");
 
     for (var viewModel in groupsVM!.viewModels) {
@@ -219,11 +245,9 @@ class _Forms extends State<CampaignAddUpdateView> {
                   backgroundColor: AppColor.cardsColor,
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
-                onPressed: isEdit && widget.isClone == false
-                    ? updateData
-                    : onButtonPressed,
+                onPressed: isEdit ? updateData : onButtonPressed,
                 child: Text(
-                  isEdit && widget.isClone == false ? "Update" : "Submit",
+                  isEdit ? "Update" : "Submit",
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -307,7 +331,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('Campaign Name'),
+              const Text('Campaign Name'),
               const SizedBox(height: 5),
               AppUtils.getTextFormField(
                 'Enter Campaign Name',
@@ -328,7 +352,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 },
               ),
               const SizedBox(height: 10),
-              Text('Start Date & Time'),
+              const Text('Start Date & Time'),
               const SizedBox(height: 5),
               TextFormField(
                 controller: _dateStartInput,
@@ -387,59 +411,23 @@ class _Forms extends State<CampaignAddUpdateView> {
               if (isEdit == false) const SizedBox(height: 10),
               if (isEdit == false) Text('Select Template Category'),
               if (isEdit == false) const SizedBox(height: 5),
-              if (isEdit == false && widget.isClone == false)
-                AppUtils.getDropdown(
-                  'Select Category',
-                  data: tempateCategory, // Static categories
-                  onChanged: (p0) {
-                    setState(() {
-                      SelectedTemplateCategory = p0;
-                      selectedTemplateName = null; // Reset template dropdown
-
-                      if (p0 != null) {
-                        templateName1 = [];
-                        String categoryKey =
-                            p0.toLowerCase(); // Convert category to lowercase
-                        debug("Selected Category: $categoryKey");
-                        templateName1 = [
-                          ...allTemplatesMap[categoryKey]?.values ?? [],
-                        ];
-                        debug(
-                          "Updated Template List after selecting category: $templateName1",
-                        );
-
-                        // If templates are empty, debug
-                        if (templateName1.isEmpty) {
-                          debug(
-                            "No templates found for the selected category: $categoryKey",
-                          );
-                        }
-                      }
-                    });
-                  },
-                  value: SelectedTemplateCategory,
+              GestureDetector(
+                onTap: () {
+                  _getBootmSheet();
+                },
+                child: AbsorbPointer(
+                  child: TextField(
+                    controller: _tempController,
+                    decoration: const InputDecoration(
+                      // labelText: 'Tap to choose',
+                      suffixIcon: Icon(Icons.arrow_drop_down),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
                 ),
-              if (isEdit == false) const SizedBox(height: 10),
-              if (isEdit == false) Text('Template Name'),
-              if (isEdit == false) const SizedBox(height: 5),
-              if (isEdit == false)
-                AppUtils.getDropdown(
-                  'Select Template Name',
-                  data: templateName1.isNotEmpty
-                      ? templateName1
-                      : ['No Templates Available'],
-                  onChanged: (p0) {
-                    setState(() {
-                      selectedTemplateName = p0;
-                    });
-                    debug("Selected Template: $selectedTemplateName");
-                    _setSelectedTemplates();
-                    _sendTemplateSheet();
-                  },
-                  value: selectedTemplateName,
-                ),
+              ),
               const SizedBox(height: 10),
-              Text('Group Name'),
+              const Text('Group Name'),
               const SizedBox(height: 5),
               MultiSelectDialogField(
                 dialogHeight: 160,
@@ -452,13 +440,13 @@ class _Forms extends State<CampaignAddUpdateView> {
                     )
                     .toList(),
                 initialValue: selectedGroups,
-                title: Text("Select Groups"),
+                title: const Text("Select Groups"),
                 selectedColor: Colors.blue,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.blue, width: 1),
                   borderRadius: BorderRadius.circular(5),
                 ),
-                buttonText: Text("Select Groups"),
+                buttonText: const Text("Select Groups"),
                 onConfirm: (results) {
                   print("results:::: ${results}");
                   // Update selectedGroups with selected items
@@ -471,7 +459,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 },
               ),
               if (isEdit == false) const SizedBox(height: 10),
-              if (isEdit == false) Text('File Upload'),
+              if (isEdit == false) const Text('File Upload'),
               const SizedBox(height: 05),
               if (isEdit == false)
                 TextFormField(
@@ -489,7 +477,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                     final result = await FilePicker.platform.pickFiles(
                       allowMultiple: true,
                       type: FileType.custom,
-                      allowedExtensions: ["jpg", 'png', 'pdf', 'csv'],
+                      allowedExtensions: ['csv'],
                     );
 
                     result == null
@@ -514,7 +502,49 @@ class _Forms extends State<CampaignAddUpdateView> {
                   },
                 ),
               const SizedBox(height: 10),
-              Text('Type'),
+              InkWell(
+                  onTap: () async {
+                    await requestStoragePermission();
+
+                    List<List<dynamic>> rows = [
+                      ["Name", "Country Code", "Number"],
+                      ["John", "+91", "XXXXXXXXXX"]
+                    ];
+
+                    String csvData = const ListToCsvConverter().convert(rows);
+
+                    final downloadPath = await getDownloadPath();
+                    final filePath = p.join(downloadPath, "sample.csv");
+
+                    final file = File(filePath);
+
+                    if (await file.exists()) {
+                      print("CSV already exists. Opening...");
+                      await OpenFile.open(filePath);
+                      return;
+                    }
+
+                    await file.writeAsString(csvData);
+                    print("CSV saved at $filePath");
+                    await OpenFile.open(filePath);
+                  },
+                  child: Container(
+                    // width: 180,
+                    decoration: BoxDecoration(
+                        color: AppColor.navBarIconColor,
+                        borderRadius: BorderRadius.circular(12)),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12.0),
+                      child: Center(
+                        child: Text(
+                          "Download Sample CSV",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  )),
+              const SizedBox(height: 10),
+              const Text('Type'),
               const SizedBox(height: 5),
               AppUtils.getDropdown(
                 'Select',
@@ -528,7 +558,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 value: _type,
               ),
               if (isEdit == false) const SizedBox(height: 10),
-              if (isEdit == false) Text('Description'),
+              if (isEdit == false) const Text('Description'),
               if (isEdit == false) const SizedBox(height: 5),
               if (isEdit == false)
                 AppUtils.getTextFormField(
@@ -556,12 +586,16 @@ class _Forms extends State<CampaignAddUpdateView> {
     String minutes = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
     String sign = offset.isNegative ? '-' : '+';
 
-    return DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(dateTime) +
-        "$sign$hours:$minutes";
+    return "${DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(dateTime)}$sign$hours:$minutes";
   }
 
   void onButtonPressed() async {
-    print("selectedGroups>>> ${selectedGroups}");
+    print("fileNameControllerL::::: ${fileNameController.text}");
+    print("selectedGroups:::: ${selectedGroups}");
+    if (selectedGroups.isEmpty && fileNameController.text.trim().isEmpty) {
+      EasyLoading.showToast("Upload a CSV or Select a group");
+      return;
+    }
     print(
       "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}",
     );
@@ -569,24 +603,20 @@ class _Forms extends State<CampaignAddUpdateView> {
     if (controllers.isNotEmpty) {
       bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
       if (anyEmpty) {
-        // EasyLoading.showToast('All fields are required');
+        EasyLoading.showToast('All fields are required');
         return;
       }
     }
 
     if (_addleadFormKey.currentState!.validate()) {
       if (_name == null || _name.toString().isEmpty) {
-        // EasyLoading.showToast("Campaign Name is required");
         return;
       } else if (_dateStartInput.text.toString().isEmpty) {
-        // EasyLoading.showToast("Start date time is required");
         return;
       } else if (SelectedTemplateCategory == null ||
           selectedTemplateName.toString().isEmpty) {
-        // EasyLoading.showToast("Select Template Category");
         return;
       } else if (_type == null || _type.toString().isEmpty) {
-        // EasyLoading.showToast("Select Template Type");
         return;
       }
       _addleadFormKey.currentState!.save();
@@ -618,7 +648,7 @@ class _Forms extends State<CampaignAddUpdateView> {
         debug('campaignUpdate==$value');
         Navigator.pop(context);
         Navigator.pop(context);
-        Future.delayed(Duration(milliseconds: 100), () {
+        Future.delayed(const Duration(milliseconds: 100), () {
           Navigator.pop(context, true);
         });
 
@@ -698,6 +728,10 @@ class _Forms extends State<CampaignAddUpdateView> {
   String imgToShow = "";
   bool isOtherFileSelected = false;
   Future<void> _sendTemplateSheet() {
+    TextEditingController _templateController = TextEditingController();
+    int selectedBtnIdx = 0;
+    SelectedTemplateCategory = null;
+    // selectedTemplateName = null;
     isChecked = false;
     image = null;
     String text = selectedBody.text;
@@ -715,7 +749,7 @@ class _Forms extends State<CampaignAddUpdateView> {
 
     final regex = RegExp(r'\{\{\d+\}\}');
 
-    int count = regex.allMatches(text).length;
+    count = regex.allMatches(text).length;
     file = null;
     controllers = List.generate(count, (index) => TextEditingController());
     isOtherFileSelected = false;
@@ -747,7 +781,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -787,7 +821,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                       ),
                       Card(
                         elevation: 5,
-                        color: Color(0xffE3FFC9).withOpacity(0.5),
+                        color: const Color(0xffE3FFC9).withOpacity(0.5),
                         shadowColor: Colors.black38,
                         child: Padding(
                           padding: const EdgeInsets.all(10.0),
@@ -795,6 +829,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                             crossAxisAlignment: CrossAxisAlignment
                                 .start, // Align content properly
                             children: [
+                              // Handle different formats (IMAGE, VIDEO, DOCUMENT)
                               if (selectedHeader != null &&
                                   selectedHeader.format != null)
                                 file != null && selectedHeader.format == 'IMAGE'
@@ -805,11 +840,10 @@ class _Forms extends State<CampaignAddUpdateView> {
                                             height: 150,
                                             width: 150,
                                             decoration: BoxDecoration(
-                                              color: Colors.black,
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Center(
+                                                color: Colors.black,
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
+                                            child: const Center(
                                               child: Icon(
                                                 Icons.play_arrow_rounded,
                                                 color: Colors.white,
@@ -826,16 +860,17 @@ class _Forms extends State<CampaignAddUpdateView> {
                                               )
                                             : _buildMediaWidget(
                                                 selectedHeader.format,
-                                                imgToShow,
-                                              ),
+                                                imgToShow),
+
                               if (selectedBody != null)
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 8.0,
-                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
                                   child: Text("${selectedBody.text}"),
                                 ),
-                              SizedBox(height: 10),
+
+                              const SizedBox(height: 10),
+
                               if (selectedButtons != null)
                                 Wrap(
                                   spacing: 10,
@@ -849,32 +884,34 @@ class _Forms extends State<CampaignAddUpdateView> {
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.grey[400],
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                            side: BorderSide(
-                                              color: AppColor.navBarIconColor,
-                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            side: const BorderSide(
+                                                color:
+                                                    AppColor.navBarIconColor),
                                           ),
                                         ),
                                         child: Text(
                                           selectedButtons.buttons[index].text,
-                                          style: TextStyle(
-                                            color: AppColor.navBarIconColor,
-                                          ),
+                                          style: const TextStyle(
+                                              color: AppColor.navBarIconColor),
                                         ),
                                       );
                                     },
                                   ),
                                 ),
-                              SizedBox(height: 15),
+
+                              const SizedBox(height: 15),
+
                               if (selectedFooter != null)
                                 Text(
                                   selectedFooter.text,
-                                  style: TextStyle(color: Colors.grey),
+                                  style: const TextStyle(color: Colors.grey),
                                   textAlign: TextAlign.left,
                                 ),
-                              SizedBox(height: 15),
+
+                              const SizedBox(height: 15),
+
                               if (selectedHeader != null)
                                 selectedHeader.format == 'IMAGE' ||
                                         selectedHeader.format == 'VIDEO' ||
@@ -885,23 +922,19 @@ class _Forms extends State<CampaignAddUpdateView> {
                                               'IMAGE') {
                                             _pickImaFromGallery()
                                                 .then((onValue) {
-                                              print("onValue>>> ${onValue}");
                                               if (onValue != null) {
                                                 setState(() {
                                                   image = onValue;
-
                                                   isOtherFileSelected = true;
                                                 });
                                               }
                                             });
                                           } else if (selectedHeader.format ==
                                               'VIDEO') {
-                                            _pickVideoFromGallery().then((
-                                              onValue,
-                                            ) {
-                                              if (onValue != null) {
+                                            _pickVideoFromGallery()
+                                                .then((onValue) {
+                                              if (file != null) {
                                                 setState(() {
-                                                  image = onValue;
                                                   isOtherFileSelected = true;
                                                 });
                                               }
@@ -910,9 +943,8 @@ class _Forms extends State<CampaignAddUpdateView> {
                                               'DOCUMENT') {
                                             _pickDocFromGallery()
                                                 .then((onValue) {
-                                              if (onValue != null) {
+                                              if (file != null) {
                                                 setState(() {
-                                                  image = onValue;
                                                   isOtherFileSelected = true;
                                                 });
                                               }
@@ -921,24 +953,24 @@ class _Forms extends State<CampaignAddUpdateView> {
                                         },
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            color: Colors.grey[400],
-                                            border: Border.all(
-                                              color: AppColor.navBarIconColor,
-                                            ),
-                                          ),
-                                          child: Center(
+                                              color: Colors.grey[400],
+                                              border: Border.all(
+                                                  color: AppColor
+                                                      .navBarIconColor)),
+                                          child: const Center(
                                             child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                vertical: 8.0,
-                                              ),
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 8.0),
                                               child: Text("Choose File"),
                                             ),
                                           ),
                                         ),
                                       )
                                     : SizedBox(),
-                              SizedBox(height: 10),
+                              const SizedBox(
+                                height: 10,
+                              ),
+
                               Row(
                                 children: [
                                   Checkbox(
@@ -949,66 +981,125 @@ class _Forms extends State<CampaignAddUpdateView> {
                                       });
                                     },
                                   ),
-                                  Expanded(
+                                  const Expanded(
                                     child: Text(
                                       "Send on login user WhatsApp number also",
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                  ),
+                                  )
                                 ],
                               ),
                             ],
                           ),
                         ),
                       ),
-                      SizedBox(height: 15),
-                      InkWell(
-                        onTap: () {
-                          setState(() {});
-                          if (controllers.isNotEmpty) {
-                            bool anyEmpty = controllers.any(
-                              (controller) => controller.text.isEmpty,
-                            );
-                            if (anyEmpty) {
-                              // EasyLoading.showToast('All fields are required');
+                      const SizedBox(height: 15),
+                      Center(
+                        child: StatefulBuilder(
+                          builder:
+                              (BuildContext context, StateSetter setState) {
+                            return ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                backgroundColor: AppColor.navBarIconColor,
+                              ),
+                              onPressed: () async {
+                                if (_isLoading) return;
 
-                              return;
-                            }
-                          }
-                          Navigator.pop(context);
-                          print(
-                            "image here:: ${image}  ${isOtherFileSelected}",
-                          );
-                          // addCampaignTemplate(
-                          //     fileToSend: image, sendToAdmin: isChecked);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: AppColor.navBarIconColor,
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 8.0,
-                                horizontal: 8,
-                              ),
-                              child: Text(
-                                "Done",
-                                style: TextStyle(
-                                  color: AppColor.navBarIconColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
+                                setState(() {
+                                  _isLoading = true;
+                                });
+
+                                Map<String, String> bodyTextParams = {};
+                                List compoTextParams = [];
+                                List numberedCampParam = [];
+
+                                bool anyEmpty = controllers.any(
+                                    (controller) => controller.text.isEmpty);
+                                if (anyEmpty) {
+                                  EasyLoading.showToast(
+                                      'All fields are required');
+
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+                                  return;
+                                }
+
+                                File? imageFile;
+                                String docId = "";
+
+                                for (int i = 0; i < controllers.length; i++) {
+                                  bodyTextParams[(i + 1).toString()] =
+                                      controllers[i].text;
+                                  Map body = {
+                                    "type": "text",
+                                    "text": controllers[i].text
+                                  };
+                                  compoTextParams.add(body);
+                                  numberedCampParam.add(bodyTextParams);
+                                }
+
+                                String templateToSend = selectedTemplateName ??
+                                    _templateController.text;
+
+                                print(
+                                    "selected header:: >><><>< ${selectedHeader}   ${selectedTemplateName}");
+
+                                setState(() {
+                                  _tempController.text =
+                                      selectedTemplateName ?? "";
+                                  _isLoading = false;
+                                  Navigator.pop(context);
+                                });
+
+                                if (selectedHeader.format == "IMAGE" ||
+                                    selectedHeader.format == "VIDEO" ||
+                                    selectedHeader.format == "DOCUMENT") {
+                                  if (isOtherFileSelected == true) {
+                                    print("image :: ${image}");
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    String? number =
+                                        prefs.getString('phoneNumber');
+
+                                    // String? sendimagedatabase =
+                                    //     await messageViewModel
+                                    //         .uploadFiledb(
+                                    //             image!, number, leadid)
+                                    //         .then((value) {
+                                    //   print(
+                                    //       "video sedn video send send----upload dididi->$value");
+
+                                    //   Map<String, dynamic> response =
+                                    //       jsonDecode(value);
+
+                                    //   fileid = response['records']?[0]['id'];
+
+                                    //   print("ID: $fileid");
+                                    //   return null;
+                                    // });
+                                  } else {
+                                    image = await urlToFile(imgToShow);
+                                  }
+                                }
+                              },
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                  : const Text(
+                                      "Done",
+                                      style: TextStyle(
+                                          fontSize: 13, color: Colors.white),
+                                    ),
+                            );
+                          },
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                     ],
                   );
                 },
@@ -1025,7 +1116,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     switch (format) {
       case "IMAGE":
         return content.isEmpty
-            ? Container(
+            ? SizedBox(
                 height: 80,
                 width: 80,
                 child: Image.asset("assets/images/img_placeholder.png"),
@@ -1041,7 +1132,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                   color: Colors.black,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Center(
+                child: const Center(
                   child: Icon(
                     Icons.play_arrow_rounded,
                     color: Colors.white,
@@ -1053,7 +1144,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 height: 150,
                 width: double.infinity,
                 color: Colors.black12,
-                child: Center(
+                child: const Center(
                   child: Icon(Icons.videocam_off, size: 40, color: Colors.grey),
                 ),
               );
@@ -1071,10 +1162,10 @@ class _Forms extends State<CampaignAddUpdateView> {
                   ],
                 ),
               )
-            : SizedBox(); // Empty if no document
+            : const SizedBox(); // Empty if no document
 
       default:
-        return SizedBox(); // If format is unknown
+        return const SizedBox(); // If format is unknown
     }
   }
 
@@ -1126,17 +1217,25 @@ class _Forms extends State<CampaignAddUpdateView> {
       type: FileType.custom,
       allowedExtensions: ["jpg", 'png'],
     );
+
     if (pickedFile != null) {
-      setState(() {
-        file = pickedFile.files.first;
-        image = File(file!.path!);
-        print("image::: ${image}");
-        fileNameController.text = file!.name;
-      });
-      return image;
-    } else {
-      return null;
+      final picked = pickedFile.files.first;
+      final img = File(picked.path!);
+
+      // Always return the file
+      if (mounted) {
+        setState(() {
+          file = picked;
+          image = img;
+          print("image::: $image");
+          fileNameController.text = file!.name;
+        });
+      }
+
+      return img;
     }
+
+    return null;
   }
 
   void addCampaignTemplate({File? fileToSend, bool sendToAdmin = false}) {
@@ -1144,17 +1243,20 @@ class _Forms extends State<CampaignAddUpdateView> {
   }
 
   Future<void> sendTemplateApiCall(bool send) async {
-    late MessageViewModel mstemp = MessageViewModel(context);
-    List ba =
-        selectedButtons?.buttons.map((button) => button.toMap()).toList() ?? [];
-    String footer = selectedFooter?.text ?? "";
+    final prefs = await SharedPreferences.getInstance();
+    number = prefs.getString('phoneNumber');
+    List ba = selectedButtons == null
+        ? ""
+        : selectedButtons?.buttons.map((button) => button.toMap()).toList() ??
+            [];
+    String footer = selectedFooter != null ? selectedFooter?.text ?? "" : "";
     Map<String, dynamic> createtemp = {
       "id": selectedTemplateId,
       "name": selectedTemplateName,
       "language": selectedLanguage,
-      "header": selectedHeader != null ? selectedHeader.format : "",
-      "header_body": selectedHeader.text ?? "",
-      "message_body": selectedBody.text,
+      "header": selectedHeader != null ? selectedHeader.format ?? "" : "",
+      "header_body": selectedHeader != null ? selectedHeader.text ?? "" : "",
+      "message_body": selectedBody != null ? selectedBody.text : "",
       "example_body_text": {"sendToAdmin": send},
       "footer": footer,
       "buttons": ba,
@@ -1182,8 +1284,8 @@ class _Forms extends State<CampaignAddUpdateView> {
       return;
     }
 
-    File? imageFile;
-    String docId = "";
+    // File? imageFile;
+    // String docId = "";
     for (int i = 0; i < controllers.length; i++) {
       bodyTextParams[(i + 1).toString()] = controllers[i].text;
       Map body = {"type": "text", "text": controllers[i].text};
@@ -1215,7 +1317,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           'type': _type,
           'startDate': _dateStartInput.text,
           'group_ids': selectedGroups,
-          'description': _description,
+          'description': _description ?? "",
         };
 
         getaccountData.addCampaign(camp).then((value) async {
@@ -1235,9 +1337,17 @@ class _Forms extends State<CampaignAddUpdateView> {
               };
 
               MessageViewModel mstemp = MessageViewModel(context);
-              var campaignResponse = await mstemp.sendCampParam(
+              var campaignResponse = await mstemp
+                  .sendCampParam(
                 campParambody: paramBody,
-              );
+              )
+                  .then((onValue) async {
+                await messageViewModel
+                    .uploadCampFiledb(image!, campaignId)
+                    .then((onValue) {
+                  getaccountData.fetchCampaign();
+                });
+              });
             }
 
             debug("Uploading file with Campaign ID: $campaignId");
@@ -1390,5 +1500,311 @@ class _Forms extends State<CampaignAddUpdateView> {
     } catch (e) {
       print("Error sending template: $e");
     }
+  }
+
+  Future<bool> requestManageExternalStoragePermission(
+      BuildContext context) async {
+    var status = await Permission.manageExternalStorage.status;
+
+    if (status.isGranted) return true;
+
+    if (status.isDenied) {
+      var result = await Permission.manageExternalStorage.request();
+      if (result.isGranted) return true;
+      if (result.isPermanentlyDenied) {
+        _showSettingsDialog(context);
+        return false;
+      } else {
+        _showPermissionDeniedSnackBar(context);
+        return false;
+      }
+    } else if (status.isPermanentlyDenied) {
+      _showSettingsDialog(context);
+      return false;
+    }
+    return false;
+  }
+
+  void _showSettingsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Permission Required"),
+        content: Text("Please enable Manage External Storage from Settings."),
+        actions: [
+          TextButton(
+            child: Text("Cancel"),
+            onPressed: () => Navigator.pop(context),
+          ),
+          TextButton(
+            child: Text("Open Settings"),
+            onPressed: () async {
+              Navigator.pop(context);
+              await openAppSettings();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPermissionDeniedSnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Permission denied. Cannot proceed.")),
+    );
+  }
+
+  void _showPermissionDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("Storage Permission Required"),
+        content:
+            Text("Please allow storage access to save and view CSV files."),
+        actions: [
+          TextButton(
+            onPressed: () {
+              openAppSettings();
+              Navigator.pop(context);
+            },
+            child: Text("Open Settings"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel"),
+          )
+        ],
+      ),
+    );
+  }
+
+  Future<void> requestStoragePermission() async {
+    if (Platform.isAndroid) {
+      if (await Permission.manageExternalStorage.isGranted) return;
+
+      var status = await Permission.manageExternalStorage.request();
+
+      if (status.isPermanentlyDenied) {
+        _showPermissionDialog();
+        return;
+      }
+
+      if (!status.isGranted) {
+        _showPermissionDialog();
+        return;
+      }
+    }
+  }
+
+  Future<String> getDownloadPath() async {
+    Directory dir = Directory('/storage/emulated/0/Download');
+    if (!await dir.exists()) {
+      dir = await getExternalStorageDirectory() ?? Directory.systemTemp;
+    }
+    return dir.path;
+  }
+
+  Future<File?> urlToFile(String imageUrl) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+
+      if (response.statusCode == 200) {
+        final directory = await getTemporaryDirectory();
+
+        final filePath = '${directory.path}/downloaded_image.png';
+
+        File file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
+
+        return file;
+      }
+    } catch (e) {
+      print("Error downloading image: $e");
+    }
+    return null;
+  }
+
+  Future<void> _fetchTemplates() async {
+    TempleteListViewModel templeteViewModel =
+        Provider.of<TempleteListViewModel>(context, listen: false);
+
+    // Check if templeteViewModel is not null and contains viewModels
+    if (templeteViewModel.viewModels.isNotEmpty) {
+      for (var viewModel in templeteViewModel.viewModels) {
+        var campaignModel = viewModel.model;
+        if (campaignModel?.data != null) {
+          for (var record in campaignModel!.data!) {
+            if (record.status != null) {
+              print("Record template Status: ${record.name}");
+              setState(() {
+                templateNames.add(record.name);
+                // print("Templates => $templateNames");
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Future<void> _getBootmSheet() {
+    TextEditingController _templateController = TextEditingController();
+    int selectedBtnIdx = 0;
+    SelectedTemplateCategory = null;
+    selectedTemplateName = null;
+    return showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      enableDrag: false,
+      elevation: 1,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SingleChildScrollView(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.all(15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Category And Templete",
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () => Navigator.pop(context),
+                          child: const Icon(
+                            Icons.highlight_remove_outlined,
+                            color: AppColor.navBarIconColor,
+                            size: 25,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(thickness: 1),
+                    const SizedBox(height: 5),
+                    AppUtils.getDropdown(
+                      'Select Category',
+                      data: tempateCategory,
+                      onChanged: (String? selectedCategory) {
+                        setState(() {
+                          SelectedTemplateCategory = selectedCategory;
+                          selectedTemplateName = null;
+                          templateNames = [];
+
+                          if (selectedCategory != null) {
+                            String categoryKey = selectedCategory.toLowerCase();
+
+                            if (SelectedTemplateCategory != 'All') {
+                              templateNames = (allTemplatesMap[categoryKey]
+                                          ?.values
+                                          .toSet()
+                                          .toList() ??
+                                      [])
+                                  .map((e) => e.toString())
+                                  .toSet()
+                                  .toList();
+                            } else {
+                              _fetchTemplates();
+                            }
+
+                            debug("Selected Category: $categoryKey");
+                            debug("Filtered Templates: $templateNames");
+                          }
+                        });
+                      },
+                      value: SelectedTemplateCategory,
+                    ),
+                    const SizedBox(height: 12),
+                    AppUtils.getDropdown(
+                      'Select Template Name',
+                      data: templateNames,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedTemplateName = newValue;
+                          _templateController.text = newValue ?? '';
+                          if (newValue != null) {
+                            int selectedIndex = templateNames.indexOf(newValue);
+
+                            if (selectedIndex >= 0 &&
+                                selectedIndex < templateIds.length) {
+                              String selectedTemplateId =
+                                  templateIds[selectedIndex];
+
+                              print(
+                                  "Selected Template ID: $selectedTemplateId");
+                            } else {
+                              print("Invalid index for the selected template.");
+                            }
+                          }
+                        });
+                        print(
+                            "selectedTemplateName:::::::::: ${selectedTemplateName}");
+                        _setSelectedTemplates();
+                      },
+                      value: selectedTemplateName,
+                    ),
+                    Center(
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                          minimumSize:
+                              WidgetStateProperty.all(const Size(10, 20)),
+                          padding: WidgetStateProperty.all(
+                              const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10)),
+                          backgroundColor:
+                              WidgetStateProperty.all(AppColor.navBarIconColor),
+                        ),
+                        onPressed: () {
+                          print(
+                              "selectedTemplateName>>> ${selectedTemplateName}");
+                          if (selectedTemplateName == null ||
+                              selectedTemplateName == "Select Template Name") {
+                            EasyLoading.showToast("Select Template Name");
+                            return;
+                          }
+                          log("all comp info >> >>  ${selectedHeader}  ${selectedBody} ${selectedFooter} ${selectedButtons}}");
+                          log("selectedBody['text']>>> ${selectedBody.text}  ");
+                          final regex = RegExp(r'\{\{\d+\}\}');
+
+                          if (regex.hasMatch(selectedBody.text) ||
+                              selectedHeader.format != "TEXT") {
+                            Navigator.of(context).pop();
+                            _sendTemplateSheet();
+                          } else {
+                            String templateToSend = selectedTemplateName ??
+                                _templateController.text;
+                            print("Template to send: $templateToSend");
+
+                            setState(() {
+                              _tempController.text = selectedTemplateName ?? "";
+                            });
+                            // templetesendd(templateToSend, []);
+
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        child: const Text(
+                          "Send",
+                          style: TextStyle(fontSize: 13, color: Colors.white),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }

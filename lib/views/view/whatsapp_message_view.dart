@@ -3,13 +3,11 @@ import 'dart:developer';
 // import 'dart:io' as IO;
 
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -23,17 +21,13 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
-import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
 import 'package:whatsapp/models/lead_model.dart';
-import 'package:whatsapp/models/ms_model/message_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
-import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/lead_detail_view.dart';
-import 'package:whatsapp/views/view/open_docs.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
 import 'package:whatsapp/views/view/view_fullscreen_img.dart';
@@ -109,13 +103,7 @@ class _ChatScreenState extends State<ChatScreen> {
   dynamic selectedButtons;
   late VideoPlayerController _Vcontroller;
   TempleteListViewModel? templateVM;
-  final List<String> imageUrls = [
-    'https://i.pinimg.com/564x/51/7b/07/517b07bfac2232980597368f36fc06c5.jpg',
-    'https://www.w3schools.com/w3images/rocks.jpg',
-    'https://www.w3schools.com/w3images/fjords.jpg',
-    'https://www.w3schools.com/w3images/mountains.jpg',
-    'https://www.w3schools.com/w3images/lights.jpg',
-  ];
+
   bool showLoader = false;
   String userName = "";
   TextEditingController _templateController = TextEditingController();
@@ -184,7 +172,7 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {});
 
     templateVM = Provider.of<TempleteListViewModel>(context);
-    messageViewModel = Provider.of<MessageViewModel>(context);
+
     if (templateVM != null && templateVM?.viewModels != null)
       for (var viewModel in templateVM!.viewModels) {
         TemplateModel tempmodel = viewModel.model;
@@ -1983,7 +1971,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                   color: Colors.black,
                                                   borderRadius:
                                                       BorderRadius.circular(8)),
-                                              child: Center(
+                                              child: const Center(
                                                 child: Icon(
                                                   Icons.play_arrow_rounded,
                                                   color: Colors.white,
@@ -2009,7 +1997,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                     child: Text("${selectedBody.text}"),
                                   ),
 
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
 
                                 if (selectedButtons != null)
                                   Wrap(
@@ -2027,14 +2015,14 @@ class _ChatScreenState extends State<ChatScreen> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(4),
-                                              side: BorderSide(
+                                              side: const BorderSide(
                                                   color:
                                                       AppColor.navBarIconColor),
                                             ),
                                           ),
                                           child: Text(
                                             selectedButtons.buttons[index].text,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                                 color:
                                                     AppColor.navBarIconColor),
                                           ),
@@ -2043,16 +2031,16 @@ class _ChatScreenState extends State<ChatScreen> {
                                     ),
                                   ),
 
-                                SizedBox(height: 15),
+                                const SizedBox(height: 15),
 
                                 if (selectedFooter != null)
                                   Text(
                                     selectedFooter.text,
-                                    style: TextStyle(color: Colors.grey),
+                                    style: const TextStyle(color: Colors.grey),
                                     textAlign: TextAlign.left,
                                   ),
 
-                                SizedBox(height: 15),
+                                const SizedBox(height: 15),
 
                                 if (selectedHeader != null)
                                   selectedHeader.format == 'IMAGE' ||
@@ -2124,7 +2112,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                         });
                                       },
                                     ),
-                                    Expanded(
+                                    const Expanded(
                                       child: Text(
                                         "Send on login user WhatsApp number also",
                                         maxLines: 2,
@@ -2714,7 +2702,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 decoration: BoxDecoration(
                     color: Colors.black,
                     borderRadius: BorderRadius.circular(8)),
-                child: Center(
+                child: const Center(
                   child: Icon(
                     Icons.play_arrow_rounded,
                     color: Colors.white,
@@ -2726,7 +2714,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 height: 150,
                 width: double.infinity,
                 color: Colors.black12,
-                child: Center(
+                child: const Center(
                   child: Icon(Icons.videocam_off, size: 40, color: Colors.grey),
                 ),
               );
@@ -2747,10 +2735,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   ],
                 ),
               )
-            : SizedBox(); // Empty if no document
+            : const SizedBox(); // Empty if no document
 
       default:
-        return SizedBox(); // If format is unknown
+        return const SizedBox(); // If format is unknown
     }
   }
 

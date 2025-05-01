@@ -129,7 +129,7 @@ class _HomeViewState extends State<HomeView> {
       selectedNumber = selectedWhatsAppNumber!;
     }
     print("selectedNumber:::>>>> ${selectedNumber}");
-    setState(() {});
+    // setState(() {});
 
     debugPrint('Selected WhatsApp Number: $selectedWhatsAppNumber');
 

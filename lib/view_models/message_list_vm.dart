@@ -1,4 +1,4 @@
-import 'dart:convert' show jsonDecode, jsonEncode;
+import 'dart:convert' show jsonEncode;
 import 'dart:developer';
 import 'dart:io';
 
@@ -200,6 +200,60 @@ class MessageViewModel extends BaseListViewModel {
     }
     var url =
         Uri.parse("https://sandbox.watconnect.com/swp/api/whatsapp/files/$id");
+    print("Request URL: $url");
+    var request = http.MultipartRequest("POST", url);
+
+    // Detect MIME type
+    final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
+    final fileStream = http.ByteStream(file.openRead());
+    final length = await file.length();
+
+    // Attach file
+    var multipartFile = http.MultipartFile(
+      'file',
+      fileStream,
+      length,
+      filename: file.path.split('/').last,
+      contentType: MediaType.parse(mimeType),
+    );
+
+    request.files.add(multipartFile);
+
+    // Add headers
+    request.headers.addAll({
+      "Authorization": token,
+      "Content-Type": "multipart/form-data",
+    });
+    debug("Request URL hhh: $url");
+    debug("Request Headers jj: ${request.headers}");
+    debug("Request Fields: ${request.fields}");
+    debug("Request Files: ${request.files}");
+    try {
+      var response = await request.send();
+      debug("response.statusCode${response.statusCode}");
+      var responseBody = await response.stream.bytesToString();
+      if (response.statusCode == 200) {
+        print("File uploaded successfully");
+        debug("File uploaded successfully $responseBody");
+        return responseBody;
+      } else {
+        print("Failed to upload file: ${response.reasonPhrase}");
+        return null;
+      }
+    } catch (e) {
+      print("Error occurred during file upload: $e");
+      return null;
+    }
+  }
+
+  Future<dynamic> uploadCampFiledb(File file, String? id) async {
+    var token = await AppUtils.getToken();
+    if (token == null || token.isEmpty) {
+      print("No token found");
+      return null;
+    }
+    var url = Uri.parse(
+        "https://sandbox.watconnect.com/swp/api/whatsapp/campaign/file/$id");
     print("Request URL: $url");
     var request = http.MultipartRequest("POST", url);
 

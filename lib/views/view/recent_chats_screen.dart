@@ -13,7 +13,6 @@ import '../../models/lead_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import '../../view_models/lead_list_vm.dart';
-import '../../view_models/user_data_list_vm.dart';
 import 'package:badges/badges.dart' as badges;
 
 class RecentChatView extends StatefulWidget {
@@ -540,7 +539,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                 children: [
                   if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
                     badges.Badge(
-                      badgeStyle: badges.BadgeStyle(
+                      badgeStyle: const badges.BadgeStyle(
                         badgeColor: Colors.green,
                       ),
                       badgeContent: Text(
