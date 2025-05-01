@@ -8,7 +8,9 @@ import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/models/campaign_model/campaign_model.dart';
 import '../../models/approved_template_model/aprovedtempltemodel/component.dart';
+import '../../models/campaigndetail_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import 'package:file_picker/file_picker.dart';
@@ -97,11 +99,27 @@ class _Forms extends State<CampaignCloneview> {
     Provider.of<GroupsViewModel>(context, listen: false).fetchGroups();
   }
 
+  // Future<void> getdatabyid() async {
+  //   CampaignViewModel campVM =
+  //       Provider.of<CampaignViewModel>(context, listen: false);
+  //   await campVM.getcampaignbyid(widget.record.campaignId.toString());
+  //   print("Data @@@@@ fetched: ${campVM.viewModels}");
+
+  //   for (var viewModel in campVM.viewModels) {
+  //     print("hi working${viewModel}");
+  //     var recentMsgmodel = viewModel.model;
+  //     print("recentMsgmodelrecentMsgmodel${recentMsgmodel.campaignName}");
+  //   }
+  // }
   Future<void> getdatabyid() async {
+    print("working.........");
     CampaignViewModel campVM =
         Provider.of<CampaignViewModel>(context, listen: false);
     await campVM.getcampaignbyid(widget.record.campaignId.toString());
-    print("Data @@@@@ fetched: ${campVM.record}");
+    for (var viewModel in campVM.viewModels) {
+      CampaigndetailModel model = viewModel.model;
+      print(" model.name::::::::::::::${model.name}");
+    }
   }
 
   Future<void> saveFileToPrefs() async {
