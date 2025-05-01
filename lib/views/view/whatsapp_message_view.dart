@@ -474,7 +474,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
-    if (number == null || number.isEmpty) {
+    if (number!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Phone number not found'),
@@ -669,15 +669,11 @@ class _ChatScreenState extends State<ChatScreen> {
     userName = prefs.getString('userName') ?? "Me";
     setState(() {});
     String? number = prefs.getString('phoneNumber');
-    if (number != null) {
-      print("widget.wpnumber${widget.wpnumber}");
-      messageViewModel.Fetchmsghistorydata(
-        leadnumber: widget.wpnumber ?? "",
-        number: number,
-      );
-    } else {
-      print('Number not found in SharedPreferences');
-    }
+    print("widget.wpnumber${widget.wpnumber}");
+    messageViewModel.Fetchmsghistorydata(
+      leadnumber: widget.wpnumber ?? "",
+      number: number,
+    );
     _getProfileData();
   }
 

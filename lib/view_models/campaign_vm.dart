@@ -34,5 +34,12 @@ class CampaignViewModel extends BaseListViewModel {
     return result;
   }
 
+  Future<void> getcampaignbyid(String id) async {
+    print("iddd=>get campaign id${id}");
+    String url = AppUtils.getUrl("${AppConstants.getcampaignbyid}$id");
+    print("urlll cmapaign model====>${url}");
+    return await get(url: url, baseModel: CampaignModel());
+  }
+
   void fetch() {}
 }

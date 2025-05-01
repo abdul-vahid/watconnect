@@ -69,6 +69,7 @@ abstract class AppConstants {
   static const String leadCountAPIPath = '/api/whatsapp/common/leadcount';
   static const String leadAPIPath = '/api/leads';
   // =========================Campaign Api==============================
+  static const String getcampaignbyid = "/api/whatsapp/campaign/";
   static const String campaignCountAPIPath =
       '/api/whatsapp/common/campaignstatus';
   static const String campaignAPIPath =
