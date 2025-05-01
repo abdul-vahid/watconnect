@@ -53,7 +53,7 @@ class CampaigndetailModel extends BaseModel {
       businessNumber: data['business_number'] as String?,
     );
   }
-
+  @override
   Map<String, dynamic> toMap() => {
         'id': id,
         'name': name,
@@ -68,10 +68,15 @@ class CampaigndetailModel extends BaseModel {
         'group_ids': groupIds,
         'business_number': businessNumber,
       };
+  @override
+  CampaigndetailModel fromMap(Map<String, dynamic> data) {
+    return CampaigndetailModel.fromMap(data);
+  }
 
   /// `dart:convert`
   ///
   /// Parses the string and returns the resulting Json object as [CampaigndetailModel].
+  @override
   factory CampaigndetailModel.fromJson(String data) {
     return CampaigndetailModel.fromMap(
         json.decode(data) as Map<String, dynamic>);
