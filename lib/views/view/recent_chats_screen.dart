@@ -259,7 +259,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                       ),
                       child: DropdownButtonFormField<String>(
                         hint: const Text('Select Leads Status'),
-                        items: [
+                        items: const [
                           DropdownMenuItem(
                             value: 'Working - Contacted',
                             child: Text('Working - Contacted'),
@@ -363,21 +363,19 @@ class _RecentChatViewState extends State<RecentChatView> {
                 child: Container(
                   height: 50,
                   width: 50,
-                  child: Center(
+                  child: const Center(
                     child: CircularProgressIndicator(),
                   ),
                 ),
               ))
             : allRecentChats.isEmpty || noMatchedLeads
-                ? Center(
-                    child: Container(
-                      child: Center(
-                          child: Text(
-                        "No Chat Found..",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
-                      )),
-                    ),
+                ? const Center(
+                    child: Center(
+                        child: Text(
+                      "No Chat Found..",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    )),
                   )
                 // : noMatchedLeads || noRecordFound
                 //     ? Center(
@@ -501,7 +499,9 @@ class _RecentChatViewState extends State<RecentChatView> {
                 radius: 20,
                 backgroundColor: AppColor.navBarIconColor,
                 child: Text(
-                  "${model.contactname?.isNotEmpty == true ? model.contactname![0].toUpperCase() : '?'}",
+                  model.contactname?.isNotEmpty == true
+                      ? model.contactname![0].toUpperCase()
+                      : '?',
                   style: const TextStyle(
                     fontSize: 20,
                     color: Colors.white,

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -11,7 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import '../../models/approved_template_model/aprovedtempltemodel/component.dart';
-import '../../models/campaigndetail_model.dart';
+// import '../../models/campaigndetail_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import 'package:file_picker/file_picker.dart';
@@ -45,6 +46,7 @@ class _Forms extends State<CampaignCloneview> {
   final TextEditingController _dateStartInput = TextEditingController();
   final TextEditingController _name = TextEditingController();
   final TextEditingController fileNameController = TextEditingController();
+  final TextEditingController _tempController = TextEditingController();
 
   TempleteListViewModel? templateVM;
   GroupsViewModel? groupsVM;
@@ -68,6 +70,10 @@ class _Forms extends State<CampaignCloneview> {
   dynamic selectedButtons;
   List<TextEditingController> controllers = [];
   List<Map<String, String>> groupsNameSet = [];
+
+  List<String> templateIds = [];
+  List<String> templateNames = [];
+
   List<String> selectedGroups = [];
   // List<String> tempateCategory = [];
   List<dynamic> tempateCategory = ['UTILITY', 'MARKETING'];
@@ -90,11 +96,10 @@ class _Forms extends State<CampaignCloneview> {
     super.initState();
     templateVM = Provider.of<TempleteListViewModel>(context, listen: false);
     groupsVM = Provider.of<GroupsViewModel>(context, listen: false);
-
-    groupsVM!.fetchGroups(); // Make sure this loads before pre-selecting groups
+    _fetchTemplates();
+    groupsVM!.fetchGroups();
     getdatabyid();
 
-    _dateStartInput.text = widget.record.startDate.toString();
     // print("Ddddddddddddd${model.name!}");
     super.initState();
 
@@ -121,52 +126,23 @@ class _Forms extends State<CampaignCloneview> {
     await campVM.getcampaignbyid(widget.record.campaignId.toString());
 
     for (var viewModel in campVM.viewModels) {
-      CampaigndetailModel model = viewModel.model;
-      print(" model.name===>${model.name}");
-
+      var model = viewModel.model;
+      print(" model.name===>$model");
+      print(" model.rec===>${model.record}");
+      print(" model.group===>${model.record.groups}");
       setState(() {
-        _name.text = model.name ?? "";
-        _type = model.type;
-        // _description = model.description ?? "";
-
-        if (model.startDate != null) {
-          _dateStartInput.text = formatDateWithTimezone(model.startDate!);
-        }
-
-        if (model.name != null) {
-          _name.text = model.name!;
-        }
-
-        // Set Template Category & Template Name
-        // if (model.templateCategory != null) {
-        //   SelectedTemplateCategory = model.templateCategory;
-        //   String categoryKey = SelectedTemplateCategory!.toLowerCase();
-        //   templateName1 = [...allTemplatesMap[categoryKey]?.values ?? []];
-
-        //   if (model.templateName != null &&
-        //       templateName1.contains(model.templateName)) {
-        //     selectedTemplateName = model.templateName;
-        //   }
-        // }
-
-        // Set Group IDs
-        // if (model.groupIds != null && model.groupIds!.isNotEmpty) {
-        //   selectedGroups = model.groupIds!
-        //       .map<String>((group) => group['id'].toString())
-        //       .toList();
-        // }
-
-        // // Set File Info if available
-        // if (model.fileName != null && model.base64File != null) {
-        //   fileNameController.text = model.fileName!;
-        //   base64Img = model.base64File!;
-        //   // file/image loading logic if needed
-        // }
-
-        _setSelectedTemplates();
+        _name.text = model.record.campaignName ?? "";
+        _type = model.record.campaignType;
+        _dateStartInput.text = model.record.startDate.toString();
+        fileNameController.text = model.record.fileTitle ?? "";
+        _description = model.record.fileDescription;
+        groupsNameSet = model.record.groups ?? [];
+        _tempController.text = model.record.templateName;
+        selectedTemplateName = model.record.templateName;
+        print("selectedTemplateName:::     ${selectedTemplateName}");
       });
     }
-
+    _setSelectedTemplates();
     print("_name_name${_name.text}");
   }
 
@@ -193,17 +169,17 @@ class _Forms extends State<CampaignCloneview> {
         if (campaignModel?.data != null) {
           for (var record in campaignModel!.data!) {
             if (record.status != null) {
-              print("rec name ::${record.name}  ${selectedTemplateName}");
+              print("rec name ::${record.name}  $selectedTemplateName");
               if (selectedTemplateName == record.name) {
                 currentTemplate = record;
                 selectedTemplateId = currentTemplate.id;
                 selectedLanguage = currentTemplate.language;
                 print(
-                    "current template::::: ${currentTemplate}  ${currentTemplate.name}");
+                    "current template::::: $currentTemplate  ${currentTemplate.name}");
                 print(
                     "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}");
                 components = currentTemplate.components;
-                print("Component info:: ${components.length} ${components}");
+                print("Component info:: ${components.length} $components");
 
                 for (var e in components) {
                   print("checking the type:: ${e.type}");
@@ -219,7 +195,7 @@ class _Forms extends State<CampaignCloneview> {
                 }
                 setState(() {});
                 print(
-                    "components ${selectedHeader}   ${selectedBody}  ${selectedButtons}");
+                    "components $selectedHeader   $selectedBody  $selectedButtons");
                 return;
               }
             }
@@ -260,11 +236,11 @@ class _Forms extends State<CampaignCloneview> {
     controllers = List.generate(count, (index) => TextEditingController());
     isOtherFileSelected = false;
     Widget _buildMediaWidget(String format, String content) {
-      print("format:::::: ${format}  ${content}");
+      print("format:::::: $format  $content");
       switch (format) {
         case "IMAGE":
           return content.isEmpty
-              ? Container(
+              ? SizedBox(
                   height: 80,
                   width: 80,
                   child: Image.asset("assets/images/img_placeholder.png"),
@@ -280,7 +256,7 @@ class _Forms extends State<CampaignCloneview> {
                     color: Colors.black,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Icon(
                       Icons.play_arrow_rounded,
                       color: Colors.white,
@@ -292,7 +268,7 @@ class _Forms extends State<CampaignCloneview> {
                   height: 150,
                   width: double.infinity,
                   color: Colors.black12,
-                  child: Center(
+                  child: const Center(
                     child:
                         Icon(Icons.videocam_off, size: 40, color: Colors.grey),
                   ),
@@ -311,10 +287,10 @@ class _Forms extends State<CampaignCloneview> {
                     ],
                   ),
                 )
-              : SizedBox(); // Empty if no document
+              : const SizedBox(); // Empty if no document
 
         default:
-          return SizedBox(); // If format is unknown
+          return const SizedBox(); // If format is unknown
       }
     }
 
@@ -329,7 +305,7 @@ class _Forms extends State<CampaignCloneview> {
           file = pickedFile.files.first;
           image = File(file!.path!);
           // _Vcontroller = VideoPlayerController.file(image!);
-          print("image::: ${image}");
+          print("image::: $image");
 
           fileNameController.text = file!.name;
         });
@@ -350,7 +326,7 @@ class _Forms extends State<CampaignCloneview> {
           file = pickedFile.files.first;
           image = File(file!.path!);
           _Vcontroller = VideoPlayerController.file(image!);
-          print("image::: ${image}");
+          print("image::: $image");
           fileNameController.text = file!.name;
         });
         return image;
@@ -369,7 +345,7 @@ class _Forms extends State<CampaignCloneview> {
         setState(() {
           file = pickedFile.files.first;
           image = File(file!.path!);
-          print("image::: ${image}");
+          print("image::: $image");
           fileNameController.text = file!.name;
         });
         return image;
@@ -397,7 +373,7 @@ class _Forms extends State<CampaignCloneview> {
         "business_number": number,
       };
 
-      print("createtemp campaign:::: ${createtemp}");
+      print("createtemp campaign:::: $createtemp");
 
       // mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) {});
     }
@@ -416,6 +392,7 @@ class _Forms extends State<CampaignCloneview> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
+        // ignore: deprecated_member_use
         return WillPopScope(
           onWillPop: () async => true,
           child: Container(
@@ -433,7 +410,7 @@ class _Forms extends State<CampaignCloneview> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -465,7 +442,7 @@ class _Forms extends State<CampaignCloneview> {
                               decoration: InputDecoration(
                                 labelText:
                                     "Enter value for placeholder ${index + 1}",
-                                border: OutlineInputBorder(),
+                                border: const OutlineInputBorder(),
                               ),
                             ),
                           );
@@ -473,7 +450,7 @@ class _Forms extends State<CampaignCloneview> {
                       ),
                       Card(
                         elevation: 5,
-                        color: Color(0xffE3FFC9).withOpacity(0.5),
+                        color: const Color(0xffE3FFC9).withOpacity(0.5),
                         shadowColor: Colors.black38,
                         child: Padding(
                           padding: const EdgeInsets.all(10.0),
@@ -495,7 +472,7 @@ class _Forms extends State<CampaignCloneview> {
                                               borderRadius:
                                                   BorderRadius.circular(8),
                                             ),
-                                            child: Center(
+                                            child: const Center(
                                               child: Icon(
                                                 Icons.play_arrow_rounded,
                                                 color: Colors.white,
@@ -521,7 +498,7 @@ class _Forms extends State<CampaignCloneview> {
                                   ),
                                   child: Text("${selectedBody.text}"),
                                 ),
-                              SizedBox(height: 10),
+                              const SizedBox(height: 10),
                               if (selectedButtons != null)
                                 Wrap(
                                   spacing: 10,
@@ -538,14 +515,14 @@ class _Forms extends State<CampaignCloneview> {
                                             borderRadius: BorderRadius.circular(
                                               4,
                                             ),
-                                            side: BorderSide(
+                                            side: const BorderSide(
                                               color: AppColor.navBarIconColor,
                                             ),
                                           ),
                                         ),
                                         child: Text(
                                           selectedButtons.buttons[index].text,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             color: AppColor.navBarIconColor,
                                           ),
                                         ),
@@ -553,14 +530,14 @@ class _Forms extends State<CampaignCloneview> {
                                     },
                                   ),
                                 ),
-                              SizedBox(height: 15),
+                              const SizedBox(height: 15),
                               if (selectedFooter != null)
                                 Text(
                                   selectedFooter!.text,
-                                  style: TextStyle(color: Colors.grey),
+                                  style: const TextStyle(color: Colors.grey),
                                   textAlign: TextAlign.left,
                                 ),
-                              SizedBox(height: 15),
+                              const SizedBox(height: 15),
                               if (selectedHeader != null)
                                 selectedHeader.format == 'IMAGE' ||
                                         selectedHeader?.format == 'VIDEO' ||
@@ -571,7 +548,7 @@ class _Forms extends State<CampaignCloneview> {
                                               'IMAGE') {
                                             _pickImaFromGallery()
                                                 .then((onValue) {
-                                              print("onValue>>> ${onValue}");
+                                              print("onValue>>> $onValue");
                                               if (onValue != null) {
                                                 setState(() {
                                                   image = onValue;
@@ -612,10 +589,9 @@ class _Forms extends State<CampaignCloneview> {
                                               color: AppColor.navBarIconColor,
                                             ),
                                           ),
-                                          child: Center(
+                                          child: const Center(
                                             child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
+                                              padding: EdgeInsets.symmetric(
                                                 vertical: 8.0,
                                               ),
                                               child: Text("Choose File"),
@@ -623,8 +599,8 @@ class _Forms extends State<CampaignCloneview> {
                                           ),
                                         ),
                                       )
-                                    : SizedBox(),
-                              SizedBox(height: 10),
+                                    : const SizedBox(),
+                              const SizedBox(height: 10),
                               Row(
                                 children: [
                                   Checkbox(
@@ -635,7 +611,7 @@ class _Forms extends State<CampaignCloneview> {
                                       });
                                     },
                                   ),
-                                  Expanded(
+                                  const Expanded(
                                     child: Text(
                                       "Send on login user WhatsApp number also",
                                       maxLines: 2,
@@ -648,7 +624,7 @@ class _Forms extends State<CampaignCloneview> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       InkWell(
                         onTap: () {
                           setState(() {});
@@ -664,7 +640,7 @@ class _Forms extends State<CampaignCloneview> {
                           }
                           Navigator.pop(context);
                           print(
-                            "image here:: ${image}  ${isOtherFileSelected}",
+                            "image here:: $image  $isOtherFileSelected",
                           );
                           addCampaignTemplate(
                               fileToSend: image, sendToAdmin: isChecked);
@@ -755,46 +731,20 @@ class _Forms extends State<CampaignCloneview> {
               const SizedBox(height: 10),
               const Text('Select Template Category'),
               const SizedBox(height: 5),
-              AppUtils.getDropdown(
-                'Select Category',
-                data: tempateCategory,
-                onChanged: (p0) {
-                  setState(() {
-                    SelectedTemplateCategory = p0;
-                    selectedTemplateName = null;
-
-                    if (p0 != null) {
-                      templateName1 = [];
-                      String categoryKey = p0.toLowerCase();
-                      templateName1 = [
-                        ...allTemplatesMap[categoryKey]?.values ?? []
-                      ];
-
-                      if (templateName1.isEmpty) {
-                        debugPrint("No templates found for: $categoryKey");
-                      }
-                    }
-                  });
+              GestureDetector(
+                onTap: () {
+                  _getBootmSheet();
                 },
-                value: SelectedTemplateCategory,
-              ),
-              const SizedBox(height: 10),
-              const Text('Template Name'),
-              const SizedBox(height: 5),
-              AppUtils.getDropdown(
-                'Select Template Name',
-                data: templateName1.isNotEmpty
-                    ? templateName1
-                    : ['No Templates Available'],
-                onChanged: (p0) {
-                  setState(() {
-                    selectedTemplateName = p0;
-                  });
-                  debugPrint("Selected Template: $selectedTemplateName");
-                  _setSelectedTemplates();
-                  _sendTemplateSheet();
-                },
-                value: selectedTemplateName,
+                child: AbsorbPointer(
+                  child: TextField(
+                    controller: _tempController,
+                    decoration: const InputDecoration(
+                      // labelText: 'Tap to choose',
+                      suffixIcon: Icon(Icons.arrow_drop_down),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
               const Text('Group Name'),
@@ -853,7 +803,7 @@ class _Forms extends State<CampaignCloneview> {
                 onChanged: (p0) {
                   setState(() {
                     _type = p0;
-                    print("_typ ${_type}");
+                    print("_typ $_type");
                   });
                 },
                 value: _type,
@@ -900,9 +850,9 @@ class _Forms extends State<CampaignCloneview> {
         centerTitle: true,
         elevation: 2,
         backgroundColor: AppColor.navBarIconColor,
-        title: Text(
+        title: const Text(
           "Clone Campaign",
-          style: const TextStyle(
+          style: TextStyle(
             color: Color.fromARGB(255, 255, 255, 255),
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -970,9 +920,9 @@ class _Forms extends State<CampaignCloneview> {
   }
 
   void onButtonPressed() async {
-    print("selectedGroups>>> ${selectedGroups}");
+    print("selectedGroups>>> $selectedGroups");
     print(
-      "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}",
+      "controllers::: $controllers  $isChecked  $image  $isOtherFileSelected  $imgToShow",
     );
 
     if (controllers.isNotEmpty) {
@@ -984,7 +934,7 @@ class _Forms extends State<CampaignCloneview> {
     }
     if (_addleadFormKey.currentState!.validate()) {
       if (_name == null || _name.toString().isEmpty) {
-        print("_name_name_name_name${_name}");
+        print("_name_name_name_name$_name");
         EasyLoading.showToast("Campaign Name is required");
         return;
       } else if (_dateStartInput.text.toString().isEmpty) {
@@ -1027,7 +977,7 @@ class _Forms extends State<CampaignCloneview> {
       numberedCampParam.add(bodyTextParams);
     }
     String templateToSend = selectedTemplateName ?? "";
-    print("selected header:: >><><>< ${selectedHeader}     ${templateToSend}");
+    print("selected header:: >><><>< $selectedHeader     $templateToSend");
     setState(() {
       _isLoading = true;
     });
@@ -1053,7 +1003,7 @@ class _Forms extends State<CampaignCloneview> {
         getaccountData.addCampaign(camp).then((value) async {
           if (value is Map<String, dynamic>) {
             String? campaignId = value["record"]?["id"];
-            print("campaignId>>>  ${campaignId}");
+            print("campaignId>>>  $campaignId");
             if (campaignId == null) {
               debug("Campaign ID is null. File upload skipped.");
               return;
@@ -1128,7 +1078,7 @@ class _Forms extends State<CampaignCloneview> {
           getaccountData.addCampaign(camp).then((value) async {
             if (value is Map<String, dynamic>) {
               String? campaignId = value["record"]?["id"];
-              print("campaignId>>>  ${campaignId}");
+              print("campaignId>>>  $campaignId");
               if (campaignId == null) {
                 debug("Campaign ID is null. File upload skipped.");
                 return;
@@ -1178,7 +1128,7 @@ class _Forms extends State<CampaignCloneview> {
       });
     }
 
-    print("selected button::: ${selectedButtons} ");
+    print("selected button::: $selectedButtons ");
   }
 
   Future<void> sendTextTemplate(
@@ -1221,6 +1171,190 @@ class _Forms extends State<CampaignCloneview> {
       await mstemp.createmsgtemplete(msgmobilbody: createtemp);
     } catch (e) {
       print("Error sending template: $e");
+    }
+  }
+
+  Future<void> _getBootmSheet() {
+    TextEditingController _templateController = TextEditingController();
+    int selectedBtnIdx = 0;
+    SelectedTemplateCategory = null;
+    // selectedTemplateName = null;
+    return showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      enableDrag: false,
+      elevation: 1,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SingleChildScrollView(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.all(15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Category And Templete",
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () => Navigator.pop(context),
+                          child: const Icon(
+                            Icons.highlight_remove_outlined,
+                            color: AppColor.navBarIconColor,
+                            size: 25,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(thickness: 1),
+                    const SizedBox(height: 5),
+                    AppUtils.getDropdown(
+                      'Select Category',
+                      data: tempateCategory,
+                      onChanged: (String? selectedCategory) {
+                        setState(() {
+                          SelectedTemplateCategory = selectedCategory;
+                          selectedTemplateName = null;
+                          templateNames = [];
+
+                          if (selectedCategory != null) {
+                            String categoryKey = selectedCategory.toLowerCase();
+
+                            if (SelectedTemplateCategory != 'All') {
+                              templateNames = (allTemplatesMap[categoryKey]
+                                          ?.values
+                                          .toSet()
+                                          .toList() ??
+                                      [])
+                                  .map((e) => e.toString())
+                                  .toSet()
+                                  .toList();
+                            } else {
+                              _fetchTemplates();
+                            }
+
+                            debug("Selected Category: $categoryKey");
+                            debug("Filtered Templates: $templateNames");
+                          }
+                        });
+                      },
+                      value: SelectedTemplateCategory,
+                    ),
+                    const SizedBox(height: 12),
+                    AppUtils.getDropdown(
+                      'Select Template Name',
+                      data: templateNames,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedTemplateName = newValue;
+                          _templateController.text = newValue ?? '';
+                          if (newValue != null) {
+                            int selectedIndex = templateNames.indexOf(newValue);
+
+                            if (selectedIndex >= 0 &&
+                                selectedIndex < templateIds.length) {
+                              String selectedTemplateId =
+                                  templateIds[selectedIndex];
+
+                              print(
+                                  "Selected Template ID: $selectedTemplateId");
+                            } else {
+                              print("Invalid index for the selected template.");
+                            }
+                          }
+                        });
+                        print(
+                            "selectedTemplateName:::::::::: $selectedTemplateName");
+                        _setSelectedTemplates();
+                      },
+                      value: selectedTemplateName,
+                    ),
+                    Center(
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                          minimumSize:
+                              WidgetStateProperty.all(const Size(10, 20)),
+                          padding: WidgetStateProperty.all(
+                              const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10)),
+                          backgroundColor:
+                              WidgetStateProperty.all(AppColor.navBarIconColor),
+                        ),
+                        onPressed: () {
+                          print(
+                              "selectedTemplateName>>> $selectedTemplateName");
+                          if (selectedTemplateName == null ||
+                              selectedTemplateName == "Select Template Name") {
+                            EasyLoading.showToast("Select Template Name");
+                            return;
+                          }
+                          log("all comp info >> >>  $selectedHeader  $selectedBody $selectedFooter $selectedButtons}");
+                          log("selectedBody['text']>>> ${selectedBody.text}  ");
+                          final regex = RegExp(r'\{\{\d+\}\}');
+
+                          if (regex.hasMatch(selectedBody.text) ||
+                              selectedHeader.format != "TEXT") {
+                            Navigator.of(context).pop();
+                            _sendTemplateSheet();
+                          } else {
+                            String templateToSend = selectedTemplateName ??
+                                _templateController.text;
+                            print("Template to send: $templateToSend");
+
+                            setState(() {
+                              _tempController.text = selectedTemplateName ?? "";
+                            });
+                            // templetesendd(templateToSend, []);
+
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        child: const Text(
+                          "Send",
+                          style: TextStyle(fontSize: 13, color: Colors.white),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _fetchTemplates() async {
+    TempleteListViewModel templeteViewModel =
+        Provider.of<TempleteListViewModel>(context, listen: false);
+
+    // Check if templeteViewModel is not null and contains viewModels
+    if (templeteViewModel.viewModels.isNotEmpty) {
+      for (var viewModel in templeteViewModel.viewModels) {
+        var campaignModel = viewModel.model;
+        if (campaignModel?.data != null) {
+          for (var record in campaignModel!.data!) {
+            if (record.status != null) {
+              // print("Record template Status: ${record.name}");
+              setState(() {
+                templateNames.add(record.name);
+                // print("Templates => $templateNames");
+              });
+            }
+          }
+        }
+      }
     }
   }
 }

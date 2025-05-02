@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
 import 'package:path/path.dart' as p;
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
+import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
+import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/view_models/message_list_vm.dart';
 import '../../models/campaign_model/campaign_model.dart';
 
@@ -54,6 +57,7 @@ class _Forms extends State<CampaignAddUpdateView> {
   bool isEdit = false;
   int count = 0;
   String? base64Img;
+  var leadlistvm;
   ImagePicker picker = ImagePicker();
   XFile? pickedFile;
   PlatformFile? file;
@@ -74,7 +78,11 @@ class _Forms extends State<CampaignAddUpdateView> {
   File? image;
   // File? image;
   var campaignvm;
+  List leadsToSend = [];
   bool isRefresh = false;
+
+  List<String> selectedCampleadList = [];
+  List campLeadNameNum = [];
 
   Future<void> saveNumberData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -91,6 +99,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     super.initState();
     saveNumberData();
     _fetchTemplates();
+    campLeadList();
 
     final model = widget.model;
     if (model != null) {
@@ -157,6 +166,7 @@ class _Forms extends State<CampaignAddUpdateView> {
   final TextEditingController _tempController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    leadlistvm = Provider.of<LeadListViewModel>(context);
     debug('hello $templateName1');
     messageViewModel = Provider.of<MessageViewModel>(context);
     templateVM = Provider.of<TempleteListViewModel>(context);
@@ -470,10 +480,57 @@ class _Forms extends State<CampaignAddUpdateView> {
                       });
                     },
                     backgroundColor: Colors.blue.withOpacity(0.2),
-                    labelStyle: TextStyle(color: Colors.blue),
+                    labelStyle: const TextStyle(color: Colors.blue),
                   );
                 }).toList(),
               ),
+              const SizedBox(height: 10),
+              const Text('Select Leads'),
+              MultiSelectDialogField<String>(
+                  items: campLeadNameNum
+                      .map((e) => MultiSelectItem<String>(e, e))
+                      .toList(),
+                  title: const Flexible(
+                    child: Text(
+                      "Select Leads",
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  buttonText: const Text("Select Leads "),
+                  searchable: true,
+                  dialogWidth: MediaQuery.of(context).size.width * .65,
+                  dialogHeight: MediaQuery.of(context).size.height * .65,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.grey,
+                    ),
+                  ),
+                  onConfirm: (List<String> selected) {
+                    setState(() {
+                      // leadsToSend.add(campLeadNameNum[e]);
+                      selectedCampleadList = selected;
+                    });
+                  },
+                  initialValue: selectedCampleadList,
+                  chipDisplay: MultiSelectChipDisplay.none()),
+              Wrap(
+                spacing: 8.0,
+                children: selectedCampleadList.map((selectedItem) {
+                  return Chip(
+                    label: Text(selectedItem),
+                    deleteIcon: const Icon(Icons.close),
+                    onDeleted: () {
+                      setState(() {
+                        selectedCampleadList.remove(selectedItem);
+                      });
+                    },
+                    backgroundColor: Colors.blue.withOpacity(0.2),
+                    labelStyle: const TextStyle(color: Colors.blue),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 5),
               if (isEdit == false) const SizedBox(height: 10),
               if (isEdit == false) const Text('File Upload'),
               const SizedBox(height: 05),
@@ -1657,10 +1714,8 @@ class _Forms extends State<CampaignAddUpdateView> {
         if (campaignModel?.data != null) {
           for (var record in campaignModel!.data!) {
             if (record.status != null) {
-              print("Record template Status: ${record.name}");
               setState(() {
                 templateNames.add(record.name);
-                // print("Templates => $templateNames");
               });
             }
           }
@@ -1828,5 +1883,33 @@ class _Forms extends State<CampaignAddUpdateView> {
         );
       },
     );
+  }
+
+  List campLeads = [];
+  void campLeadList() async {
+    await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+            listen: false)
+        .fetchCampLeads()
+        .then((onValue) {
+      campLeads = [];
+      List tempcampLeadsList = [];
+      try {
+        for (var viewModel in leadlistvm.viewModels) {
+          var recentMsgmodel = viewModel.model;
+          if (recentMsgmodel?.records != null) {
+            for (var record in recentMsgmodel!.records!) {
+              print("record::: ${record}");
+              campLeads.add(record);
+              tempcampLeadsList.add(record);
+              campLeadNameNum
+                  .add("${record.contactname} ${record.full_number}");
+            }
+          }
+        }
+      } catch (e) {
+        print("e:::::::: ${e}");
+        campLeads = [];
+      }
+    });
   }
 }

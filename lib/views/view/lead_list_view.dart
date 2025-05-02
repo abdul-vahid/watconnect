@@ -331,8 +331,8 @@ class _LeadListViewState extends State<LeadListView> {
                               ]
                                   .map((e) => MultiSelectItem<String>(e, e))
                                   .toList(),
-                              title: Flexible(
-                                child: const Text(
+                              title: const Flexible(
+                                child: Text(
                                   "Select Leads Status",
                                   style: TextStyle(fontSize: 18),
                                 ),

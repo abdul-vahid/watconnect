@@ -63,7 +63,6 @@ class _LoginViewState extends State<LoginView> {
                         }
                         return null;
                       },
-                      // onSaved: (value) => email = value!,
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
@@ -274,8 +273,8 @@ class _LoginViewState extends State<LoginView> {
                             },
                             child:
                                 _buildCircleIcon(FontAwesomeIcons.instagram)),
-                        const SizedBox(width: 15),
-                        _buildCircleIcon(FontAwesomeIcons.linkedin),
+                        // const SizedBox(width: 15),
+                        // _buildCircleIcon(FontAwesomeIcons.linkedin),
                       ],
                     ),
                   ],

@@ -23,6 +23,11 @@ class LeadListViewModel extends BaseListViewModel {
     await get(url: url, baseModel: RecentChatModel());
   }
 
+  Future<void> fetchCampLeads() async {
+    String url = AppUtils.getUrl(AppConstants.allCampLeads);
+    await get(url: url, baseModel: RecentChatModel());
+  }
+
   Future<dynamic> addlead(LeadModel addleadModel) async {
     print("working.....");
     String url = AppUtils.getUrl(AppConstants.leadAPIPath);
