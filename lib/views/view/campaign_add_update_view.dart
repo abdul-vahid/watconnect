@@ -409,7 +409,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 },
               ),
               if (isEdit == false) const SizedBox(height: 10),
-              if (isEdit == false) Text('Select Template Category'),
+              if (isEdit == false) Text('Select Template Category *'),
               if (isEdit == false) const SizedBox(height: 5),
               GestureDetector(
                 onTap: () {
@@ -612,36 +612,39 @@ class _Forms extends State<CampaignAddUpdateView> {
       EasyLoading.showToast("Upload a CSV or Select a group");
       return;
     }
+    if (_tempController.text.trim().isEmpty) {
+      EasyLoading.showToast("Please Select Template Category");
+    }
     print(
       "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}",
     );
+    addCampaignTemplate();
+    // if (_addleadFormKey.currentState!.validate()) {
+    //   print("validatinggggg");
+    //   if (_name == null || _name.toString().isEmpty) {
+    //     print("validatinggggg   1");
+    //     return;
+    //   } else if (_dateStartInput.text.toString().isEmpty) {
+    //     print("validatinggggg   2");
+    //     return;
+    //   } else if (SelectedTemplateCategory == null ||
+    //       selectedTemplateName.toString().isEmpty) {
+    //     print("validatinggggg   3");
+    //     return;
+    //   } else if (_type == null || _type.toString().isEmpty) {
+    //     print("validatinggggg   4");
+    //     return;
+    //   }
+    //   _addleadFormKey.currentState!.save();
 
-    if (controllers.isNotEmpty) {
-      bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
-      if (anyEmpty) {
-        EasyLoading.showToast('All fields are required');
-        return;
-      }
-    }
+    //   print("creatingggg the campainggg");
+    //   AppUtils.onLoading(context, "Saving, please wait...");
 
-    if (_addleadFormKey.currentState!.validate()) {
-      if (_name == null || _name.toString().isEmpty) {
-        return;
-      } else if (_dateStartInput.text.toString().isEmpty) {
-        return;
-      } else if (SelectedTemplateCategory == null ||
-          selectedTemplateName.toString().isEmpty) {
-        return;
-      } else if (_type == null || _type.toString().isEmpty) {
-        return;
-      }
-      _addleadFormKey.currentState!.save();
-      AppUtils.onLoading(context, "Saving, please wait...");
+    //   // sendingCamplaign();
 
-      sendingCamplaign();
-    } else {
-      print("landed here ");
-    }
+    // } else {
+    //   print("landed here ");
+    // }
   }
 
   Future<void> updateData() async {
@@ -1081,22 +1084,22 @@ class _Forms extends State<CampaignAddUpdateView> {
                                     String? number =
                                         prefs.getString('phoneNumber');
 
-                                    // String? sendimagedatabase =
-                                    //     await messageViewModel
-                                    //         .uploadFiledb(
-                                    //             image!, number, leadid)
-                                    //         .then((value) {
-                                    //   print(
-                                    //       "video sedn video send send----upload dididi->$value");
+                                    String? sendimagedatabase =
+                                        await messageViewModel
+                                            .uploadCampFiledb(image!, number)
+                                            .then((value) {
+                                      print(
+                                          "video sedn video send send----upload dididi->$value");
 
-                                    //   Map<String, dynamic> response =
-                                    //       jsonDecode(value);
+                                      Map<String, dynamic> response =
+                                          jsonDecode(value);
+                                      setState(() {
+                                        fileid = response['records']?[0]['id'];
+                                      });
 
-                                    //   fileid = response['records']?[0]['id'];
-
-                                    //   print("ID: $fileid");
-                                    //   return null;
-                                    // });
+                                      print("ID: $fileid");
+                                      return null;
+                                    });
                                   } else {
                                     image = await urlToFile(imgToShow);
                                   }
@@ -1261,8 +1264,9 @@ class _Forms extends State<CampaignAddUpdateView> {
   Future<void> sendTemplateApiCall(bool send) async {
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
+    print("sending camplagnnnn:::::::   ${selectedButtons}");
     List ba = selectedButtons == null
-        ? ""
+        ? []
         : selectedButtons?.buttons.map((button) => button.toMap()).toList() ??
             [];
     String footer = selectedFooter != null ? selectedFooter?.text ?? "" : "";
@@ -1280,8 +1284,10 @@ class _Forms extends State<CampaignAddUpdateView> {
     };
 
     print("createtemp campaign:::: ${createtemp}");
-
-    // mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) {});
+    late MessageViewModel mstemp = MessageViewModel(context);
+    mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) {
+      sendingCamplaign();
+    });
   }
 
   bool _isLoading = false;
@@ -1290,15 +1296,15 @@ class _Forms extends State<CampaignAddUpdateView> {
     List compoTextParams = [];
     List numberedCampParam = [];
 
-    bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
-    if (anyEmpty) {
-      // EasyLoading.showToast('All fields are required');
+    // bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
+    // if (anyEmpty) {
+    //   // EasyLoading.showToast('All fields are required');
 
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
+    //   setState(() {
+    //     _isLoading = false;
+    //   });
+    //   return;
+    // }
 
     // File? imageFile;
     // String docId = "";
