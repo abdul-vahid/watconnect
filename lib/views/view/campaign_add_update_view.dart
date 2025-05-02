@@ -449,14 +449,30 @@ class _Forms extends State<CampaignAddUpdateView> {
                 buttonText: const Text("Select Groups"),
                 onConfirm: (results) {
                   print("results:::: ${results}");
-                  // Update selectedGroups with selected items
                   setState(() {
                     selectedGroups = results.cast<String>();
                   });
                   debug(
                     "Selected groups: $selectedGroups",
-                  ); // debug selected groups
+                  );
                 },
+              ),
+              Wrap(
+                spacing: 8.0,
+                children: selectedGroups.map((selectedItem) {
+                  print("Selected Item => $selectedItem");
+                  return Chip(
+                    label: Text(selectedItem),
+                    deleteIcon: Icon(Icons.close),
+                    onDeleted: () {
+                      setState(() {
+                        selectedGroups.remove(selectedItem);
+                      });
+                    },
+                    backgroundColor: Colors.blue.withOpacity(0.2),
+                    labelStyle: TextStyle(color: Colors.blue),
+                  );
+                }).toList(),
               ),
               if (isEdit == false) const SizedBox(height: 10),
               if (isEdit == false) const Text('File Upload'),

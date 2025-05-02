@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../core/models/base_list_view_model.dart';
 import '../models/campaign_model/campaign_model.dart';
+import '../models/campaigndetail_model.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_utils.dart';
 import '../utils/function_lib.dart';
@@ -38,7 +39,7 @@ class CampaignViewModel extends BaseListViewModel {
     print("iddd=>get campaign id${id}");
     String url = AppUtils.getUrl("${AppConstants.getcampaignbyid}$id");
     print("urlll cmapaign model====>${url}");
-    return await get(url: url, baseModel: CampaignModel());
+    await get(url: url, baseModel: CampaigndetailModel());
   }
 
   void fetch() {}

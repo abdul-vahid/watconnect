@@ -94,6 +94,7 @@ dependencies:
   pdf: ^3.11.3
   csv: ^6.0.0
   path: ^1.9.1
+  flutter_file_downloader: ^2.1.0
   # video_thumbnail: ^0.5.3/
 
 
