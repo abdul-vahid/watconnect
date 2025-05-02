@@ -1,6 +1,7 @@
 // // -----------------End Code of Record List Method-------------------------
 // import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 
+import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
@@ -273,7 +274,7 @@ class _CampaignListView extends State<CampaignListView> {
                                   .toList(),
                               title: const Text(
                                 "Select Campaign Status",
-                                style: TextStyle(fontSize: 18),
+                                style: TextStyle(fontSize: 15),
                               ),
                               buttonText: const Text("Select Campaign Status"),
                               searchable: true,
@@ -444,7 +445,7 @@ class _CampaignListView extends State<CampaignListView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        allCampaigns.isEmpty || noMatchedLeads
+        allCampaigns.isEmpty
             ? SizedBox()
             : Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -587,8 +588,9 @@ class _CampaignListView extends State<CampaignListView> {
                                                           );
                                                         },
                                                         child: Container(
-                                                          padding: EdgeInsets
-                                                              .symmetric(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
                                                                   horizontal: 7,
                                                                   vertical: 8),
                                                           decoration:
@@ -599,7 +601,7 @@ class _CampaignListView extends State<CampaignListView> {
                                                                     .circular(
                                                                         8),
                                                           ),
-                                                          child: Text(
+                                                          child: const Text(
                                                             'Clone',
                                                             style: TextStyle(
                                                               color:
@@ -621,48 +623,49 @@ class _CampaignListView extends State<CampaignListView> {
                                       allCampaigns[index].fileTitle == null
                                           ? SizedBox()
                                           : GestureDetector(
-                                              // onTap: () async {
-
-                                              //   var token =
-                                              //       await AppUtils.getToken();
-                                              //   FileDownloader.downloadFile(
-                                              //     url:
-                                              //         "https://sandbox.watconnect.com/swp/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}",
-                                              //     name:
-                                              //         allCampaigns[index].fileTitle,
-                                              //     headers: {
-                                              //       'Authorization': token ?? ""
-                                              //     },
-                                              //     downloadDestination:
-                                              //         DownloadDestinations
-                                              //             .publicDownloads,
-                                              //     notificationType:
-                                              //         NotificationType.all,
-                                              //     onDownloadCompleted: (path) {
-                                              //       ScaffoldMessenger.of(context)
-                                              //           .showSnackBar(
-                                              //         const SnackBar(
-                                              //           content: Text(
-                                              //               'Download Complete'),
-                                              //           backgroundColor:
-                                              //               Colors.green,
-                                              //         ),
-                                              //       );
-                                              //     },
-                                              //     onProgress: (fileName, progress) {
-                                              //       ScaffoldMessenger.of(context)
-                                              //           .showSnackBar(
-                                              //         const SnackBar(
-                                              //           content:
-                                              //               Text('Downloading..'),
-                                              //           backgroundColor:
-                                              //               Colors.green,
-                                              //         ),
-                                              //       );
-                                              //     },
-                                              //   );
-
-                                              // },
+                                              onTap: () async {
+                                                var token =
+                                                    await AppUtils.getToken();
+                                                FileDownloader.downloadFile(
+                                                  url:
+                                                      "https://sandbox.watconnect.com/swp/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}",
+                                                  name: allCampaigns[index]
+                                                      .fileTitle,
+                                                  headers: {
+                                                    'Authorization': token ?? ""
+                                                  },
+                                                  downloadDestination:
+                                                      DownloadDestinations
+                                                          .publicDownloads,
+                                                  notificationType:
+                                                      NotificationType.all,
+                                                  onDownloadCompleted: (path) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                            'Download Complete'),
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                      ),
+                                                    );
+                                                  },
+                                                  onProgress:
+                                                      (fileName, progress) {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                            'Downloading..'),
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                      ),
+                                                    );
+                                                  },
+                                                );
+                                              },
                                               child: Container(
                                                 child: Image.asset(
                                                   'assets/images/download.png',
