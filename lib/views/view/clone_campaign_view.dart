@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import '../../models/approved_template_model/aprovedtempltemodel/component.dart';
-import '../../models/campaigndetail_model.dart';
+// import '../../models/campaigndetail_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import 'package:file_picker/file_picker.dart';
@@ -120,52 +120,52 @@ class _Forms extends State<CampaignCloneview> {
         Provider.of<CampaignViewModel>(context, listen: false);
     await campVM.getcampaignbyid(widget.record.campaignId.toString());
 
-    for (var viewModel in campVM.viewModels) {
-      CampaigndetailModel model = viewModel.model;
-      print(" model.name===>${model.name}");
+    // for (var viewModel in campVM.viewModels) {
+    //   CampaigndetailModel model = viewModel.model;
+    //   print(" model.name===>${model.name}");
 
-      setState(() {
-        _name.text = model.name ?? "";
-        _type = model.type;
-        // _description = model.description ?? "";
+    //   setState(() {
+    //     _name.text = model.name ?? "";
+    //     _type = model.type;
+    //     // _description = model.description ?? "";
 
-        if (model.startDate != null) {
-          _dateStartInput.text = formatDateWithTimezone(model.startDate!);
-        }
+    //     if (model.startDate != null) {
+    //       _dateStartInput.text = formatDateWithTimezone(model.startDate!);
+    //     }
 
-        if (model.name != null) {
-          _name.text = model.name!;
-        }
+    //     if (model.name != null) {
+    //       _name.text = model.name!;
+    //     }
 
-        // Set Template Category & Template Name
-        // if (model.templateCategory != null) {
-        //   SelectedTemplateCategory = model.templateCategory;
-        //   String categoryKey = SelectedTemplateCategory!.toLowerCase();
-        //   templateName1 = [...allTemplatesMap[categoryKey]?.values ?? []];
+    //     // Set Template Category & Template Name
+    //     // if (model.templateCategory != null) {
+    //     //   SelectedTemplateCategory = model.templateCategory;
+    //     //   String categoryKey = SelectedTemplateCategory!.toLowerCase();
+    //     //   templateName1 = [...allTemplatesMap[categoryKey]?.values ?? []];
 
-        //   if (model.templateName != null &&
-        //       templateName1.contains(model.templateName)) {
-        //     selectedTemplateName = model.templateName;
-        //   }
-        // }
+    //     //   if (model.templateName != null &&
+    //     //       templateName1.contains(model.templateName)) {
+    //     //     selectedTemplateName = model.templateName;
+    //     //   }
+    //     // }
 
-        // Set Group IDs
-        // if (model.groupIds != null && model.groupIds!.isNotEmpty) {
-        //   selectedGroups = model.groupIds!
-        //       .map<String>((group) => group['id'].toString())
-        //       .toList();
-        // }
+    //     // Set Group IDs
+    //     // if (model.groupIds != null && model.groupIds!.isNotEmpty) {
+    //     //   selectedGroups = model.groupIds!
+    //     //       .map<String>((group) => group['id'].toString())
+    //     //       .toList();
+    //     // }
 
-        // // Set File Info if available
-        // if (model.fileName != null && model.base64File != null) {
-        //   fileNameController.text = model.fileName!;
-        //   base64Img = model.base64File!;
-        //   // file/image loading logic if needed
-        // }
+    //     // // Set File Info if available
+    //     // if (model.fileName != null && model.base64File != null) {
+    //     //   fileNameController.text = model.fileName!;
+    //     //   base64Img = model.base64File!;
+    //     //   // file/image loading logic if needed
+    //     // }
 
-        _setSelectedTemplates();
-      });
-    }
+    //     _setSelectedTemplates();
+    //   });
+    // }
 
     print("_name_name${_name.text}");
   }

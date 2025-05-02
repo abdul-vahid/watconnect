@@ -357,7 +357,6 @@ class _Forms extends State<CampaignAddUpdateView> {
                       width: 1.0,
                     ),
                   ),
-
                   //labelText: "Select Date"
                 ),
                 readOnly: true,
@@ -469,23 +468,23 @@ class _Forms extends State<CampaignAddUpdateView> {
                   );
                 },
               ),
-              Wrap(
-                spacing: 8.0,
-                children: selectedGroups.map((selectedItem) {
-                  print("Selected Item => $selectedItem");
-                  return Chip(
-                    label: Text(selectedItem),
-                    deleteIcon: Icon(Icons.close),
-                    onDeleted: () {
-                      setState(() {
-                        selectedGroups.remove(selectedItem);
-                      });
-                    },
-                    backgroundColor: Colors.blue.withOpacity(0.2),
-                    labelStyle: TextStyle(color: Colors.blue),
-                  );
-                }).toList(),
-              ),
+              // Wrap(
+              //   spacing: 8.0,
+              //   children: selectedGroups.map((selectedItem) {
+              //     print("Selected Item => $selectedItem");
+              //     return Chip(
+              //       label: Text(selectedItem),
+              //       deleteIcon: Icon(Icons.close),
+              //       onDeleted: () {
+              //         setState(() {
+              //           selectedGroups.remove(selectedItem);
+              //         });
+              //       },
+              //       backgroundColor: Colors.blue.withOpacity(0.2),
+              //       labelStyle: TextStyle(color: Colors.blue),
+              //     );
+              //   }).toList(),
+              // ),
               if (isEdit == false) const SizedBox(height: 10),
               if (isEdit == false) Text('File Upload'),
               const SizedBox(height: 05),
