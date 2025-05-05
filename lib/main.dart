@@ -36,14 +36,14 @@ import 'views/view/splash_view.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
-  // ErrorWidget.builder = (FlutterErrorDetails details) {
-  //   return Center(
-  //     child: Text(
-  //       'Something went wrong!',
-  //       style: TextStyle(color: Colors.red),
-  //     ),
-  //   );
-  // };
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return const Center(
+      child: Text(
+        'Something went wrong!',
+        style: TextStyle(color: Colors.red),
+      ),
+    );
+  };
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
