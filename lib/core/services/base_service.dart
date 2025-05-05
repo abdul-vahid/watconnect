@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import '../../services/api_service.dart';
 import '../../utils/app_utils.dart';
@@ -9,7 +10,7 @@ class BaseService {
   Future<dynamic> get({required String url}) async {
     var token = await AppUtils.getToken();
     final responseJsonData = await _apiService.getResponse(url, token!);
-    print("responseiso=>$responseJsonData");
+    log("responseiso=>$responseJsonData");
     return responseJsonData;
   }
 

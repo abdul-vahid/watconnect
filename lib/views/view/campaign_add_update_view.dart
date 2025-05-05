@@ -176,6 +176,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     templateVM = Provider.of<TempleteListViewModel>(context);
 
     if (templateVM != null && templateVM?.viewModels != null)
+      // ignore: curly_braces_in_flow_control_structures
       for (var viewModel in templateVM!.viewModels) {
         TemplateModel tempmodel = viewModel.model;
         for (var record in tempmodel.data ?? []) {
@@ -457,6 +458,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                   borderRadius: BorderRadius.circular(5),
                 ),
                 buttonText: const Text("Select Groups"),
+                chipDisplay: MultiSelectChipDisplay.none(),
                 onConfirm: (results) {
                   print("results:::: ${results}");
                   setState(() {
@@ -473,7 +475,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                   print("Selected Item => $selectedItem");
                   return Chip(
                     label: Text(selectedItem),
-                    deleteIcon: Icon(Icons.close),
+                    deleteIcon: const Icon(Icons.close),
                     onDeleted: () {
                       setState(() {
                         selectedGroups.remove(selectedItem);

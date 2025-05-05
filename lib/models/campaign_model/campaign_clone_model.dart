@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:whatsapp/models/campaign_model/clone_record_model.dart';
 
 import '../../core/models/base_model.dart';
-import 'record.dart';
 
 class CampaignCloneModel extends BaseModel {
   bool? success;

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:whatsapp/models/campaign_model/campaign_clone_model.dart';
 import '../core/models/base_list_view_model.dart';
 import '../models/campaign_model/campaign_model.dart';
-import '../models/campaigndetail_model.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_utils.dart';
 import '../utils/function_lib.dart';

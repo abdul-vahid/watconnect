@@ -5,12 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
+import 'package:whatsapp/main.dart';
+import 'package:whatsapp/models/groups_model/groups_model.dart';
+import 'package:whatsapp/view_models/lead_list_vm.dart';
 import '../../models/approved_template_model/aprovedtempltemodel/component.dart';
 // import '../../models/campaigndetail_model.dart';
 import '../../utils/app_color.dart';
@@ -47,7 +51,7 @@ class _Forms extends State<CampaignCloneview> {
   final TextEditingController _name = TextEditingController();
   final TextEditingController fileNameController = TextEditingController();
   final TextEditingController _tempController = TextEditingController();
-
+  var leadlistvm;
   TempleteListViewModel? templateVM;
   GroupsViewModel? groupsVM;
   CampaignViewModel? _getaccountData;
@@ -91,6 +95,10 @@ class _Forms extends State<CampaignCloneview> {
   ];
   Map<String, Map<String, String>> allTemplatesMap = {};
   var number;
+  List<String> GroupsName = [];
+  List<String> selectedCampleadList = [];
+  List campLeadNameNum = [];
+
   @override
   void initState() {
     super.initState();
@@ -99,6 +107,7 @@ class _Forms extends State<CampaignCloneview> {
     _fetchTemplates();
     groupsVM!.fetchGroups();
     getdatabyid();
+    campLeadList();
 
     // print("Ddddddddddddd${model.name!}");
     super.initState();
@@ -123,26 +132,53 @@ class _Forms extends State<CampaignCloneview> {
 
     CampaignViewModel campVM =
         Provider.of<CampaignViewModel>(context, listen: false);
-    await campVM.getcampaignbyid(widget.record.campaignId.toString());
+    await campVM
+        .getcampaignbyid(widget.record.campaignId.toString())
+        .then((onValue) {
+      for (var viewModel in campVM.viewModels) {
+        var model = viewModel.model;
+        print(" model.name===>$model");
+        print(" model.rec===>${model.record.campaignName}");
 
-    for (var viewModel in campVM.viewModels) {
-      var model = viewModel.model;
-      print(" model.name===>$model");
-      print(" model.rec===>${model.record}");
-      print(" model.group===>${model.record.groups}");
-      setState(() {
-        _name.text = model.record.campaignName ?? "";
-        _type = model.record.campaignType;
-        _dateStartInput.text = model.record.startDate.toString();
-        fileNameController.text = model.record.fileTitle ?? "";
-        _description = model.record.fileDescription;
-        groupsNameSet = model.record.groups ?? [];
-        _tempController.text = model.record.templateName;
-        selectedTemplateName = model.record.templateName;
-        print("selectedTemplateName:::     ${selectedTemplateName}");
-      });
-    }
-    _setSelectedTemplates();
+        setState(() {
+          _name.clear();
+          _name.text = model.record.campaignName ?? "";
+          _type = model.record.campaignType;
+          _dateStartInput.text = model.record.startDate.toString();
+          fileNameController.text = model.record.fileTitle ?? "";
+          _description = model.record.fileDescription;
+          groupsNameSet = model.record.groups ?? [];
+          _tempController.text = model.record.templateName;
+          selectedTemplateName = model.record.templateName;
+          print("model.record. lead::: : ${model.record.lead_ids}");
+          List<Map<String, String>> lst = model.record.lead_ids ?? [];
+          selectedCampleadList =
+              lst.map((e) => '${e['name']} - ${e['whatsapp_number']}').toList();
+
+          String jsonString = model.record.bodyTextParams;
+
+          Map<String, String> myMap =
+              Map<String, String>.from(jsonDecode(jsonString));
+          int length = myMap.length;
+
+          controllers = myMap.values
+              .map((value) => TextEditingController(text: value))
+              .toList();
+          for (var controller in controllers) {
+            print(":::controller.text  :::  ${controller.text}");
+          }
+
+          print("my mapp::::; ${myMap}  ${length}   ${controllers}");
+          // selectedGroups = groupsNameSet.map((e) => e['id'] ?? "").toList();
+          selectedGroups =
+              groupsNameSet.map((e) => e['name'].toString()).toList();
+          print(
+              "selectedTemplateName:::  ${groupsNameSet}   ${selectedGroups}    ${selectedTemplateName}");
+        });
+      }
+      _setSelectedTemplates();
+    });
+
     print("_name_name${_name.text}");
   }
 
@@ -226,14 +262,17 @@ class _Forms extends State<CampaignCloneview> {
     } else {
       imgToShow = "";
     }
+    for (var controller in controllers) {
+      print(":::controller.text  :::  ${controller.text}");
+    }
 
-    controllers.clear();
+    // controllers.clear();
 
     final regex = RegExp(r'\{\{\d+\}\}');
 
     int count = regex.allMatches(text).length;
     file = null;
-    controllers = List.generate(count, (index) => TextEditingController());
+    // controllers = List.generate(count, (index) => TextEditingController());
     isOtherFileSelected = false;
     Widget _buildMediaWidget(String format, String content) {
       print("format:::::: $format  $content");
@@ -758,6 +797,7 @@ class _Forms extends State<CampaignCloneview> {
                 initialValue: selectedGroups,
                 title: const Text("Select Groups"),
                 selectedColor: Colors.blue,
+                chipDisplay: MultiSelectChipDisplay.none(),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.blue, width: 1),
                   borderRadius: BorderRadius.circular(5),
@@ -765,6 +805,69 @@ class _Forms extends State<CampaignCloneview> {
                 buttonText: const Text("Select Groups"),
                 onConfirm: (results) =>
                     setState(() => selectedGroups = results.cast<String>()),
+              ),
+              Wrap(
+                spacing: 8.0,
+                children: selectedGroups.map((selectedItem) {
+                  print("Selected Item => $selectedItem");
+                  return Chip(
+                    label: Text(selectedItem),
+                    deleteIcon: const Icon(Icons.close),
+                    onDeleted: () {
+                      setState(() {
+                        selectedGroups.remove(selectedItem);
+                      });
+                    },
+                    backgroundColor: Colors.blue.withOpacity(0.2),
+                    labelStyle: const TextStyle(color: Colors.blue),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 10),
+              const Text('Select Leads'),
+              MultiSelectDialogField<String>(
+                  items: campLeadNameNum
+                      .map((e) => MultiSelectItem<String>(e, e))
+                      .toList(),
+                  title: const Flexible(
+                    child: Text(
+                      "Select Leads",
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  buttonText: const Text("Select Leads "),
+                  searchable: true,
+                  dialogWidth: MediaQuery.of(context).size.width * .65,
+                  dialogHeight: MediaQuery.of(context).size.height * .65,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.grey,
+                    ),
+                  ),
+                  onConfirm: (List<String> selected) {
+                    setState(() {
+                      // leadsToSend.add(campLeadNameNum[e]);
+                      selectedCampleadList = selected;
+                    });
+                  },
+                  initialValue: selectedCampleadList,
+                  chipDisplay: MultiSelectChipDisplay.none()),
+              Wrap(
+                spacing: 8.0,
+                children: selectedCampleadList.map((selectedItem) {
+                  return Chip(
+                    label: Text(selectedItem),
+                    deleteIcon: const Icon(Icons.close),
+                    onDeleted: () {
+                      setState(() {
+                        selectedCampleadList.remove(selectedItem);
+                      });
+                    },
+                    backgroundColor: Colors.blue.withOpacity(0.2),
+                    labelStyle: const TextStyle(color: Colors.blue),
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 10),
               const Text('File Upload'),
@@ -837,6 +940,24 @@ class _Forms extends State<CampaignCloneview> {
 
   @override
   Widget build(BuildContext context) {
+    leadlistvm = Provider.of<LeadListViewModel>(context);
+    groupsVM = Provider.of<GroupsViewModel>(context);
+    for (var viewModel in groupsVM!.viewModels) {
+      GroupsModel groupsmodel = viewModel.model;
+      for (var record in groupsmodel.records ?? []) {
+        if (record.name != null && record.id != null) {
+          bool exists = groupsNameSet.any((group) => group['id'] == record.id);
+          if (!exists) {
+            groupsNameSet.add({'id': record.id!, 'name': record.name!});
+          }
+        }
+      }
+    }
+    setState(() {
+      GroupsName = groupsNameSet
+          .map((group) => group['name']!)
+          .toList(); // Extract unique names
+    });
     _getaccountData = Provider.of<CampaignViewModel>(context);
     return Scaffold(
       appBar: AppBar(
@@ -1256,6 +1377,7 @@ class _Forms extends State<CampaignCloneview> {
                       data: templateNames,
                       onChanged: (String? newValue) {
                         setState(() {
+                          controllers.clear();
                           selectedTemplateName = newValue;
                           _templateController.text = newValue ?? '';
                           if (newValue != null) {
@@ -1356,5 +1478,33 @@ class _Forms extends State<CampaignCloneview> {
         }
       }
     }
+  }
+
+  List campLeads = [];
+  void campLeadList() async {
+    await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+            listen: false)
+        .fetchCampLeads()
+        .then((onValue) {
+      campLeads = [];
+      List tempcampLeadsList = [];
+      try {
+        for (var viewModel in leadlistvm.viewModels) {
+          var recentMsgmodel = viewModel.model;
+          if (recentMsgmodel?.records != null) {
+            for (var record in recentMsgmodel!.records!) {
+              print("record::: ${record}");
+              campLeads.add(record);
+              tempcampLeadsList.add(record);
+              campLeadNameNum
+                  .add("${record.contactname} ${record.full_number}");
+            }
+          }
+        }
+      } catch (e) {
+        print("e:::::::: ${e}");
+        campLeads = [];
+      }
+    });
   }
 }

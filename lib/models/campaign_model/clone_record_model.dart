@@ -8,7 +8,7 @@ class CloneRecord {
   String? campaignStatus;
   DateTime? startDate;
   String? recurrence;
-  String? leadIds;
+
   String? customRecurrenceUnit;
   String? selectedDays;
   String? selectedDate;
@@ -21,6 +21,7 @@ class CloneRecord {
   String? whatsappNumberAdmin;
   String? groupName;
   List<Map<String, String>>? groups;
+  List<Map<String, String>>? lead_ids;
   String? fileId;
   String? fileTitle;
   String? fileType;
@@ -35,7 +36,6 @@ class CloneRecord {
     this.campaignStatus,
     this.startDate,
     this.recurrence,
-    this.leadIds,
     this.customRecurrenceUnit,
     this.selectedDays,
     this.selectedDate,
@@ -48,6 +48,7 @@ class CloneRecord {
     this.whatsappNumberAdmin,
     this.groupName,
     this.groups,
+    this.lead_ids,
     this.fileId,
     this.fileTitle,
     this.fileType,
@@ -65,7 +66,6 @@ class CloneRecord {
             ? null
             : DateTime.tryParse(data['start_date']),
         recurrence: data['recurrence'] as String?,
-        leadIds: data['lead_ids'] as String?,
         customRecurrenceUnit: data['custom_recurrence_unit'] as String?,
         selectedDays: data['selected_days'] as String?,
         selectedDate: data['selected_date'] as String?,
@@ -78,6 +78,9 @@ class CloneRecord {
         whatsappNumberAdmin: data['whatsapp_number_admin'] as String?,
         groupName: data['group_name'] as String?,
         groups: (data['groups'] as List<dynamic>?)
+            ?.map((e) => Map<String, String>.from(e as Map))
+            .toList(),
+        lead_ids: (data['lead_ids'] as List<dynamic>?)
             ?.map((e) => Map<String, String>.from(e as Map))
             .toList(),
         fileId: data['file_id'] as String?,
@@ -95,7 +98,6 @@ class CloneRecord {
         'campaign_status': campaignStatus,
         'start_date': startDate?.toIso8601String(),
         'recurrence': recurrence,
-        'lead_ids': leadIds,
         'custom_recurrence_unit': customRecurrenceUnit,
         'selected_days': selectedDays,
         'selected_date': selectedDate,
@@ -108,6 +110,7 @@ class CloneRecord {
         'whatsapp_number_admin': whatsappNumberAdmin,
         'group_name': groupName,
         'groups': groups,
+        'lead_ids': lead_ids,
         'file_id': fileId,
         'file_title': fileTitle,
         'file_type': fileType,
