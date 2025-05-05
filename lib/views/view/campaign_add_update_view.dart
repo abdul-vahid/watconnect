@@ -63,7 +63,8 @@ class _Forms extends State<CampaignAddUpdateView> {
   PlatformFile? file;
   var number;
   List<String> GroupsName = [];
-  List<String> selectedGroups = [];
+  List<String> selectedGroupsName = [];
+  List<String> selectedNamesWithNumbers = [];
   String? selectedTemplateName;
   String? SelectedTemplateCategory;
   String? selectedTemplateId;
@@ -80,6 +81,8 @@ class _Forms extends State<CampaignAddUpdateView> {
   var campaignvm;
   List leadsToSend = [];
   bool isRefresh = false;
+  List<Map<String, dynamic>> selectedMembers = [];
+  List<Map<String, dynamic>> allContactDetails = [];
 
   List<String> selectedCampleadList = [];
   List campLeadNameNum = [];
@@ -108,8 +111,8 @@ class _Forms extends State<CampaignAddUpdateView> {
       SelectedTemplateCategory = widget.model?.campaignType;
     }
     if (widget.model?.groups != null) {
-      selectedGroups = widget.model!.groups
-          .map<String>((group) => group['id'].toString())
+      selectedGroupsName = widget.model!.groups
+          .map<String>((group) => group['name'].toString())
           .toList();
     }
 
@@ -379,11 +382,9 @@ class _Forms extends State<CampaignAddUpdateView> {
                     10.0,
                   ),
                   hintText: 'yyyy-MM-dd HH:mm:ss',
-                  // contentPadding: EdgeInsets.only(left: 15),
+
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(08),
-                    // borderSide:
-                    //     BorderSide(color: AppColor.appBarColor, width: 1.0),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(08),
@@ -420,7 +421,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 },
               ),
               if (isEdit == false) const SizedBox(height: 10),
-              if (isEdit == false) Text('Select Template Category *'),
+              if (isEdit == false) const Text('Select Template Category *'),
               if (isEdit == false) const SizedBox(height: 5),
               GestureDetector(
                 onTap: () {
@@ -450,7 +451,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                       ),
                     )
                     .toList(),
-                initialValue: selectedGroups,
+                initialValue: selectedGroupsName,
                 title: const Text("Select Groups"),
                 selectedColor: Colors.blue,
                 decoration: BoxDecoration(
@@ -462,23 +463,23 @@ class _Forms extends State<CampaignAddUpdateView> {
                 onConfirm: (results) {
                   print("results:::: ${results}");
                   setState(() {
-                    selectedGroups = results.cast<String>();
+                    selectedGroupsName = results.cast<String>();
                   });
                   debug(
-                    "Selected groups: $selectedGroups",
+                    "Selected groups: $selectedGroupsName",
                   );
                 },
               ),
               Wrap(
                 spacing: 8.0,
-                children: selectedGroups.map((selectedItem) {
+                children: selectedGroupsName.map((selectedItem) {
                   print("Selected Item => $selectedItem");
                   return Chip(
                     label: Text(selectedItem),
                     deleteIcon: const Icon(Icons.close),
                     onDeleted: () {
                       setState(() {
-                        selectedGroups.remove(selectedItem);
+                        selectedGroupsName.remove(selectedItem);
                       });
                     },
                     backgroundColor: Colors.blue.withOpacity(0.2),
@@ -486,45 +487,70 @@ class _Forms extends State<CampaignAddUpdateView> {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               const Text('Select Leads'),
-              MultiSelectDialogField<String>(
-                  items: campLeadNameNum
-                      .map((e) => MultiSelectItem<String>(e, e))
-                      .toList(),
-                  title: const Flexible(
-                    child: Text(
-                      "Select Leads",
-                      style: TextStyle(fontSize: 18),
-                    ),
+              const SizedBox(height: 10),
+              MultiSelectDialogField<Map<String, dynamic>>(
+                items: allContactDetails.map((member) {
+                  return MultiSelectItem<Map<String, dynamic>>(
+                    member,
+                    "${member['name']} (${member['whatsapp_number']})",
+                  );
+                }).toList(),
+                title: const Text("Select Leads"),
+                selectedColor: Colors.blue,
+                decoration: BoxDecoration(
+                  // color: Colors.blue.withOpacity(0.1),
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  border: Border.all(
+                    color: Colors.blue,
+                    width: 1,
                   ),
-                  buttonText: const Text("Select Leads "),
-                  searchable: true,
-                  dialogWidth: MediaQuery.of(context).size.width * .65,
-                  dialogHeight: MediaQuery.of(context).size.height * .65,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.grey,
-                    ),
+                ),
+                buttonIcon: const Icon(
+                  Icons.add,
+                  // color: Colors.blue,
+                ),
+                buttonText: const Text(
+                  "Select Leads",
+                  style: TextStyle(
+                    // color: Colors.blue[800],
+                    fontSize: 16,
                   ),
-                  onConfirm: (List<String> selected) {
-                    setState(() {
-                      // leadsToSend.add(campLeadNameNum[e]);
-                      selectedCampleadList = selected;
-                    });
-                  },
-                  initialValue: selectedCampleadList,
-                  chipDisplay: MultiSelectChipDisplay.none()),
+                ),
+                searchable: true,
+                chipDisplay: MultiSelectChipDisplay.none(),
+                initialValue: selectedMembers,
+                onConfirm: (values) {
+                  setState(() {
+                    selectedMembers = values;
+                    print("selectedMembers::::::: ${selectedMembers}");
+                    // Update display list
+                    selectedNamesWithNumbers = values
+                        .map((member) =>
+                            "${member['name']} (${member['whatsapp_number']})")
+                        .toList();
+                  });
+                },
+              ),
+              const SizedBox(height: 10),
               Wrap(
                 spacing: 8.0,
-                children: selectedCampleadList.map((selectedItem) {
+                children: selectedNamesWithNumbers.map((selectedItem) {
                   return Chip(
                     label: Text(selectedItem),
                     deleteIcon: const Icon(Icons.close),
                     onDeleted: () {
                       setState(() {
-                        selectedCampleadList.remove(selectedItem);
+                        // Remove from display list
+                        selectedNamesWithNumbers.remove(selectedItem);
+
+                        // Remove the corresponding map from selectedMembers
+                        selectedMembers.removeWhere((member) =>
+                            "${member['name']} (${member['whatsapp_number']})" ==
+                            selectedItem);
+
+                        print("selectedMembers::: ${selectedMembers}");
                       });
                     },
                     backgroundColor: Colors.blue.withOpacity(0.2),
@@ -666,8 +692,8 @@ class _Forms extends State<CampaignAddUpdateView> {
 
   void onButtonPressed() async {
     print("fileNameControllerL::::: ${fileNameController.text}");
-    print("selectedGroups:::: ${selectedGroups}");
-    if (selectedGroups.isEmpty && fileNameController.text.trim().isEmpty) {
+    print("selectedGroups:::: ${selectedGroupsName}");
+    if (selectedGroupsName.isEmpty && fileNameController.text.trim().isEmpty) {
       EasyLoading.showToast("Upload a CSV or Select a group");
       return;
     }
@@ -715,7 +741,7 @@ class _Forms extends State<CampaignAddUpdateView> {
         'name': _name,
         'type': _type,
         'startDate': _dateStartInput.text,
-        'group_ids': selectedGroups,
+        'group_ids': selectedGroupsName,
       };
       print("camp before siending::: ${camp}");
       // AppUtils.onLoading(context, "Updating, please wait...");
@@ -1397,7 +1423,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           'business_number': number,
           'type': _type,
           'startDate': _dateStartInput.text,
-          'group_ids': selectedGroups,
+          'group_ids': selectedGroupsName,
           'description': _description ?? "",
         };
 
@@ -1480,7 +1506,7 @@ class _Forms extends State<CampaignAddUpdateView> {
             'business_number': number,
             'type': _type,
             'startDate': _dateStartInput.text,
-            'group_ids': selectedGroups,
+            'group_ids': selectedGroupsName,
             'description': _description,
           };
 
@@ -1901,6 +1927,14 @@ class _Forms extends State<CampaignAddUpdateView> {
           if (recentMsgmodel?.records != null) {
             for (var record in recentMsgmodel!.records!) {
               print("record::: ${record}");
+
+              Map<String, dynamic> body = {
+                "name": record.contactname,
+                "member_id": record.id,
+                "recordtypename": "lead",
+                "whatsapp_number": record.full_number
+              };
+              allContactDetails.add(body);
               campLeads.add(record);
               tempcampLeadsList.add(record);
               campLeadNameNum

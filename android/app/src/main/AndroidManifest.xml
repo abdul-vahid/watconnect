@@ -3,7 +3,7 @@
     
     <application
         android:name="androidx.multidex.MultiDexApplication"
-        android:label="watconnect"
+        android:label=" WatConnect"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
         android:theme="@style/LaunchTheme">

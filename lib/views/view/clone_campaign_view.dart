@@ -61,7 +61,7 @@ class _Forms extends State<CampaignCloneview> {
   PlatformFile? file;
   File? image;
   late CampaignViewModel campaignvm;
-
+  List<Map<String, dynamic>> selectedMembers = [];
   String? _description, _type;
   String? selectedTemplateName;
   String? SelectedTemplateCategory;
@@ -85,7 +85,7 @@ class _Forms extends State<CampaignCloneview> {
   List<dynamic> types = [
     'Advertisement',
     'Banner Ads',
-    'Confrence',
+    'Conference',
     'Direct Mail',
     'Email',
     'Partners',
@@ -93,11 +93,14 @@ class _Forms extends State<CampaignCloneview> {
     'Web',
     'Other',
   ];
+
   Map<String, Map<String, String>> allTemplatesMap = {};
   var number;
   List<String> GroupsName = [];
   List<String> selectedCampleadList = [];
+  List<String> selectedNamesWithNumbers = [];
   List campLeadNameNum = [];
+  List<Map<String, String>> leadsInCamp = [];
 
   @override
   void initState() {
@@ -138,8 +141,8 @@ class _Forms extends State<CampaignCloneview> {
       for (var viewModel in campVM.viewModels) {
         var model = viewModel.model;
         print(" model.name===>$model");
-        print(" model.rec===>${model.record.campaignName}");
-
+        print(" model.rec===>${model.record.campaignType}");
+        print("types:::::: ${types}");
         setState(() {
           _name.clear();
           _name.text = model.record.campaignName ?? "";
@@ -150,15 +153,19 @@ class _Forms extends State<CampaignCloneview> {
           groupsNameSet = model.record.groups ?? [];
           _tempController.text = model.record.templateName;
           selectedTemplateName = model.record.templateName;
-          print("model.record. lead::: : ${model.record.lead_ids}");
+          print("model.record. lead::: : ${model.record.lead_ids ?? []}");
+          selectedMembers = model.record.lead_ids ?? [];
           List<Map<String, String>> lst = model.record.lead_ids ?? [];
+          // leadsInCamp = selectedCampleadList = model.record.lead_ids ?? [];
           selectedCampleadList =
               lst.map((e) => '${e['name']} - ${e['whatsapp_number']}').toList();
+          selectedNamesWithNumbers = selectedCampleadList;
+          String jsonString = model.record.bodyTextParams ?? "";
+          Map<String, String> myMap = {};
+          if (jsonString.isNotEmpty) {
+            myMap = Map<String, String>.from(jsonDecode(jsonString));
+          }
 
-          String jsonString = model.record.bodyTextParams;
-
-          Map<String, String> myMap =
-              Map<String, String>.from(jsonDecode(jsonString));
           int length = myMap.length;
 
           controllers = myMap.values
@@ -205,13 +212,16 @@ class _Forms extends State<CampaignCloneview> {
         if (campaignModel?.data != null) {
           for (var record in campaignModel!.data!) {
             if (record.status != null) {
-              print("rec name ::${record.name}  $selectedTemplateName");
+              // print("rec name ::${record.name}  $selectedTemplateName");
+
               if (selectedTemplateName == record.name) {
                 currentTemplate = record;
+                print("record.category::: ${record.category}");
+                SelectedTemplateCategory = record.category;
                 selectedTemplateId = currentTemplate.id;
                 selectedLanguage = currentTemplate.language;
                 print(
-                    "current template::::: $currentTemplate  ${currentTemplate.name}");
+                    "current template::::: $currentTemplate  ${currentTemplate.name}   ");
                 print(
                     "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}");
                 components = currentTemplate.components;
@@ -722,6 +732,7 @@ class _Forms extends State<CampaignCloneview> {
   }
 
   Widget _pageBody() {
+    // print("_types:::: ::: :${types} ${_type}");
     return SingleChildScrollView(
       child: Form(
         key: _addleadFormKey,
@@ -825,43 +836,67 @@ class _Forms extends State<CampaignCloneview> {
               ),
               const SizedBox(height: 10),
               const Text('Select Leads'),
-              MultiSelectDialogField<String>(
-                  items: campLeadNameNum
-                      .map((e) => MultiSelectItem<String>(e, e))
-                      .toList(),
-                  title: const Flexible(
-                    child: Text(
-                      "Select Leads",
-                      style: TextStyle(fontSize: 18),
-                    ),
+              MultiSelectDialogField<Map<String, dynamic>>(
+                items: allContactDetails.map((member) {
+                  return MultiSelectItem<Map<String, dynamic>>(
+                    member,
+                    "${member['name']} (${member['whatsapp_number']})",
+                  );
+                }).toList(),
+                title: const Text("Select Leads"),
+                selectedColor: Colors.blue,
+                decoration: BoxDecoration(
+                  // color: Colors.blue.withOpacity(0.1),
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  border: Border.all(
+                    color: Colors.blue,
+                    width: 1,
                   ),
-                  buttonText: const Text("Select Leads "),
-                  searchable: true,
-                  dialogWidth: MediaQuery.of(context).size.width * .65,
-                  dialogHeight: MediaQuery.of(context).size.height * .65,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.grey,
-                    ),
+                ),
+                buttonIcon: const Icon(
+                  Icons.add,
+                  // color: Colors.blue,
+                ),
+                buttonText: const Text(
+                  "Select Leads",
+                  style: TextStyle(
+                    // color: Colors.blue[800],
+                    fontSize: 16,
                   ),
-                  onConfirm: (List<String> selected) {
-                    setState(() {
-                      // leadsToSend.add(campLeadNameNum[e]);
-                      selectedCampleadList = selected;
-                    });
-                  },
-                  initialValue: selectedCampleadList,
-                  chipDisplay: MultiSelectChipDisplay.none()),
+                ),
+                searchable: true,
+                chipDisplay: MultiSelectChipDisplay.none(),
+                initialValue: selectedMembers,
+                onConfirm: (values) {
+                  setState(() {
+                    selectedMembers = values;
+                    print("selectedMembers::::::: ${selectedMembers}");
+                    // Update display list
+                    selectedNamesWithNumbers = values
+                        .map((member) =>
+                            "${member['name']} (${member['whatsapp_number']})")
+                        .toList();
+                  });
+                },
+              ),
+              const SizedBox(height: 10),
               Wrap(
                 spacing: 8.0,
-                children: selectedCampleadList.map((selectedItem) {
+                children: selectedNamesWithNumbers.map((selectedItem) {
                   return Chip(
                     label: Text(selectedItem),
                     deleteIcon: const Icon(Icons.close),
                     onDeleted: () {
                       setState(() {
-                        selectedCampleadList.remove(selectedItem);
+                        // Remove from display list
+                        selectedNamesWithNumbers.remove(selectedItem);
+
+                        // Remove the corresponding map from selectedMembers
+                        selectedMembers.removeWhere((member) =>
+                            "${member['name']} (${member['whatsapp_number']})" ==
+                            selectedItem);
+
+                        print("selectedMembers::: ${selectedMembers}");
                       });
                     },
                     backgroundColor: Colors.blue.withOpacity(0.2),
@@ -1042,6 +1077,7 @@ class _Forms extends State<CampaignCloneview> {
 
   void onButtonPressed() async {
     print("selectedGroups>>> $selectedGroups");
+    print("selectedLeads>>> $selectedCampleadList");
     print(
       "controllers::: $controllers  $isChecked  $image  $isOtherFileSelected  $imgToShow",
     );
@@ -1298,8 +1334,7 @@ class _Forms extends State<CampaignCloneview> {
   Future<void> _getBootmSheet() {
     TextEditingController _templateController = TextEditingController();
     int selectedBtnIdx = 0;
-    SelectedTemplateCategory = null;
-    // selectedTemplateName = null;
+
     return showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
@@ -1480,6 +1515,7 @@ class _Forms extends State<CampaignCloneview> {
     }
   }
 
+  List<Map<String, dynamic>> allContactDetails = [];
   List campLeads = [];
   void campLeadList() async {
     await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
@@ -1494,6 +1530,13 @@ class _Forms extends State<CampaignCloneview> {
           if (recentMsgmodel?.records != null) {
             for (var record in recentMsgmodel!.records!) {
               print("record::: ${record}");
+              Map<String, dynamic> body = {
+                "name": record.contactname,
+                "member_id": record.id,
+                "recordtypename": "lead",
+                "whatsapp_number": record.full_number
+              };
+              allContactDetails.add(body);
               campLeads.add(record);
               tempcampLeadsList.add(record);
               campLeadNameNum
