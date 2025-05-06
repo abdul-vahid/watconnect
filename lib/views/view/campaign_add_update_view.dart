@@ -697,8 +697,21 @@ class _Forms extends State<CampaignAddUpdateView> {
       EasyLoading.showToast("Upload a CSV or Select a group");
       return;
     }
+    if (selectedTemplateName == null) {
+      EasyLoading.showToast("Please Select Template");
+      return;
+    }
     if (_tempController.text.trim().isEmpty) {
       EasyLoading.showToast("Please Select Template Category");
+      return;
+    }
+    if (_name == null) {
+      EasyLoading.showToast("Please enter campaign name");
+      return;
+    }
+    if (_dateStartInput.text.trim().isEmpty) {
+      EasyLoading.showToast("Pleaseselect start date and time");
+      return;
     }
     print(
       "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}",
@@ -1424,6 +1437,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           'type': _type,
           'startDate': _dateStartInput.text,
           'group_ids': selectedGroupsName,
+          "lead_ids": selectedMembers,
           'description': _description ?? "",
         };
 
@@ -1507,6 +1521,7 @@ class _Forms extends State<CampaignAddUpdateView> {
             'type': _type,
             'startDate': _dateStartInput.text,
             'group_ids': selectedGroupsName,
+            "lead_ids": selectedMembers,
             'description': _description,
           };
 

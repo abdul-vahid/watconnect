@@ -134,7 +134,7 @@ class _ChatScreenState extends State<ChatScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
-    print("Lead Number =>${widget.wpnumber}    ");
+    print("Lead Number =>${widget.wpnumber} ");
   }
 
   @override

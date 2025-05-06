@@ -46,6 +46,7 @@ class _Forms extends State<CampaignCloneview> {
   bool _isLoading = false;
   String? fileid;
   late VideoPlayerController _Vcontroller;
+  late MessageViewModel messageViewModel;
   final _addleadFormKey = GlobalKey<FormState>();
   final TextEditingController _dateStartInput = TextEditingController();
   final TextEditingController _name = TextEditingController();
@@ -74,13 +75,14 @@ class _Forms extends State<CampaignCloneview> {
   dynamic selectedButtons;
   List<TextEditingController> controllers = [];
   List<Map<String, String>> groupsNameSet = [];
-
+  List<String> GroupsName = [];
+  List<String> selectedGroupsName = [];
   List<String> templateIds = [];
   List<String> templateNames = [];
 
   List<String> selectedGroups = [];
   // List<String> tempateCategory = [];
-  List<dynamic> tempateCategory = ['UTILITY', 'MARKETING'];
+  List<dynamic> tempateCategory = ['UTILITY', 'MARKETING', 'AUTHENTICATION'];
   List<String> templateName1 = [];
   List<dynamic> types = [
     'Advertisement',
@@ -96,7 +98,7 @@ class _Forms extends State<CampaignCloneview> {
 
   Map<String, Map<String, String>> allTemplatesMap = {};
   var number;
-  List<String> GroupsName = [];
+
   List<String> selectedCampleadList = [];
   List<String> selectedNamesWithNumbers = [];
   List campLeadNameNum = [];
@@ -151,6 +153,9 @@ class _Forms extends State<CampaignCloneview> {
           fileNameController.text = model.record.fileTitle ?? "";
           _description = model.record.fileDescription;
           groupsNameSet = model.record.groups ?? [];
+          print("groupsNameSet:::: ${groupsNameSet}");
+          selectedGroupsName =
+              groupsNameSet.map((e) => e['id'].toString()).toList();
           _tempController.text = model.record.templateName;
           selectedTemplateName = model.record.templateName;
           print("model.record. lead::: : ${model.record.lead_ids ?? []}");
@@ -171,6 +176,7 @@ class _Forms extends State<CampaignCloneview> {
           controllers = myMap.values
               .map((value) => TextEditingController(text: value))
               .toList();
+          print("controllers:: ${controllers.length}");
           for (var controller in controllers) {
             print(":::controller.text  :::  ${controller.text}");
           }
@@ -216,12 +222,13 @@ class _Forms extends State<CampaignCloneview> {
 
               if (selectedTemplateName == record.name) {
                 currentTemplate = record;
-                print("record.category::: ${record.category}");
+
+                print("record.category::: ${record.category}  ${record.name}");
                 SelectedTemplateCategory = record.category;
                 selectedTemplateId = currentTemplate.id;
                 selectedLanguage = currentTemplate.language;
                 print(
-                    "current template::::: $currentTemplate  ${currentTemplate.name}   ");
+                    "selectedTemplateId:::::  ${currentTemplate.id}  ${selectedTemplateId} ");
                 print(
                     "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}");
                 components = currentTemplate.components;
@@ -802,31 +809,42 @@ class _Forms extends State<CampaignCloneview> {
               MultiSelectDialogField(
                 dialogHeight: 160,
                 items: groupsNameSet
-                    .map((group) =>
-                        MultiSelectItem<String>(group['id']!, group['name']!))
+                    .map(
+                      (group) => MultiSelectItem<String>(
+                        group['id']!,
+                        group['name']!,
+                      ),
+                    )
                     .toList(),
-                initialValue: selectedGroups,
+                initialValue: selectedGroupsName,
                 title: const Text("Select Groups"),
                 selectedColor: Colors.blue,
-                chipDisplay: MultiSelectChipDisplay.none(),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.blue, width: 1),
                   borderRadius: BorderRadius.circular(5),
                 ),
                 buttonText: const Text("Select Groups"),
-                onConfirm: (results) =>
-                    setState(() => selectedGroups = results.cast<String>()),
+                chipDisplay: MultiSelectChipDisplay.none(),
+                onConfirm: (results) {
+                  print("results:::: ${results}");
+                  setState(() {
+                    selectedGroupsName = results.cast<String>();
+                  });
+                  debug(
+                    "Selected groups: $selectedGroupsName",
+                  );
+                },
               ),
               Wrap(
                 spacing: 8.0,
-                children: selectedGroups.map((selectedItem) {
+                children: selectedGroupsName.map((selectedItem) {
                   print("Selected Item => $selectedItem");
                   return Chip(
                     label: Text(selectedItem),
                     deleteIcon: const Icon(Icons.close),
                     onDeleted: () {
                       setState(() {
-                        selectedGroups.remove(selectedItem);
+                        selectedGroupsName.remove(selectedItem);
                       });
                     },
                     backgroundColor: Colors.blue.withOpacity(0.2),
@@ -975,6 +993,7 @@ class _Forms extends State<CampaignCloneview> {
 
   @override
   Widget build(BuildContext context) {
+    messageViewModel = Provider.of<MessageViewModel>(context);
     leadlistvm = Provider.of<LeadListViewModel>(context);
     groupsVM = Provider.of<GroupsViewModel>(context);
     for (var viewModel in groupsVM!.viewModels) {
@@ -1078,142 +1097,87 @@ class _Forms extends State<CampaignCloneview> {
   void onButtonPressed() async {
     print("selectedGroups>>> $selectedGroups");
     print("selectedLeads>>> $selectedCampleadList");
-    print(
-      "controllers::: $controllers  $isChecked  $image  $isOtherFileSelected  $imgToShow",
-    );
+    if (selectedGroupsName.isEmpty && fileNameController.text.trim().isEmpty) {
+      EasyLoading.showToast("Upload a CSV or Select a group");
+      return;
+    }
+    if (selectedTemplateName == null) {
+      EasyLoading.showToast("Please Select Template");
+      return;
+    }
+    if (_tempController.text.trim().isEmpty) {
+      EasyLoading.showToast("Please Select Template Category");
+      return;
+    }
+    if (_name == null) {
+      EasyLoading.showToast("Please enter campaign name");
+      return;
+    }
+    if (_dateStartInput.text.trim().isEmpty) {
+      EasyLoading.showToast("Pleaseselect start date and time");
+      return;
+    }
 
-    if (controllers.isNotEmpty) {
-      bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
-      if (anyEmpty) {
-        EasyLoading.showToast('All fields are required');
-        return;
-      }
-    }
-    if (_addleadFormKey.currentState!.validate()) {
-      if (_name == null || _name.toString().isEmpty) {
-        print("_name_name_name_name$_name");
-        EasyLoading.showToast("Campaign Name is required");
-        return;
-      } else if (_dateStartInput.text.toString().isEmpty) {
-        EasyLoading.showToast("Start date time is required");
-        return;
-      } else if (SelectedTemplateCategory == null ||
-          selectedTemplateName.toString().isEmpty) {
-        EasyLoading.showToast("Select Template Category");
-        return;
-      } else if (_type == null || _type.toString().isEmpty) {
-        EasyLoading.showToast("Select Template Type");
-        return;
-      }
-      _addleadFormKey.currentState!.save();
-      AppUtils.onLoading(context, "Saving, please wait...");
-      sendingCamplaign();
-    } else {
-      print("landed here ");
-    }
+    addCampaignTemplate();
+    // print(
+    //   "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}",
+    // );
+    // print(
+    //   "controllers::: $controllers  $isChecked  $image  $isOtherFileSelected  $imgToShow",
+    // );
+
+    // if (controllers.isNotEmpty) {
+    //   bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
+    //   if (anyEmpty) {
+    //     EasyLoading.showToast('All fields are required');
+    //     return;
+    //   }
+    // }
+    // if (_addleadFormKey.currentState!.validate()) {
+    //   if (_name == null || _name.toString().isEmpty) {
+    //     print("_name_name_name_name$_name");
+    //     EasyLoading.showToast("Campaign Name is required");
+    //     return;
+    //   } else if (_dateStartInput.text.toString().isEmpty) {
+    //     EasyLoading.showToast("Start date time is required");
+    //     return;
+    //   } else if (SelectedTemplateCategory == null ||
+    //       selectedTemplateName.toString().isEmpty) {
+    //     EasyLoading.showToast("Select Template Category");
+    //     return;
+    //   } else if (_type == null || _type.toString().isEmpty) {
+    //     EasyLoading.showToast("Select Template Type");
+    //     return;
+    //   }
+    //   _addleadFormKey.currentState!.save();
+
+    // } else {
+    //   print("landed here ");
+    // }
   }
 
   Future<void> sendingCamplaign() async {
     Map<String, String> bodyTextParams = {};
     List compoTextParams = [];
     List numberedCampParam = [];
-    bool anyEmpty = controllers.any((controller) => controller.text.isEmpty);
 
-    if (anyEmpty) {
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-    File? imageFile;
-    String docId = "";
-    for (int i = 0; i < controllers.length; i++) {
-      bodyTextParams[(i + 1).toString()] = controllers[i].text;
-      Map body = {"type": "text", "text": controllers[i].text};
-      compoTextParams.add(body);
-      numberedCampParam.add(bodyTextParams);
-    }
-    String templateToSend = selectedTemplateName ?? "";
-    print("selected header:: >><><>< $selectedHeader     $templateToSend");
-    setState(() {
-      _isLoading = true;
-    });
-    if (templateToSend.isEmpty) {
-      setState(() {
-        _isLoading = false;
-        image = null;
+    try {
+      print("controllers::: ${controllers.length}");
 
-        CampaignViewModel getaccountData = CampaignViewModel(context);
+      for (int i = 0; i < controllers.length; i++) {
+        bodyTextParams[(i + 1).toString()] = controllers[i].text;
+        Map body = {"type": "text", "text": controllers[i].text};
+        compoTextParams.add(body);
+        numberedCampParam.add(bodyTextParams);
+      }
 
-        Map<String, dynamic> camp = {
-          'name': _name,
-          'template_id': selectedTemplateId,
-          'template_name': selectedTemplateName,
-          'status': 'Pending',
-          'business_number': number,
-          'type': _type,
-          'startDate': _dateStartInput.text,
-          'group_ids': selectedGroups,
-          'description': _description,
-        };
+      String templateToSend = selectedTemplateName ?? "";
+      print(
+          "templateToSend::: ${templateToSend}  ${compoTextParams}  ${numberedCampParam}");
+      print(
+          "selected header:: >><><>< ${selectedHeader}     ${templateToSend}");
 
-        getaccountData.addCampaign(camp).then((value) async {
-          if (value is Map<String, dynamic>) {
-            String? campaignId = value["record"]?["id"];
-            print("campaignId>>>  $campaignId");
-            if (campaignId == null) {
-              debug("Campaign ID is null. File upload skipped.");
-              return;
-            } else {
-              Map<String, dynamic> paramBody = {
-                "campaign_id": campaignId,
-                "body_text_params": bodyTextParams,
-                "msg_history_id": null,
-                "file_id": fileid,
-                "whatsapp_number_admin": "7590889022",
-              };
-
-              MessageViewModel mstemp = MessageViewModel(context);
-              var campaignResponse = await mstemp.sendCampParam(
-                campParambody: paramBody,
-              );
-            }
-
-            debug("Uploading file with Campaign ID: $campaignId");
-
-            // await getFileData.addFiles(image!, campaignId, fileData);
-          }
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MultiProvider(
-                providers: [
-                  ChangeNotifierProvider(
-                    create: (_) => CampaignViewModel(context),
-                  ),
-                ],
-                child: const CampaignListView(),
-              ),
-            ),
-            (Route<dynamic> route) => route.isFirst,
-          );
-        }).catchError((error, stackTrace) {
-          debug("Error: $error");
-          Navigator.pop(context);
-          AppUtils.getAlert(
-            context,
-            AppUtils.getErrorMessages(error),
-            title: "Error Alert",
-          );
-        });
-      });
-    } else {
-      await sendTextTemplate(
-        templateToSend,
-        compoTextParams,
-        isChecked,
-        bodyTextParams,
-      ).then((onValue) {
+      if (templateToSend.isEmpty) {
         setState(() {
           _isLoading = false;
           image = null;
@@ -1228,14 +1192,15 @@ class _Forms extends State<CampaignCloneview> {
             'business_number': number,
             'type': _type,
             'startDate': _dateStartInput.text,
-            'group_ids': selectedGroups,
-            'description': _description,
+            'group_ids': selectedGroupsName,
+            "lead_ids": selectedMembers,
+            'description': _description ?? "",
           };
 
           getaccountData.addCampaign(camp).then((value) async {
             if (value is Map<String, dynamic>) {
               String? campaignId = value["record"]?["id"];
-              print("campaignId>>>  $campaignId");
+              print("campaignId>>>  ${campaignId}");
               if (campaignId == null) {
                 debug("Campaign ID is null. File upload skipped.");
                 return;
@@ -1249,9 +1214,17 @@ class _Forms extends State<CampaignCloneview> {
                 };
 
                 MessageViewModel mstemp = MessageViewModel(context);
-                var campaignResponse = await mstemp.sendCampParam(
+                var campaignResponse = await mstemp
+                    .sendCampParam(
                   campParambody: paramBody,
-                );
+                )
+                    .then((onValue) async {
+                  await messageViewModel
+                      .uploadCampFiledb(image!, campaignId)
+                      .then((onValue) {
+                    getaccountData.fetchCampaign();
+                  });
+                });
               }
 
               debug("Uploading file with Campaign ID: $campaignId");
@@ -1282,10 +1255,99 @@ class _Forms extends State<CampaignCloneview> {
             );
           });
         });
-      });
+      } else {
+        await sendTextTemplate(
+          templateToSend,
+          compoTextParams,
+          isChecked,
+          bodyTextParams,
+        ).then((onValue) {
+          setState(() {
+            _isLoading = false;
+            image = null;
+
+            CampaignViewModel getaccountData = CampaignViewModel(context);
+            Map<String, dynamic> camp = {};
+            try {
+              camp = {
+                'name': _name.text,
+                'template_id': selectedTemplateId,
+                'template_name': selectedTemplateName,
+                'status': 'Pending',
+                'business_number': number,
+                'type': _type,
+                'startDate': _dateStartInput.text,
+                'group_ids': selectedGroupsName,
+                "lead_ids": selectedMembers,
+                'description': _description,
+              };
+            } catch (e) {
+              print("errroeL::: ${e}");
+            }
+
+            print("camp::::::::::: ${camp}");
+
+            getaccountData.addCampaign(camp).then((value) async {
+              if (value is Map<String, dynamic>) {
+                String? campaignId = value["record"]?["id"];
+                print("campaignId>>>  ${campaignId}");
+                if (campaignId == null) {
+                  debug("Campaign ID is null. File upload skipped.");
+                  return;
+                } else {
+                  Map<String, dynamic> paramBody = {
+                    "campaign_id": campaignId,
+                    "body_text_params": bodyTextParams,
+                    "msg_history_id": null,
+                    "file_id": fileid,
+                    "whatsapp_number_admin": "7590889022",
+                  };
+
+                  MessageViewModel mstemp = MessageViewModel(context);
+                  var campaignResponse = await mstemp.sendCampParam(
+                    campParambody: paramBody,
+                  );
+                }
+
+                //       debug("Uploading file with Campaign ID: $campaignId");
+
+                //       // await getFileData.addFiles(image!, campaignId, fileData);
+              }
+              //     Navigator.pushAndRemoveUntil(
+              //       context,
+              //       MaterialPageRoute(
+              //         builder: (context) => MultiProvider(
+              //           providers: [
+              //             ChangeNotifierProvider(
+              //               create: (_) => CampaignViewModel(context),
+              //             ),
+              //           ],
+              //           child: const CampaignListView(),
+              //         ),
+              //       ),
+              //       (Route<dynamic> route) => route.isFirst,
+              //     );
+              //   }).catchError((error, stackTrace) {
+              //     debug("Error: $error");
+              //     Navigator.pop(context);
+              //     AppUtils.getAlert(
+              //       context,
+              //       AppUtils.getErrorMessages(error),
+              //       title: "Error Alert",
+              //     );
+            });
+          });
+        });
+      }
+    } catch (e, stackTrace) {
+      print("printing error::: ${e}   ${stackTrace}");
     }
 
-    print("selected button::: $selectedButtons ");
+    setState(() {
+      _isLoading = true;
+    });
+
+    print("selected button::: ${selectedButtons} ");
   }
 
   Future<void> sendTextTemplate(
@@ -1302,7 +1364,7 @@ class _Forms extends State<CampaignCloneview> {
       ba = selectedButtons.buttons.map((button) => button.toMap()).toList();
     }
 
-    String footer = selectedFooter?.text ?? "";
+    String footer = selectedFooter != null ? selectedFooter?.text ?? "" : "";
 
     Map<String, dynamic> exBodyText = {
       ...campaignParam,
@@ -1497,21 +1559,24 @@ class _Forms extends State<CampaignCloneview> {
         Provider.of<TempleteListViewModel>(context, listen: false);
 
     // Check if templeteViewModel is not null and contains viewModels
+    Set<String> uniqueTemplateNames = {};
+
     if (templeteViewModel.viewModels.isNotEmpty) {
       for (var viewModel in templeteViewModel.viewModels) {
         var campaignModel = viewModel.model;
         if (campaignModel?.data != null) {
           for (var record in campaignModel!.data!) {
-            if (record.status != null) {
-              // print("Record template Status: ${record.name}");
-              setState(() {
-                templateNames.add(record.name);
-                // print("Templates => $templateNames");
-              });
+            if (record.status != null && record.name != null) {
+              uniqueTemplateNames.add(record.name);
             }
           }
         }
       }
+
+      // Update the state once with unique values
+      setState(() {
+        templateNames = uniqueTemplateNames.toList();
+      });
     }
   }
 
@@ -1548,6 +1613,39 @@ class _Forms extends State<CampaignCloneview> {
         print("e:::::::: ${e}");
         campLeads = [];
       }
+    });
+  }
+
+  void addCampaignTemplate({File? fileToSend, bool sendToAdmin = false}) {
+    sendTemplateApiCall(sendToAdmin);
+  }
+
+  Future<void> sendTemplateApiCall(bool send) async {
+    final prefs = await SharedPreferences.getInstance();
+    number = prefs.getString('phoneNumber');
+    print("sending camplagnnnn:::::::   ${selectedButtons}");
+    List ba = selectedButtons == null
+        ? []
+        : selectedButtons?.buttons.map((button) => button.toMap()).toList() ??
+            [];
+    String footer = selectedFooter != null ? selectedFooter?.text ?? "" : "";
+    Map<String, dynamic> createtemp = {
+      "id": selectedTemplateId,
+      "name": selectedTemplateName,
+      "language": selectedLanguage,
+      "header": selectedHeader != null ? selectedHeader.format ?? "" : "",
+      "header_body": selectedHeader != null ? selectedHeader.text ?? "" : "",
+      "message_body": selectedBody != null ? selectedBody.text : "",
+      "example_body_text": {"sendToAdmin": send},
+      "footer": footer,
+      "buttons": ba,
+      "business_number": number,
+    };
+
+    print("createtemp campaign:::: ${createtemp}");
+    late MessageViewModel mstemp = MessageViewModel(context);
+    mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) {
+      sendingCamplaign();
     });
   }
 }
