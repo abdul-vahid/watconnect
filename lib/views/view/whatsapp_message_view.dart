@@ -2087,18 +2087,17 @@ class _ChatScreenState extends State<ChatScreen> {
                                                 border: Border.all(
                                                     color: AppColor
                                                         .navBarIconColor)),
-                                            child: Center(
+                                            child: const Center(
                                               child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8.0),
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 8.0),
                                                 child: Text("Choose File"),
                                               ),
                                             ),
                                           ),
                                         )
-                                      : SizedBox(),
-                                SizedBox(
+                                      : const SizedBox(),
+                                const SizedBox(
                                   height: 10,
                                 ),
 

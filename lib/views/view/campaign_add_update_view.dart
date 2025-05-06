@@ -1362,18 +1362,37 @@ class _Forms extends State<CampaignAddUpdateView> {
   Future<void> sendTemplateApiCall(bool send) async {
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
-    print("sending camplagnnnn:::::::   ${selectedButtons}");
+    print("sending camplagnnnn::::::: ${fileid}  ${imgToShow}");
     List ba = selectedButtons == null
         ? []
         : selectedButtons?.buttons.map((button) => button.toMap()).toList() ??
             [];
+    String hdr = selectedHeader != null ? selectedHeader.format ?? "" : "";
+
+    print("hdr hdr  hdr::: ${hdr}");
+    String hdrBody;
+
+    if (hdr.isEmpty) {
+      hdrBody = "";
+    } else {
+      if (hdr == "IMAGE" || hdr == "VIDEO" || hdr == "DOCUMENT") {
+        if (imgToShow.isNotEmpty) {
+          hdrBody = imgToShow;
+        } else {
+          hdrBody = selectedHeader.text ?? "";
+        }
+      } else {
+        hdrBody = selectedHeader.text ?? "";
+      }
+    }
+
     String footer = selectedFooter != null ? selectedFooter?.text ?? "" : "";
     Map<String, dynamic> createtemp = {
       "id": selectedTemplateId,
       "name": selectedTemplateName,
       "language": selectedLanguage,
-      "header": selectedHeader != null ? selectedHeader.format ?? "" : "",
-      "header_body": selectedHeader != null ? selectedHeader.text ?? "" : "",
+      "header": hdr,
+      "header_body": hdrBody,
       "message_body": selectedBody != null ? selectedBody.text : "",
       "example_body_text": {"sendToAdmin": send},
       "footer": footer,
@@ -1589,27 +1608,51 @@ class _Forms extends State<CampaignAddUpdateView> {
   ) async {
     final mstemp = MessageViewModel(context);
 
-    List ba = [];
-    if (selectedButtons != null) {
-      print("list:::: ${selectedButtons.buttons}");
-      ba = selectedButtons.buttons.map((button) => button.toMap()).toList();
-    }
+    // List ba = [];
+    // if (selectedButtons != null) {
+    //   print("list:::: ${selectedButtons.buttons}");
+    //   ba = selectedButtons.buttons.map((button) => button.toMap()).toList();
+    // }
 
-    String footer = selectedFooter?.text ?? "";
+    // String footer = selectedFooter?.text ?? "";
 
     Map<String, dynamic> exBodyText = {
       ...campaignParam,
       "sendToAdmin": sendOnLoginNum,
     };
 
+    List ba = selectedButtons == null
+        ? []
+        : selectedButtons?.buttons.map((button) => button.toMap()).toList() ??
+            [];
+    String hdr = selectedHeader != null ? selectedHeader.format ?? "" : "";
+
+    print("hdr hdr  hdr::: ${hdr}");
+    String hdrBody;
+
+    if (hdr.isEmpty) {
+      hdrBody = "";
+    } else {
+      if (hdr == "IMAGE" || hdr == "VIDEO" || hdr == "DOCUMENT") {
+        if (imgToShow.isNotEmpty) {
+          hdrBody = imgToShow;
+        } else {
+          hdrBody = selectedHeader.text ?? "";
+        }
+      } else {
+        hdrBody = selectedHeader.text ?? "";
+      }
+    }
+
+    String footer = selectedFooter != null ? selectedFooter?.text ?? "" : "";
     Map<String, dynamic> createtemp = {
       "id": selectedTemplateId,
-      "name": templateToSend,
+      "name": selectedTemplateName,
       "language": selectedLanguage,
-      "header": selectedHeader?.format ?? "",
-      "header_body": selectedHeader?.text ?? "",
-      "message_body": selectedBody?.text ?? "",
-      "example_body_text": exBodyText,
+      "header": hdr,
+      "header_body": hdrBody,
+      "message_body": selectedBody != null ? selectedBody.text : "",
+      "example_body_text": {"sendToAdmin": false},
       "footer": footer,
       "buttons": ba,
       "business_number": number,
