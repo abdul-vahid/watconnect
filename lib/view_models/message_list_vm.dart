@@ -246,14 +246,22 @@ class MessageViewModel extends BaseListViewModel {
     }
   }
 
-  Future<dynamic> uploadCampFiledb(File file, String? id) async {
+  Future<dynamic> uploadCampFiledb(File file, String? id,
+      {bool isFromCamp = false}) async {
     var token = await AppUtils.getToken();
     if (token == null || token.isEmpty) {
       print("No token found");
       return null;
     }
-    var url = Uri.parse(
-        "https://sandbox.watconnect.com/swp/api/whatsapp/campaign/file/$id");
+    String uri = "";
+    if (isFromCamp) {
+      uri =
+          "https://sandbox.watconnect.com/swp/api/whatsapp/campaign/file/null";
+    } else {
+      uri = "https://sandbox.watconnect.com/swp/api/whatsapp/campaign/file/$id";
+    }
+
+    var url = Uri.parse(uri);
     print("Request URL: $url");
     var request = http.MultipartRequest("POST", url);
 

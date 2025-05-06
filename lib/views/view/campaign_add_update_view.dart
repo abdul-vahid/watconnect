@@ -1114,8 +1114,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                       const SizedBox(height: 15),
                       Center(
                         child: StatefulBuilder(
-                          builder:
-                              (BuildContext context, StateSetter setState) {
+                          builder: (BuildContext context, StateSetter _) {
                             return ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
@@ -1138,7 +1137,6 @@ class _Forms extends State<CampaignAddUpdateView> {
                                 if (anyEmpty) {
                                   EasyLoading.showToast(
                                       'All fields are required');
-
                                   setState(() {
                                     _isLoading = false;
                                   });
@@ -1153,7 +1151,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                                       controllers[i].text;
                                   Map body = {
                                     "type": "text",
-                                    "text": controllers[i].text
+                                    "text": controllers[i].text,
                                   };
                                   compoTextParams.add(body);
                                   numberedCampParam.add(bodyTextParams);
@@ -1162,51 +1160,48 @@ class _Forms extends State<CampaignAddUpdateView> {
                                 String templateToSend = selectedTemplateName ??
                                     _templateController.text;
 
-                                print(
-                                    "selected header:: >><><>< ${selectedHeader}   ${selectedTemplateName}");
-
-                                setState(() {
-                                  _tempController.text =
-                                      selectedTemplateName ?? "";
-                                  _isLoading = false;
-                                  Navigator.pop(context);
-                                });
+                                _tempController.text =
+                                    selectedTemplateName ?? "";
 
                                 if (selectedHeader.format == "IMAGE" ||
                                     selectedHeader.format == "VIDEO" ||
                                     selectedHeader.format == "DOCUMENT") {
                                   if (isOtherFileSelected == true) {
-                                    print("image :: ${image}");
                                     final prefs =
                                         await SharedPreferences.getInstance();
                                     String? number =
                                         prefs.getString('phoneNumber');
 
-                                    String? sendimagedatabase =
-                                        await messageViewModel
-                                            .uploadCampFiledb(image!, number)
-                                            .then((value) {
-                                      print(
-                                          "video sedn video send send----upload dididi->$value");
-
+                                    await messageViewModel
+                                        .uploadCampFiledb(image!, number,
+                                            isFromCamp: true)
+                                        .then((value) {
                                       Map<String, dynamic> response =
                                           jsonDecode(value);
+
                                       setState(() {
-                                        fileid = response['records']?[0]['id'];
+                                        fileid = response['data']?[0][
+                                            'id']; // <-- now globally available
                                       });
 
-                                      print("ID: $fileid");
-                                      return null;
+                                      print("File ID: $fileid");
                                     });
                                   } else {
                                     image = await urlToFile(imgToShow);
                                   }
                                 }
+
+                                if (mounted) {
+                                  Navigator.pop(context);
+                                }
+
+                                setState(() {
+                                  _isLoading = false;
+                                });
                               },
                               child: _isLoading
                                   ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
+                                      color: Colors.white)
                                   : const Text(
                                       "Done",
                                       style: TextStyle(
@@ -1813,8 +1808,8 @@ class _Forms extends State<CampaignAddUpdateView> {
   Future<void> _getBootmSheet() {
     TextEditingController _templateController = TextEditingController();
     int selectedBtnIdx = 0;
-    SelectedTemplateCategory = null;
-    selectedTemplateName = null;
+    // SelectedTemplateCategory = null;
+    // selectedTemplateName = null;
     return showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
