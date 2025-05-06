@@ -393,7 +393,6 @@ class _Forms extends State<CampaignAddUpdateView> {
                       width: 1.0,
                     ),
                   ),
-
                   //labelText: "Select Date"
                 ),
                 readOnly: true,
