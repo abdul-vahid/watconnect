@@ -64,6 +64,7 @@ class _Forms extends State<CampaignAddUpdateView> {
   var number;
   List<String> GroupsName = [];
   List<String> selectedGroupsName = [];
+  List<String> selectedGroupIds = [];
   List<String> selectedNamesWithNumbers = [];
   String? selectedTemplateName;
   String? SelectedTemplateCategory;
@@ -83,6 +84,9 @@ class _Forms extends State<CampaignAddUpdateView> {
   bool isRefresh = false;
   List<Map<String, dynamic>> selectedMembers = [];
   List<Map<String, dynamic>> allContactDetails = [];
+
+  List<Map<String, dynamic>> selectedGroups = [];
+  List<Map<String, dynamic>> allGroupDetails = [];
 
   List<String> selectedCampleadList = [];
   List campLeadNameNum = [];
@@ -111,9 +115,24 @@ class _Forms extends State<CampaignAddUpdateView> {
       SelectedTemplateCategory = widget.model?.campaignType;
     }
     if (widget.model?.groups != null) {
-      selectedGroupsName = widget.model!.groups
+      print(
+          "widget.model?.groups:::: ${widget.model?.groups}  ${widget.model?.groups.runtimeType}");
+
+      List<Map<String, dynamic>> mapList =
+          widget.model?.groups.cast<Map<String, dynamic>>();
+      selectedGroups = mapList;
+      // selectedGroupsName =
+      //     selectedGroups.map<String>((e) => e['name'].toString()).toList();
+      selectedGroupsName = selectedGroups
           .map<String>((group) => group['name'].toString())
           .toList();
+
+      selectedGroupIds = selectedGroups
+          .map<String>((group) => group['id'].toString())
+          .toList();
+
+      print(
+          "selectedGroupsName  ids ::: ${selectedGroupsName}  ${selectedGroupIds}");
     }
 
     if (widget.model != null) {
@@ -205,6 +224,8 @@ class _Forms extends State<CampaignAddUpdateView> {
           }
         }
       }
+      allGroupDetails = groupsNameSet.toList();
+      print("allGroupDetails::: ::: allGroupDetails:::::: ${allGroupDetails}");
     }
 
     setState(() {
@@ -332,6 +353,7 @@ class _Forms extends State<CampaignAddUpdateView> {
   }
 
   Widget _pageBody() {
+    print("selectedGroups  page body ::::::::::: ${selectedGroups}");
     return SingleChildScrollView(
       child: Form(
         key: _addleadFormKey,
@@ -422,35 +444,31 @@ class _Forms extends State<CampaignAddUpdateView> {
               if (isEdit == false) const SizedBox(height: 10),
               if (isEdit == false) const Text('Select Template Category *'),
               if (isEdit == false) const SizedBox(height: 5),
-              GestureDetector(
-                onTap: () {
-                  _getBootmSheet();
-                },
-                child: AbsorbPointer(
-                  child: TextField(
-                    controller: _tempController,
-                    decoration: const InputDecoration(
-                      // labelText: 'Tap to choose',
-                      suffixIcon: Icon(Icons.arrow_drop_down),
-                      border: OutlineInputBorder(),
+              if (isEdit == false)
+                GestureDetector(
+                  onTap: () {
+                    _getBootmSheet();
+                  },
+                  child: AbsorbPointer(
+                    child: TextField(
+                      controller: _tempController,
+                      decoration: const InputDecoration(
+                        // labelText: 'Tap to choose',
+                        suffixIcon: Icon(Icons.arrow_drop_down),
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                   ),
                 ),
-              ),
               const SizedBox(height: 10),
-              const Text('Group Name'),
-              const SizedBox(height: 5),
-              MultiSelectDialogField(
+
+              MultiSelectDialogField<Map<String, dynamic>>(
                 dialogHeight: 160,
-                items: groupsNameSet
-                    .map(
-                      (group) => MultiSelectItem<String>(
-                        group['id']!,
-                        group['name']!,
-                      ),
-                    )
-                    .toList(),
-                initialValue: selectedGroupsName,
+                items: allGroupDetails.map((group) {
+                  return MultiSelectItem<Map<String, dynamic>>(
+                      group, "${group['name']}");
+                }).toList(),
+                initialValue: selectedGroups,
                 title: const Text("Select Groups"),
                 selectedColor: Colors.blue,
                 decoration: BoxDecoration(
@@ -460,96 +478,49 @@ class _Forms extends State<CampaignAddUpdateView> {
                 buttonText: const Text("Select Groups"),
                 chipDisplay: MultiSelectChipDisplay.none(),
                 onConfirm: (results) {
-                  print("results:::: ${results}");
                   setState(() {
-                    selectedGroupsName = results.cast<String>();
-                  });
-                  debug(
-                    "Selected groups: $selectedGroupsName",
-                  );
-                },
-              ),
-              Wrap(
-                spacing: 8.0,
-                children: selectedGroupsName.map((selectedItem) {
-                  print("Selected Item => $selectedItem");
-                  return Chip(
-                    label: Text(selectedItem),
-                    deleteIcon: const Icon(Icons.close),
-                    onDeleted: () {
-                      setState(() {
-                        selectedGroupsName.remove(selectedItem);
-                      });
-                    },
-                    backgroundColor: Colors.blue.withOpacity(0.2),
-                    labelStyle: const TextStyle(color: Colors.blue),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 5),
-              const Text('Select Leads'),
-              const SizedBox(height: 10),
-              MultiSelectDialogField<Map<String, dynamic>>(
-                items: allContactDetails.map((member) {
-                  return MultiSelectItem<Map<String, dynamic>>(
-                    member,
-                    "${member['name']} (${member['whatsapp_number']})",
-                  );
-                }).toList(),
-                title: const Text("Select Leads"),
-                selectedColor: Colors.blue,
-                decoration: BoxDecoration(
-                  // color: Colors.blue.withOpacity(0.1),
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  border: Border.all(
-                    color: Colors.blue,
-                    width: 1,
-                  ),
-                ),
-                buttonIcon: const Icon(
-                  Icons.add,
-                  // color: Colors.blue,
-                ),
-                buttonText: const Text(
-                  "Select Leads",
-                  style: TextStyle(
-                    // color: Colors.blue[800],
-                    fontSize: 16,
-                  ),
-                ),
-                searchable: true,
-                chipDisplay: MultiSelectChipDisplay.none(),
-                initialValue: selectedMembers,
-                onConfirm: (values) {
-                  setState(() {
-                    selectedMembers = values;
-                    print("selectedMembers::::::: ${selectedMembers}");
-                    // Update display list
-                    selectedNamesWithNumbers = values
-                        .map((member) =>
-                            "${member['name']} (${member['whatsapp_number']})")
+                    // Filter selected items based on `allGroupDetails` reference matching
+                    selectedGroups = allGroupDetails
+                        .where((group) =>
+                            results.any((r) => r['id'] == group['id']))
                         .toList();
+
+                    // Update the dependent lists
+                    selectedGroupsName =
+                        selectedGroups.map((res) => "${res['name']}").toList();
+                    selectedGroupIds =
+                        selectedGroups.map((res) => "${res['id']}").toList();
                   });
                 },
               ),
               const SizedBox(height: 10),
+
+              // Display selected groups as chips
               Wrap(
                 spacing: 8.0,
-                children: selectedNamesWithNumbers.map((selectedItem) {
+                children: selectedGroups.map((selectedItem) {
                   return Chip(
-                    label: Text(selectedItem),
+                    label: Text(selectedItem['name']),
                     deleteIcon: const Icon(Icons.close),
                     onDeleted: () {
                       setState(() {
-                        // Remove from display list
-                        selectedNamesWithNumbers.remove(selectedItem);
+                        final delId = selectedItem['id'];
 
-                        // Remove the corresponding map from selectedMembers
-                        selectedMembers.removeWhere((member) =>
-                            "${member['name']} (${member['whatsapp_number']})" ==
-                            selectedItem);
+                        // Find the actual reference from selectedGroups
+                        final toRemove = selectedGroups.firstWhere(
+                          (item) => item['id'] == delId,
+                        );
 
-                        print("selectedMembers::: ${selectedMembers}");
+                        // Remove by reference
+                        selectedGroups.remove(toRemove);
+
+                        // Update the dependent lists
+                        selectedGroupsName = selectedGroups
+                            .map((res) => "${res['name']}")
+                            .toList();
+                        selectedGroupIds = selectedGroups
+                            .map((res) => "${res['id']}")
+                            .toList();
                       });
                     },
                     backgroundColor: Colors.blue.withOpacity(0.2),
@@ -557,6 +528,80 @@ class _Forms extends State<CampaignAddUpdateView> {
                   );
                 }).toList(),
               ),
+
+              if (isEdit == false) const SizedBox(height: 5),
+              if (isEdit == false) const Text('Select Leads'),
+              if (isEdit == false) const SizedBox(height: 10),
+              if (isEdit == false)
+                MultiSelectDialogField<Map<String, dynamic>>(
+                  items: allContactDetails.map((member) {
+                    return MultiSelectItem<Map<String, dynamic>>(
+                      member,
+                      "${member['name']} (${member['whatsapp_number']})",
+                    );
+                  }).toList(),
+                  title: const Text("Select Leads"),
+                  selectedColor: Colors.blue,
+                  decoration: BoxDecoration(
+                    // color: Colors.blue.withOpacity(0.1),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: Border.all(
+                      color: Colors.blue,
+                      width: 1,
+                    ),
+                  ),
+                  buttonIcon: const Icon(
+                    Icons.add,
+                    // color: Colors.blue,
+                  ),
+                  buttonText: const Text(
+                    "Select Leads",
+                    style: TextStyle(
+                      // color: Colors.blue[800],
+                      fontSize: 16,
+                    ),
+                  ),
+                  searchable: true,
+                  chipDisplay: MultiSelectChipDisplay.none(),
+                  initialValue: selectedMembers,
+                  onConfirm: (values) {
+                    setState(() {
+                      selectedMembers = values;
+                      print("selectedMembers::::::: ${selectedMembers}");
+                      // Update display list
+                      selectedNamesWithNumbers = values
+                          .map((member) =>
+                              "${member['name']} (${member['whatsapp_number']})")
+                          .toList();
+                    });
+                  },
+                ),
+              if (isEdit == false) const SizedBox(height: 10),
+              if (isEdit == false)
+                Wrap(
+                  spacing: 8.0,
+                  children: selectedNamesWithNumbers.map((selectedItem) {
+                    return Chip(
+                      label: Text(selectedItem),
+                      deleteIcon: const Icon(Icons.close),
+                      onDeleted: () {
+                        setState(() {
+                          // Remove from display list
+                          selectedNamesWithNumbers.remove(selectedItem);
+
+                          // Remove the corresponding map from selectedMembers
+                          selectedMembers.removeWhere((member) =>
+                              "${member['name']} (${member['whatsapp_number']})" ==
+                              selectedItem);
+
+                          print("selectedMembers::: ${selectedMembers}");
+                        });
+                      },
+                      backgroundColor: Colors.blue.withOpacity(0.2),
+                      labelStyle: const TextStyle(color: Colors.blue),
+                    );
+                  }).toList(),
+                ),
               const SizedBox(height: 5),
               if (isEdit == false) const SizedBox(height: 10),
               if (isEdit == false) const Text('File Upload'),
@@ -602,48 +647,49 @@ class _Forms extends State<CampaignAddUpdateView> {
                   },
                 ),
               const SizedBox(height: 10),
-              InkWell(
-                  onTap: () async {
-                    await requestStoragePermission();
+              if (isEdit == false)
+                InkWell(
+                    onTap: () async {
+                      await requestStoragePermission();
 
-                    List<List<dynamic>> rows = [
-                      ["Name", "Country Code", "Number"],
-                      ["John", "+91", "XXXXXXXXXX"]
-                    ];
+                      List<List<dynamic>> rows = [
+                        ["Name", "Country Code", "Number"],
+                        ["John", "+91", "XXXXXXXXXX"]
+                      ];
 
-                    String csvData = const ListToCsvConverter().convert(rows);
+                      String csvData = const ListToCsvConverter().convert(rows);
 
-                    final downloadPath = await getDownloadPath();
-                    final filePath = p.join(downloadPath, "sample.csv");
+                      final downloadPath = await getDownloadPath();
+                      final filePath = p.join(downloadPath, "sample.csv");
 
-                    final file = File(filePath);
+                      final file = File(filePath);
 
-                    if (await file.exists()) {
-                      print("CSV already exists. Opening...");
+                      if (await file.exists()) {
+                        print("CSV already exists. Opening...");
+                        await OpenFile.open(filePath);
+                        return;
+                      }
+
+                      await file.writeAsString(csvData);
+                      print("CSV saved at $filePath");
                       await OpenFile.open(filePath);
-                      return;
-                    }
-
-                    await file.writeAsString(csvData);
-                    print("CSV saved at $filePath");
-                    await OpenFile.open(filePath);
-                  },
-                  child: Container(
-                    // width: 180,
-                    decoration: BoxDecoration(
-                        color: AppColor.navBarIconColor,
-                        borderRadius: BorderRadius.circular(12)),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12.0),
-                      child: Center(
-                        child: Text(
-                          "Download Sample CSV",
-                          style: TextStyle(color: Colors.white),
+                    },
+                    child: Container(
+                      // width: 180,
+                      decoration: BoxDecoration(
+                          color: AppColor.navBarIconColor,
+                          borderRadius: BorderRadius.circular(12)),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12.0),
+                        child: Center(
+                          child: Text(
+                            "Download Sample CSV",
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
-                    ),
-                  )),
-              const SizedBox(height: 10),
+                    )),
+              if (isEdit == false) const SizedBox(height: 10),
               const Text('Type'),
               const SizedBox(height: 5),
               AppUtils.getDropdown(
@@ -753,10 +799,10 @@ class _Forms extends State<CampaignAddUpdateView> {
         'name': _name,
         'type': _type,
         'startDate': _dateStartInput.text,
-        'group_ids': selectedGroupsName,
+        'group_ids': selectedGroupIds,
       };
       print("camp before siending::: ${camp}");
-      // AppUtils.onLoading(context, "Updating, please wait...");
+      AppUtils.onLoading(context, "Updating, please wait...");
       Provider.of<CampaignViewModel>(
         context,
         listen: false,
@@ -1449,7 +1495,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           'business_number': number,
           'type': _type,
           'startDate': _dateStartInput.text,
-          'group_ids': selectedGroupsName,
+          'group_ids': selectedGroupIds,
           "lead_ids": selectedMembers,
           'description': _description ?? "",
         };
@@ -1533,7 +1579,7 @@ class _Forms extends State<CampaignAddUpdateView> {
             'business_number': number,
             'type': _type,
             'startDate': _dateStartInput.text,
-            'group_ids': selectedGroupsName,
+            'group_ids': selectedGroupIds,
             "lead_ids": selectedMembers,
             'description': _description,
           };

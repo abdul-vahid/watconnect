@@ -39,7 +39,7 @@ class CampaignViewModel extends BaseListViewModel {
     print("iddd=>get campaign id${id}");
     String url = AppUtils.getUrl("${AppConstants.getcampaignbyid}$id");
     print("urlll cmapaign model====>${url}");
-    // await get(url: url, baseModel: CampaigndetailModel());
+    await get(url: url, baseModel: CampaignCloneModel());
   }
 
   Future<void> deleteById(String campaignidd) async {

@@ -46,6 +46,7 @@ class CampaignCloneview extends StatefulWidget {
 class _Forms extends State<CampaignCloneview> {
   bool _isLoading = false;
   String? fileid;
+  String imgToShow = "";
   late VideoPlayerController _Vcontroller;
   late MessageViewModel messageViewModel;
   final _addleadFormKey = GlobalKey<FormState>();
@@ -136,62 +137,74 @@ class _Forms extends State<CampaignCloneview> {
   Future<void> getdatabyid() async {
     print("working.........");
 
-    CampaignViewModel campVM =
-        Provider.of<CampaignViewModel>(context, listen: false);
-    await campVM
-        .getcampaignbyid(widget.record.campaignId.toString())
-        .then((onValue) {
-      for (var viewModel in campVM.viewModels) {
-        var model = viewModel.model;
-        print(" model.name===>$model");
-        print(" model.rec===>${model.record.campaignType}");
-        print("types:::::: ${types}");
-        setState(() {
-          _name.clear();
-          _name.text = model.record.campaignName ?? "";
-          _type = model.record.campaignType;
-          _dateStartInput.text = model.record.startDate.toString();
-          fileNameController.text = model.record.fileTitle ?? "";
-          _description = model.record.fileDescription;
-          groupsNameSet = model.record.groups ?? [];
-          print("groupsNameSet:::: ${groupsNameSet}");
-          selectedGroupsName =
-              groupsNameSet.map((e) => e['id'].toString()).toList();
-          _tempController.text = model.record.templateName;
-          selectedTemplateName = model.record.templateName;
-          print("model.record. lead::: : ${model.record.lead_ids ?? []}");
-          selectedMembers = model.record.lead_ids ?? [];
-          List<Map<String, String>> lst = model.record.lead_ids ?? [];
-          // leadsInCamp = selectedCampleadList = model.record.lead_ids ?? [];
-          selectedCampleadList =
-              lst.map((e) => '${e['name']} - ${e['whatsapp_number']}').toList();
-          selectedNamesWithNumbers = selectedCampleadList;
-          String jsonString = model.record.bodyTextParams ?? "";
-          Map<String, String> myMap = {};
-          if (jsonString.isNotEmpty) {
-            myMap = Map<String, String>.from(jsonDecode(jsonString));
-          }
+    try {
+      CampaignViewModel campVM =
+          Provider.of<CampaignViewModel>(context, listen: false);
+      await campVM
+          .getcampaignbyid(widget.record.campaignId.toString())
+          .then((onValue) {
+        for (var viewModel in campVM.viewModels) {
+          var model = viewModel.model;
+          print(" model.name===>$model");
+          print(" model.rec===>${model.record.campaignType}");
+          print("types:::::: ${types}");
+          setState(() {
+            _name.clear();
+            _name.text = model.record.campaignName ?? "";
+            _type = model.record.campaignType;
+            _dateStartInput.text = model.record.startDate.toString();
+            fileNameController.text = model.record.fileTitle ?? "";
+            _description = model.record.fileDescription;
+            groupsNameSet = model.record.groups ?? [];
+            String fileTitle = model.record.paramsFileTitle ?? "";
+            print("fileTitle::  >><<  :: ${fileTitle}");
+            if (fileTitle.isNotEmpty) {
+              imgToShow =
+                  "https://sandbox.watconnect.com/public/demo/attachment/$fileTitle";
+            }
+            print("imgToShow::::${imgToShow}");
+            print("groupsNameSet::: ${groupsNameSet}");
+            selectedGroupsName =
+                groupsNameSet.map((e) => e['id'].toString()).toList();
+            _tempController.text = model.record.templateName;
+            selectedTemplateName = model.record.templateName;
+            print("model.record. lead::: : ${model.record.lead_ids ?? []}");
+            selectedMembers = model.record.lead_ids ?? [];
+            List<Map<String, String>> lst = model.record.lead_ids ?? [];
+            // leadsInCamp = selectedCampleadList = model.record.lead_ids ?? [];
+            selectedCampleadList = lst
+                .map((e) => '${e['name']} - ${e['whatsapp_number']}')
+                .toList();
+            selectedNamesWithNumbers = selectedCampleadList;
+            String jsonString = model.record.bodyTextParams ?? "";
+            Map<String, String> myMap = {};
+            if (jsonString.isNotEmpty) {
+              myMap = Map<String, String>.from(jsonDecode(jsonString));
+            }
 
-          int length = myMap.length;
+            int length = myMap.length;
 
-          controllers = myMap.values
-              .map((value) => TextEditingController(text: value))
-              .toList();
-          print("controllers:: ${controllers.length}");
-          for (var controller in controllers) {
-            print(":::controller.text  :::  ${controller.text}");
-          }
+            controllers = myMap.values
+                .map((value) => TextEditingController(text: value))
+                .toList();
+            print("controllers:: ${controllers.length}");
+            for (var controller in controllers) {
+              print(":::controller.text  :::  ${controller.text}");
+            }
 
-          print("my mapp::::; ${myMap}  ${length}   ${controllers}");
-          // selectedGroups = groupsNameSet.map((e) => e['id'] ?? "").toList();
-          selectedGroups =
-              groupsNameSet.map((e) => e['name'].toString()).toList();
-          print(
-              "selectedTemplateName:::  ${groupsNameSet}   ${selectedGroups}    ${selectedTemplateName}");
-        });
-      }
-      _setSelectedTemplates();
-    });
+            print("my mapp::::; ${myMap}  ${length}   ${controllers}");
+            // selectedGroups = groupsNameSet.map((e) => e['id'] ?? "").toList();
+            selectedGroups =
+                groupsNameSet.map((e) => e['name'].toString()).toList();
+            print(
+                "selectedTemplateName:::  ${groupsNameSet}   ${selectedGroups}    ${selectedTemplateName}");
+          });
+        }
+        _setSelectedTemplates();
+      });
+    } catch (e) {
+      print("error in setting data::: ${e}");
+    }
 
     print("_name_name${_name.text}");
   }
@@ -229,7 +242,7 @@ class _Forms extends State<CampaignCloneview> {
                 selectedTemplateId = currentTemplate.id;
                 selectedLanguage = currentTemplate.language;
                 print(
-                    "selectedTemplateId:::::  ${currentTemplate.id}  ${selectedTemplateId} ");
+                    "selectedTemplateId:::::  ${currentTemplate.id}  $selectedTemplateId ");
                 print(
                     "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}");
                 components = currentTemplate.components;
@@ -260,24 +273,27 @@ class _Forms extends State<CampaignCloneview> {
   }
 
   bool isChecked = false;
-  String imgToShow = "";
+
   bool isOtherFileSelected = false;
   Future<void> _sendTemplateSheet() {
     isChecked = false;
     image = null;
     String text = selectedBody.text;
-    imgToShow = "";
+
     if (selectedHeader != null) {
+      print("header is not null :: ${selectedHeader}");
       final example = selectedHeader!.example;
       if (example != null &&
           example.headerHandle != null &&
           example.headerHandle!.isNotEmpty) {
-        print("selectedHeader>>> ${example.headerHandle}");
-        imgToShow = example.headerHandle![0];
-      } else {
-        imgToShow = "";
-      }
+        print("imgToShow:::::::::   ${imgToShow}");
+        print("selectedHeader>>> ${example.headerHandle}  ");
+        if (imgToShow.isEmpty) {
+          imgToShow = example.headerHandle![0];
+        }
+      } else {}
     } else {
+      print("header is null");
       imgToShow = "";
     }
     for (var controller in controllers) {
@@ -449,6 +465,7 @@ class _Forms extends State<CampaignCloneview> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
+        print("imgToShow:::: ${imgToShow}  ${file}  ");
         // ignore: deprecated_member_use
         return WillPopScope(
           onWillPop: () async => true,

@@ -219,7 +219,7 @@ class _ProfileViewState extends State<ProfileView> {
                               child: CachedNetworkImage(
                                 imageUrl: mssss.userProfile,
                                 placeholder: (context, url) =>
-                                    CircularProgressIndicator(),
+                                    const CircularProgressIndicator(),
                                 errorWidget: (context, url, error) =>
                                     Icon(Icons.error),
                               ),

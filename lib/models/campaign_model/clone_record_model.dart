@@ -18,6 +18,7 @@ class CloneRecord {
   String? businessNumber;
   String? bodyTextParams;
   String? paramsFileId;
+  String? paramsFileTitle;
   String? whatsappNumberAdmin;
   String? groupName;
   List<Map<String, String>>? groups;
@@ -45,6 +46,7 @@ class CloneRecord {
     this.businessNumber,
     this.bodyTextParams,
     this.paramsFileId,
+    this.paramsFileTitle,
     this.whatsappNumberAdmin,
     this.groupName,
     this.groups,
@@ -68,13 +70,14 @@ class CloneRecord {
         recurrence: data['recurrence'] as String?,
         customRecurrenceUnit: data['custom_recurrence_unit'] as String?,
         selectedDays: data['selected_days'] as String?,
-        selectedDate: data['selected_date'] as String?,
+        // selectedDate: data['selected_date'] as String?,
         recurrenceEndType: data['recurrence_end_type'] as String?,
         recurrenceEndDate: data['recurrence_end_date'] as String?,
         createdbyid: data['createdbyid'] as String?,
         businessNumber: data['business_number'] as String?,
         bodyTextParams: data['body_text_params'] as String?,
         paramsFileId: data['params_file_id'] as String?,
+        paramsFileTitle: data['params_file_title'] as String?,
         whatsappNumberAdmin: data['whatsapp_number_admin'] as String?,
         groupName: data['group_name'] as String?,
         groups: (data['groups'] as List<dynamic>?)
@@ -107,6 +110,7 @@ class CloneRecord {
         'business_number': businessNumber,
         'body_text_params': bodyTextParams,
         'params_file_id': paramsFileId,
+        'params_file_title': paramsFileTitle,
         'whatsapp_number_admin': whatsappNumberAdmin,
         'group_name': groupName,
         'groups': groups,
