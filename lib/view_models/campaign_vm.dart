@@ -28,6 +28,12 @@ class CampaignViewModel extends BaseListViewModel {
     return result;
   }
 
+  Future<dynamic> csvCloneCampaign(Map cloneCsv) async {
+    String url = AppUtils.getUrl(AppConstants.csvCloneCamp);
+    var result = await post(url: url, body: jsonEncode(cloneCsv));
+    return result;
+  }
+
   Future<dynamic> updateCampaign(String? id, Map campaignModel) async {
     String url = AppUtils.getUrl("${AppConstants.updateCampaignAPIPathid}/$id");
     debug(' check===$url');

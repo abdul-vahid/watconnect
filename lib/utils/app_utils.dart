@@ -191,6 +191,7 @@ class AppUtils {
       // Decode JWT Token
       Map<String, dynamic> decodedToken =
           JwtDecoder.decode(userModel.authToken!);
+      print("decodedToken:::::::::::::::::::::: ${decodedToken['tenantcode']}");
       var userModelObj = UserModel.fromMap(decodedToken);
 
       // debug('Username from token = ${userModelObj.username}');
@@ -198,6 +199,9 @@ class AppUtils {
 
       await prefs.setString(
           SharedPrefsConstants.userDecodedTokenKey, userModelObj.toJson());
+
+      await prefs.setString(SharedPrefsConstants.usertenantcodeKey,
+          decodedToken['tenantcode'] ?? "");
 
       // debug(
       //     "Decoded Token: ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)}");

@@ -1,19 +1,26 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/groups_model/groups_model.dart';
+import 'package:whatsapp/models/template_model/template_model.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 import '../../models/approved_template_model/aprovedtempltemodel/component.dart';
 // import '../../models/campaigndetail_model.dart';
@@ -46,6 +53,7 @@ class CampaignCloneview extends StatefulWidget {
 class _Forms extends State<CampaignCloneview> {
   bool _isLoading = false;
   String? fileid;
+
   String imgToShow = "";
   late VideoPlayerController _Vcontroller;
   late MessageViewModel messageViewModel;
@@ -61,8 +69,10 @@ class _Forms extends State<CampaignCloneview> {
   bool isEdit = false;
   String? base64Img;
   XFile? pickedFile;
+  int count = 0;
   PlatformFile? file;
   File? image;
+  File? csvFile;
   late CampaignViewModel campaignvm;
   List<Map<String, dynamic>> selectedMembers = [];
   String? _description, _type;
@@ -84,7 +94,12 @@ class _Forms extends State<CampaignCloneview> {
 
   List<String> selectedGroups = [];
   // List<String> tempateCategory = [];
-  List<dynamic> tempateCategory = ['UTILITY', 'MARKETING', 'AUTHENTICATION'];
+  List<dynamic> tempateCategory = [
+    'All',
+    'UTILITY',
+    'MARKETING',
+    'AUTHENTICATION'
+  ];
   List<String> templateName1 = [];
   List<dynamic> types = [
     'Advertisement',
@@ -111,8 +126,10 @@ class _Forms extends State<CampaignCloneview> {
     super.initState();
     templateVM = Provider.of<TempleteListViewModel>(context, listen: false);
     groupsVM = Provider.of<GroupsViewModel>(context, listen: false);
-    _fetchTemplates();
+    templateApiCall();
+
     groupsVM!.fetchGroups();
+    _dateStartInput.text = formatDateWithTimezone(DateTime.now());
     getdatabyid();
     campLeadList();
 
@@ -133,6 +150,11 @@ class _Forms extends State<CampaignCloneview> {
   }
 
   String name = "";
+  String tenatCode = "";
+  String cloneCsvName = "";
+  String cloneCsvSize = "";
+  String cloneCsvType = "";
+  String cloneCsvDesc = "";
 
   Future<void> getdatabyid() async {
     print("working.........");
@@ -149,26 +171,34 @@ class _Forms extends State<CampaignCloneview> {
           print(" model.name===>$model");
           print(" model.rec===>${model.record.campaignType}");
           print("types:::::: ${types}");
-          setState(() {
+          setState(() async {
+            final prefs = await SharedPreferences.getInstance();
+            tenatCode =
+                prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
             _name.clear();
             _name.text = model.record.campaignName ?? "";
             _type = model.record.campaignType;
-            _dateStartInput.text = model.record.startDate.toString();
+            // _dateStartInput.text = model.record.startDate.toString();
             fileNameController.text = model.record.fileTitle ?? "";
+
+            cloneCsvName = model.record.fileTitle ?? "";
+            cloneCsvSize = model.record.fileSize ?? "";
+            cloneCsvType = model.record.fileType ?? "";
+            cloneCsvDesc = model.record.fileDescription ?? "";
+
+            // String fileTitle = model.record.fileTitle ?? "";
+
+            print(
+                "csvFile:::::: after set:::: ${csvFile}    ${csvFile.runtimeType}");
             _description = model.record.fileDescription;
             groupsNameSet = model.record.groups ?? [];
-            String fileTitle = model.record.paramsFileTitle ?? "";
-            print("fileTitle::  >><<  :: ${fileTitle}");
-            if (fileTitle.isNotEmpty) {
-              imgToShow =
-                  "https://sandbox.watconnect.com/public/demo/attachment/$fileTitle";
-            }
+
             print("imgToShow::::${imgToShow}");
             print("groupsNameSet::: ${groupsNameSet}");
             selectedGroupsName =
                 groupsNameSet.map((e) => e['id'].toString()).toList();
-            _tempController.text = model.record.templateName;
-            selectedTemplateName = model.record.templateName;
+            // _tempController.text = model.record.templateName;
+            // selectedTemplateName = model.record.templateName;
             print("model.record. lead::: : ${model.record.lead_ids ?? []}");
             selectedMembers = model.record.lead_ids ?? [];
             List<Map<String, String>> lst = model.record.lead_ids ?? [];
@@ -177,31 +207,14 @@ class _Forms extends State<CampaignCloneview> {
                 .map((e) => '${e['name']} - ${e['whatsapp_number']}')
                 .toList();
             selectedNamesWithNumbers = selectedCampleadList;
-            String jsonString = model.record.bodyTextParams ?? "";
-            Map<String, String> myMap = {};
-            if (jsonString.isNotEmpty) {
-              myMap = Map<String, String>.from(jsonDecode(jsonString));
-            }
 
-            int length = myMap.length;
-
-            controllers = myMap.values
-                .map((value) => TextEditingController(text: value))
-                .toList();
-            print("controllers:: ${controllers.length}");
-            for (var controller in controllers) {
-              print(":::controller.text  :::  ${controller.text}");
-            }
-
-            print("my mapp::::; ${myMap}  ${length}   ${controllers}");
-            // selectedGroups = groupsNameSet.map((e) => e['id'] ?? "").toList();
             selectedGroups =
                 groupsNameSet.map((e) => e['name'].toString()).toList();
             print(
                 "selectedTemplateName:::  ${groupsNameSet}   ${selectedGroups}    ${selectedTemplateName}");
           });
         }
-        _setSelectedTemplates();
+        // _setSelectedTemplates();
       });
     } catch (e, stackTrace) {
       print("error in setting data::: ${e}       ${stackTrace}");
@@ -277,184 +290,33 @@ class _Forms extends State<CampaignCloneview> {
 
   bool isOtherFileSelected = false;
   Future<void> _sendTemplateSheet() {
+    TextEditingController _templateController = TextEditingController();
+    int selectedBtnIdx = 0;
+    SelectedTemplateCategory = null;
+    // selectedTemplateName = null;
     isChecked = false;
     image = null;
     String text = selectedBody.text;
-
-    if (selectedHeader != null) {
-      print("header is not null :: ${selectedHeader}");
-      final example = selectedHeader!.example;
-      if (example != null &&
-          example.headerHandle != null &&
-          example.headerHandle!.isNotEmpty) {
-        print("imgToShow:::::::::   ${imgToShow}");
-        print("selectedHeader>>> ${example.headerHandle}  ");
-        if (imgToShow.isEmpty) {
-          imgToShow = example.headerHandle![0];
-        }
-      } else {}
+    imgToShow = "";
+    if (selectedHeader != null &&
+        selectedHeader.example != null &&
+        selectedHeader.example.headerHandle != null &&
+        selectedHeader.example.headerHandle.isNotEmpty) {
+      print("selectedHeader>>> ${selectedHeader.example.headerHandle}");
+      imgToShow = selectedHeader.example.headerHandle[0];
     } else {
-      print("header is null");
       imgToShow = "";
     }
-    for (var controller in controllers) {
-      print(":::controller.text  :::  ${controller.text}");
-    }
-
-    // controllers.clear();
-
+    controllers.clear();
+    setState(() {
+      _isLoading = false;
+    });
     final regex = RegExp(r'\{\{\d+\}\}');
 
-    int count = regex.allMatches(text).length;
+    count = regex.allMatches(text).length;
     file = null;
-    // controllers = List.generate(count, (index) => TextEditingController());
+    controllers = List.generate(count, (index) => TextEditingController());
     isOtherFileSelected = false;
-    Widget _buildMediaWidget(String format, String content) {
-      print("format:::::: $format  $content");
-      switch (format) {
-        case "IMAGE":
-          return content.isEmpty
-              ? SizedBox(
-                  height: 80,
-                  width: 80,
-                  child: Image.asset("assets/images/img_placeholder.png"),
-                )
-              : Image.network(content, fit: BoxFit.cover);
-
-        case "VIDEO":
-          return content.isNotEmpty
-              ? Container(
-                  height: 150,
-                  width: 150,
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.play_arrow_rounded,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                )
-              : Container(
-                  height: 150,
-                  width: double.infinity,
-                  color: Colors.black12,
-                  child: const Center(
-                    child:
-                        Icon(Icons.videocam_off, size: 40, color: Colors.grey),
-                  ),
-                );
-
-        case "DOCUMENT":
-          return content.isNotEmpty
-              ? GestureDetector(
-                  onTap: () {
-                    // openDocument(documentUrl); // Function to open the document
-                  },
-                  child: Row(
-                    children: [
-                      Image.asset("assets/images/doc.png",
-                          height: 120, width: 120),
-                    ],
-                  ),
-                )
-              : const SizedBox(); // Empty if no document
-
-        default:
-          return const SizedBox(); // If format is unknown
-      }
-    }
-
-    Future<File?> _pickDocFromGallery() async {
-      final pickedFile = await FilePicker.platform.pickFiles(
-        allowMultiple: false,
-        type: FileType.custom,
-        allowedExtensions: ["pdf"],
-      );
-      if (pickedFile != null) {
-        setState(() {
-          file = pickedFile.files.first;
-          image = File(file!.path!);
-          // _Vcontroller = VideoPlayerController.file(image!);
-          print("image::: $image");
-
-          fileNameController.text = file!.name;
-        });
-        return image;
-      } else {
-        return null;
-      }
-    }
-
-    Future<File?> _pickVideoFromGallery() async {
-      final pickedFile = await FilePicker.platform.pickFiles(
-        allowMultiple: false,
-        type: FileType.custom,
-        allowedExtensions: ["mp4", 'mov'],
-      );
-      if (pickedFile != null) {
-        setState(() {
-          file = pickedFile.files.first;
-          image = File(file!.path!);
-          _Vcontroller = VideoPlayerController.file(image!);
-          print("image::: $image");
-          fileNameController.text = file!.name;
-        });
-        return image;
-      } else {
-        return null;
-      }
-    }
-
-    Future<File?> _pickImaFromGallery() async {
-      final pickedFile = await FilePicker.platform.pickFiles(
-        allowMultiple: false,
-        type: FileType.custom,
-        allowedExtensions: ["jpg", 'png'],
-      );
-      if (pickedFile != null) {
-        setState(() {
-          file = pickedFile.files.first;
-          image = File(file!.path!);
-          print("image::: $image");
-          fileNameController.text = file!.name;
-        });
-        return image;
-      } else {
-        return null;
-      }
-    }
-
-    Future<void> sendTemplateApiCall(bool send) async {
-      late MessageViewModel mstemp = MessageViewModel(context);
-      List ba =
-          selectedButtons?.buttons.map((button) => button.toMap()).toList() ??
-              [];
-      String footer = selectedFooter?.text ?? "";
-      Map<String, dynamic> createtemp = {
-        "id": selectedTemplateId,
-        "name": selectedTemplateName,
-        "language": selectedLanguage,
-        "header": selectedHeader != null ? selectedHeader.format : "",
-        "header_body": selectedHeader.text ?? "",
-        "message_body": selectedBody.text,
-        "example_body_text": {"sendToAdmin": send},
-        "footer": footer,
-        "buttons": ba,
-        "business_number": number,
-      };
-
-      print("createtemp campaign:::: $createtemp");
-
-      // mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) {});
-    }
-
-    void addCampaignTemplate({File? fileToSend, bool sendToAdmin = false}) {
-      sendTemplateApiCall(sendToAdmin);
-    }
 
     return showModalBottomSheet<void>(
       context: context,
@@ -466,8 +328,6 @@ class _Forms extends State<CampaignCloneview> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        print("imgToShow:::: ${imgToShow}  ${file}  ");
-        // ignore: deprecated_member_use
         return WillPopScope(
           onWillPop: () async => true,
           child: Container(
@@ -517,7 +377,7 @@ class _Forms extends State<CampaignCloneview> {
                               decoration: InputDecoration(
                                 labelText:
                                     "Enter value for placeholder ${index + 1}",
-                                border: const OutlineInputBorder(),
+                                border: OutlineInputBorder(),
                               ),
                             ),
                           );
@@ -533,8 +393,9 @@ class _Forms extends State<CampaignCloneview> {
                             crossAxisAlignment: CrossAxisAlignment
                                 .start, // Align content properly
                             children: [
+                              // Handle different formats (IMAGE, VIDEO, DOCUMENT)
                               if (selectedHeader != null &&
-                                  selectedHeader!.format != null)
+                                  selectedHeader.format != null)
                                 file != null && selectedHeader.format == 'IMAGE'
                                     ? Image.file(image!)
                                     : file != null &&
@@ -543,10 +404,9 @@ class _Forms extends State<CampaignCloneview> {
                                             height: 150,
                                             width: 150,
                                             decoration: BoxDecoration(
-                                              color: Colors.black,
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
+                                                color: Colors.black,
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
                                             child: const Center(
                                               child: Icon(
                                                 Icons.play_arrow_rounded,
@@ -556,7 +416,7 @@ class _Forms extends State<CampaignCloneview> {
                                             ),
                                           )
                                         : file != null &&
-                                                selectedHeader!.format ==
+                                                selectedHeader.format ==
                                                     'DOCUMENT'
                                             ? Image.asset(
                                                 "assets/images/pdf.png",
@@ -564,16 +424,17 @@ class _Forms extends State<CampaignCloneview> {
                                               )
                                             : _buildMediaWidget(
                                                 selectedHeader.format,
-                                                imgToShow,
-                                              ),
+                                                imgToShow),
+
                               if (selectedBody != null)
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 8.0,
-                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
                                   child: Text("${selectedBody.text}"),
                                 ),
+
                               const SizedBox(height: 10),
+
                               if (selectedButtons != null)
                                 Wrap(
                                   spacing: 10,
@@ -587,59 +448,57 @@ class _Forms extends State<CampaignCloneview> {
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.grey[400],
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                             side: const BorderSide(
-                                              color: AppColor.navBarIconColor,
-                                            ),
+                                                color:
+                                                    AppColor.navBarIconColor),
                                           ),
                                         ),
                                         child: Text(
                                           selectedButtons.buttons[index].text,
                                           style: const TextStyle(
-                                            color: AppColor.navBarIconColor,
-                                          ),
+                                              color: AppColor.navBarIconColor),
                                         ),
                                       );
                                     },
                                   ),
                                 ),
+
                               const SizedBox(height: 15),
+
                               if (selectedFooter != null)
                                 Text(
-                                  selectedFooter!.text,
+                                  selectedFooter.text,
                                   style: const TextStyle(color: Colors.grey),
                                   textAlign: TextAlign.left,
                                 ),
+
                               const SizedBox(height: 15),
+
                               if (selectedHeader != null)
                                 selectedHeader.format == 'IMAGE' ||
-                                        selectedHeader?.format == 'VIDEO' ||
-                                        selectedHeader!.format == 'DOCUMENT'
+                                        selectedHeader.format == 'VIDEO' ||
+                                        selectedHeader.format == 'DOCUMENT'
                                     ? InkWell(
                                         onTap: () {
                                           if (selectedHeader.format ==
                                               'IMAGE') {
                                             _pickImaFromGallery()
                                                 .then((onValue) {
-                                              print("onValue>>> $onValue");
                                               if (onValue != null) {
                                                 setState(() {
                                                   image = onValue;
-
                                                   isOtherFileSelected = true;
                                                 });
                                               }
                                             });
                                           } else if (selectedHeader.format ==
                                               'VIDEO') {
-                                            _pickVideoFromGallery().then((
-                                              onValue,
-                                            ) {
-                                              if (onValue != null) {
+                                            _pickVideoFromGallery()
+                                                .then((onValue) {
+                                              if (file != null) {
                                                 setState(() {
-                                                  image = onValue;
                                                   isOtherFileSelected = true;
                                                 });
                                               }
@@ -648,9 +507,8 @@ class _Forms extends State<CampaignCloneview> {
                                               'DOCUMENT') {
                                             _pickDocFromGallery()
                                                 .then((onValue) {
-                                              if (onValue != null) {
+                                              if (file != null) {
                                                 setState(() {
-                                                  image = onValue;
                                                   isOtherFileSelected = true;
                                                 });
                                               }
@@ -659,23 +517,24 @@ class _Forms extends State<CampaignCloneview> {
                                         },
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            color: Colors.grey[400],
-                                            border: Border.all(
-                                              color: AppColor.navBarIconColor,
-                                            ),
-                                          ),
+                                              color: Colors.grey[400],
+                                              border: Border.all(
+                                                  color: AppColor
+                                                      .navBarIconColor)),
                                           child: const Center(
                                             child: Padding(
                                               padding: EdgeInsets.symmetric(
-                                                vertical: 8.0,
-                                              ),
+                                                  vertical: 8.0),
                                               child: Text("Choose File"),
                                             ),
                                           ),
                                         ),
                                       )
-                                    : const SizedBox(),
-                              const SizedBox(height: 10),
+                                    : SizedBox(),
+                              const SizedBox(
+                                height: 10,
+                              ),
+
                               Row(
                                 children: [
                                   Checkbox(
@@ -692,7 +551,7 @@ class _Forms extends State<CampaignCloneview> {
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                  ),
+                                  )
                                 ],
                               ),
                             ],
@@ -700,49 +559,126 @@ class _Forms extends State<CampaignCloneview> {
                         ),
                       ),
                       const SizedBox(height: 15),
-                      InkWell(
-                        onTap: () {
-                          setState(() {});
-                          if (controllers.isNotEmpty) {
-                            bool anyEmpty = controllers.any(
-                              (controller) => controller.text.isEmpty,
-                            );
-                            if (anyEmpty) {
-                              // EasyLoading.showToast('All fields are required');
+                      Center(
+                        child: StatefulBuilder(
+                          builder: (BuildContext context, StateSetter _) {
+                            return ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                backgroundColor: AppColor.navBarIconColor,
+                              ),
+                              onPressed: () async {
+                                if (_isLoading) return;
 
-                              return;
-                            }
-                          }
-                          Navigator.pop(context);
-                          print(
-                            "image here:: $image  $isOtherFileSelected",
-                          );
-                          addCampaignTemplate(
-                              fileToSend: image, sendToAdmin: isChecked);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: AppColor.navBarIconColor,
-                              width: 1.5,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                vertical: 8.0,
-                                horizontal: 8,
-                              ),
-                              child: Text(
-                                "Done",
-                                style: TextStyle(
-                                  color: AppColor.navBarIconColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
+                                setState(() {
+                                  _isLoading = true;
+                                });
+
+                                Map<String, String> bodyTextParams = {};
+                                List compoTextParams = [];
+                                List numberedCampParam = [];
+
+                                bool anyEmpty = controllers.any(
+                                    (controller) => controller.text.isEmpty);
+                                if (anyEmpty) {
+                                  EasyLoading.showToast(
+                                      'All fields are required');
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+                                  return;
+                                }
+
+                                File? imageFile;
+                                String docId = "";
+
+                                for (int i = 0; i < controllers.length; i++) {
+                                  bodyTextParams[(i + 1).toString()] =
+                                      controllers[i].text;
+                                  Map body = {
+                                    "type": "text",
+                                    "text": controllers[i].text,
+                                  };
+                                  compoTextParams.add(body);
+                                  numberedCampParam.add(bodyTextParams);
+                                }
+
+                                // print(
+                                //     "selectedHeader.format::::: ${selectedHeader}    ${selectedHeader.format}");
+
+                                if (selectedHeader == null) {
+                                  String templateToSend =
+                                      selectedTemplateName ??
+                                          _templateController.text;
+
+                                  _tempController.text =
+                                      selectedTemplateName ?? "";
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+
+                                  Navigator.pop(context);
+                                  return;
+                                }
+
+                                if (selectedHeader.format == "IMAGE" ||
+                                    selectedHeader.format == "VIDEO" ||
+                                    selectedHeader.format == "DOCUMENT") {
+                                  if (isOtherFileSelected == false) {
+                                    EasyLoading.showToast(
+                                        "Choose File To Continue");
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                    return;
+                                  } else {
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    String? number =
+                                        prefs.getString('phoneNumber');
+
+                                    await messageViewModel
+                                        .uploadCampFiledb(image!, number,
+                                            isFromCamp: true)
+                                        .then((value) {
+                                      Map<String, dynamic> response =
+                                          jsonDecode(value);
+
+                                      setState(() {
+                                        fileid = response['data']?[0][
+                                            'id']; // <-- now globally available
+                                      });
+
+                                      print("File ID: $fileid");
+                                    });
+                                  }
+                                  // else {
+                                  //   image = await urlToFile(imgToShow);
+                                  // }
+                                }
+                                String templateToSend = selectedTemplateName ??
+                                    _templateController.text;
+
+                                _tempController.text =
+                                    selectedTemplateName ?? "";
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                                if (mounted) {
+                                  Navigator.pop(context);
+                                }
+                              },
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white)
+                                  : const Text(
+                                      "Done",
+                                      style: TextStyle(
+                                          fontSize: 13, color: Colors.white),
+                                    ),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -805,7 +741,7 @@ class _Forms extends State<CampaignCloneview> {
                 },
               ),
               const SizedBox(height: 10),
-              const Text('Select Template Category'),
+              const Text('Select Template Category*'),
               const SizedBox(height: 5),
               GestureDetector(
                 onTap: () {
@@ -957,11 +893,14 @@ class _Forms extends State<CampaignCloneview> {
                   final result = await FilePicker.platform.pickFiles(
                     allowMultiple: true,
                     type: FileType.custom,
-                    allowedExtensions: ["jpg", 'png', 'pdf', 'csv'],
+                    allowedExtensions: ['csv'],
                   );
                   if (result != null) {
                     file = result.files.first;
-                    image = File(file!.path.toString());
+                    setState(() {
+                      csvFile = File(file!.path.toString());
+                    });
+
                     base64Img =
                         base64Encode(File(file!.path!).readAsBytesSync());
                     fileNameController.text = file!.name;
@@ -970,6 +909,31 @@ class _Forms extends State<CampaignCloneview> {
                 },
               ),
               const SizedBox(height: 10),
+              cloneCsvName.isNotEmpty && csvFile == null
+                  ? InkWell(
+                      onTap: () {
+                        downloadCsv(
+                            "https://sandbox.watconnect.com/public/${tenatCode}/campaign_files/${cloneCsvName}",
+                            cloneCsvName);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: AppColor.navBarIconColor,
+                            borderRadius: BorderRadius.circular(12)),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12.0),
+                          child: Center(
+                            child: Text(
+                              "Download CSV",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ))
+                  : const SizedBox(),
+              const SizedBox(
+                height: 10,
+              ),
               const Text('Type'),
               const SizedBox(height: 5),
               AppUtils.getDropdown(
@@ -1015,6 +979,23 @@ class _Forms extends State<CampaignCloneview> {
     messageViewModel = Provider.of<MessageViewModel>(context);
     leadlistvm = Provider.of<LeadListViewModel>(context);
     groupsVM = Provider.of<GroupsViewModel>(context);
+
+    templateVM = Provider.of<TempleteListViewModel>(context);
+
+    if (templateVM != null && templateVM?.viewModels != null)
+      // ignore: curly_braces_in_flow_control_structures
+      for (var viewModel in templateVM!.viewModels) {
+        TemplateModel tempmodel = viewModel.model;
+        for (var record in tempmodel.data ?? []) {
+          if (record.name != null && record.category != null) {
+            String categoryKey = record.category!.toLowerCase();
+
+            allTemplatesMap.putIfAbsent(categoryKey, () => {});
+            allTemplatesMap[categoryKey]?[record.id] = (record.name!);
+          }
+        }
+      }
+
     for (var viewModel in groupsVM!.viewModels) {
       GroupsModel groupsmodel = viewModel.model;
       for (var record in groupsmodel.records ?? []) {
@@ -1238,11 +1219,34 @@ class _Forms extends State<CampaignCloneview> {
                   campParambody: paramBody,
                 )
                     .then((onValue) async {
-                  await messageViewModel
-                      .uploadCampFiledb(image!, campaignId)
-                      .then((onValue) {
-                    getaccountData.fetchCampaign();
-                  });
+                  print("csvFile:::: ${csvFile}    ${fileNameController.text}");
+
+                  if (csvFile != null) {
+                    await messageViewModel
+                        .uploadCampFiledb(csvFile!, campaignId)
+                        .then((onValue) {
+                      getaccountData.fetchCampaign();
+                    });
+                  } else if (csvFile == null &&
+                      fileNameController.text.isNotEmpty) {
+                    CampaignViewModel campController =
+                        CampaignViewModel(context);
+
+                    Map csvClone = {
+                      "title": cloneCsvName,
+                      "filetype": cloneCsvType,
+                      "filesize": cloneCsvSize,
+                      "description": cloneCsvDesc,
+                      "campaign_id": campaignId
+                    };
+
+                    await campController.csvCloneCampaign(csvClone);
+                  }
+                  // await messageViewModel
+                  //     .uploadCampFiledb(image!, campaignId)
+                  //     .then((onValue) {
+                  //   getaccountData.fetchCampaign();
+                  // });
                 });
               }
 
@@ -1323,9 +1327,50 @@ class _Forms extends State<CampaignCloneview> {
                   };
 
                   MessageViewModel mstemp = MessageViewModel(context);
-                  var campaignResponse = await mstemp.sendCampParam(
+                  var campaignResponse = await mstemp
+                      .sendCampParam(
                     campParambody: paramBody,
-                  );
+                  )
+                      .then((onValue) async {
+                    print(
+                        "csvFile::  <><>:: ${csvFile}    ${fileNameController.text}");
+                    if (csvFile != null) {
+                      await messageViewModel
+                          .uploadCampFiledb(csvFile!, campaignId)
+                          .then((onValue) {
+                        getaccountData.fetchCampaign();
+                      });
+                    } else if (csvFile == null &&
+                        fileNameController.text.isNotEmpty) {
+                      CampaignViewModel campController =
+                          CampaignViewModel(context);
+
+                      Map csvClone = {
+                        "title": cloneCsvName,
+                        "filetype": cloneCsvType,
+                        "filesize": cloneCsvSize,
+                        "description": cloneCsvDesc,
+                        "campaign_id": campaignId
+                      };
+
+                      await campController.csvCloneCampaign(csvClone);
+                    }
+
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MultiProvider(
+                          providers: [
+                            ChangeNotifierProvider(
+                              create: (_) => CampaignViewModel(context),
+                            ),
+                          ],
+                          child: const CampaignListView(),
+                        ),
+                      ),
+                      (Route<dynamic> route) => route.isFirst,
+                    );
+                  });
                 }
 
                 //       debug("Uploading file with Campaign ID: $campaignId");
@@ -1415,7 +1460,8 @@ class _Forms extends State<CampaignCloneview> {
   Future<void> _getBootmSheet() {
     TextEditingController _templateController = TextEditingController();
     int selectedBtnIdx = 0;
-
+    // SelectedTemplateCategory = null;
+    // selectedTemplateName = null;
     return showModalBottomSheet<void>(
       context: context,
       useSafeArea: true,
@@ -1493,7 +1539,6 @@ class _Forms extends State<CampaignCloneview> {
                       data: templateNames,
                       onChanged: (String? newValue) {
                         setState(() {
-                          controllers.clear();
                           selectedTemplateName = newValue;
                           _templateController.text = newValue ?? '';
                           if (newValue != null) {
@@ -1512,7 +1557,7 @@ class _Forms extends State<CampaignCloneview> {
                           }
                         });
                         print(
-                            "selectedTemplateName:::::::::: $selectedTemplateName");
+                            "selectedTemplateName:::::::::: ${selectedTemplateName}");
                         _setSelectedTemplates();
                       },
                       value: selectedTemplateName,
@@ -1530,13 +1575,13 @@ class _Forms extends State<CampaignCloneview> {
                         ),
                         onPressed: () {
                           print(
-                              "selectedTemplateName>>> $selectedTemplateName");
+                              "selectedTemplateName>>> ${selectedTemplateName}");
                           if (selectedTemplateName == null ||
                               selectedTemplateName == "Select Template Name") {
                             EasyLoading.showToast("Select Template Name");
                             return;
                           }
-                          log("all comp info >> >>  $selectedHeader  $selectedBody $selectedFooter $selectedButtons}");
+                          log("all comp info >> >>  ${selectedHeader}  ${selectedBody} ${selectedFooter} ${selectedButtons}}");
                           log("selectedBody['text']>>> ${selectedBody.text}  ");
                           final regex = RegExp(r'\{\{\d+\}\}');
 
@@ -1595,6 +1640,7 @@ class _Forms extends State<CampaignCloneview> {
       // Update the state once with unique values
       setState(() {
         templateNames = uniqueTemplateNames.toList();
+        print("templateNames::: :${templateNames}");
       });
     }
   }
@@ -1647,24 +1693,237 @@ class _Forms extends State<CampaignCloneview> {
         ? []
         : selectedButtons?.buttons.map((button) => button.toMap()).toList() ??
             [];
+    String hdr = selectedHeader != null ? selectedHeader.format ?? "" : "";
+
+    print("hdr hdr  hdr::: ${hdr}");
+    String hdrBody;
+
+    if (hdr.isEmpty) {
+      hdrBody = "";
+    } else {
+      if (hdr == "IMAGE" || hdr == "VIDEO" || hdr == "DOCUMENT") {
+        if (imgToShow.isNotEmpty) {
+          hdrBody = imgToShow;
+        } else {
+          hdrBody = selectedHeader.text ?? "";
+        }
+      } else {
+        hdrBody = selectedHeader.text ?? "";
+      }
+    }
+
     String footer = selectedFooter != null ? selectedFooter?.text ?? "" : "";
     Map<String, dynamic> createtemp = {
       "id": selectedTemplateId,
       "name": selectedTemplateName,
       "language": selectedLanguage,
-      "header": selectedHeader != null ? selectedHeader.format ?? "" : "",
-      "header_body": selectedHeader != null ? selectedHeader.text ?? "" : "",
+      "header": hdr,
+      "header_body": hdrBody,
       "message_body": selectedBody != null ? selectedBody.text : "",
       "example_body_text": {"sendToAdmin": send},
       "footer": footer,
       "buttons": ba,
       "business_number": number,
     };
-
     print("createtemp campaign:::: ${createtemp}");
     late MessageViewModel mstemp = MessageViewModel(context);
     mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) {
       sendingCamplaign();
     });
+  }
+
+  Future<void> templateApiCall() async {
+    final prefs = await SharedPreferences.getInstance();
+    number = prefs.getString('phoneNumber');
+    debug("this is my number $number");
+    await Provider.of<TempleteListViewModel>(
+      context,
+      listen: false,
+    ).templetefetch(number: number ?? "").then((onValue) {
+      _fetchTemplates();
+    });
+  }
+
+  Widget _buildMediaWidget(String format, String content) {
+    print("format:::::: $format  $content");
+    switch (format) {
+      case "IMAGE":
+        return content.isEmpty
+            ? SizedBox(
+                height: 80,
+                width: 80,
+                child: Image.asset("assets/images/img_placeholder.png"),
+              )
+            : Image.network(content, fit: BoxFit.cover);
+
+      case "VIDEO":
+        return content.isNotEmpty
+            ? Container(
+                height: 150,
+                width: 150,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+              )
+            : Container(
+                height: 150,
+                width: double.infinity,
+                color: Colors.black12,
+                child: const Center(
+                  child: Icon(Icons.videocam_off, size: 40, color: Colors.grey),
+                ),
+              );
+
+      case "DOCUMENT":
+        return content.isNotEmpty
+            ? GestureDetector(
+                onTap: () {
+                  // openDocument(documentUrl); // Function to open the document
+                },
+                child: Row(
+                  children: [
+                    Image.asset("assets/images/doc.png",
+                        height: 120, width: 120),
+                  ],
+                ),
+              )
+            : const SizedBox(); // Empty if no document
+
+      default:
+        return const SizedBox(); // If format is unknown
+    }
+  }
+
+  Future<File?> _pickDocFromGallery() async {
+    final pickedFile = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: ["pdf"],
+    );
+    if (pickedFile != null) {
+      setState(() {
+        file = pickedFile.files.first;
+        image = File(file!.path!);
+        // _Vcontroller = VideoPlayerController.file(image!);
+        print("image::: $image");
+
+        // fileNameController.text = file!.name;
+      });
+      return image;
+    } else {
+      return null;
+    }
+  }
+
+  Future<File?> _pickVideoFromGallery() async {
+    final pickedFile = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: ["mp4", 'mov'],
+    );
+    if (pickedFile != null) {
+      setState(() {
+        file = pickedFile.files.first;
+        image = File(file!.path!);
+        _Vcontroller = VideoPlayerController.file(image!);
+        print("image::: $image");
+        // fileNameController.text = file!.name;
+      });
+      return image;
+    } else {
+      return null;
+    }
+  }
+
+  Future<File?> _pickImaFromGallery() async {
+    final pickedFile = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: ["jpg", 'png'],
+    );
+    if (pickedFile != null) {
+      setState(() {
+        file = pickedFile.files.first;
+        image = File(file!.path!);
+        print("image::: $image");
+        // fileNameController.text = file!.name;
+      });
+      return image;
+    } else {
+      return null;
+    }
+  }
+
+  Future<File?> urlToFile(String imageUrl) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+
+      if (response.statusCode == 200) {
+        final directory = await getTemporaryDirectory();
+
+        final filePath = '${directory.path}/downloaded_image.png';
+
+        File file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
+
+        return file;
+      }
+    } catch (e) {
+      print("Error downloading image: $e");
+    }
+    return null;
+  }
+
+  Future<void> downloadCsv(String url, String fileName) async {
+    var status = await Permission.manageExternalStorage.status;
+
+    if (!status.isGranted) {
+      status = await Permission.manageExternalStorage.request();
+    }
+
+    if (!status.isGranted && await Permission.storage.isDenied) {
+      status = await Permission.storage.request();
+    }
+
+    if (status.isGranted) {
+      final downloadsDir = Directory('/storage/emulated/0/Download');
+
+      if (!downloadsDir.existsSync()) {
+        downloadsDir.createSync(recursive: true);
+      }
+
+      final filePath = '${downloadsDir.path}/$fileName';
+      final file = File(filePath);
+
+      if (await file.exists()) {
+        print(' File already exists. Opening...');
+      } else {
+        print(' Downloading file...');
+        try {
+          await Dio().download(url, filePath);
+          print(' Download completed.');
+        } catch (e) {
+          print(' Download error: $e');
+          return;
+        }
+      }
+
+      final result = await OpenFile.open(filePath);
+      print(' Open result: ${result.message}');
+    } else if (await Permission.manageExternalStorage.isPermanentlyDenied ||
+        await Permission.storage.isPermanentlyDenied) {
+      print(" Permission permanently denied. Opening settings...");
+      await openAppSettings();
+    } else {
+      print(" Storage permission denied.");
+    }
   }
 }

@@ -174,7 +174,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     'MARKETING',
     'AUTHENTICATION',
   ];
-  // Map<String, List<String>> allTemplatesMap = {};
+
   Map<String, Map<String, dynamic>> allTemplatesMap = {};
   List<dynamic> templateName1 = [];
   // Map<String, dynamic> templateName1 = {};
@@ -1231,7 +1231,14 @@ class _Forms extends State<CampaignAddUpdateView> {
                                 if (selectedHeader.format == "IMAGE" ||
                                     selectedHeader.format == "VIDEO" ||
                                     selectedHeader.format == "DOCUMENT") {
-                                  if (isOtherFileSelected == true) {
+                                  if (isOtherFileSelected == false) {
+                                    EasyLoading.showToast(
+                                        "Choose File To Continue");
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                    return;
+                                  } else {
                                     final prefs =
                                         await SharedPreferences.getInstance();
                                     String? number =
@@ -1251,9 +1258,10 @@ class _Forms extends State<CampaignAddUpdateView> {
 
                                       print("File ID: $fileid");
                                     });
-                                  } else {
-                                    image = await urlToFile(imgToShow);
                                   }
+                                  // else {
+                                  //   image = await urlToFile(imgToShow);
+                                  // }
                                 }
 
                                 setState(() {

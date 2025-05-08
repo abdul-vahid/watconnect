@@ -9,6 +9,7 @@ abstract class SharedPrefsConstants {
   static const String userKey = "user";
   static const String accountKey = "account";
   static const String userDecodedTokenKey = "decoded_token_key";
+  static const String usertenantcodeKey = "tenantcode";
   static const String userrolekey = "userrole";
 
   static const String idTokenKey = 'id_token';
@@ -120,6 +121,8 @@ abstract class AppConstants {
   static const String Messagesendmobile = "/api/whatsapp/message/history";
 
   static const String campaignParam = "/api/whatsapp/campaign/params";
+
+  static const String csvCloneCamp = "/api/whatsapp/files/clone";
 
   static const String marksreadmsg =
       "/api/whatsapp/chat/mark_as_read?whatsapp_setting_number=";
