@@ -61,6 +61,7 @@ class BaseListViewModel extends ChangeNotifier {
       exception = error;
       viewModels.add(BaseViewModel(model: BaseModel()));
     } on Exception catch (e) {
+      print("e:::::::::::::: ${e}");
       exception = e;
       status = "Error";
       viewModels.add(BaseViewModel(model: BaseModel()));

@@ -10,7 +10,7 @@ class CloneRecord {
   String? recurrence;
 
   String? customRecurrenceUnit;
-  String? selectedDays;
+  List? selectedDays;
   String? selectedDate;
   String? recurrenceEndType;
   String? recurrenceEndDate;
@@ -69,7 +69,7 @@ class CloneRecord {
             : DateTime.tryParse(data['start_date']),
         recurrence: data['recurrence'] as String?,
         customRecurrenceUnit: data['custom_recurrence_unit'] as String?,
-        selectedDays: data['selected_days'] as String?,
+        selectedDays: data['selected_days'] as List?,
         // selectedDate: data['selected_date'] as String?,
         recurrenceEndType: data['recurrence_end_type'] as String?,
         recurrenceEndDate: data['recurrence_end_date'] as String?,

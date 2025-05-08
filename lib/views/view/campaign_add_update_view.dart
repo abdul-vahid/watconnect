@@ -78,6 +78,7 @@ class _Forms extends State<CampaignAddUpdateView> {
   dynamic selectedButtons;
   CampaignModel? campData = CampaignModel();
   File? image;
+  File? csvFile;
   // File? image;
   var campaignvm;
   List leadsToSend = [];
@@ -146,6 +147,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     } else {
       _type = "Web";
       count = 0;
+      _tempController.text = "Select Template";
       templateNames.add("Select Template Name");
     }
 
@@ -186,6 +188,7 @@ class _Forms extends State<CampaignAddUpdateView> {
   final GlobalKey<FormState> _addleadFormKey = GlobalKey<FormState>();
   final TextEditingController _dateStartInput = TextEditingController();
   final TextEditingController _tempController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     leadlistvm = Provider.of<LeadListViewModel>(context);
@@ -636,7 +639,8 @@ class _Forms extends State<CampaignAddUpdateView> {
                     debug('File Byte Size: ${file?.size}');
                     debug('File Type: ${file?.extension}');
                     debug('File Path: ${file?.path}');
-                    image = File(file!.path.toString());
+                    csvFile = File(file!.path.toString());
+                    debug('csvFile Path: ${csvFile}');
                     final convertBytes =
                         File(file!.path.toString()).readAsBytesSync();
                     base64Img = base64Encode(convertBytes);
@@ -800,6 +804,8 @@ class _Forms extends State<CampaignAddUpdateView> {
         'type': _type,
         'startDate': _dateStartInput.text,
         'group_ids': selectedGroupIds,
+        "template_name": widget.model?.templateName ?? "",
+        "id": widget.model?.campaignId ?? "",
       };
       print("camp before siending::: ${camp}");
       AppUtils.onLoading(context, "Updating, please wait...");
@@ -908,7 +914,9 @@ class _Forms extends State<CampaignAddUpdateView> {
       imgToShow = "";
     }
     controllers.clear();
-
+    setState(() {
+      _isLoading = false;
+    });
     final regex = RegExp(r'\{\{\d+\}\}');
 
     count = regex.allMatches(text).length;
@@ -1208,6 +1216,18 @@ class _Forms extends State<CampaignAddUpdateView> {
                                 _tempController.text =
                                     selectedTemplateName ?? "";
 
+                                // print(
+                                //     "selectedHeader.format::::: ${selectedHeader}    ${selectedHeader.format}");
+
+                                if (selectedHeader == null) {
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+
+                                  Navigator.pop(context);
+                                  return;
+                                }
+
                                 if (selectedHeader.format == "IMAGE" ||
                                     selectedHeader.format == "VIDEO" ||
                                     selectedHeader.format == "DOCUMENT") {
@@ -1236,13 +1256,12 @@ class _Forms extends State<CampaignAddUpdateView> {
                                   }
                                 }
 
-                                if (mounted) {
-                                  Navigator.pop(context);
-                                }
-
                                 setState(() {
                                   _isLoading = false;
                                 });
+                                if (mounted) {
+                                  Navigator.pop(context);
+                                }
                               },
                               child: _isLoading
                                   ? const CircularProgressIndicator(
@@ -1339,7 +1358,7 @@ class _Forms extends State<CampaignAddUpdateView> {
         // _Vcontroller = VideoPlayerController.file(image!);
         print("image::: ${image}");
 
-        fileNameController.text = file!.name;
+        // fileNameController.text = file!.name;
       });
       return image;
     } else {
@@ -1522,11 +1541,23 @@ class _Forms extends State<CampaignAddUpdateView> {
                 campParambody: paramBody,
               )
                   .then((onValue) async {
-                await messageViewModel
-                    .uploadCampFiledb(image!, campaignId)
-                    .then((onValue) {
-                  getaccountData.fetchCampaign();
-                });
+                print("csvFile ::::   ${csvFile}");
+
+                print("image ::::   ${image}");
+                if (csvFile != null) {
+                  await messageViewModel
+                      .uploadCampFiledb(csvFile!, campaignId, isFromCamp: false)
+                      .then((onValue) {
+                    getaccountData.fetchCampaign();
+                  });
+                }
+                if (image != null) {
+                  await messageViewModel
+                      .uploadCampFiledb(image!, campaignId)
+                      .then((onValue) {
+                    getaccountData.fetchCampaign();
+                  });
+                }
               });
             }
 
@@ -1605,7 +1636,16 @@ class _Forms extends State<CampaignAddUpdateView> {
                   campParambody: paramBody,
                 );
               }
+              print("csvFile ::::   ${csvFile}");
 
+              print("image ::::   ${image}");
+              if (csvFile != null) {
+                await messageViewModel
+                    .uploadCampFiledb(csvFile!, campaignId, isFromCamp: false)
+                    .then((onValue) {
+                  getaccountData.fetchCampaign();
+                });
+              }
               debug("Uploading file with Campaign ID: $campaignId");
 
               // await getFileData.addFiles(image!, campaignId, fileData);

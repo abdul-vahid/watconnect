@@ -143,6 +143,7 @@ class _Forms extends State<CampaignCloneview> {
       await campVM
           .getcampaignbyid(widget.record.campaignId.toString())
           .then((onValue) {
+        // print("onValue::::::::::: >>>>>>    ${onValue}");
         for (var viewModel in campVM.viewModels) {
           var model = viewModel.model;
           print(" model.name===>$model");
@@ -202,8 +203,8 @@ class _Forms extends State<CampaignCloneview> {
         }
         _setSelectedTemplates();
       });
-    } catch (e) {
-      print("error in setting data::: ${e}");
+    } catch (e, stackTrace) {
+      print("error in setting data::: ${e}       ${stackTrace}");
     }
 
     print("_name_name${_name.text}");
