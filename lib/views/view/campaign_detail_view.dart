@@ -3,6 +3,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/models/campaign_model/record.dart';
 import 'package:whatsapp/view_models/campaign_vm.dart';
 import 'package:whatsapp/views/view/campaign_add_update_view.dart'
@@ -23,7 +24,7 @@ class CampaignDetailView extends StatefulWidget {
 
 class _CampaignDetailViewState extends State<CampaignDetailView> {
   String? dateformat;
-
+  late CampaignViewModel campaignlistvm;
   get record => widget.record;
 
   @override
@@ -140,17 +141,37 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
       );
       return;
     }
-    CampaignViewModel(context).deleteById(campaignidd).then((value) {
+    CampaignViewModel(context).deleteById(campaignidd).then((value) async {
       print("working enter");
 
       EasyLoading.showToast("Deleted Succeffuly");
 
-      Provider.of<CampaignViewModel>(context, listen: false).fetch();
+      campaignlistvm = Provider.of<CampaignViewModel>(context, listen: false);
 
-      Future.delayed(Duration(milliseconds: 100), () {
-        if (mounted && Navigator.canPop(context)) {
-          Navigator.pop(context);
-        }
+      final prefs = await SharedPreferences.getInstance();
+      var number = prefs.getString('phoneNumber');
+      await Provider.of<CampaignViewModel>(context, listen: false)
+          .fetchCampaign(number: number ?? "")
+          .then((onValue) {
+        Future.delayed(Duration(milliseconds: 100), () {
+          if (mounted && Navigator.canPop(context)) {
+            Navigator.pop(context);
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MultiProvider(
+                  providers: [
+                    ChangeNotifierProvider(
+                      create: (_) => CampaignViewModel(context),
+                    ),
+                  ],
+                  child: const CampaignListView(),
+                ),
+              ),
+              (Route<dynamic> route) => route.isFirst,
+            );
+          }
+        });
       });
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
