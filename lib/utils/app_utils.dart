@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -191,7 +192,23 @@ class AppUtils {
       // Decode JWT Token
       Map<String, dynamic> decodedToken =
           JwtDecoder.decode(userModel.authToken!);
-      print("decodedToken:::::::::::::::::::::: ${decodedToken['tenantcode']}");
+      log("decodedToken:::::::::::::::::::::: ${decodedToken['modules']}");
+
+      try {
+        var modulesList = decodedToken['modules'];
+        log("modulesList::::::::::::::::::${modulesList}");
+        List availableModule =
+            modulesList.map((e) => e['name'].toString()).toList();
+        print("contains::: ${availableModule.contains('Billing')}");
+
+        List<String> stringList = List<String>.from(availableModule);
+
+        print("stringList::::::::: ${stringList}  ${stringList.runtimeType}");
+        await prefs.setStringList(
+            SharedPrefsConstants.userAvailableMoulesKey, stringList);
+      } catch (e) {
+        print("printing error in decode:::::: $e");
+      }
       var userModelObj = UserModel.fromMap(decodedToken);
 
       // debug('Username from token = ${userModelObj.username}');

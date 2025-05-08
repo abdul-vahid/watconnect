@@ -3,6 +3,7 @@ import 'dart:developer';
 // import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/apis/app_exception.dart';
 import '../../core/models/base_model.dart';
@@ -31,6 +32,9 @@ class BaseListViewModel extends ChangeNotifier {
       final jsonObject = await BaseService().get(url: url);
       // await _refreshToken(url, jsonKey);
       log("Response Data get == $jsonObject ${url}");
+      if (jsonObject['success'] == false) {
+        EasyLoading.showToast(jsonObject['message']);
+      }
       var records = jsonObject;
       if (jsonObject is! List) {
         debug("not an array");
@@ -154,6 +158,9 @@ class BaseListViewModel extends ChangeNotifier {
     try {
       var r = await BaseService().post(url: url, body: body);
       log("response=>$r    api>>> ${url}");
+      if (r['success'] == false) {
+        EasyLoading.showToast("${r['message']}");
+      }
       return r;
     } on UnauthorisedException {
       await _refreshToken(url);
