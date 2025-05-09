@@ -26,22 +26,32 @@ class BaseListViewModel extends ChangeNotifier {
   Future get(
       {required BaseModel baseModel,
       required String url,
-      String jsonKey = "records"}) async {
+      String jsonKey = "records",
+      bool showToast = false}) async {
     log("get api url>>> ${url}   ");
+
     try {
       final jsonObject = await BaseService().get(url: url);
       // await _refreshToken(url, jsonKey);
       log("Response Data get == $jsonObject ${url}");
-      if (jsonObject['success'] == false) {
-        EasyLoading.showToast(jsonObject['message']);
+      print("jsonObject:: ${jsonObject.runtimeType}");
+      if (showToast) {
+        if (jsonObject is Map<String, dynamic> &&
+            jsonObject.containsKey('success') &&
+            jsonObject['success'] == false) {
+          EasyLoading.showToast(jsonObject['message']);
+        }
       }
+
+      print("");
       var records = jsonObject;
       if (jsonObject is! List) {
         debug("not an array");
         records = [jsonObject];
         // return records;
       }
-      print("${records}   ${records.runtimeType}");
+      print(
+          ":____________________>>>>>>>>>>  ${records}   ${records.runtimeType}");
       var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
       viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
 
@@ -152,14 +162,19 @@ class BaseListViewModel extends ChangeNotifier {
   Future<dynamic> post(
       {required String url,
       required String body,
-      String jsonKey = "records"}) async {
+      String jsonKey = "records",
+      bool showToast = false}) async {
     log("req body>> ${url} >>>>>> ${body}");
 
     try {
       var r = await BaseService().post(url: url, body: body);
       log("response=>$r    api>>> ${url}");
-      if (r['success'] == false) {
-        EasyLoading.showToast("${r['message']}");
+      if (showToast) {
+        if (r is Map<String, dynamic> &&
+            r.containsKey('success') &&
+            r['success'] == false) {
+          EasyLoading.showToast(r['message']);
+        }
       }
       return r;
     } on UnauthorisedException {
@@ -233,6 +248,7 @@ class BaseListViewModel extends ChangeNotifier {
       status = "Error";
       viewModels.add(BaseViewModel(model: BaseModel()));
     } catch (e) {
+      print("error:::here  ${e}");
       exception = Exception(e.toString());
       status = "Error";
     }

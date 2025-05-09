@@ -15,7 +15,9 @@ class LeadListViewModel extends BaseListViewModel {
 
   Future<void> fetch() async {
     String url = AppUtils.getUrl(AppConstants.leadAPIPath);
-    await get(url: url, baseModel: LeadModel());
+    await get(url: url, baseModel: LeadModel()).then((onValue) {
+      print("viewModels::: ${viewModels}");
+    });
   }
 
   Future<void> fetchRecentChat() async {

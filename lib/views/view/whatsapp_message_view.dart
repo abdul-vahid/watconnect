@@ -2224,7 +2224,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                         print("ID: $fileid");
                                       });
                                     } else {
-                                      image = await urlToFile(imgToShow);
+                                      EasyLoading.showToast(
+                                          "Choose File To Continue");
+
+                                      setState(() {
+                                        _isLoading = false;
+                                      });
+                                      return;
+
+                                      // image = await urlToFile(imgToShow);
                                     }
                                   }
 
@@ -2581,6 +2589,7 @@ class _ChatScreenState extends State<ChatScreen> {
     print("temmplet msg id==========> $templeteidmessage");
     print("create object response=> $templateResponse");
     var docId = await getDocId();
+
     List params = [
       {
         "type": selectedHeader.format == "IMAGE" ? "image" : "video",

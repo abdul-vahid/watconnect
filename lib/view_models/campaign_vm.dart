@@ -19,7 +19,7 @@ class CampaignViewModel extends BaseListViewModel {
 
   Future<void> fetchCampaign({String? number = ''}) async {
     String url = AppUtils.getUrl("${AppConstants.campaignAPIPath}=$number");
-    await get(url: url, baseModel: CampaignModel());
+    await get(url: url, baseModel: CampaignModel(), showToast: true);
   }
 
   Future<dynamic> addCampaign(Map addModel) async {

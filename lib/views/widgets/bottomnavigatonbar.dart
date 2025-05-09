@@ -38,7 +38,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
 
     SharedPreferences.getInstance().then((prefs) {
       userModelData = AppUtils.getSessionUser(prefs);
-      print("userModelData${userModelData}");
+      print("userModelData initrole ${userModelData?.userrole}");
       // userModel ?? AppUtils.logout(context);
     });
     getuserrole();
@@ -145,7 +145,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       // const Whtsapphone(),
       const RecentChatView(),
     ];
-    // print("dsfffffffffffffffffffffffffff=>${userModelData?.userrole}");
+    print("dsfffffffffffffffffffffffffff=>${userModelData?.userrole}");
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(

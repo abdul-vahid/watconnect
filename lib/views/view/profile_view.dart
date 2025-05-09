@@ -175,6 +175,7 @@ class _ProfileViewState extends State<ProfileView> {
   Widget _getBody() {
     String fullPhone = "${user!.countrycode} ${user!.whatsapp_number}";
     String fullname = fName! + lName!;
+    String role = user?.userrole ?? "";
     print("this func call when refresh");
 
     print("logourl::: ${userModel?.logourl ?? ""}");
@@ -210,19 +211,21 @@ class _ProfileViewState extends State<ProfileView> {
                       Consumer<MessageController>(
                           builder: (context, mssss, child) {
                         print("ms>>>> ${mssss.userProfile}");
-                        return CircleAvatar(
-                          radius: 60,
-                          backgroundColor: Colors.white,
-                          child: Padding(
-                            padding: const EdgeInsets.all(0),
-                            child: ClipOval(
-                              child: CachedNetworkImage(
-                                imageUrl: mssss.userProfile,
-                                placeholder: (context, url) =>
-                                    const CircularProgressIndicator(),
-                                errorWidget: (context, url, error) =>
-                                    Icon(Icons.error),
-                              ),
+                        return Container(
+                          height: 120,
+                          width: 120,
+
+                          // radius: 60,
+                          // backgroundColor: Colors.white,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(60),
+                            child: CachedNetworkImage(
+                              imageUrl: mssss.userProfile,
+                              fit: BoxFit.fill,
+                              placeholder: (context, url) =>
+                                  const CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
                             ),
                           ),
                         );
@@ -363,6 +366,8 @@ class _ProfileViewState extends State<ProfileView> {
                       getRow("Email", email),
                       const Divider(),
                       getRow("Phone", fullPhone),
+                      const Divider(),
+                      getRow("Role", role),
                     ],
                   ),
                 ],

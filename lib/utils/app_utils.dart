@@ -178,56 +178,44 @@ class AppUtils {
     );
   }
 
-  static FutureOr<String?> getToken() async {
+  static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
 
     if (prefs.containsKey(SharedPrefsConstants.userKey)) {
       var data = prefs.getString(SharedPrefsConstants.userKey);
-      // debug("data = $data");
 
-      // debug("data = $data");
       var userModel = UserModel.fromJson(data!);
-      // debug("Auth Token === ${userModel.authToken}");
-
-      // Decode JWT Token
-      Map<String, dynamic> decodedToken =
-          JwtDecoder.decode(userModel.authToken!);
 
       try {
-        var modulesList = decodedToken['modules'];
+        Map<String, dynamic> decodedToken =
+            JwtDecoder.decode(userModel.authToken!);
 
+        var modulesList = decodedToken['modules'];
         List availableModule =
             modulesList.map((e) => e['name'].toString()).toList();
         print("contains::: ${availableModule.contains('Billing')}");
 
         List<String> stringList = List<String>.from(availableModule);
 
-        print("stringList::::::::: ${stringList}  ${stringList.runtimeType}");
+        print("stringList::::::::: $stringList  ${stringList.runtimeType}");
         await prefs.setStringList(
             SharedPrefsConstants.userAvailableMoulesKey, stringList);
+
+        var userModelObj = UserModel.fromMap(decodedToken);
+        await prefs.setString(
+            SharedPrefsConstants.userDecodedTokenKey, userModelObj.toJson());
+
+        await prefs.setString(SharedPrefsConstants.usertenantcodeKey,
+            decodedToken['tenantcode'] ?? "");
+
+        userModel.authToken =
+            prefs.getString(SharedPrefsConstants.accessTokenKey);
+
+        return userModel.authToken;
       } catch (e) {
-        print("printing error in decode:::::: $e");
+        print("Error decoding JWT: $e");
+        return null;
       }
-      var userModelObj = UserModel.fromMap(decodedToken);
-
-      // debug('Username from token = ${userModelObj.username}');
-      // debug('userroel from token = ${userModelObj.userrole}');
-
-      await prefs.setString(
-          SharedPrefsConstants.userDecodedTokenKey, userModelObj.toJson());
-
-      await prefs.setString(SharedPrefsConstants.usertenantcodeKey,
-          decodedToken['tenantcode'] ?? "");
-
-      // debug(
-      //     "Decoded Token: ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)}");
-
-      // debug(
-      //     "refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!  ${prefs.getString(SharedPrefsConstants.userDecodedTokenKey)!}");
-      //var loginModelMap = records.map((item) => UserModel.fromMap(item)).toList();
-      userModel.authToken =
-          prefs.getString(SharedPrefsConstants.accessTokenKey);
-      return userModel.authToken;
     } else {
       return null;
     }
