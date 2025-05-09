@@ -192,11 +192,10 @@ class AppUtils {
       // Decode JWT Token
       Map<String, dynamic> decodedToken =
           JwtDecoder.decode(userModel.authToken!);
-      log("decodedToken:::::::::::::::::::::: ${decodedToken['modules']}");
 
       try {
         var modulesList = decodedToken['modules'];
-        log("modulesList::::::::::::::::::${modulesList}");
+
         List availableModule =
             modulesList.map((e) => e['name'].toString()).toList();
         print("contains::: ${availableModule.contains('Billing')}");

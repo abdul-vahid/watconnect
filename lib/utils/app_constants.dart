@@ -10,6 +10,8 @@ abstract class SharedPrefsConstants {
   static const String accountKey = "account";
   static const String userDecodedTokenKey = "decoded_token_key";
   static const String usertenantcodeKey = "tenantcode";
+
+    static const String userAvailableMoulesKey = "modules";
   static const String userrolekey = "userrole";
 
   static const String idTokenKey = 'id_token';

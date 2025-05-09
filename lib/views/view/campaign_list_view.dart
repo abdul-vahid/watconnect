@@ -8,6 +8,7 @@ import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/views/view/clone_campaign_view.dart';
 import '../../models/campaign_model/campaign_model.dart';
 import '../../models/user_model/user_model.dart';
@@ -50,7 +51,16 @@ class _CampaignListView extends State<CampaignListView> {
     });
   }
 
-  Future<void> saveNumberData() async {}
+  List<String> modules = [];
+  Future<void> saveNumberData() async {
+    final prefs = await SharedPreferences.getInstance();
+    modules = await prefs
+            .getStringList(SharedPrefsConstants.userAvailableMoulesKey) ??
+        [];
+    setState(() {});
+
+    print("modules:::: ${modules}");
+  }
 
   @override
   void initState() {
@@ -71,27 +81,29 @@ class _CampaignListView extends State<CampaignListView> {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: CircleAvatar(
-              backgroundColor: AppColor.navBarIconColor,
-              child: IconButton(
-                icon: const Icon(
-                  FontAwesomeIcons.add,
-                  size: 25,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CampaignAddUpdateView(),
+          modules.contains("Campaign")
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: CircleAvatar(
+                    backgroundColor: AppColor.navBarIconColor,
+                    child: IconButton(
+                      icon: const Icon(
+                        FontAwesomeIcons.add,
+                        size: 25,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CampaignAddUpdateView(),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
-          ),
+                  ),
+                )
+              : const SizedBox(),
         ],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
