@@ -1,15 +1,22 @@
+import 'dart:developer';
+
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as badges;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
+import 'package:whatsapp/view_models/lead_list_vm.dart';
 
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/NotificationPage.dart';
@@ -48,13 +55,17 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _HomeViewState extends State<HomeView> with RouteAware {
   // List of items for the dropdown
   String? lastAddedId;
   Map<String, String> itemsMap = {};
   List allNums = [];
-
+  IO.Socket? socket;
+  String phNum = "+919876543210";
+  String token = "your_token_here";
+  var userId;
   List allWhNums = [];
+  List unreadList = [];
   String? selectedWhatsAppNumber;
   UnreadCountVm? unreadCountVm;
   // ignore: prefer_typing_uninitialized_variables
@@ -109,9 +120,35 @@ class _HomeViewState extends State<HomeView> {
     NotificationUtil.registerToken();
     getAvailableModules();
     getPhoneNumber();
+    connectSocket();
     fetch();
     super.initState();
   }
+
+  @override
+  void dispose() {
+    disconnectSocket();
+
+    super.dispose();
+  }
+
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+
+  //   print("this is called did change dependency");
+
+  //   final route = ModalRoute.of(context);
+  //   if (route != null && route is PageRoute) {
+  //     print("both the coditions got true so its here:::::::::::::::::::::::::");
+  //     routeObserver.subscribe(this, route);
+  //     _getUnreadCount();
+  //     connectSocket();
+  //   } else {
+  //     print(
+  //         "both the coditions got false so its here:::::::::::::::::::::::::");
+  //   }
+  // }
 
   List<String> modules = [];
   Future<void> getAvailableModules() async {
@@ -300,33 +337,42 @@ class _HomeViewState extends State<HomeView> {
         ),
         actions: [
           IconButton(
-            tooltip: "Messages",
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationPage(),
-                ),
-              );
-            },
-            icon: badges.Badge(
-              isLabelVisible: true,
-              label: Text(
-                totalUnreadCount.toString(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              backgroundColor:
-                  Theme.of(context).colorScheme.onTertiaryContainer,
-              child: const Icon(
-                Icons.notifications,
-                size: 22,
-              ),
-            ),
-          ),
+              tooltip: "Messages",
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationPage(),
+                  ),
+                );
+              },
+              icon: Stack(
+                children: [
+                  const Icon(
+                    Icons.notifications,
+                    size: 28,
+                  ),
+                  if (totalUnreadCount > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: badges.Badge(
+                        isLabelVisible: true,
+                        label: Text(
+                          totalUnreadCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.onTertiaryContainer,
+                        padding: const EdgeInsets.all(2),
+                      ),
+                    ),
+                ],
+              )),
           PopupMenuButton<String>(
             position: PopupMenuPosition.under,
             icon: const Icon(Icons.phone, size: 23, color: Colors.white),
@@ -869,6 +915,79 @@ class _HomeViewState extends State<HomeView> {
       }
     }
     print("itemsMap::: ${itemsMap}   ${allNums}");
+  }
+
+  Future<void> connectSocket() async {
+    log("connecting to socket::::::::::::::::::::::::::::::::: ");
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+
+    String tkn = await AppUtils.getToken() ?? "";
+    Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+
+    token = tkn;
+    phNum = number ?? "";
+    userId = decodedToken;
+
+    try {
+      print("Token: $token");
+
+      socket = IO.io(
+        'https://sandbox.watconnect.com',
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setPath('/swp/socket.io')
+            .setExtraHeaders({'Authorization': 'Bearer $token'})
+            .build(),
+      );
+      socket!.connect();
+      socket!.onConnect((_) {
+        print('Connected to WebSocket on home');
+        socket!.emit("setup", userId);
+      });
+      socket!.on("connected", (_) {
+        // print(" WebSocket setup complete");
+      });
+
+      socket!.on("receivedwhatsappmessage", (data) {
+        print(" New WhatsApp message: $data");
+        _getUnreadCount();
+      });
+
+      socket!.onDisconnect((_) {
+        // print(" WebSocket Disconnected");
+      });
+
+      socket!.onError((error) {
+        print(" WebSocket Error: $error");
+      });
+    } catch (error) {
+      print("Error connecting to WebSocket: $error");
+    }
+  }
+
+  Future<void> _getUnreadCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    var number = prefs.getString('phoneNumber');
+
+    if (!mounted) return;
+    Provider.of<LeadListViewModel>(context, listen: false).fetch();
+    await Provider.of<UnreadCountVm>(context, listen: false)
+        .fetchunreadcount(number: number ?? "");
+
+    var unreadMsgModel;
+    for (var unreadModel in unreadCountVm?.viewModels ?? []) {
+      unreadMsgModel = unreadModel.model as UnreadMsgModel;
+    }
+    unreadList = unreadMsgModel.records ?? [];
+    setState(() {});
+  }
+
+  void disconnectSocket() {
+    if (socket != null) {
+      socket!.disconnect();
+      print(" WebSocket Disconnected on home");
+    }
   }
 }
 

@@ -194,41 +194,47 @@ class UserListViewModel extends BaseListViewModel {
         headers: headers,
         body: body,
       );
-
+      print("response.statusCode:::::: ${response.statusCode}");
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
-        var authToken = jsonResponse['authToken'];
-        var refreshToken = jsonResponse['refreshToken'];
-        print('Success: $jsonResponse');
+        if (jsonResponse['success'] == false) {
+          EasyLoading.showToast(jsonResponse['errors']);
+          return false;
+        } else {
+          var authToken = jsonResponse['authToken'];
+          var refreshToken = jsonResponse['refreshToken'];
+          print('Success: $jsonResponse');
 
-        var records = jsonResponse is List ? jsonResponse : [jsonResponse];
-        var modelMap = records.map((item) => UserModel.fromMap(item)).toList();
-        viewModels =
-            modelMap.map((item) => BaseViewModel(model: item)).toList();
+          var records = jsonResponse is List ? jsonResponse : [jsonResponse];
+          var modelMap =
+              records.map((item) => UserModel.fromMap(item)).toList();
+          viewModels =
+              modelMap.map((item) => BaseViewModel(model: item)).toList();
 
-        log(" modelMap ${modelMap}  ${modelMap.runtimeType}   viewModels  ${viewModels}");
-        var userModel = modelMap[0];
-        print(
-            "viewModels: make : login: ${viewModels}   ${userModel}  ${userModel}");
-        // var userModel = jsonResponse as UserModel;
-        // print(
-        //     "userModel: in other login api:: ${userModel}  ${userModel.runtimeType}");
-        SharedPreferences.getInstance().then((prefs) async {
-          await prefs.setString(
-            SharedPrefsConstants.userKey,
-            userModel.toJson(),
-          );
-          await prefs.setString(
-            SharedPrefsConstants.refreshTokenKey,
-            refreshToken ?? '',
-          );
-          await prefs.setString(
-            SharedPrefsConstants.accessTokenKey,
-            authToken ?? '',
-          );
-        });
-        EasyLoading.dismiss();
-        return true;
+          log(" modelMap ${modelMap}  ${modelMap.runtimeType}   viewModels  ${viewModels}");
+          var userModel = modelMap[0];
+          print(
+              "viewModels: make : login: ${viewModels}   ${userModel}  ${userModel}");
+          // var userModel = jsonResponse as UserModel;
+          // print(
+          //     "userModel: in other login api:: ${userModel}  ${userModel.runtimeType}");
+          SharedPreferences.getInstance().then((prefs) async {
+            await prefs.setString(
+              SharedPrefsConstants.userKey,
+              userModel.toJson(),
+            );
+            await prefs.setString(
+              SharedPrefsConstants.refreshTokenKey,
+              refreshToken ?? '',
+            );
+            await prefs.setString(
+              SharedPrefsConstants.accessTokenKey,
+              authToken ?? '',
+            );
+          });
+          EasyLoading.dismiss();
+          return true;
+        }
       } else {
         print('Failed with status code: ${response.statusCode}');
         print('Body: ${response.body}');

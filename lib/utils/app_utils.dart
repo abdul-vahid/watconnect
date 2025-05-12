@@ -277,13 +277,16 @@ class AppUtils {
   }
 
   static List<String> getErrorMessages(exception) {
-    //print("exception ");
+    print("exception   ${exception}   ${exception.runtimeType}");
+
     List<String> errorMessages = [];
+
+    print("exception is AppException:::: ${exception is AppException}");
     if (exception is AppException) {
       Map<String, dynamic> data = jsonDecode(exception.getMessage());
       data.forEach((key, value) {
         debug("key == $key == $value");
-        //errorMessages.add(value);
+        errorMessages.add(value);
         isLoggedout = value.toString().toLowerCase() == "expired token";
       });
     } else {

@@ -34,7 +34,8 @@ import 'view_models/whatsapp_setting_vm.dart';
 import 'views/view/splash_view.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
+final RouteObserver<ModalRoute<void>> routeObserver =
+    RouteObserver<ModalRoute<void>>();
 void main() async {
   ErrorWidget.builder = (FlutterErrorDetails details) {
     return const Center(
@@ -85,6 +86,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         navigatorKey: navigatorKey,
+        navigatorObservers: [routeObserver],
         title: 'Watconnect',
         theme: ThemeData(
           textTheme: GoogleFonts.kohSantepheapTextTheme(),

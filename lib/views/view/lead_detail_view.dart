@@ -4,8 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
+import 'package:whatsapp/view_models/lead_count_vm.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/views/view/lead_add_update_view.dart';
+import 'package:whatsapp/views/view/lead_list_view.dart';
 import '../../models/lead_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_constants.dart';
@@ -210,7 +212,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                           recordRow(
                               "Payment Model", widget.model?.paymentmodel),
                           const Divider(),
-                          recordRow("Status", widget.model?.convertedcontactid),
+                          recordRow("Status", widget.model?.leadstatus),
                           const Divider(),
                           Row(
                             children: [
@@ -402,12 +404,21 @@ class _LeadDetailViewState extends State<LeadDetailView> {
       EasyLoading.showToast("Deleted Succeffuly");
 
       Provider.of<LeadListViewModel>(context, listen: false).fetch();
-
-      Future.delayed(Duration(milliseconds: 100), () {
-        if (mounted && Navigator.canPop(context)) {
-          Navigator.pop(context);
-        }
-      });
+      Provider.of<LeadCountViewModel>(context, listen: false).countNewLead();
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MultiProvider(
+            providers: [
+              ChangeNotifierProvider(
+                create: (_) => LeadListViewModel(context),
+              ),
+            ],
+            child: const LeadListView(),
+          ),
+        ),
+        (Route<dynamic> route) => route.isFirst,
+      );
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import '../../models/unread_msg_model/record.dart';
@@ -19,7 +20,9 @@ class _NotificationPageState extends State<NotificationPage> {
 
   void fetchcount() async {
     unreadcountvm = Provider.of<UnreadCountVm>(context, listen: false);
-    await unreadcountvm!.fetchunreadcount(number: "919530444240").then((_) {
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+    await unreadcountvm!.fetchunreadcount(number: number).then((_) {
       unreadcountvm!.viewModels.length;
       print("djjdjdjdjdjj${unreadcountvm!.viewModels.length}");
 
@@ -63,6 +66,7 @@ class _NotificationPageState extends State<NotificationPage> {
           'Notifications',
           style: TextStyle(color: Colors.white),
         ),
+        centerTitle: true,
         backgroundColor: AppColor.navBarIconColor,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -71,63 +75,70 @@ class _NotificationPageState extends State<NotificationPage> {
       ),
       body: Padding(
           padding: const EdgeInsets.all(10.0),
-          child: ListView.builder(
-            itemCount: data.length,
-            itemBuilder: (context, index) {
-              final record = data[index];
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10.0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[300]!),
-                ),
-                child: ListTile(
-                  leading: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(100),
-                      border: Border.all(
-                        color: getRandomColor(),
-                        width: 5,
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.notification_important,
-                        color: Color.fromARGB(255, 0, 0, 0),
-                        size: 30,
-                      ),
-                    ),
+          child: data.isEmpty
+              ? const Center(
+                  child: Text(
+                    "No Data Found",
+                    style: TextStyle(fontSize: 18),
                   ),
-                  title: Text(record.whatsappNumber ?? "No Number"),
-                  subtitle:
-                      Text("Unread Count: ${record.unreadMsgCount ?? "0"}"),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(width: 10),
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Colors.green,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          record.unreadMsgCount ?? "0",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                )
+              : ListView.builder(
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    final record = data[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: ListTile(
+                        leading: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                              color: getRandomColor(),
+                              width: 5,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.notification_important,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              size: 30,
+                            ),
                           ),
                         ),
+                        title: Text(record.whatsappNumber ?? "No Number"),
+                        subtitle: Text(
+                            "Unread Count: ${record.unreadMsgCount ?? "0"}"),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(width: 10),
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: Colors.green,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                record.unreadMsgCount ?? "0",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          )),
+                    );
+                  },
+                )),
     );
   }
 }

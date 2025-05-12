@@ -264,10 +264,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           ),
         ),
       ),
-      body: RefreshIndicator(
-        onRefresh: _pullRefresh,
-        child: AppUtils.getAppBody(_getaccountData!, _pageBody),
-      ),
+      body: AppUtils.getAppBody(_getaccountData!, _pageBody),
       bottomNavigationBar: Container(
         // decoration: InputDecoration(border: Border.all(12)),
         height: 49,
@@ -464,7 +461,8 @@ class _Forms extends State<CampaignAddUpdateView> {
                   ),
                 ),
               const SizedBox(height: 10),
-
+              const Text('Select Groups'),
+              const SizedBox(height: 5),
               MultiSelectDialogField<Map<String, dynamic>>(
                 dialogHeight: 160,
                 items: allGroupDetails.map((group) {
@@ -532,9 +530,9 @@ class _Forms extends State<CampaignAddUpdateView> {
                 }).toList(),
               ),
 
-              if (isEdit == false) const SizedBox(height: 5),
+              if (isEdit == false) const SizedBox(height: 2),
               if (isEdit == false) const Text('Select Leads'),
-              if (isEdit == false) const SizedBox(height: 10),
+              if (isEdit == false) const SizedBox(height: 5),
               if (isEdit == false)
                 MultiSelectDialogField<Map<String, dynamic>>(
                   items: allContactDetails.map((member) {
@@ -605,7 +603,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                     );
                   }).toList(),
                 ),
-              const SizedBox(height: 5),
+              // const SizedBox(height: 5),
               if (isEdit == false) const SizedBox(height: 10),
               if (isEdit == false) const Text('File Upload'),
               const SizedBox(height: 05),

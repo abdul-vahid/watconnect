@@ -216,122 +216,155 @@ class _UserListView extends State<UserListView> {
       enableDrag: false,
       builder: (BuildContext context) {
         List<String> uniqUserRoles = _paymentterms.toSet().toList();
-        return Container(
-          height: 200,
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
+          child: Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: AppColor.navBarIconColor,
-                            borderRadius: BorderRadius.circular(08)),
-                        height: 40,
-                        width: 350,
-                        child: const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: const Center(
-                            child: Text(
-                              'Apply Filters',
-                              style: TextStyle(
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColor.navBarIconColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            height: 40,
+                            child: const Center(
+                              child: Text(
+                                'Apply Filters',
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
-                                  color: Colors.white),
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  // decoration: BoxDecoration(
-                  //   border: Border.all(
-                  //     color: Colors.black,
-                  //     width: 0.2,
-                  //   ),
-                  //   borderRadius: BorderRadius.circular(8),
-                  // ),
-                  child: StatefulBuilder(
-                    builder: (context, setState) {
-                      return DropdownButton<String>(
-                        isDense: true,
-                        hint: Text(
-                          selectedRole ?? 'Select Role',
-                          style: const TextStyle(color: Colors.black),
-                        ),
-                        items: uniqUserRoles.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (selectedValue) {
-                          setState(() {
-                            selectedRole = selectedValue;
-                            print("selectedRole:: $selectedRole");
-                          });
-                        },
-                        isExpanded: true,
-                        icon: const Icon(
-                          Icons.arrow_drop_down,
-                          color: Colors.black,
-                        ),
-                        // underline: SizedBox(),
-                      );
-                    },
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        allUsers.clear();
-                        for (var viewModel in userlistvm.viewModels) {
-                          UserDataModel productmodel = viewModel.model;
-                          if (selectedRole == null) {
-                            allUsers.add(productmodel);
-                          } else {
-                            if (productmodel.userrole?.toLowerCase() ==
-                                selectedRole?.toLowerCase()) {
-                              allUsers.add(productmodel);
-                              setState(() {});
-                            }
-                          }
-                        }
-                        setState(() {});
-                        Navigator.pop(context);
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    StatefulBuilder(
+                      builder: (context, setState) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade400),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: selectedRole,
+                              isDense: true,
+                              isExpanded: true,
+                              icon: const Icon(Icons.arrow_drop_down,
+                                  color: Colors.black),
+                              hint: const Text(
+                                'Select Role',
+                                style: TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              items: uniqUserRoles.map((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(
+                                    value,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  selectedRole = newValue;
+                                });
+                              },
+                            ),
+                          ),
+                        );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.cardsColor,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            allUsers.clear();
+                            selectedRole = null;
+                            for (var viewModel in userlistvm.viewModels) {
+                              UserDataModel productmodel = viewModel.model;
+                              allUsers.add(productmodel);
+                            }
+                            setState(() {});
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Clear Filters',
+                            style: TextStyle(fontSize: 12, color: Colors.white),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Apply Filters',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            allUsers.clear();
+                            for (var viewModel in userlistvm.viewModels) {
+                              UserDataModel productmodel = viewModel.model;
+                              if (selectedRole == null ||
+                                  productmodel.userrole?.toLowerCase() ==
+                                      selectedRole?.toLowerCase()) {
+                                allUsers.add(productmodel);
+                              }
+                            }
+                            setState(() {});
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Filters',
+                            style: TextStyle(fontSize: 12, color: Colors.white),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         );
@@ -352,7 +385,7 @@ class _UserListView extends State<UserListView> {
       children: [
         Expanded(
           child: allUsers.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     "No Users Available",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),

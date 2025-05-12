@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
+import 'package:whatsapp/models/get_user.dart';
+import 'package:whatsapp/view_models/get_user_vm.dart';
 import '../../models/lead_model.dart';
 import '../../models/user_data_model/user_data_model.dart';
 import '../../utils/app_color.dart';
@@ -105,7 +107,7 @@ class _Forms extends State<LeadAddView> {
     "One Time with Yearly Renewal"
   ];
 
-  List<Map<String, String>> _countrycode = [
+  final List<Map<String, String>> _countrycode = [
     {"country": "India", "country_code": "+91"},
     {"country": "United Arab Emirates", "country_code": "+971"},
     {"country": "Afghanistan", "country_code": "+93"},
@@ -279,6 +281,7 @@ class _Forms extends State<LeadAddView> {
 
   @override
   void initState() {
+    Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
     Provider.of<UserDataListViewModel>(context, listen: false).fetchUser();
     super.initState();
     final model = widget.model;
@@ -318,6 +321,8 @@ class _Forms extends State<LeadAddView> {
   String? _title;
   String? _street;
   String? _city;
+  GetUserViewModel? userVm;
+  String? name;
   // ignore: unused_field
   String? _amount;
   String? _zipcode;
@@ -325,6 +330,7 @@ class _Forms extends State<LeadAddView> {
   String? _selectedState;
   String? _selectedCountry;
   String? _whatsapnumber;
+  String? defaultSel;
   final GlobalKey<FormState> _addleadFormKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -335,10 +341,24 @@ class _Forms extends State<LeadAddView> {
     for (var viewModel in baseViewModels.viewModels) {
       UserDataModel model1 = viewModel.model;
       userMap[model1.id] = model1.username;
-      debug('user=====${model1.id}');
+      debug('user=====${model1.username}');
     }
 
     userData = userMap.values.toList();
+
+    userVm = Provider.of<GetUserViewModel>(context);
+    for (var viewModel in userVm!.viewModels) {
+      print("viewModel.model:::>>>>> ${viewModel.model}");
+      GetUser model = viewModel.model;
+      name = model.managername;
+    }
+
+    print("name::::: ${name}   ${userData}");
+    if (userData.contains(name)) {
+      defaultSel = name;
+      setState(() {});
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -542,7 +562,7 @@ class _Forms extends State<LeadAddView> {
                               // ),
                               DropdownButtonFormField<String>(
                                 isDense: true,
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: 12, vertical: 8),
                                   border: OutlineInputBorder(
@@ -651,7 +671,7 @@ class _Forms extends State<LeadAddView> {
                       data: userData,
                       value: userData.contains(widget.model?.ownername)
                           ? widget.model?.ownername
-                          : null, // Fix here
+                          : defaultSel, // Fix here
                     ),
                   ],
                 ),
@@ -1013,10 +1033,11 @@ class _Forms extends State<LeadAddView> {
                     )),
           );
         } else {}
-        // }).catchError((error, stackTrace) {
-        //   Navigator.pop(context);
-        //   List<String> errorMessages = AppUtils.getErrorMessages(error);
-        //   AppUtils.getAlert(context, errorMessages, title: "Error Alert");
+      }).catchError((error, stackTrace) {
+        Navigator.pop(context);
+        List<String> errorMessages = AppUtils.getErrorMessages(error);
+        print("errorMessages:::: ${errorMessages}");
+        AppUtils.getAlert(context, errorMessages, title: "Error Alert");
       });
     }
   }
@@ -1109,11 +1130,26 @@ class _Forms extends State<LeadAddView> {
       Provider.of<LeadListViewModel>(context, listen: false)
           .update(id, leadModel)
           .then((value) {
-        Navigator.pop(context);
-        Future.delayed(Duration(milliseconds: 100), () {
-          Navigator.pop(context, true);
-        });
-        // Navigator.push(
+        // Navigator.pop(context);
+        // Future.delayed(Duration(milliseconds: 100), () {
+        //   Navigator.pop(context, true);
+        // });
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MultiProvider(
+              providers: [
+                ChangeNotifierProvider(
+                  create: (_) => LeadListViewModel(context),
+                ),
+              ],
+              child: const LeadListView(),
+            ),
+          ),
+          (Route<dynamic> route) => route.isFirst,
+        );
+        // Navigator.pushAndRemoveUntil(
         //   context,
         //   MaterialPageRoute(
         //       builder: (context) => MultiProvider(
@@ -1122,7 +1158,8 @@ class _Forms extends State<LeadAddView> {
         //                   create: (_) => LeadListViewModel(context))
         //             ],
         //             child: const LeadListView(),
-        //           )),
+        //           ))
+
         // );
         // ScaffoldMessenger.of(context).showSnackBar(
         //   const SnackBar(

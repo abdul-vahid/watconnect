@@ -149,11 +149,6 @@ class _ProfileViewState extends State<ProfileView> {
       email = model.email ?? "";
       phone = model.phone ?? "";
       countrycode = model.countrycode ?? "";
-      print("countyr code ${model.countrycode}");
-      print(
-          "viewModel.model:::>>>>> ${model.whatsapp_number}   ${model.whatsapp_settings}");
-
-      print("phonephonephone${phone}");
     }
 
     AppUtils.currentContext = context;
@@ -184,8 +179,7 @@ class _ProfileViewState extends State<ProfileView> {
     print("this func call when refresh");
 
     print("logourl::: ${userModel?.logourl ?? ""}");
-    // print(
-    //     "'https://sandbox.watconnect.com/public/demo/users/${userModel?.id}',");
+
     print("'https://sandbox.watconnect.com/${userModel?.id}',");
 
     return SingleChildScrollView(
@@ -219,6 +213,9 @@ class _ProfileViewState extends State<ProfileView> {
                         return Container(
                           height: 120,
                           width: 120,
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white, width: 2),
+                              borderRadius: BorderRadius.circular(60)),
                           child: ClipRRect(
                               borderRadius: BorderRadius.circular(60),
                               child: Image.network(
@@ -228,10 +225,10 @@ class _ProfileViewState extends State<ProfileView> {
                                 loadingBuilder: (context, child, progress) {
                                   return progress == null
                                       ? child
-                                      : CircularProgressIndicator();
+                                      : const CircularProgressIndicator();
                                 },
                                 errorBuilder: (context, error, stackTrace) {
-                                  return Text('Failed to load image');
+                                  return const Text('Failed to load image');
                                 },
                               )),
                         );

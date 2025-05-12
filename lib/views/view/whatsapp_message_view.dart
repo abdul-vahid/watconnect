@@ -375,8 +375,8 @@ class _ChatScreenState extends State<ChatScreen> {
     msgdelete
         .msghistorydelete(leadnumber: widget.wpnumber, number: number)
         .then((value) => {
-              msgdelete.Fetchmsghistorydata(
-                  leadnumber: widget.wpnumber, number: number),
+              _pullRefresh(),
+              // Navigator.pop(context),
               print("deeeelete sucefulyyy"),
             });
   }
@@ -1552,7 +1552,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   ),
                                 )
                               : image.toString().split('.').last.contains('mp4')
-                                  ? Icon(
+                                  ? const Icon(
                                       Icons.play_arrow,
                                       color: Colors.black,
                                     )
@@ -1617,8 +1617,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: showLoader
-                            ? Padding(
-                                padding: const EdgeInsets.all(8.0),
+                            ? const Padding(
+                                padding: EdgeInsets.all(8.0),
                                 child: SizedBox(
                                   height: 30,
                                   width: 30,
@@ -1644,19 +1644,19 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                     if (fileExtension == '.jpg' ||
                                         fileExtension == '.jpeg') {
-                                      print("🖼 Sending Image...");
+                                      print(" Sending Image...");
                                       filesend("image");
                                     } else if (fileExtension == '.mp4' ||
                                         fileExtension == '.avi' ||
                                         fileExtension == '.mov') {
-                                      print("🎥 Sending Video...");
+                                      print(" Sending Video...");
                                       filesend("video");
                                     } else if (fileExtension == '.html' ||
                                         fileExtension == '.txt') {
-                                      print("📄 Sending text document...");
+                                      print(" Sending text document...");
                                       filesend("document");
                                     } else {
-                                      print("📄 Sending Document...");
+                                      print(" Sending Document...");
                                       filesend("document");
                                     }
                                   } else if (_controller.text
@@ -2356,10 +2356,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                   getHistory();
                                 },
                                 child: _isLoading
-                                    ? CircularProgressIndicator(
+                                    ? const CircularProgressIndicator(
                                         color: Colors.white,
                                       )
-                                    : Text(
+                                    : const Text(
                                         "Send Template",
                                         style: TextStyle(
                                             fontSize: 13, color: Colors.white),

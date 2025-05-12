@@ -233,16 +233,16 @@ class _LeadListViewState extends State<LeadListView> {
                         },
                       ),
                       selectleadList.isEmpty
-                          ? SizedBox()
+                          ? const SizedBox()
                           : Container(
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                   color: AppColor.navBarIconColor,
                                   shape: BoxShape.circle),
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text(
                                   "${selectleadList.length}",
-                                  style: TextStyle(color: Colors.white),
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                               ),
                             )
@@ -515,7 +515,7 @@ class _LeadListViewState extends State<LeadListView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         allLeads.isEmpty
-            ? SizedBox()
+            ? const SizedBox()
             : Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -525,8 +525,8 @@ class _LeadListViewState extends State<LeadListView> {
               ),
         Expanded(
           child: updateLoader
-              ? Center(
-                  child: Container(
+              ? const Center(
+                  child: SizedBox(
                       height: 50,
                       width: 50,
                       child: CircularProgressIndicator()))
@@ -640,12 +640,14 @@ class _LeadListViewState extends State<LeadListView> {
         statusColor = const Color.fromARGB(255, 46, 198, 69);
         break;
       case 'Open - Not Contacted && Working - Contacted':
+        // ignore: deprecated_member_use
         statusColor = Colors.lightBlue.withOpacity(0.7);
         break;
       case 'Closed - Converted && Closed - Not Converted':
         statusColor = AppColor.motivationCar1Color;
         break;
       default:
+        // ignore: deprecated_member_use
         statusColor = Colors.lightBlue.withOpacity(0.7);
         break;
     }
@@ -662,6 +664,7 @@ class _LeadListViewState extends State<LeadListView> {
         ),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.1),
             blurRadius: 5,
             spreadRadius: 3,
