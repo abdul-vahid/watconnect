@@ -530,39 +530,39 @@ class _LeadListViewState extends State<LeadListView> {
                       height: 50,
                       width: 50,
                       child: CircularProgressIndicator()))
-              // : noMatchedLeads || noRecordFound
-              //     ? Center(
-              //         child: Text(
-              //           "No Record Found",
-              //           style: TextStyle(fontSize: 20),
-              //         ),
-              //       )
-              : allLeads.isEmpty
+              : noMatchedLeads || noRecordFound
                   ? const Center(
                       child: Text(
-                        "No Leads Available..",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
+                        "No Record Found",
+                        style: TextStyle(fontSize: 20),
                       ),
                     )
-                  : ListView.builder(
-                      itemCount: allLeads.length,
-                      itemBuilder: (context, index) {
-                        var unreadCount = "0";
-                        var lead = allLeads[index];
+                  : allLeads.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "No Leads Available..",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: allLeads.length,
+                          itemBuilder: (context, index) {
+                            var unreadCount = "0";
+                            var lead = allLeads[index];
 
-                        for (var p in unreadList) {
-                          if (p.whatsappNumber
-                              .toString()
-                              .contains(lead.whatsapp_number)) {
-                            unreadCount = p.unreadMsgCount;
-                            break;
-                          }
-                        }
+                            for (var p in unreadList) {
+                              if (p.whatsappNumber
+                                  .toString()
+                                  .contains(lead.whatsapp_number)) {
+                                unreadCount = p.unreadMsgCount;
+                                break;
+                              }
+                            }
 
-                        return leadRecordList(lead, unreadCount);
-                      },
-                    ),
+                            return leadRecordList(lead, unreadCount);
+                          },
+                        ),
         ),
       ],
     );
@@ -737,14 +737,14 @@ class _LeadListViewState extends State<LeadListView> {
             children: [
               GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LeadDetailView(
-                        model: model,
-                      ),
-                    ),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => LeadDetailView(
+                  //       model: model,
+                  //     ),
+                  //   ),
+                  // );
                 },
                 child: CircleAvatar(
                   radius: 20,

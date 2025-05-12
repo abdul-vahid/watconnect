@@ -4,8 +4,10 @@ import 'dart:io';
 
 // ignore: unused_import
 import 'package:flutter/foundation.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/core/models/base_view_model.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/app_constants.dart';
@@ -172,6 +174,74 @@ class UserListViewModel extends BaseListViewModel {
 
     var records = await post(url: url, body: jsonEncode(requestData));
     return records["message"];
+  }
+
+  Future<bool> makeLoginRequest(
+      String username, String password, String tcode) async {
+    EasyLoading.show();
+    String url = AppUtils.getUrl(AppConstants.loginAPIPath);
+
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    final body =
+        jsonEncode({'email': username, 'password': password, 'tcode': tcode});
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        var authToken = jsonResponse['authToken'];
+        var refreshToken = jsonResponse['refreshToken'];
+        print('Success: $jsonResponse');
+
+        var records = jsonResponse is List ? jsonResponse : [jsonResponse];
+        var modelMap = records.map((item) => UserModel.fromMap(item)).toList();
+        viewModels =
+            modelMap.map((item) => BaseViewModel(model: item)).toList();
+
+        log(" modelMap ${modelMap}  ${modelMap.runtimeType}   viewModels  ${viewModels}");
+        var userModel = modelMap[0];
+        print(
+            "viewModels: make : login: ${viewModels}   ${userModel}  ${userModel}");
+        // var userModel = jsonResponse as UserModel;
+        // print(
+        //     "userModel: in other login api:: ${userModel}  ${userModel.runtimeType}");
+        SharedPreferences.getInstance().then((prefs) async {
+          await prefs.setString(
+            SharedPrefsConstants.userKey,
+            userModel.toJson(),
+          );
+          await prefs.setString(
+            SharedPrefsConstants.refreshTokenKey,
+            refreshToken ?? '',
+          );
+          await prefs.setString(
+            SharedPrefsConstants.accessTokenKey,
+            authToken ?? '',
+          );
+        });
+        EasyLoading.dismiss();
+        return true;
+      } else {
+        print('Failed with status code: ${response.statusCode}');
+        print('Body: ${response.body}');
+        final jsonResponse = jsonDecode(response.body);
+        EasyLoading.dismiss();
+        EasyLoading.showToast(jsonResponse['errors']);
+        return false;
+      }
+    } catch (e) {
+      print('Error during POST: $e');
+      EasyLoading.dismiss();
+      return false;
+    }
   }
 
   Future<dynamic> login(String username, String password, String tcode) async {

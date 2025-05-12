@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
@@ -106,9 +107,21 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     _tooltipBehavior = TooltipBehavior(enable: true);
     NotificationUtil.registerToken();
+    getAvailableModules();
     getPhoneNumber();
     fetch();
     super.initState();
+  }
+
+  List<String> modules = [];
+  Future<void> getAvailableModules() async {
+    final prefs = await SharedPreferences.getInstance();
+    modules = await prefs
+            .getStringList(SharedPrefsConstants.userAvailableMoulesKey) ??
+        [];
+    setState(() {});
+
+    print("modules:::: ${modules}");
   }
 
   void fetch() async {
@@ -456,10 +469,19 @@ class _HomeViewState extends State<HomeView> {
                   ),
                   GestureDetector(
                     onTap: () => {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const CampaignListView()))
+                      if (modules.contains("Campaign"))
+                        {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const CampaignListView()))
+                        }
+                      else
+                        {
+                          EasyLoading.showToast(
+                              "Access to Campaign is not included in this Plan")
+                        }
                     },
                     child: Card(
                       elevation: 2,
@@ -674,44 +696,49 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 child: Column(
                   children: [
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: AppColor.navBarIconColor,
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(10),
-                        ),
-                      ),
-                      // width: 400,
-                      height: 50,
-                      child: const Center(
-                        child: Text(
-                          'Campaign',
-                          style: TextStyle(
-                            color: Color.fromARGB(255, 255, 255, 255),
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SfCircularChart(
-                        tooltipBehavior: _tooltipBehavior,
-                        legend: const Legend(
-                            isVisible: true,
-                            position: LegendPosition.top,
-                            overflowMode: LegendItemOverflowMode.wrap),
-                        series: <PieSeries<_SalesData, String>>[
-                          PieSeries<_SalesData, String>(
-                              legendIconType: LegendIconType.circle,
-                              radius: '100',
-                              dataSource: businessData,
-                              enableTooltip: true,
-                              pointColorMapper: (_SalesData sales, int index) =>
-                                  areaColor[index % areaColor.length],
-                              xValueMapper: (_SalesData sales, _) =>
-                                  sales.status,
-                              yValueMapper: (_SalesData sales, _) =>
-                                  sales.count)
-                        ]),
+                    modules.contains("Campaign")
+                        ? Container(
+                            decoration: const BoxDecoration(
+                              color: AppColor.navBarIconColor,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(10),
+                              ),
+                            ),
+                            // width: 400,
+                            height: 50,
+                            child: const Center(
+                              child: Text(
+                                'Campaign',
+                                style: TextStyle(
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                          )
+                        : SizedBox(),
+                    modules.contains("Campaign")
+                        ? SfCircularChart(
+                            tooltipBehavior: _tooltipBehavior,
+                            legend: const Legend(
+                                isVisible: true,
+                                position: LegendPosition.top,
+                                overflowMode: LegendItemOverflowMode.wrap),
+                            series: <PieSeries<_SalesData, String>>[
+                                PieSeries<_SalesData, String>(
+                                    legendIconType: LegendIconType.circle,
+                                    radius: '100',
+                                    dataSource: businessData,
+                                    enableTooltip: true,
+                                    pointColorMapper:
+                                        (_SalesData sales, int index) =>
+                                            areaColor[index % areaColor.length],
+                                    xValueMapper: (_SalesData sales, _) =>
+                                        sales.status,
+                                    yValueMapper: (_SalesData sales, _) =>
+                                        sales.count)
+                              ])
+                        : SizedBox(),
                     Container(
                       decoration: const BoxDecoration(
                         color: AppColor.navBarIconColor,

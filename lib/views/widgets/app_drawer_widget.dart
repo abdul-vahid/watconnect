@@ -38,8 +38,20 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
 
   @override
   void initState() {
+    getAvailableModules();
     getProfileData();
     super.initState();
+  }
+
+  List<String> modules = [];
+  Future<void> getAvailableModules() async {
+    final prefs = await SharedPreferences.getInstance();
+    modules = await prefs
+            .getStringList(SharedPrefsConstants.userAvailableMoulesKey) ??
+        [];
+    setState(() {});
+
+    print("modules:::: ${modules}");
   }
 
   @override
@@ -105,23 +117,27 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
               );
             },
           ),
-          Divider(),
-          ListTile(
-            leading: Icon(
-              FontAwesomeIcons.personHarassing,
-              color: AppColor.navBarIconColor,
-            ),
-            title: Text(
-              'Campaign',
-              // style: GoogleFonts.montserrat(
-              //   fontWeight: FontWeight.bold,
-              // ),
-            ),
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => CampaignListView()));
-            },
-          ),
+          modules.contains("Campaign") ? Divider() : SizedBox(),
+          modules.contains("Campaign")
+              ? ListTile(
+                  leading: Icon(
+                    FontAwesomeIcons.personHarassing,
+                    color: AppColor.navBarIconColor,
+                  ),
+                  title: Text(
+                    'Campaign',
+                    // style: GoogleFonts.montserrat(
+                    //   fontWeight: FontWeight.bold,
+                    // ),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => CampaignListView()));
+                  },
+                )
+              : SizedBox(),
           // Divider(),
           // ListTile(
           //   leading: Icon(

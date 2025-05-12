@@ -292,68 +292,87 @@ class _LoginViewState extends State<LoginView> {
       _loginFormKey.currentState!.save();
 
       UserListViewModel userListViewModel = UserListViewModel();
+      // userListViewModel.makeLoginRequest(
+      //   _emailController.text.trim(),
+      //   _passwordController.text.trim(),
+      //   _tcodeController.text.trim(),
+      // );
       userListViewModel
-          .login(
+          .makeLoginRequest(
         _emailController.text,
         _passwordController.text,
         _tcodeController.text,
       )
-          .then((records) {
-        print("records::: ${records}   ${records.runtimeType}");
-        if (records.runtimeType == String) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(records.toString()),
-              backgroundColor: Colors.green,
-            ),
-          );
+          .then((records) async {
+        if (records) {
+          await AppUtils.getToken().then((onValue) {
+            Navigator.pop(context);
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const FooterNavbarPage(),
+              ),
+              (Route<dynamic> route) => false,
+            );
+          });
         }
-        if (records.isNotEmpty) {
-          var userModel = records[0].model as UserModel;
-          {
-            AppUtils.onLoading(context, "Logging You, please wait...");
-            // print(
-            //   "userModel::: ${userModel.success}   ${records[0].model}",
-            // );
-            if (!userListViewModel.isError && records.isNotEmpty) {
-              var userModel = records[0].model as UserModel;
 
-              SharedPreferences.getInstance().then((prefs) {
-                prefs.setString(
-                  SharedPrefsConstants.userKey,
-                  userModel.toJson(),
-                );
-                prefs.setString(
-                  SharedPrefsConstants.refreshTokenKey,
-                  userModel.refreshToken ?? '',
-                );
-                prefs.setString(
-                  SharedPrefsConstants.accessTokenKey,
-                  userModel.authToken ?? '',
-                );
-              });
+        // print("records::: ${records}   ${records.runtimeType}");
+        // if (records.runtimeType == String) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(
+        //       content: Text(records.toString()),
+        //       backgroundColor: Colors.green,
+        //     ),
+        //   );
+        // }
+        // if (records.isNotEmpty) {
+        //   var userModel = records[0].model as UserModel;
+        //   {
+        //     AppUtils.onLoading(context, "Logging You, please wait...");
+        //     // print(
+        //     //   "userModel::: ${userModel.success}   ${records[0].model}",
+        //     // );
+        //     if (!userListViewModel.isError && records.isNotEmpty) {
+        //       var userModel = records[0].model as UserModel;
 
-              AppUtils.getToken();
-              Navigator.pop(context);
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const FooterNavbarPage(),
-                ),
-                (Route<dynamic> route) => false,
-              );
-            } else {
-              List<String> errorMessages = AppUtils.getErrorMessages(
-                "Invalid User Name and Password!",
-              );
-              AppUtils.getAlert(
-                context,
-                errorMessages,
-                title: "Error Alert",
-              );
-            }
-          }
-        }
+        //       SharedPreferences.getInstance().then((prefs) async {
+        //         await prefs.setString(
+        //           SharedPrefsConstants.userKey,
+        //           userModel.toJson(),
+        //         );
+        //         await prefs.setString(
+        //           SharedPrefsConstants.refreshTokenKey,
+        //           userModel.refreshToken ?? '',
+        //         );
+        //         await prefs.setString(
+        //           SharedPrefsConstants.accessTokenKey,
+        //           userModel.authToken ?? '',
+        //         );
+        //       });
+
+        //       await AppUtils.getToken().then((onValue) {
+        //         Navigator.pop(context);
+        //         Navigator.pushAndRemoveUntil(
+        //           context,
+        //           MaterialPageRoute(
+        //             builder: (context) => const FooterNavbarPage(),
+        //           ),
+        //           (Route<dynamic> route) => false,
+        //         );
+        //       });
+        //     } else {
+        //       List<String> errorMessages = AppUtils.getErrorMessages(
+        //         "Invalid User Name and Password!",
+        //       );
+        //       AppUtils.getAlert(
+        //         context,
+        //         errorMessages,
+        //         title: "Error Alert",
+        //       );
+        //     }
+        //   }
+        // }
       });
     }
   }

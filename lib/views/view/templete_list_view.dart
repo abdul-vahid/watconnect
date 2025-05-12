@@ -204,7 +204,7 @@ class _TempleteListView extends State<TempleteListView> {
                               items: uniqtempletestatus
                                   .map((e) => MultiSelectItem<String>(e, e))
                                   .toList(),
-                              title: Flexible(
+                              title: const Flexible(
                                 child: Flexible(
                                   child: Text(
                                     "Select Template Status",
@@ -214,7 +214,7 @@ class _TempleteListView extends State<TempleteListView> {
                                   ),
                                 ),
                               ),
-                              buttonText: const Text("Select Leads Status"),
+                              buttonText: const Text("Select Template Status"),
                               searchable: true,
                               dialogWidth: 300,
                               dialogHeight: 250,

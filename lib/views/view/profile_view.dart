@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/views/view/edit_profile_view.dart';
 
@@ -92,8 +93,12 @@ class _ProfileViewState extends State<ProfileView> {
       setState(() {
         userModel = tempModel;
       });
+
+      final prefs = await SharedPreferences.getInstance();
+      String tenatCode =
+          prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
       msgController.setUsrProfile(
-          "https://sandbox.watconnect.com/public/demo/users/${tempModel.id}");
+          "https://sandbox.watconnect.com/public/$tenatCode/users/${tempModel.id}");
       print("logourl::: ${tempModel.logourl ?? ""}");
     } else {
       debugPrint("No user session found in getProfileData.");
@@ -214,20 +219,21 @@ class _ProfileViewState extends State<ProfileView> {
                         return Container(
                           height: 120,
                           width: 120,
-
-                          // radius: 60,
-                          // backgroundColor: Colors.white,
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(60),
-                            child: CachedNetworkImage(
-                              imageUrl: mssss.userProfile,
-                              fit: BoxFit.fill,
-                              placeholder: (context, url) =>
-                                  const CircularProgressIndicator(),
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.error),
-                            ),
-                          ),
+                              borderRadius: BorderRadius.circular(60),
+                              child: Image.network(
+                                '${mssss.userProfile}?timestamp=${DateTime.now().millisecondsSinceEpoch}',
+                                key: ValueKey(mssss.userProfile),
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, progress) {
+                                  return progress == null
+                                      ? child
+                                      : CircularProgressIndicator();
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Text('Failed to load image');
+                                },
+                              )),
                         );
                       }),
                       Positioned(
@@ -526,8 +532,11 @@ class _ProfileViewState extends State<ProfileView> {
         getProfileData();
         MessageController msgController =
             Provider.of<MessageController>(context, listen: false);
+        final prefs = await SharedPreferences.getInstance();
+        String tenatCode =
+            prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
         msgController.setUsrProfile(
-            "https://sandbox.watconnect.com/public/demo/users/${userModel?.id}");
+            "https://sandbox.watconnect.com/public/$tenatCode/users/${userModel?.id}");
       }).catchError((error) {
         print("Error uploading file: $error");
       });
