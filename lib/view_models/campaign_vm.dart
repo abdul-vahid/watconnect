@@ -39,4 +39,8 @@ class CampaignViewModel extends BaseListViewModel {
     print("urll=>>getby comapy id>${url}");
     await get(url: url, baseModel: CampaignModel());
   }
+
+  Future<void> fetch() async{
+    
+  }
 }
