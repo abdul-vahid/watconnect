@@ -63,7 +63,7 @@ class _ViewPdfState extends State<ViewPdf> {
               color: Color.fromARGB(255, 255, 255, 255)),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
+        title: const Text(
           "Document",
           style: TextStyle(color: Colors.white),
         ),

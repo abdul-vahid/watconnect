@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
 import 'package:path/path.dart' as p;
@@ -652,29 +653,7 @@ class _Forms extends State<CampaignAddUpdateView> {
               if (isEdit == false)
                 InkWell(
                     onTap: () async {
-                      await requestStoragePermission();
-
-                      List<List<dynamic>> rows = [
-                        ["Name", "Country Code", "Number"],
-                        ["John", "+91", "XXXXXXXXXX"]
-                      ];
-
-                      String csvData = const ListToCsvConverter().convert(rows);
-
-                      final downloadPath = await getDownloadPath();
-                      final filePath = p.join(downloadPath, "sample.csv");
-
-                      final file = File(filePath);
-
-                      if (await file.exists()) {
-                        print("CSV already exists. Opening...");
-                        await OpenFile.open(filePath);
-                        return;
-                      }
-
-                      await file.writeAsString(csvData);
-                      print("CSV saved at $filePath");
-                      await OpenFile.open(filePath);
+                      downloadCSV(context);
                     },
                     child: Container(
                       // width: 180,
@@ -1829,23 +1808,47 @@ class _Forms extends State<CampaignAddUpdateView> {
     );
   }
 
-  Future<void> requestStoragePermission() async {
-    if (Platform.isAndroid) {
-      if (await Permission.manageExternalStorage.isGranted) return;
+  // Future<bool> requestStoragePermission(BuildContext context) async {
 
-      var status = await Permission.manageExternalStorage.request();
+  // PermissionStatus status = await Permission.storage.status;
 
-      if (status.isPermanentlyDenied) {
-        _showPermissionDialog();
-        return;
-      }
+  // // If already granted
+  // if (status.isGranted) return true;
 
-      if (!status.isGranted) {
-        _showPermissionDialog();
-        return;
-      }
-    }
-  }
+  // // If denied (but not permanently)
+  // if (status.isDenied) {
+  //   PermissionStatus newStatus = await Permission.storage.request();
+  //   return newStatus.isGranted;
+  // }
+
+  // // If permanently denied
+  // if (status.isPermanentlyDenied) {
+  //   // Show dialog to guide user to settings
+  //   await showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Storage Permission Needed'),
+  //       content: const Text(
+  //           'To download files, you must enable storage permission in app settings.'),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.of(context).pop(),
+  //           child: Text('Cancel'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () async {
+  //             Navigator.of(context).pop();
+  //             await openAppSettings();
+  //           },
+  //           child: Text('Open Settings'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  //   return false;
+  // }
+
+  // }
 
   Future<String> getDownloadPath() async {
     Directory dir = Directory('/storage/emulated/0/Download');
@@ -1873,6 +1876,39 @@ class _Forms extends State<CampaignAddUpdateView> {
       print("Error downloading image: $e");
     }
     return null;
+  }
+
+  Future<void> downloadFile(String url, String fileName) async {
+    try {
+      EasyLoading.showToast("Downloading...");
+
+      Directory directory;
+
+      if (Platform.isAndroid) {
+        directory = Directory('/storage/emulated/0/Download');
+      } else if (Platform.isIOS) {
+        directory = await getApplicationDocumentsDirectory();
+      } else {
+        throw Exception("Unsupported platform");
+      }
+
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+
+      String filePath = '${directory.path}/$fileName';
+
+      Dio dio = Dio();
+      await dio.download(url, filePath, onReceiveProgress: (received, total) {
+        if (total != -1) {
+          print(
+              'Download progress: ${(received / total * 100).toStringAsFixed(0)}%');
+        }
+      });
+      EasyLoading.showToast("File downloaded to: $filePath");
+    } catch (e) {
+      EasyLoading.showToast("Download Failed");
+    }
   }
 
   Future<void> _fetchTemplates() async {
@@ -2091,5 +2127,51 @@ class _Forms extends State<CampaignAddUpdateView> {
         campLeads = [];
       }
     });
+  }
+
+  Future<int> _getAndroidVersion() async {
+    try {
+      return int.parse((await File('/system/build.prop').readAsLines())
+          .firstWhere((line) => line.contains('ro.build.version.sdk'))
+          .split('=')[1]);
+    } catch (_) {
+      return Platform.version.contains('Android')
+          ? int.tryParse(Platform.version.split(' ')[1].split('.')[0]) ?? 33
+          : 33;
+    }
+  }
+
+  Future<void> downloadCSV(BuildContext context) async {
+    List<List<dynamic>> rows = [
+      ["Name", "Country Code", "Number"],
+      ["John", "+91", "XXXXXXXXXX"]
+    ];
+    String csv = const ListToCsvConverter().convert(rows);
+
+    final Directory? downloadsDir = await getExternalStorageDirectory();
+
+    if (downloadsDir != null) {
+      final String downloadsPath =
+          downloadsDir.path.replaceAll("Android/data", "Download");
+      final file = File('$downloadsPath/sample.csv');
+      await file.create(recursive: true);
+      await file.writeAsString(csv);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("CSV saved"),
+          action: SnackBarAction(
+            label: "Open",
+            onPressed: () {
+              OpenFile.open(file.path);
+            },
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Unable to access Downloads directory")),
+      );
+    }
   }
 }
