@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:whatsapp/models/campaign_model/record.dart';
+import 'package:whatsapp/view_models/campaign_vm.dart';
 import 'package:whatsapp/views/view/campaign_add_update_view.dart'
     show CampaignAddUpdateView;
+import 'package:whatsapp/views/view/campaign_list_view.dart';
 
 import '../../utils/app_color.dart';
 import '../../view_models/user_data_list_vm.dart' show UserDataListViewModel;
@@ -32,6 +36,132 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
     }
   }
 
+  Future<void> _showDeleteDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Are you sure you want to delete this campaign?',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 15),
+              const Divider(),
+              const SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.grey,
+                      backgroundColor: Colors.grey[200],
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'No',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  const SizedBox(width: 20),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: AppColor.navBarIconColor,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Yes',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    onPressed: () {
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => CampaignListView(),
+                      //   ),
+                      // );
+                      _deleteUser();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _deleteUser() {
+    String? campaignidd = widget.record?.campaignId;
+    print("campaigniddcampaignidd${campaignidd}");
+    if (campaignidd == null || campaignidd.isEmpty) {
+      print("Error: leadidd is null or empty");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: Lead ID is invalid.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      campaignidd = campaignidd.trim();
+      print("campaignidd ID: $campaignidd");
+    } catch (e) {
+      print("Invalid UTF-16 string: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: Invalid lead ID format.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    CampaignViewModel(context).deleteById(campaignidd).then((value) {
+      print("working enter");
+
+      EasyLoading.showToast("Deleted Succeffuly");
+
+      Provider.of<CampaignViewModel>(context, listen: false).fetch();
+
+      Future.delayed(Duration(milliseconds: 100), () {
+        if (mounted && Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+      });
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error deleting campaign.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,6 +183,77 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
         ),
         actions: [
           if (widget.record?.campaignStatus != 'Completed')
+            // PopupMenuButton<String>(
+            //   icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
+            //   onSelected: (value) async {
+            //     if (value == 'edit') {
+            //       if (widget.record != null) {
+            //         final result = await Navigator.push(
+            //           context,
+            //           MaterialPageRoute(
+            //             builder: (context) =>
+            //                 CampaignAddUpdateView(model: widget.record),
+            //           ),
+            //         );
+            //         if (result == true) {
+            //           print("result on detailesss:::: ");
+            //           Navigator.pop(context, true);
+            //         }
+            //       }
+            //     }
+
+            //     PopupMenuButton<String>(
+            //       icon: const Icon(Icons.more_vert,
+            //           size: 23, color: Colors.white),
+            //       onSelected: (value) async {
+            //         if (value == 'edit') {
+            //           // _navigateToEdit();
+            //           if (widget.record != null) {
+            //             final result = await Navigator.push(
+            //               context,
+            //               MaterialPageRoute(
+            //                 builder: (context) =>
+            //                     CampaignAddUpdateView(model: widget.record),
+            //               ),
+            //             );
+            //             if (result == true) {
+            //               print("result on detailesss:::: ");
+            //               Navigator.pop(context, true);
+            //             }
+            //           }
+            //         }
+            //         print("Vallallalla=>${value}");
+            //         if (value == 'delete') {
+            //           print("shhsjhjsh");
+            //         }
+            //       },
+            //       itemBuilder: (BuildContext context) {
+            //         return [
+            //           const PopupMenuItem<String>(
+            //             value: 'edit',
+            //             child: Text('Edit'),
+            //           ),
+            //           const PopupMenuItem<String>(
+            //             value: 'delete',
+            //             child: Text('delete'),
+            //           ),
+            //         ];
+            //       },
+            //     );
+            //   },
+            //   itemBuilder: (BuildContext context) {
+            //     return [
+            //       const PopupMenuItem<String>(
+            //         value: 'edit',
+            //         child: Text('Edit'),
+            //       ),
+            //       const PopupMenuItem<String>(
+            //         value: 'delete',
+            //         child: Text('Delete'),
+            //       ),
+            //     ];
+            //   },
+            // ),
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
               onSelected: (value) async {
@@ -66,10 +267,13 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
                       ),
                     );
                     if (result == true) {
-                      print("result on detailesss:::: ");
+                      print("Edit successful, returning to previous screen.");
                       Navigator.pop(context, true);
                     }
                   }
+                } else if (value == 'delete') {
+                  print("wowoowowowowowo");
+                  _showDeleteDialog();
                 }
               },
               itemBuilder: (BuildContext context) {
@@ -77,6 +281,10 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
                   const PopupMenuItem<String>(
                     value: 'edit',
                     child: Text('Edit'),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Text('Delete'),
                   ),
                 ];
               },
@@ -87,25 +295,25 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
     );
   }
 
-  void _deleteUser() {
-    String? recordId = record?.campaignId;
-    UserDataListViewModel(context).deleteUser(recordId).then((value) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Campaign deleted successfully.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context);
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error deleting campaign.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    });
-  }
+  // void _deleteUser() {
+  //   String? recordId = record?.campaignId;
+  //   UserDataListViewModel(context).deleteUser(recordId).then((value) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Campaign deleted successfully.'),
+  //         backgroundColor: Colors.green,
+  //       ),
+  //     );
+  //     Navigator.pop(context);
+  //   }).catchError((error) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Error deleting campaign.'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   });
+  // }
 
   // Future<void> _showDeleteDialog() async {
   //   await showDialog<void>(

@@ -98,7 +98,7 @@ class UserDataModel extends BaseModel {
   String? password;
   String? country_code;
   String? whatsappNumber;
-
+  // List<String>? whatsapp_settings;
   UserDataModel({
     this.id,
     this.username,
@@ -113,6 +113,7 @@ class UserDataModel extends BaseModel {
     this.country_code,
     this.isactive,
     this.whatsappNumber,
+    // this.whatsapp_settings
   });
 
   factory UserDataModel.fromMap(Map<String, dynamic> data) => UserDataModel(
@@ -129,6 +130,7 @@ class UserDataModel extends BaseModel {
         isactive: data['isactive'] as bool?,
         country_code: data['country_code'] as String?,
         whatsappNumber: data['whatsapp_number'] as String?,
+        // whatsapp_settings: data['whatsapp_settings'] as List<String> ?? []
       );
   @override
   UserDataModel fromMap(Map<String, dynamic> data) {
@@ -150,6 +152,7 @@ class UserDataModel extends BaseModel {
       'isactive': isactive,
       'country_code': country_code,
       'whatsapp_number': whatsappNumber,
+      // 'whatsapp_settings': whatsapp_settings
     };
 
     // Add 'password' only if it's not null

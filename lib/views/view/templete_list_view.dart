@@ -58,7 +58,7 @@ class _TempleteListView extends State<TempleteListView> {
     super.initState();
     allTemplates = [];
     tempTemplates = [];
-    selectTempList = [];
+    selectTempList = ['approved'];
     searchTemp = "";
     // _controller = NotchBottomBarController();
     _getNumberFromPreferences();
@@ -102,15 +102,33 @@ class _TempleteListView extends State<TempleteListView> {
                 ),
                 prefixIcon: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.filter_list,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      _showFilterBottomSheet(context);
-                    },
+                  child: Stack(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.filter_list,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          _showFilterBottomSheet(context);
+                        },
+                      ),
+                      selectTempList.isEmpty
+                          ? SizedBox()
+                          : Container(
+                              decoration: BoxDecoration(
+                                  color: AppColor.navBarIconColor,
+                                  shape: BoxShape.circle),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "${selectTempList.length}",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            )
+                    ],
                   ),
                 ),
                 prefixIconConstraints: const BoxConstraints(minWidth: 40),
@@ -186,9 +204,15 @@ class _TempleteListView extends State<TempleteListView> {
                               items: uniqtempletestatus
                                   .map((e) => MultiSelectItem<String>(e, e))
                                   .toList(),
-                              title: const Text(
-                                "Select Template Status",
-                                style: TextStyle(fontSize: 18),
+                              title: Flexible(
+                                child: Flexible(
+                                  child: Text(
+                                    "Select Template Status",
+                                    style: TextStyle(fontSize: 18),
+                                    overflow: TextOverflow
+                                        .ellipsis, // Handles overflow with ellipsis
+                                  ),
+                                ),
                               ),
                               buttonText: const Text("Select Leads Status"),
                               searchable: true,
@@ -343,7 +367,7 @@ class _TempleteListView extends State<TempleteListView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        allTemplates.isEmpty
+        allTemplates.isEmpty || noMatchedLeads
             ? SizedBox()
             : Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -353,7 +377,7 @@ class _TempleteListView extends State<TempleteListView> {
                 ),
               ),
         Expanded(
-          child: allTemplates.isEmpty
+          child: allTemplates.isEmpty || noMatchedLeads
               ? Center(
                   child: Text(
                     "No Templates Available..",
@@ -611,9 +635,36 @@ class _TempleteListView extends State<TempleteListView> {
     return widgets;
   }
 
+  bool noMatchedLeads = false;
   void searchLeads(String value) {
     searchTemp = value.trim().toLowerCase();
-    setState(() {});
+    if (searchTemp.isEmpty) {
+      allTemplates = tempTemplates;
+      noMatchedLeads = false;
+      setState(() {});
+    } else {
+      List matched = [];
+      List others = [];
+
+      for (var lead in allTemplates) {
+        var firstName = lead.name?.toLowerCase() ?? '';
+        var lastName = lead.category?.toLowerCase() ?? '';
+        var leadStatus = lead.language?.toLowerCase() ?? '';
+
+        if (firstName.contains(searchTemp) ||
+            lastName.contains(searchTemp) ||
+            leadStatus.contains(searchTemp)) {
+          matched.add(lead);
+        } else {
+          others.add(lead);
+        }
+      }
+
+      setState(() {
+        allTemplates = [...matched, ...others];
+        noMatchedLeads = matched.isEmpty;
+      });
+    }
   }
 
   void getAllTemp() {
