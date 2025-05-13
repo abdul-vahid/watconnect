@@ -112,6 +112,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     return phoneNumber;
   }
 
+  bool _isVisible = false;
   String selectedNumber = "";
 
   @override
@@ -120,35 +121,65 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     NotificationUtil.registerToken();
     getAvailableModules();
     getPhoneNumber();
-    connectSocket();
+
     fetch();
     super.initState();
   }
 
   @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     disconnectSocket();
-
     super.dispose();
   }
 
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-  //   print("this is called did change dependency");
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+      print(" Subscribed to RouteObserver in HomeView");
+    }
+  }
 
-  //   final route = ModalRoute.of(context);
-  //   if (route != null && route is PageRoute) {
-  //     print("both the coditions got true so its here:::::::::::::::::::::::::");
-  //     routeObserver.subscribe(this, route);
-  //     _getUnreadCount();
-  //     connectSocket();
-  //   } else {
-  //     print(
-  //         "both the coditions got false so its here:::::::::::::::::::::::::");
-  //   }
-  // }
+  @override
+  void didPush() {
+    super.didPush();
+    print(" didPush - HomeView is now visible");
+    _onHomeVisible();
+  }
+
+  /// Called when HomeView comes back to top after popping another screen
+  @override
+  void didPopNext() {
+    super.didPopNext();
+    print("didPopNext - Back to HomeView");
+    _onHomeVisible();
+  }
+
+  /// Called when navigating away from HomeView
+  @override
+  void didPushNext() {
+    super.didPushNext();
+    print(" didPushNext - Leaving HomeView");
+    _onHomeHidden();
+  }
+
+  void _onHomeVisible() {
+    if (!_isVisible) {
+      _isVisible = true;
+      connectSocket();
+    }
+  }
+
+  void _onHomeHidden() {
+    if (_isVisible) {
+      _isVisible = false;
+      disconnectSocket();
+    }
+  }
 
   List<String> modules = [];
   Future<void> getAvailableModules() async {
@@ -955,14 +986,14 @@ class _HomeViewState extends State<HomeView> with RouteAware {
       });
 
       socket!.onDisconnect((_) {
-        // print(" WebSocket Disconnected");
+        print(" WebSocket Disconnected home");
       });
 
       socket!.onError((error) {
-        print(" WebSocket Error: $error");
+        print(" WebSocket Error home: $error");
       });
     } catch (error) {
-      print("Error connecting to WebSocket: $error");
+      print("Error connecting to WebSocket home: $error");
     }
   }
 

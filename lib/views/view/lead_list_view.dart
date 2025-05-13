@@ -63,7 +63,7 @@ class _LeadListViewState extends State<LeadListView> {
 
   @override
   void dispose() {
-    disconnectSocket();
+    // disconnectSocket();
 
     super.dispose();
   }
