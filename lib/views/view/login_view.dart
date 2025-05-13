@@ -24,9 +24,9 @@ class _LoginViewState extends State<LoginView> {
   bool _obscurePassword = true;
   @override
   void initState() {
-    _emailController.text = 'shivani.m+demo@ibirdsservices.com';
-    _passwordController.text = 'Admin@123';
-    _tcodeController.text = 'demo';
+    // _emailController.text = 'shivani.m+demo@ibirdsservices.com';
+    // _passwordController.text = 'Admin@123';
+    // _tcodeController.text = 'demo';
     super.initState();
   }
 
