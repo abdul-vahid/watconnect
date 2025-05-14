@@ -24,9 +24,9 @@ class _LoginViewState extends State<LoginView> {
   bool _obscurePassword = true;
   @override
   void initState() {
-    _emailController.text = 'shivani.m+demo@ibirdsservices.com';
-    _passwordController.text = 'Admin@123';
-    _tcodeController.text = 'demo';
+    // _emailController.text = 'shivani.m+demo@ibirdsservices.com';
+    // _passwordController.text = 'Admin@123';
+    // _tcodeController.text = 'demo';
     super.initState();
   }
 
@@ -87,9 +87,8 @@ class _LoginViewState extends State<LoginView> {
                         }
                         return null;
                       },
-                      // onSaved: (value) => password = value!,
                       controller: _passwordController,
-                      obscureText: _obscurePassword, // Hide password
+                      obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         hintText: "Enter your password",
                         prefixIcon: const Icon(

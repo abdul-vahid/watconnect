@@ -1556,26 +1556,50 @@ class _ChatScreenState extends State<ChatScreen> {
                                       Icons.play_arrow,
                                       color: Colors.black,
                                     )
-                                  : Container(
-                                      width: 50,
-                                      height: 50,
-                                      margin: const EdgeInsets.only(right: 8.0),
-                                      decoration: BoxDecoration(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        // image: DecorationImage(
-                                        //   image: FileImage(image!),
-                                        //   fit: BoxFit.cover,
-                                        // ),
-                                      ),
-                                      child: Image.asset(
-                                        "assets/images/file.png",
-                                        width: 50,
-                                        height: 50,
-                                        fit: BoxFit
-                                            .cover, // Ensures full coverage
-                                      ),
-                                    )
+                                  : image
+                                              .toString()
+                                              .split('.')
+                                              .last
+                                              .contains('jpg') ||
+                                          image
+                                              .toString()
+                                              .split('.')
+                                              .last
+                                              .contains('png') ||
+                                          image
+                                              .toString()
+                                              .split('.')
+                                              .last
+                                              .contains('jpeg')
+                                      ? Container(
+                                          height: 50,
+                                          width: 50,
+                                          child: Image.file(
+                                            image!,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        )
+                                      : Container(
+                                          width: 50,
+                                          height: 50,
+                                          margin:
+                                              const EdgeInsets.only(right: 8.0),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            // image: DecorationImage(
+                                            //   image: FileImage(image!),
+                                            //   fit: BoxFit.cover,
+                                            // ),
+                                          ),
+                                          child: Image.asset(
+                                            "assets/images/file.png",
+                                            width: 50,
+                                            height: 50,
+                                            fit: BoxFit
+                                                .cover, // Ensures full coverage
+                                          ),
+                                        )
                           : const SizedBox.shrink(),
                       Expanded(
                         child: TextField(
