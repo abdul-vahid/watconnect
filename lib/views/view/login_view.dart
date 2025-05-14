@@ -87,9 +87,8 @@ class _LoginViewState extends State<LoginView> {
                         }
                         return null;
                       },
-                      // onSaved: (value) => password = value!,
                       controller: _passwordController,
-                      obscureText: _obscurePassword, // Hide password
+                      obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         hintText: "Enter your password",
                         prefixIcon: const Icon(
