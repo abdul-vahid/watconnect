@@ -121,8 +121,10 @@ class _LeadListViewState extends State<LeadListView> {
 
     if (searchLead.isEmpty) {
       setState(() {
-        // allLeads = List.from(tempLeadModelList);
         noMatchedLeads = false;
+        setState(() {
+          allLeads = tempLeadModelList;
+        });
       });
     } else {
       List<LeadModel> matched = [];
@@ -138,7 +140,7 @@ class _LeadListViewState extends State<LeadListView> {
             leadStatus.contains(searchLead)) {
           matched.add(lead);
         } else {
-          others.add(lead);
+          // others.add(lead);
         }
       }
 

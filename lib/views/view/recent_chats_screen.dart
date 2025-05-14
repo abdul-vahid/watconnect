@@ -100,13 +100,14 @@ class _RecentChatViewState extends State<RecentChatView> {
         if (hasUnread) {
           prioritizedLeads.add(lead);
         } else {
-          otherLeads.add(lead);
+          // otherLeads.add(lead);
         }
       }
 
       allRecentChats = [...prioritizedLeads, ...otherLeads];
-
+      allRecentChats = tempLeadModelList;
       setState(() {});
+
       // setState(() {
       //   allLeads = List.from(originalAllLeads); // restore original
       // });
@@ -121,7 +122,7 @@ class _RecentChatViewState extends State<RecentChatView> {
         if (firstName.contains(searchLead) || lastName.contains(searchLead)) {
           matched.add(lead);
         } else {
-          others.add(lead);
+          // others.add(lead);
         }
       }
 

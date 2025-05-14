@@ -11,7 +11,7 @@ abstract class SharedPrefsConstants {
   static const String userDecodedTokenKey = "decoded_token_key";
   static const String usertenantcodeKey = "tenantcode";
 
-    static const String userAvailableMoulesKey = "modules";
+  static const String userAvailableMoulesKey = "modules";
   static const String userrolekey = "userrole";
 
   static const String idTokenKey = 'id_token';
@@ -163,7 +163,8 @@ abstract class AppConstants {
   static const String signupAPIPath = '/apis/auth/register';
   static const String publicPath = '/spark/public';
   static const String otpVerificationAPIPath = '/apis/verification';
-  static const String appUrlPath = 'https://www.google.com/';
+  static const String appUrlPath =
+      'https://play.google.com/store/apps/details?id=com.wat.connect';
   static const String changePasswordAPIPath = '/apis/auth/forget_password';
 // =========================group Api=========================
   static const String groupAPIPath = '/api/whatsapp/groups?status=';

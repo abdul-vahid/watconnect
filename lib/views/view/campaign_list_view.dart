@@ -408,7 +408,33 @@ class _CampaignListView extends State<CampaignListView> {
   void _searchLeads(String filter) {
     print("filyerL:::: ${filter}");
     searchcampaign = filter.trim().toLowerCase();
-    setState(() {});
+    if (searchcampaign.isEmpty) {
+      setState(() {
+        allCampaigns = tempCampaigns;
+      });
+    } else {
+      List matched = [];
+      List others = [];
+
+      for (var lead in allCampaigns) {
+        var firstName = lead.campaignName?.toLowerCase() ?? '';
+        var lastName = lead.campaignType?.toLowerCase() ?? '';
+        var leadStatus = lead.campaignStatus?.toLowerCase() ?? '';
+
+        if (firstName.contains(searchcampaign) ||
+            lastName.contains(searchcampaign) ||
+            leadStatus.contains(searchcampaign)) {
+          matched.add(lead);
+        } else {
+          // others.add(lead);
+        }
+      }
+
+      setState(() {
+        allCampaigns = [...matched, ...others];
+        // noMatchedLeads = matched.isEmpty;
+      });
+    }
   }
 
   void _filterLeads(List filter) {
@@ -475,7 +501,7 @@ class _CampaignListView extends State<CampaignListView> {
                       width: 50,
                       child: CircularProgressIndicator()))
               : allCampaigns.isEmpty
-                  ? Center(
+                  ? const Center(
                       child: Text(
                       "No Campaign Found...",
                       style:
