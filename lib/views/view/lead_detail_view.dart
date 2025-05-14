@@ -305,7 +305,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'Are you sure you want to delete this campaign?',
+                'Are you sure you want to delete this lead?',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.black,
