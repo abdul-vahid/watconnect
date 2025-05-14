@@ -2051,7 +2051,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                         onPressed: () {
                           print(
                               "selectedTemplateName>>> ${selectedTemplateName}");
-                          if (selectedTemplateName == null ||
+                          if (selectedTemplateName == null ||  
                               selectedTemplateName == "Select Template Name") {
                             EasyLoading.showToast("Select Template Name");
                             return;
@@ -2062,7 +2062,7 @@ class _Forms extends State<CampaignAddUpdateView> {
 
                           if (regex.hasMatch(selectedBody.text) ||
                               selectedHeader.format != "TEXT") {
-                            Navigator.of(context).pop();
+                            Navigator.of(context).pop(); 
                             _sendTemplateSheet();
                           } else {
                             String templateToSend = selectedTemplateName ??
@@ -2148,7 +2148,7 @@ class _Forms extends State<CampaignAddUpdateView> {
     ];
     String csv = const ListToCsvConverter().convert(rows);
 
-    final Directory? downloadsDir = await getExternalStorageDirectory();
+    final Directory? downloadsDir = await getApplicationDocumentsDirectory();
 
     if (downloadsDir != null) {
       final String downloadsPath =
