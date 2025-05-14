@@ -265,7 +265,8 @@ class _Forms extends State<CampaignAddUpdateView> {
           ),
         ),
       ),
-      body: AppUtils.getAppBody(_getaccountData!, _pageBody),
+      body: _pageBody(),
+      //  AppUtils.getAppBody(_getaccountData!, _pageBody),
       bottomNavigationBar: Container(
         // decoration: InputDecoration(border: Border.all(12)),
         height: 49,
@@ -2051,7 +2052,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                         onPressed: () {
                           print(
                               "selectedTemplateName>>> ${selectedTemplateName}");
-                          if (selectedTemplateName == null ||  
+                          if (selectedTemplateName == null ||
                               selectedTemplateName == "Select Template Name") {
                             EasyLoading.showToast("Select Template Name");
                             return;
@@ -2062,7 +2063,7 @@ class _Forms extends State<CampaignAddUpdateView> {
 
                           if (regex.hasMatch(selectedBody.text) ||
                               selectedHeader.format != "TEXT") {
-                            Navigator.of(context).pop(); 
+                            Navigator.of(context).pop();
                             _sendTemplateSheet();
                           } else {
                             String templateToSend = selectedTemplateName ??
