@@ -152,14 +152,14 @@ class _CampaignListView extends State<CampaignListView> {
                       selectCampList.isEmpty
                           ? SizedBox()
                           : Container(
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                   color: AppColor.navBarIconColor,
                                   shape: BoxShape.circle),
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Text(
                                   "${selectCampList.length}",
-                                  style: TextStyle(color: Colors.white),
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                               ),
                             )
@@ -370,7 +370,7 @@ class _CampaignListView extends State<CampaignListView> {
                             ),
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 8,
                         ),
                         ElevatedButton(
@@ -485,7 +485,7 @@ class _CampaignListView extends State<CampaignListView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         allCampaigns.isEmpty
-            ? SizedBox()
+            ? const SizedBox()
             : Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -496,10 +496,10 @@ class _CampaignListView extends State<CampaignListView> {
         Expanded(
           child: isLoading
               ? Center(
-                  child: Container(
+                  child: SizedBox(
                       height: 50,
                       width: 50,
-                      child: CircularProgressIndicator()))
+                      child: const CircularProgressIndicator()))
               : allCampaigns.isEmpty
                   ? const Center(
                       child: Text(
@@ -609,7 +609,7 @@ class _CampaignListView extends State<CampaignListView> {
                                             allCampaigns[index]
                                                         .campaignStatus ==
                                                     'Completed'
-                                                ? SizedBox()
+                                                ? const SizedBox()
                                                 : Column(
                                                     mainAxisAlignment:
                                                         MainAxisAlignment.end,
@@ -660,7 +660,7 @@ class _CampaignListView extends State<CampaignListView> {
                                       ),
                                       const SizedBox(width: 10),
                                       allCampaigns[index].fileTitle == null
-                                          ? SizedBox()
+                                          ? const SizedBox()
                                           : GestureDetector(
                                               onTap: () async {
                                                 var token =

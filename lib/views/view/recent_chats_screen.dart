@@ -645,6 +645,7 @@ class _RecentChatViewState extends State<RecentChatView> {
       print(
           " dbfjsdlvdsl}::: }  ${leadlistvm.viewModels}   ${leadlistvm.viewModels.runtimeType}   ${leadlistvm.viewModels.length} ");
       allRecentChats = [];
+      tempLeadModelList = [];
       try {
         for (var viewModel in leadlistvm.viewModels) {
           var recentMsgmodel = viewModel.model;
