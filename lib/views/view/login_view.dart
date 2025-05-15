@@ -258,8 +258,7 @@ class _LoginViewState extends State<LoginView> {
                             },
                             child: _buildCircleIcon(FontAwesomeIcons.facebook)),
                         const SizedBox(width: 15),
-                        // _buildCircleIcon(FontAwesomeIcons.twitter),
-                        // SizedBox(width: 15),
+
                         InkWell(
                             onTap: () async {
                               String url =
@@ -298,9 +297,9 @@ class _LoginViewState extends State<LoginView> {
       // );
       userListViewModel
           .makeLoginRequest(
-        _emailController.text,
-        _passwordController.text,
-        _tcodeController.text,
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+        _tcodeController.text.trim(),
       )
           .then((records) async {
         if (records) {

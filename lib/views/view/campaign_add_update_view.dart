@@ -472,7 +472,13 @@ class _Forms extends State<CampaignAddUpdateView> {
                       group, "${group['name']}");
                 }).toList(),
                 initialValue: selectedGroups,
-                title: const Text("Select Groups"),
+                title: allGroupDetails.isEmpty
+                    ? const Center(
+                        child: Text(
+                        "No Groups Available",
+                        style: TextStyle(fontSize: 18),
+                      ))
+                    : const Text("Select Groups"),
                 selectedColor: Colors.blue,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.blue, width: 1),
@@ -543,7 +549,13 @@ class _Forms extends State<CampaignAddUpdateView> {
                       "${member['name']} (${member['whatsapp_number']})",
                     );
                   }).toList(),
-                  title: const Text("Select Leads"),
+                  title: allContactDetails.isEmpty
+                      ? const Center(
+                          child: Text(
+                          "No Leads Available",
+                          style: TextStyle(fontSize: 18),
+                        ))
+                      : const Text("Select Leads"),
                   selectedColor: Colors.blue,
                   decoration: BoxDecoration(
                     // color: Colors.blue.withOpacity(0.1),
@@ -555,12 +567,10 @@ class _Forms extends State<CampaignAddUpdateView> {
                   ),
                   buttonIcon: const Icon(
                     Icons.add,
-                    // color: Colors.blue,
                   ),
                   buttonText: const Text(
                     "Select Leads",
                     style: TextStyle(
-                      // color: Colors.blue[800],
                       fontSize: 16,
                     ),
                   ),

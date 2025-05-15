@@ -178,6 +178,14 @@ class UserListViewModel extends BaseListViewModel {
 
   Future<bool> makeLoginRequest(
       String username, String password, String tcode) async {
+    // Email regex validation
+    final emailRegex =
+        RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+    if (!emailRegex.hasMatch(username)) {
+      EasyLoading.showToast("Please enter a valid email address");
+      return false;
+    }
+
     EasyLoading.show();
     String url = AppUtils.getUrl(AppConstants.loginAPIPath);
 
@@ -185,8 +193,11 @@ class UserListViewModel extends BaseListViewModel {
       'Content-Type': 'application/json',
     };
 
-    final body =
-        jsonEncode({'email': username, 'password': password, 'tcode': tcode});
+    final body = jsonEncode({
+      'email': username,
+      'password': password,
+      'tcode': tcode,
+    });
 
     try {
       final response = await http.post(
@@ -195,10 +206,11 @@ class UserListViewModel extends BaseListViewModel {
         body: body,
       );
       print("response.statusCode:::::: ${response.statusCode}");
+
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
 
-        print("jsonResponse['success']::: ${jsonResponse}");
+        print("jsonResponse['success']::: $jsonResponse");
 
         if (jsonResponse['success'] == false) {
           EasyLoading.showToast(jsonResponse['errors']);
@@ -214,13 +226,10 @@ class UserListViewModel extends BaseListViewModel {
           viewModels =
               modelMap.map((item) => BaseViewModel(model: item)).toList();
 
-          log(" modelMap ${modelMap}  ${modelMap.runtimeType}   viewModels  ${viewModels}");
+          log(" modelMap $modelMap  ${modelMap.runtimeType}   viewModels  $viewModels");
           var userModel = modelMap[0];
-          print(
-              "viewModels: make : login: ${viewModels}   ${userModel}  ${userModel}");
-          // var userModel = jsonResponse as UserModel;
-          // print(
-          //     "userModel: in other login api:: ${userModel}  ${userModel.runtimeType}");
+          print("viewModels: make : login: $viewModels   $userModel");
+
           SharedPreferences.getInstance().then((prefs) async {
             await prefs.setString(
               SharedPrefsConstants.userKey,
@@ -235,6 +244,7 @@ class UserListViewModel extends BaseListViewModel {
               authToken ?? '',
             );
           });
+
           EasyLoading.dismiss();
           return true;
         }

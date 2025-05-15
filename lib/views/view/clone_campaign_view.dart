@@ -772,7 +772,13 @@ class _Forms extends State<CampaignCloneview> {
                     )
                     .toList(),
                 initialValue: selectedGroupsName,
-                title: const Text("Select Groups"),
+                title: groupsNameSet.isEmpty
+                    ? const Center(
+                        child: Text(
+                        "No Groups Available",
+                        style: TextStyle(fontSize: 18),
+                      ))
+                    : Text("Select Groups"),
                 selectedColor: Colors.blue,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.blue, width: 1),
@@ -816,7 +822,13 @@ class _Forms extends State<CampaignCloneview> {
                     "${member['name']} (${member['whatsapp_number']})",
                   );
                 }).toList(),
-                title: const Text("Select Leads"),
+                title: allContactDetails.isEmpty
+                    ? const Center(
+                        child: Text(
+                        "No Leads Available",
+                        style: TextStyle(fontSize: 18),
+                      ))
+                    : const Text("Select Leads"),
                 selectedColor: Colors.blue,
                 decoration: BoxDecoration(
                   // color: Colors.blue.withOpacity(0.1),

@@ -774,47 +774,51 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                 child: Column(
                   children: [
                     modules.contains("Campaign")
-                        ? Container(
-                            decoration: const BoxDecoration(
-                              color: AppColor.navBarIconColor,
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(10),
-                              ),
-                            ),
-                            // width: 400,
-                            height: 50,
-                            child: const Center(
-                              child: Text(
-                                'Campaign',
-                                style: TextStyle(
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                                  fontSize: 18,
+                        ? campaignCount != "0"
+                            ? Container(
+                                decoration: const BoxDecoration(
+                                  color: AppColor.navBarIconColor,
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          )
+                                // width: 400,
+                                height: 50,
+                                child: const Center(
+                                  child: Text(
+                                    'Campaign',
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : SizedBox()
                         : SizedBox(),
                     modules.contains("Campaign")
-                        ? SfCircularChart(
-                            tooltipBehavior: _tooltipBehavior,
-                            legend: const Legend(
-                                isVisible: true,
-                                position: LegendPosition.top,
-                                overflowMode: LegendItemOverflowMode.wrap),
-                            series: <PieSeries<_SalesData, String>>[
-                                PieSeries<_SalesData, String>(
-                                    legendIconType: LegendIconType.circle,
-                                    radius: '100',
-                                    dataSource: businessData,
-                                    enableTooltip: true,
-                                    pointColorMapper:
-                                        (_SalesData sales, int index) =>
+                        ? campaignCount != "0"
+                            ? SfCircularChart(
+                                tooltipBehavior: _tooltipBehavior,
+                                legend: const Legend(
+                                    isVisible: true,
+                                    position: LegendPosition.top,
+                                    overflowMode: LegendItemOverflowMode.wrap),
+                                series: <PieSeries<_SalesData, String>>[
+                                    PieSeries<_SalesData, String>(
+                                        legendIconType: LegendIconType.circle,
+                                        radius: '100',
+                                        dataSource: businessData,
+                                        enableTooltip: true,
+                                        pointColorMapper: (_SalesData sales,
+                                                int index) =>
                                             areaColor[index % areaColor.length],
-                                    xValueMapper: (_SalesData sales, _) =>
-                                        sales.status,
-                                    yValueMapper: (_SalesData sales, _) =>
-                                        sales.count)
-                              ])
+                                        xValueMapper: (_SalesData sales, _) =>
+                                            sales.status,
+                                        yValueMapper: (_SalesData sales, _) =>
+                                            sales.count)
+                                  ])
+                            : SizedBox()
                         : SizedBox(),
                     Container(
                       decoration: const BoxDecoration(
