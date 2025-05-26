@@ -30,7 +30,7 @@ class UserListViewModel extends BaseListViewModel {
     if (defaultTargetPlatform == TargetPlatform.android) {
       print("Device: Android");
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      // print("Aanaannn=>${androidInfo.id} ");
+      // print("Aanaannn=>${androidInfo.id} "); 
       // print("Aanaannndevice=>${androidInfo.device}");
       // print("Aanadeviceannn=>${androidInfo.name}");
       // print("ANDROID ID => ${androidInfo.androidId}");
@@ -38,7 +38,7 @@ class UserListViewModel extends BaseListViewModel {
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       print("Device: iOS");
       IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      return iosInfo.identifierForVendor ?? "unknown_device_id";
+      return iosInfo.identifierForVendor ?? "unknown_device_id"; 
     } else {
       print("Device: Unsupported");
       return "unsupported_platform";

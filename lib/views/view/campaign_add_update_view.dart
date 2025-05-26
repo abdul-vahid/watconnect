@@ -742,7 +742,7 @@ class _Forms extends State<CampaignAddUpdateView> {
       EasyLoading.showToast("Please Select Template Category");
       return;
     }
-    if (_name == null) {
+    if (_name?.trim() == null) {
       EasyLoading.showToast("Please enter campaign name");
       return;
     }
@@ -788,7 +788,7 @@ class _Forms extends State<CampaignAddUpdateView> {
       _addleadFormKey.currentState!.save();
       AppUtils.onLoading(context, "Saving, please wait...");
       Map<String, dynamic> camp = {
-        'name': _name,
+        'name': _name?.trim(),
         'type': _type,
         'startDate': _dateStartInput.text,
         'group_ids': selectedGroupIds,
@@ -1503,7 +1503,7 @@ class _Forms extends State<CampaignAddUpdateView> {
         CampaignViewModel getaccountData = CampaignViewModel(context);
 
         Map<String, dynamic> camp = {
-          'name': _name,
+          'name': _name?.trim(),
           'template_id': selectedTemplateId,
           'template_name': selectedTemplateName,
           'status': 'Pending',

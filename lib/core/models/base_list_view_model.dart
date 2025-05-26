@@ -51,11 +51,16 @@ class BaseListViewModel extends ChangeNotifier {
         // return records;
       }
       print(
-          ":____________________>>>>>>>>>>  ${records}   ${records.runtimeType}");
-      var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
-      viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
+          ":____________________>>>>>>>>>> ${url} ${records.length}   ${records.runtimeType}");
+      try {
+        var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
+        viewModels =
+            modelMap.map((item) => BaseViewModel(model: item)).toList();
 
-      debug("execute  ${viewModels}  ");
+        print("execute of the get method ${url}  ${viewModels}  ");
+      } catch (e, stackTrace) {
+        print("catching error in parsing :: ${e}     $stackTrace");
+      }
       status = "Completed";
     } on UnauthorisedException {
       await _refreshToken(url);

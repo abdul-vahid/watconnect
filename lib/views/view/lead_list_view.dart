@@ -679,7 +679,7 @@ class _LeadListViewState extends State<LeadListView> {
         padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
         child: InkWell(
           onTap: () async {
-            print("model=>${model.toMap()}");
+            // print("model=>${model.toMap()}");
             var num = "";
             if (model.whatsapp_number!.contains("+")) {
               num = model.whatsapp_number ?? "";
@@ -883,13 +883,13 @@ class _LeadListViewState extends State<LeadListView> {
     userId = decodedToken;
 
     try {
-      print("Token: $token");
+      // print("Token: $token");
 
       socket = IO.io(
-        'https://sandbox.watconnect.com',
+        'https://admin.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
-            .setPath('/swp/socket.io')
+            .setPath('/ibs/socket.io')
             .setExtraHeaders({'Authorization': 'Bearer $token'})
             .build(),
       );

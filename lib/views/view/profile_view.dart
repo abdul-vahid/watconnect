@@ -98,7 +98,7 @@ class _ProfileViewState extends State<ProfileView> {
       String tenatCode =
           prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
       msgController.setUsrProfile(
-          "https://sandbox.watconnect.com/public/$tenatCode/users/${tempModel.id}");
+          "https://admin.watconnect.com/public/$tenatCode/users/${tempModel.id}");
       print("logourl::: ${tempModel.logourl ?? ""}");
     } else {
       debugPrint("No user session found in getProfileData.");
@@ -180,7 +180,7 @@ class _ProfileViewState extends State<ProfileView> {
 
     print("logourl::: ${userModel?.logourl ?? ""}");
 
-    print("'https://sandbox.watconnect.com/${userModel?.id}',");
+    print("'https://admin.watconnect.com/${userModel?.id}',");
 
     return SingleChildScrollView(
       child: Column(
@@ -519,8 +519,9 @@ class _ProfileViewState extends State<ProfileView> {
     // SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (selectedImage != null) {
-      var url =
-          "https://sandbox.watconnect.com/swp/api/auth/${user?.id ?? ""}/profile";
+      String baseApiUrl = "https://admin.watconnect.com/ibs";
+      // String baseApiUrl = "https://sandbox.watconnect.com/swp";
+      var url = "$baseApiUrl/api/auth/${user?.id ?? ""}/profile";
 
       UserListViewModel()
           .uploadFile(selectedImage, userMap.toString(), url)
@@ -533,7 +534,7 @@ class _ProfileViewState extends State<ProfileView> {
         String tenatCode =
             prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
         msgController.setUsrProfile(
-            "https://sandbox.watconnect.com/public/$tenatCode/users/${userModel?.id}");
+            "https://admin.watconnect.com/public/$tenatCode/users/${userModel?.id}");
       }).catchError((error) {
         print("Error uploading file: $error");
       });

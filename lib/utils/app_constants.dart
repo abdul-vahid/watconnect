@@ -59,8 +59,8 @@ abstract class AppConstants {
   static const String channelId = "spark";
   static const String channelName = "Spark";
   static const String channelDescription = " Spark";
-  static const String baseUrl = "https://sandbox.watconnect.com/swp";
-  // static const String baseUrl = "https://admin.watconnect.com/ibs";
+  // static const String baseUrl = "https://sandbox.watconnect.com/swp";
+  static const String baseUrl = "https://admin.watconnect.com/ibs";
   static const bool kDebugMode = true;
   // ==================Login Api==================
   static const String loginAPIPath = '/api/auth/login';

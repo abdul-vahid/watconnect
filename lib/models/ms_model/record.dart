@@ -28,7 +28,7 @@ class Record {
   String? headerBody;
   String? messageBody;
   String? exampleBodyText;
-  String? bodyTextParams;
+  Map<String, dynamic>? bodyTextParams;
   String? footer;
   String? messagingProduct;
   String? recipientType;
@@ -116,7 +116,9 @@ class Record {
         headerBody: data['header_body'] as String?,
         messageBody: data['message_body'] as String?,
         exampleBodyText: data['example_body_text'] as String?,
-        bodyTextParams: data['body_text_params'] as String?,
+        bodyTextParams: data['body_text_params'] is Map<String, dynamic>
+            ? Map<String, dynamic>.from(data['body_text_params'])
+            : null,
         footer: data['footer'] as String?,
         messagingProduct: data['messaging_product'] as String?,
         recipientType: data['recipient_type'] as String?,

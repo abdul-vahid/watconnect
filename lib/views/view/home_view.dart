@@ -965,13 +965,13 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     userId = decodedToken;
 
     try {
-      print("Token: $token");
+      // print("Token: $token");
 
       socket = IO.io(
-        'https://sandbox.watconnect.com',
+        'https://admin.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
-            .setPath('/swp/socket.io')
+            .setPath('/ibs/socket.io')
             .setExtraHeaders({'Authorization': 'Bearer $token'})
             .build(),
       );

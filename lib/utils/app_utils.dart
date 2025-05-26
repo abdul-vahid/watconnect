@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -197,7 +196,7 @@ class AppUtils {
 
         List<String> stringList = List<String>.from(availableModule);
 
-        print("stringList::::::::: $stringList  ${stringList.runtimeType}");
+        // print("stringList::::::::: $stringList  ${stringList.runtimeType}");
         await prefs.setStringList(
             SharedPrefsConstants.userAvailableMoulesKey, stringList);
 
