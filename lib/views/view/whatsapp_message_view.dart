@@ -160,7 +160,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     log("is build method calling alwayss");
     messageViewModel = Provider.of<MessageViewModel>(context);
-
+    print("messageViewModel in the build :: ${messageViewModel.viewModels}");
     allMessages = [];
     for (var viewModel in messageViewModel.viewModels) {
       final model = viewModel.model;
@@ -1131,7 +1131,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       regex.hasMatch(allMessages[index].messageBody)) {
                     result = replacePlaceholders(
                         allMessages[index].messageBody ?? "",
-                        allMessages[index].bodyTextParams ?? "");
+                        allMessages[index].bodyTextParams.toString());
                   } else if (allMessages[index].messageBody != null &&
                       allMessages[index].exampleBodyText != null &&
                       regex.hasMatch(allMessages[index].messageBody)) {
@@ -1175,7 +1175,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                   if (title.isNotEmpty) {
                     imageUrl =
-                        "https://sandbox.watconnect.com/public/demo/attachment/$title";
+                        "https://admin.watconnect.com/public/demo/attachment/$title";
                   }
 
                   bool showDateLabel = false;
@@ -1820,7 +1820,7 @@ class _ChatScreenState extends State<ChatScreen> {
         if (campaignModel?.data != null) {
           for (var record in campaignModel!.data!) {
             if (record.status != null) {
-              print("Record template Status: ${record.name}");
+              // print("Record template Status: ${record.name}");
               setState(() {
                 templateNames.add(record.name);
                 // print("Templates => $templateNames");
@@ -3015,17 +3015,37 @@ class _ChatScreenState extends State<ChatScreen> {
         });
   }
 
-  String replacePlaceholders(String messageBody, String exampleBodyText) {
-    try {
-      Map<String, dynamic> exampleData = jsonDecode(exampleBodyText);
+  String replacePlaceholders(String messageBody, String? bodyTextParamsString) {
+    print("bodyTextParamsString:::::::::::::: $bodyTextParamsString");
 
-      exampleData.forEach((key, value) {
-        if (RegExp(r'^\d+$').hasMatch(key)) {
-          messageBody = messageBody.replaceAll("{{$key}}", value.toString());
+    if (bodyTextParamsString == null || bodyTextParamsString.isEmpty) {
+      return messageBody;
+    }
+
+    try {
+      // Convert Dart-style map string to JSON-style string
+      final fixedString = bodyTextParamsString
+          .replaceAllMapped(RegExp(r'(\w+):'), (match) => '"${match[1]}":')
+          .replaceAllMapped(RegExp(r':\s*([^,}]+)'), (match) {
+        final value = match[1]!.trim();
+        // If it's already quoted, number, or boolean/null, keep as is
+        if (value.startsWith('"') ||
+            value == 'null' ||
+            value == 'true' ||
+            value == 'false' ||
+            num.tryParse(value) != null) {
+          return ': $value';
         }
+        return ': "$value"'; // wrap in quotes if plain word
+      });
+
+      final Map<String, dynamic> params = jsonDecode(fixedString);
+
+      params.forEach((key, value) {
+        messageBody = messageBody.replaceAll('{{$key}}', value.toString());
       });
     } catch (e) {
-      messageBody = messageBody.replaceAll("{{1}}", exampleBodyText);
+      print('Error decoding or replacing placeholders: $e');
     }
 
     return messageBody;
@@ -3327,13 +3347,13 @@ class _ChatScreenState extends State<ChatScreen> {
     userId = decodedToken;
 
     try {
-      print("Token: $token");
+      // print("Token: $token");
 
       socket = IO.io(
-        'https://sandbox.watconnect.com',
+        'https://admin.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
-            .setPath('/swp/socket.io')
+            .setPath('/ibs/socket.io')
             .setExtraHeaders({'Authorization': 'Bearer $token'})
             .build(),
       );

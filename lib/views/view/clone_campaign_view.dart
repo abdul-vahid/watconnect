@@ -164,20 +164,20 @@ class _Forms extends State<CampaignCloneview> {
           Provider.of<CampaignViewModel>(context, listen: false);
       await campVM
           .getcampaignbyid(widget.record.campaignId.toString())
-          .then((onValue) {
+          .then((onValue) async {
         // print("onValue::::::::::: >>>>>>    ${onValue}");
         for (var viewModel in campVM.viewModels) {
           var model = viewModel.model;
-          print(" model.name===>$model");
-          print(" model.rec===>${model.record.campaignType}");
-          print("types:::::: ${types}");
-          setState(() async {
-            final prefs = await SharedPreferences.getInstance();
+          // print(" model.name===>$model");
+          // print(" model.rec===>${model.record.campaignType}");
+          // print("types:::::: ${types}");
+          final prefs = await SharedPreferences.getInstance();
+          setState(() {
             tenatCode =
                 prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
             _name.clear();
             _name.text = model.record.campaignName ?? "";
-            _type = model.record.campaignType;
+            _type = model.record.campaignType ?? "";
             // _dateStartInput.text = model.record.startDate.toString();
             fileNameController.text = model.record.fileTitle ?? "";
 
@@ -925,7 +925,7 @@ class _Forms extends State<CampaignCloneview> {
                   ? InkWell(
                       onTap: () {
                         downloadCsv(
-                            "https://sandbox.watconnect.com/public/${tenatCode}/campaign_files/${cloneCsvName}",
+                            "https://admin.watconnect.com/public/${tenatCode}/campaign_files/${cloneCsvName}",
                             cloneCsvName);
                       },
                       child: Container(

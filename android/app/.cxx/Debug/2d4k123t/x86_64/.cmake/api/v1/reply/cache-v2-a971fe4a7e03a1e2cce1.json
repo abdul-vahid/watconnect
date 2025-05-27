@@ -23,7 +23,7 @@
 				}
 			],
 			"type" : "UNINITIALIZED",
-			"value" : "C:\\Users\\iBirds\\AppData\\Local\\Android\\sdk\\ndk\\26.1.10909125"
+			"value" : "C:\\Users\\iBirds\\AppData\\Local\\Android\\Sdk\\ndk\\26.1.10909125"
 		},
 		{
 			"name" : "ANDROID_PLATFORM",
@@ -75,7 +75,7 @@
 				}
 			],
 			"type" : "UNINITIALIZED",
-			"value" : "C:\\Users\\iBirds\\AppData\\Local\\Android\\sdk\\ndk\\26.1.10909125"
+			"value" : "C:\\Users\\iBirds\\AppData\\Local\\Android\\Sdk\\ndk\\26.1.10909125"
 		},
 		{
 			"name" : "CMAKE_AR",
@@ -226,6 +226,22 @@
 			"value" : "C:/Users/iBirds/AppData/Local/Android/Sdk/cmake/3.22.1/bin/ctest.exe"
 		},
 		{
+			"name" : "CMAKE_CXX_COMPILER",
+			"properties" : 
+			[
+				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
+					"name" : "HELPSTRING",
+					"value" : "(This variable does not exist and should not be used)"
+				}
+			],
+			"type" : "UNINITIALIZED",
+			"value" : ""
+		},
+		{
 			"name" : "CMAKE_CXX_COMPILER_AR",
 			"properties" : 
 			[
@@ -352,6 +368,22 @@
 			],
 			"type" : "STRING",
 			"value" : "-latomic -lm"
+		},
+		{
+			"name" : "CMAKE_C_COMPILER",
+			"properties" : 
+			[
+				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
+					"name" : "HELPSTRING",
+					"value" : "(This variable does not exist and should not be used)"
+				}
+			],
+			"type" : "UNINITIALIZED",
+			"value" : ""
 		},
 		{
 			"name" : "CMAKE_C_COMPILER_AR",
@@ -747,7 +779,7 @@
 				}
 			],
 			"type" : "UNINITIALIZED",
-			"value" : "C:\\Users\\iBirds\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe"
+			"value" : "C:\\Users\\iBirds\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe"
 		},
 		{
 			"name" : "CMAKE_MODULE_LINKER_FLAGS",
@@ -1255,11 +1287,11 @@
 			[
 				{
 					"name" : "HELPSTRING",
-					"value" : "No help, variable specified on the command line."
+					"value" : "The CMake toolchain file"
 				}
 			],
-			"type" : "UNINITIALIZED",
-			"value" : "C:\\Users\\iBirds\\AppData\\Local\\Android\\sdk\\ndk\\26.1.10909125\\build\\cmake\\android.toolchain.cmake"
+			"type" : "FILEPATH",
+			"value" : "C:/Users/iBirds/AppData/Local/Android/Sdk/ndk/26.1.10909125/build/cmake/android.toolchain.cmake"
 		},
 		{
 			"name" : "CMAKE_VERBOSE_MAKEFILE",

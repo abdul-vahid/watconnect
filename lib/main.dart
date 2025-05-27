@@ -37,14 +37,14 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
 void main() async {
-  ErrorWidget.builder = (FlutterErrorDetails details) {
-    return const Center(
-      child: Text(
-        'Something went wrong!',
-        style: TextStyle(color: Colors.red),
-      ),
-    );
-  };
+  // ErrorWidget.builder = (FlutterErrorDetails details) {
+  //   return const Center(
+  //     child: Text(
+  //       'Something went wrong!',
+  //       style: TextStyle(color: Colors.red),
+  //     ),
+  //   );
+  // };
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -61,11 +61,10 @@ class MyApp extends StatelessWidget {
       statusBarColor: AppColor.navBarIconColor,
     ));
 
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
 
     return MultiProvider(
       providers: [
