@@ -1965,25 +1965,25 @@ class _Forms extends State<CampaignCloneview> {
   }
 
 // import 'package:timezone/timezone.dart' as tz;
+}
 
-  String formatToKolkataISOString(DateTime dateTime) {
-    final kolkata = tz.getLocation('Asia/Kolkata');
-    final kolkataTime = tz.TZDateTime.from(dateTime.toUtc(), kolkata);
+String formatToKolkataISOString(DateTime dateTime) {
+  final kolkata = tz.getLocation('Asia/Kolkata');
+  final kolkataTime = tz.TZDateTime.from(dateTime.toUtc(), kolkata);
 
-    final offset = kolkataTime.timeZoneOffset;
-    final hours = offset.inHours.abs().toString().padLeft(2, '0');
-    final minutes = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
-    final sign = offset.isNegative ? '-' : '+';
+  final offset = kolkataTime.timeZoneOffset;
+  final hours = offset.inHours.abs().toString().padLeft(2, '0');
+  final minutes = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
+  final sign = offset.isNegative ? '-' : '+';
 
-    final formatted = "${kolkataTime.year.toString().padLeft(4, '0')}-"
-        "${kolkataTime.month.toString().padLeft(2, '0')}-"
-        "${kolkataTime.day.toString().padLeft(2, '0')}T"
-        "${kolkataTime.hour.toString().padLeft(2, '0')}:"
-        "${kolkataTime.minute.toString().padLeft(2, '0')}:"
-        "${kolkataTime.second.toString().padLeft(2, '0')}."
-        "${kolkataTime.millisecond.toString().padLeft(3, '0')}"
-        "$sign$hours:$minutes";
+  final formatted = "${kolkataTime.year.toString().padLeft(4, '0')}-"
+      "${kolkataTime.month.toString().padLeft(2, '0')}-"
+      "${kolkataTime.day.toString().padLeft(2, '0')}T"
+      "${kolkataTime.hour.toString().padLeft(2, '0')}:"
+      "${kolkataTime.minute.toString().padLeft(2, '0')}:"
+      "${kolkataTime.second.toString().padLeft(2, '0')}."
+      "${kolkataTime.millisecond.toString().padLeft(3, '0')}"
+      "$sign$hours:$minutes";
 
-    return formatted;
-  }
+  return formatted;
 }
