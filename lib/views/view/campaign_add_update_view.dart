@@ -1599,7 +1599,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           CampaignViewModel getaccountData = CampaignViewModel(context);
 
           Map<String, dynamic> camp = {
-            'name': _name,
+            'name': _name?.trim(),
             'template_id': selectedTemplateId,
             'template_name': selectedTemplateName,
             'status': 'Pending',

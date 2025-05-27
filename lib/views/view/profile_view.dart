@@ -228,7 +228,9 @@ class _ProfileViewState extends State<ProfileView> {
                                       : const CircularProgressIndicator();
                                 },
                                 errorBuilder: (context, error, stackTrace) {
-                                  return const Text('Failed to load image');
+                                  return Image.asset(
+                                    "assets/images/profile-image.png",
+                                  );
                                 },
                               )),
                         );

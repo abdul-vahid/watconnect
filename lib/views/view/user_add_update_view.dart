@@ -641,16 +641,16 @@ class _Forms extends State<UserAddView> {
           (k) => accountsMap[k] == _selectedaccountname,
           orElse: () => null);
       UserDataModel adduserModel = UserDataModel(
-          firstname: _firstname,
-          lastname: _lastname,
-          email: _email,
-          password: _password,
-          whatsappNumber: _whatsappPhone,
+          firstname: _firstname?.trim(),
+          lastname: _lastname?.trim(),
+          email: _email?.trim(),
+          password: _password?.trim(),
+          whatsappNumber: _whatsappPhone?.trim(),
           userrole: _role,
           isactive: isactive,
           managername: _selectedaccountname,
           country_code: selectedCountry,
-          phone: _phone,
+          phone: _phone?.trim(),
           // whatsapp_settings: selectWhNumsList,
           managerid: accountId);
       AppUtils.onLoading(context, "Saving, please wait...");
@@ -701,14 +701,14 @@ class _Forms extends State<UserAddView> {
 
       UserDataModel contactModel = UserDataModel(
           id: id,
-          firstname: _firstname,
-          lastname: _lastname,
-          email: _email,
+          firstname: _firstname?.trim(),
+          lastname: _lastname?.trim(),
+          email: _email?.trim(),
           userrole: _role,
           managerid: accountId,
           managername: _selectedaccountname,
           isactive: isactive,
-          whatsappNumber: _whatsappPhone,
+          whatsappNumber: _whatsappPhone?.trim(),
           // whatsapp_settings: selectWhNumsList,
           country_code: selectedCountry);
 

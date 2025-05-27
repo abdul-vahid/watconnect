@@ -467,10 +467,10 @@ class _EditProfileView extends State<EditProfileView> {
       var id = widget.id;
       //debug('userid=====$id');
       GetUser updateUser = GetUser(
-        firstname: firstName,
-        lastname: lastName,
-        email: email,
-        phone: phone,
+        firstname: firstName?.trim(),
+        lastname: lastName?.trim(),
+        email: email?.trim(),
+        phone: phone?.trim(),
         id: widget.id,
         countrycode: selectedCountry,
       );
