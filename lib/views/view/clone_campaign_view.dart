@@ -16,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:video_player/video_player.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/groups_model/groups_model.dart';
@@ -89,6 +90,10 @@ class _Forms extends State<CampaignCloneview> {
   List<Map<String, String>> groupsNameSet = [];
   List<String> GroupsName = [];
   List<String> selectedGroupsName = [];
+
+  List<String> selectedGroupIds = [];
+
+  List<String> selectedGrpsName = [];
   List<String> templateIds = [];
   List<String> templateNames = [];
 
@@ -197,6 +202,10 @@ class _Forms extends State<CampaignCloneview> {
             print("groupsNameSet::: ${groupsNameSet}");
             selectedGroupsName =
                 groupsNameSet.map((e) => e['id'].toString()).toList();
+            // selectedGrpsName =
+            //     groupsNameSet.map((e) => e['name'].toString()).toList();
+            selectedGroupIds =
+                groupsNameSet.map((e) => e['id'].toString()).toList();
             // _tempController.text = model.record.templateName;
             // selectedTemplateName = model.record.templateName;
             print("model.record. lead::: : ${model.record.lead_ids ?? []}");
@@ -231,9 +240,12 @@ class _Forms extends State<CampaignCloneview> {
   }
 
   String formatDateWithTimezone(DateTime dateTime) {
-    final formatted = DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
-    return formatted;
+    // Returns string in format: "2025-05-22 10:00"
+    return "${dateTime.year}-${_twoDigits(dateTime.month)}-${_twoDigits(dateTime.day)} "
+        "${_twoDigits(dateTime.hour)}:${_twoDigits(dateTime.minute)}";
   }
+
+  String _twoDigits(int n) => n.toString().padLeft(2, '0');
 
   var currentTemplate;
   List<Component> components = [];
@@ -733,10 +745,17 @@ class _Forms extends State<CampaignCloneview> {
                 validator: (value) =>
                     value!.isEmpty ? 'Please enter date' : null,
                 onTap: () async {
+                  // DateTime? dateTime =
+                  //     await showOmniDateTimePicker(context: context);
+                  // if (dateTime != null) {
+                  //   _dateStartInput.text = formatDateWithTimezone(dateTime);
+                  // }
+
                   DateTime? dateTime =
                       await showOmniDateTimePicker(context: context);
+
                   if (dateTime != null) {
-                    _dateStartInput.text = formatDateWithTimezone(dateTime);
+                    _dateStartInput.text = formatToKolkataISOString(dateTime);
                   }
                 },
               ),
@@ -771,13 +790,11 @@ class _Forms extends State<CampaignCloneview> {
                       ),
                     )
                     .toList(),
-                initialValue: selectedGroupsName,
+                initialValue: selectedGroupIds,
                 title: groupsNameSet.isEmpty
                     ? const Center(
-                        child: Text(
-                        "No Groups Available",
-                        style: TextStyle(fontSize: 18),
-                      ))
+                        child: Text("No Groups Available",
+                            style: TextStyle(fontSize: 18)))
                     : Text("Select Groups"),
                 selectedColor: Colors.blue,
                 decoration: BoxDecoration(
@@ -787,25 +804,28 @@ class _Forms extends State<CampaignCloneview> {
                 buttonText: const Text("Select Groups"),
                 chipDisplay: MultiSelectChipDisplay.none(),
                 onConfirm: (results) {
-                  print("results:::: ${results}");
+                  print("results:::: $results");
                   setState(() {
-                    selectedGroupsName = results.cast<String>();
+                    selectedGroupIds = results.cast<String>();
                   });
-                  debug(
-                    "Selected groups: $selectedGroupsName",
-                  );
+                  debugPrint("Selected group IDs: $selectedGroupIds");
                 },
               ),
               Wrap(
                 spacing: 8.0,
-                children: selectedGroupsName.map((selectedItem) {
-                  print("Selected Item => $selectedItem");
+                children: selectedGroupIds.map((selectedId) {
+                  final group = groupsNameSet.firstWhere(
+                      (g) => g['id'] == selectedId,
+                      orElse: () => {});
+                  final groupName = group['name'] ??
+                      selectedId; // Fallback to ID if name not found
+
                   return Chip(
-                    label: Text(selectedItem),
+                    label: Text(groupName),
                     deleteIcon: const Icon(Icons.close),
                     onDeleted: () {
                       setState(() {
-                        selectedGroupsName.remove(selectedItem);
+                        selectedGroupIds.remove(selectedId);
                       });
                     },
                     backgroundColor: Colors.blue.withOpacity(0.2),
@@ -1066,6 +1086,9 @@ class _Forms extends State<CampaignCloneview> {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
                 onPressed: () {
+                  print("selectedGroupIds:::::::::: ${selectedGroupIds}");
+                  print(
+                      "_dateStartInput.text:::::::::: ${_dateStartInput.text}");
                   onButtonPressed();
                 },
                 child: const Text(
@@ -1204,7 +1227,7 @@ class _Forms extends State<CampaignCloneview> {
             'business_number': number,
             'type': _type,
             'startDate': _dateStartInput.text,
-            'group_ids': selectedGroupsName,
+            'group_ids': selectedGroupIds,
             "lead_ids": selectedMembers,
             'description': _description ?? "",
           };
@@ -1312,7 +1335,7 @@ class _Forms extends State<CampaignCloneview> {
                 'business_number': number,
                 'type': _type,
                 'startDate': _dateStartInput.text,
-                'group_ids': selectedGroupsName,
+                'group_ids': selectedGroupIds,
                 "lead_ids": selectedMembers,
                 'description': _description,
               };
@@ -1367,6 +1390,9 @@ class _Forms extends State<CampaignCloneview> {
 
                       await campController.csvCloneCampaign(csvClone);
                     }
+                    setState(() {
+                      _isLoading = false;
+                    });
 
                     Navigator.pushAndRemoveUntil(
                       context,
@@ -1416,12 +1442,11 @@ class _Forms extends State<CampaignCloneview> {
         });
       }
     } catch (e, stackTrace) {
+      setState(() {
+        _isLoading = false;
+      });
       print("printing error::: ${e}   ${stackTrace}");
     }
-
-    setState(() {
-      _isLoading = true;
-    });
 
     print("selected button::: ${selectedButtons} ");
   }
@@ -1937,5 +1962,28 @@ class _Forms extends State<CampaignCloneview> {
     } else {
       print(" Storage permission denied.");
     }
+  }
+
+// import 'package:timezone/timezone.dart' as tz;
+
+  String formatToKolkataISOString(DateTime dateTime) {
+    final kolkata = tz.getLocation('Asia/Kolkata');
+    final kolkataTime = tz.TZDateTime.from(dateTime.toUtc(), kolkata);
+
+    final offset = kolkataTime.timeZoneOffset;
+    final hours = offset.inHours.abs().toString().padLeft(2, '0');
+    final minutes = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
+    final sign = offset.isNegative ? '-' : '+';
+
+    final formatted = "${kolkataTime.year.toString().padLeft(4, '0')}-"
+        "${kolkataTime.month.toString().padLeft(2, '0')}-"
+        "${kolkataTime.day.toString().padLeft(2, '0')}T"
+        "${kolkataTime.hour.toString().padLeft(2, '0')}:"
+        "${kolkataTime.minute.toString().padLeft(2, '0')}:"
+        "${kolkataTime.second.toString().padLeft(2, '0')}."
+        "${kolkataTime.millisecond.toString().padLeft(3, '0')}"
+        "$sign$hours:$minutes";
+
+    return formatted;
   }
 }

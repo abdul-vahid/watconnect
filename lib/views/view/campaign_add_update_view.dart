@@ -18,11 +18,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:video_player/video_player.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/view_models/message_list_vm.dart';
+import 'package:whatsapp/views/view/clone_campaign_view.dart';
 import '../../models/campaign_model/campaign_model.dart';
 
 import '../../models/groups_model/groups_model.dart';
@@ -427,20 +429,21 @@ class _Forms extends State<CampaignAddUpdateView> {
                   return null;
                 },
                 onTap: () async {
-                  DateTime? dateTime = await showOmniDateTimePicker(
-                    context: context,
-                  );
+                  // DateTime? dateTime = await showOmniDateTimePicker(
+                  //   context: context,
+                  // );
 
                   // String formattedDate =
                   //     DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                   //         .format(dateTime.toLocal());
-                  String formattedDate = formatDateWithTimezone(dateTime!);
+                  // String formattedDate = formatDateWithTimezone(dateTime!);
 
-                  setState(() {
-                    _dateStartInput.text =
-                        formattedDate; //set output date to TextField value.
-                  });
-                  debug('dateTime==>$dateTime===>$formattedDate');
+                  DateTime? dateTime =
+                      await showOmniDateTimePicker(context: context);
+
+                  if (dateTime != null) {
+                    _dateStartInput.text = formatToKolkataISOString(dateTime);
+                  }
                 },
               ),
               if (isEdit == false) const SizedBox(height: 10),
