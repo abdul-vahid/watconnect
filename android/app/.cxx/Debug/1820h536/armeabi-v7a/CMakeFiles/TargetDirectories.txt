@@ -1,0 +1,2 @@
+/Users/ibirdstesting/Documents/watconnect/watconnect-1/android/app/.cxx/Debug/1820h536/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/ibirdstesting/Documents/watconnect/watconnect-1/android/app/.cxx/Debug/1820h536/armeabi-v7a/CMakeFiles/rebuild_cache.dir
