@@ -174,7 +174,7 @@ class _ProfileViewState extends State<ProfileView> {
 
   Widget _getBody() {
     String fullPhone = "${user!.countrycode} ${user!.whatsapp_number}";
-    String fullname = fName! + lName!;
+    String fullname = "${fName!} ${lName!}";
     String role = user?.userrole ?? "";
     print("this func call when refresh");
 
