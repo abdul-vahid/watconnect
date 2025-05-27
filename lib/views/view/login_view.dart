@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-// import 'package:whatsapp/views/view/loginwithsalesforce.dart';
 
-import '../../models/user_model/user_model.dart';
-import '../../utils/app_constants.dart';
 import '../../utils/app_utils.dart' show AppUtils;
 import '../../view_models/user_list_vm.dart';
 import '../widgets/bottomnavigatonbar.dart';
@@ -24,9 +21,9 @@ class _LoginViewState extends State<LoginView> {
   bool _obscurePassword = true;
   @override
   void initState() {
-    _emailController.text = 'shivani.m+demo@ibirdsservices.com';
-    _passwordController.text = 'Admin@123';
-    _tcodeController.text = 'demo';
+    // _emailController.text = 'shivani.m+demo@ibirdsservices.com';
+    // _passwordController.text = 'Admin@123';
+    // _tcodeController.text = 'demo';
     super.initState();
   }
 

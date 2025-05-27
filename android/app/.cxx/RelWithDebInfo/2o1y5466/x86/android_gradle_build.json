@@ -4,14 +4,14 @@
   ],
   "cleanCommandsComponents": [
     [
-      "C:\\Users\\iBirds\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "C:\\Users\\iBirds\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
       "-C",
       "C:\\Users\\iBirds\\Desktop\\watconnect\\android\\app\\.cxx\\RelWithDebInfo\\2o1y5466\\x86",
       "clean"
     ]
   ],
   "buildTargetsCommandComponents": [
-    "C:\\Users\\iBirds\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "C:\\Users\\iBirds\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
     "-C",
     "C:\\Users\\iBirds\\Desktop\\watconnect\\android\\app\\.cxx\\RelWithDebInfo\\2o1y5466\\x86",
     "{LIST_OF_TARGETS_TO_BUILD}"
