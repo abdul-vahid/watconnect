@@ -1299,8 +1299,11 @@ class _ChatScreenState extends State<ChatScreen> {
                                                                 "Outgoing"
                                                             ? const Color(
                                                                 0xffE3FFC9)
-                                                            : const Color(
-                                                                0xff7D9CE9),
+                                                            : Color.fromARGB(
+                                                                255,
+                                                                179,
+                                                                238,
+                                                                243),
                                                         borderRadius:
                                                             BorderRadius.only(
                                                           topLeft: const Radius

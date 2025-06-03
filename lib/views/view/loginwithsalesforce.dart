@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 
 import '../../utils/app_constants.dart';
 
@@ -29,6 +31,8 @@ class SalesforceAuth {
       );
 
       if (result != null) {
+        print(
+            "result::::::::::::::::::: ${result.authorizationAdditionalParameters}  ${result.tokenAdditionalParameters}");
         debug('ID Token: ${result.idToken}');
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(
@@ -53,16 +57,39 @@ class SalesforceAuth {
               SharedPrefsConstants.accessTokenKey,
               result.accessToken ?? '',
             );
-
-            Navigator.push(
+            DashBoardController dashBoardController =
+                Provider.of(context, listen: false);
+            dashBoardController.setLoginType(true);
+            Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => FooterNavbarPage()),
+              MaterialPageRoute(
+                builder: (context) => const FooterNavbarPage(),
+              ),
+              (Route<dynamic> route) => false,
             );
           }
         }
-
+        debug(
+            'result Token: ${result.authorizationAdditionalParameters}      ');
+        debug(
+            'result tokenAdditionalParameters: ${result.tokenAdditionalParameters} \n   ${result.tokenAdditionalParameters?['instance_url']}    ');
         debug('Access Token: ${result.accessToken}');
         debug('resulttt : ${result.refreshToken}');
+
+        await prefs.setString(
+          SharedPrefsConstants.sfAccessToken,
+          result.accessToken ?? '',
+        );
+
+        await prefs.setString(
+          SharedPrefsConstants.sfRefreshToken,
+          result.refreshToken ?? '',
+        );
+
+        await prefs.setString(
+          SharedPrefsConstants.sfInstanceurl,
+          result.tokenAdditionalParameters?['instance_url'] ?? '',
+        );
       } else {
         throw Exception("Authorization failed");
       }

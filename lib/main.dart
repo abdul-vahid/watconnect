@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/services/notifications/local_notification_service.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
@@ -39,14 +40,14 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
 void main() async {
-  // ErrorWidget.builder = (FlutterErrorDetails details) {
-  //   return const Center(
-  //     child: Text(
-  //       'Something went wrong!',
-  //       style: TextStyle(color: Colors.red),
-  //     ),
-  //   );
-  // };
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return const Center(
+      child: Text(
+        'Something went wrong!',
+        style: TextStyle(color: Colors.red),
+      ),
+    );
+  };
   tz.initializeTimeZones();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -89,7 +90,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GetUserViewModel(context)),
         ChangeNotifierProvider(create: (_) => UserDataListViewModel(context)),
         ChangeNotifierProvider(create: (_) => CampaignViewModel(context)),
-        ChangeNotifierProvider(create: (_) => MessageController())
+        ChangeNotifierProvider(create: (_) => MessageController()),
+        ChangeNotifierProvider(create: (_) => DashBoardController())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

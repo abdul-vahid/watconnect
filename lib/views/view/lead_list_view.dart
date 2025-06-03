@@ -16,7 +16,7 @@ import '../../utils/app_utils.dart';
 import '../../view_models/lead_list_vm.dart';
 import '../../view_models/user_data_list_vm.dart';
 import 'lead_add_update_view.dart';
-import 'lead_detail_view.dart';
+
 import 'package:badges/badges.dart' as badges;
 
 class LeadListView extends StatefulWidget {
@@ -37,11 +37,11 @@ class _LeadListViewState extends State<LeadListView> {
   TextEditingController textController = TextEditingController();
   var leadlistvm;
   var userlistvm;
-  // UnreadMsgModel? campginmodel;
+
   List leadModelList = [];
   List tempLeadModelList = [];
   UnreadCountVm? unreadCountVm;
-  // List<UnreadCountMsgModel> unreadModel = [];
+
   LeadListViewModel? leads;
   String? selectlead;
   String? selectuser;
@@ -51,6 +51,10 @@ class _LeadListViewState extends State<LeadListView> {
   List unreadList = [];
   List<String> selectleadList = [];
   String? number;
+
+  int selectedTagId = 0;
+  List<String> tags = ["All", "Unread"];
+
   @override
   void initState() {
     selectleadList = [];
@@ -58,13 +62,10 @@ class _LeadListViewState extends State<LeadListView> {
     getLeadList();
     super.initState();
     connectSocket();
-    // tempLeadModelList = leadModelList;
   }
 
   @override
   void dispose() {
-    // disconnectSocket();
-
     super.dispose();
   }
 
@@ -86,36 +87,7 @@ class _LeadListViewState extends State<LeadListView> {
   }
 
   bool noMatchedLeads = false;
-  // void _filterLeads(String searchLead) {
-  //   searchLead = searchLead.trim().toLowerCase();
 
-  //   if (searchLead.isEmpty) {
-  //     setState(() {
-  //       allLeads = List.from(tempLeadModelList);
-  //     });
-  //   } else {
-  //     List<LeadModel> matched = [];
-  //     List<LeadModel> others = [];
-
-  //     for (var lead in tempLeadModelList) {
-  //       var firstName = lead.firstname?.toLowerCase() ?? '';
-  //       var lastName = lead.lastname?.toLowerCase() ?? '';
-  //       var leadStatus = lead.leadstatus?.toLowerCase() ?? '';
-
-  //       if (firstName.contains(searchLead) ||
-  //           lastName.contains(searchLead) ||
-  //           leadStatus.contains(searchLead)) {
-  //         matched.add(lead);
-  //       } else {
-  //         others.add(lead);
-  //       }
-  //     }
-  //     print("othersothers+++++===>>>>>>>>@@@@@@${jsonEncode(others)}");
-  //     setState(() {
-  //       allLeads = [...matched, ...others];
-  //     });
-  //   }
-  // }
   void _filterLeads(String searchLead) {
     searchLead = searchLead.trim().toLowerCase();
 
@@ -153,15 +125,9 @@ class _LeadListViewState extends State<LeadListView> {
 
   @override
   Widget build(BuildContext context) {
-    // if (leadlistvm != null) {
-    //   for (var viewModel in leadlistvm!.viewModels) {}
-    // }
-
     unreadCountVm = Provider.of<UnreadCountVm>(context);
     leadlistvm = Provider.of<LeadListViewModel>(context);
     userlistvm = Provider.of<UserDataListViewModel>(context);
-
-    // print("unreadCountVm::: ${unreadCountVm?.viewModels[0].toString()}");
 
     return Scaffold(
       appBar: AppBar(
@@ -547,23 +513,80 @@ class _LeadListViewState extends State<LeadListView> {
                                 fontSize: 16, fontWeight: FontWeight.w600),
                           ),
                         )
-                      : ListView.builder(
-                          itemCount: allLeads.length,
-                          itemBuilder: (context, index) {
-                            var unreadCount = "0";
-                            var lead = allLeads[index];
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              height: 55,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                shrinkWrap: true,
+                                itemCount: tags.length,
+                                itemBuilder: (context, index) {
+                                  return InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        selectedTagId = index;
+                                      });
+                                      if (index == 1) {
+                                        unreadChatFilter();
+                                      } else {
+                                        setState(() {
+                                          allLeads = tempLeadModelList;
+                                        });
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12.0, vertical: 4.0),
+                                        decoration: BoxDecoration(
+                                          color: Color.fromARGB(
+                                              255, 179, 238, 243),
+                                          border: Border.all(
+                                              color: selectedTagId == index
+                                                  ? Colors.black
+                                                  : Colors.transparent,
+                                              width: 1.5),
+                                          borderRadius:
+                                              BorderRadius.circular(18),
+                                        ),
+                                        child: Center(
+                                            child: Text(
+                                          tags[index],
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        )),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: allLeads.length,
+                                itemBuilder: (context, index) {
+                                  var unreadCount = "0";
+                                  var lead = allLeads[index];
 
-                            for (var p in unreadList) {
-                              if (p.whatsappNumber
-                                  .toString()
-                                  .contains(lead.whatsapp_number)) {
-                                unreadCount = p.unreadMsgCount;
-                                break;
-                              }
-                            }
+                                  for (var p in unreadList) {
+                                    if (p.whatsappNumber
+                                        .toString()
+                                        .contains(lead.whatsapp_number)) {
+                                      unreadCount = p.unreadMsgCount;
+                                      break;
+                                    }
+                                  }
 
-                            return leadRecordList(lead, unreadCount);
-                          },
+                                  return leadRecordList(lead, unreadCount);
+                                },
+                              ),
+                            ),
+                          ],
                         ),
         ),
       ],
@@ -943,23 +966,6 @@ class _LeadListViewState extends State<LeadListView> {
         allLeads.add(viewModel.model);
       }
 
-      List prioritizedLeads = [];
-      List otherLeads = [];
-
-      for (var lead in allLeads) {
-        bool hasUnread = unreadList.any(
-          (unread) =>
-              unread.whatsappNumber.toString().contains(lead.whatsapp_number),
-        );
-
-        if (hasUnread) {
-          prioritizedLeads.add(lead);
-        } else {
-          otherLeads.add(lead);
-        }
-      }
-
-      allLeads = [...prioritizedLeads, ...otherLeads];
       setState(() {
         updateLoader = false;
       });
@@ -969,5 +975,26 @@ class _LeadListViewState extends State<LeadListView> {
     setState(() {
       updateLoader = false;
     });
+  }
+
+  unreadChatFilter() {
+    List prioritizedLeads = [];
+    List otherLeads = [];
+
+    for (var lead in allLeads) {
+      bool hasUnread = unreadList.any(
+        (unread) =>
+            unread.whatsappNumber.toString().contains(lead.whatsapp_number),
+      );
+
+      if (hasUnread) {
+        prioritizedLeads.add(lead);
+      } else {
+        otherLeads.add(lead);
+      }
+    }
+
+    allLeads = [...prioritizedLeads, ...otherLeads];
+    setState(() {});
   }
 }

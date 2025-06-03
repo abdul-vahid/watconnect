@@ -150,7 +150,11 @@ class _SplashViewState extends State<SplashView> {
 
   void _isLoggedIn() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.containsKey(SharedPrefsConstants.userKey)) {
+    String sfAccessToken =
+        await prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+
+    if (prefs.containsKey(SharedPrefsConstants.userKey) ||
+        sfAccessToken.isNotEmpty) {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const FooterNavbarPage()),

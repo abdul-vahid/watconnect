@@ -83,6 +83,9 @@ class _RecentChatViewState extends State<RecentChatView> {
     setState(() {});
   }
 
+  int selectedTagId = 0;
+  List<String> tags = ["All", "Unread"];
+
   // bool noMatchedLeads = false;
   void _filterLeads(String searchLead) {
     searchLead = searchLead.trim().toLowerCase();
@@ -135,23 +138,14 @@ class _RecentChatViewState extends State<RecentChatView> {
 
   @override
   Widget build(BuildContext context) {
-    // if (leadlistvm != null) {
-    //   for (var viewModel in leadlistvm!.viewModels) {
-    //     _leadfilter.add(viewModel.model.leadstatus);
-    //   }
-    // }
-
     unreadCountVm = Provider.of<UnreadCountVm>(context);
     leadlistvm = Provider.of<LeadListViewModel>(context);
-    // userlistvm = Provider.of<UserDataListViewModel>(context);
-
-    // print("unreadCountVm::: ${unreadCountVm?.viewModels[0].toString()}");
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const Text(
-          'Recent Chats',
+          'Chats',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
@@ -202,130 +196,6 @@ class _RecentChatViewState extends State<RecentChatView> {
     );
   }
 
-  void _showFilterBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      useSafeArea: true,
-      isScrollControlled: true,
-      enableDrag: false,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            List<String> uniquePaymentTerms = _leadfilter.toSet().toList();
-
-            return Container(
-              height: 220,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: AppColor.navBarIconColor,
-                                borderRadius: BorderRadius.circular(8)),
-                            height: 40,
-                            width: 350,
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Center(
-                                child: Text(
-                                  'Lead Status Filter',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color:
-                                          Color.fromARGB(255, 255, 255, 255)),
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Payment Term Dropdown
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButtonFormField<String>(
-                        hint: const Text('Select Leads Status'),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'Working - Contacted',
-                            child: Text('Working - Contacted'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Open - Not Contacted',
-                            child: Text('Open - Not Contacted'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Closed - Converted',
-                            child: Text('Closed - Converted'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'Closed - Not Converted',
-                            child: Text('Closed - Not Converted'),
-                          ),
-                        ],
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectlead = newValue;
-                          });
-                        },
-                        value: selectlead,
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            filterLeads(selectlead);
-                            Navigator.pop(context);
-                            // Navigator.of(context).pop();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.cardsColor,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text(
-                            'Apply Filters',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
   Future<String?> _marksread(String whatsappNumber) async {
     print("sajdjsahdjsah jhsjhkjdhakj${whatsappNumber}");
 
@@ -358,51 +228,97 @@ class _RecentChatViewState extends State<RecentChatView> {
   Widget _pageBody() {
     return Column(
       children: [
-        chatLoader
-            ? Center(
-                child: SizedBox(
-                child: Container(
-                  height: 50,
-                  width: 50,
-                  child: const Center(
+        Expanded(
+          child: chatLoader
+              ? const Center(
+                  child: SizedBox(
+                    height: 50,
+                    width: 50,
                     child: CircularProgressIndicator(),
                   ),
-                ),
-              ))
-            : allRecentChats.isEmpty || noMatchedLeads
-                ? const Center(
-                    child: Center(
-                        child: Text(
-                      "No Chat Found..",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                    )),
-                  )
-                // : noMatchedLeads || noRecordFound
-                //     ? Center(
-                //         child: Text(
-                //         "No Chat Found..",
-                //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                //       ))
-                : Expanded(
-                    child: ListView.builder(
-                    itemCount: allRecentChats.length,
-                    itemBuilder: (context, index) {
-                      var unreadCount = "0";
-                      var lead = allRecentChats[index];
+                )
+              : allRecentChats.isEmpty || noMatchedLeads
+                  ? const Center(
+                      child: Text(
+                        "No Chat Found..",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 55,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            shrinkWrap: true,
+                            itemCount: tags.length,
+                            itemBuilder: (context, index) {
+                              return InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    selectedTagId = index;
+                                  });
+                                  if (index == 1) {
+                                    unreadChatFilter();
+                                  } else {
+                                    setState(() {
+                                      allRecentChats = tempLeadModelList;
+                                    });
+                                  }
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0, vertical: 4.0),
+                                    decoration: BoxDecoration(
+                                      color: Color.fromARGB(255, 179, 238, 243),
+                                      border: Border.all(
+                                          color: selectedTagId == index
+                                              ? Colors.black
+                                              : Colors.transparent,
+                                          width: 1.5),
+                                      borderRadius: BorderRadius.circular(18),
+                                    ),
+                                    child: Center(
+                                        child: Text(
+                                      tags[index],
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    )),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: allRecentChats.length,
+                            itemBuilder: (context, index) {
+                              var unreadCount = "0";
+                              var lead = allRecentChats[index];
 
-                      for (var p in unreadList) {
-                        if (lead.full_number
-                            .toString()
-                            .contains(p.whatsappNumber)) {
-                          unreadCount = p.unreadMsgCount;
-                          break;
-                        }
-                      }
+                              for (var p in unreadList) {
+                                if (lead.full_number
+                                    .toString()
+                                    .contains(p.whatsappNumber)) {
+                                  unreadCount = p.unreadMsgCount;
+                                  break;
+                                }
+                              }
 
-                      return leadRecordList(lead, unreadCount);
-                    },
-                  ))
+                              return leadRecordList(lead, unreadCount);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+        ),
       ],
     );
   }
@@ -410,20 +326,6 @@ class _RecentChatViewState extends State<RecentChatView> {
   Widget leadRecordList(Records model, String unreadMsgCount) {
     Color statusColor;
     statusColor = Colors.lightBlue.withOpacity(0.7);
-    // switch (model.leadstatus) {
-    //   case 'Contacted':
-    //     statusColor = const Color.fromARGB(255, 46, 198, 69);
-    //     break;
-    //   case 'Open - Not Contacted && Working - Contacted':
-    //     statusColor = Colors.lightBlue.withOpacity(0.7);
-    //     break;
-    //   case 'Closed - Converted && Closed - Not Converted':
-    //     statusColor = AppColor.motivationCar1Color;
-    //     break;
-    //   default:
-    //     statusColor = Colors.lightBlue.withOpacity(0.7);
-    //     break;
-    // }
 
     return Container(
       decoration: BoxDecoration(
@@ -448,16 +350,6 @@ class _RecentChatViewState extends State<RecentChatView> {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
         child: InkWell(
-          // onTap: () {
-          //   Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //       builder: (context) => LeadDetailView(
-
-          //       ),
-          //     ),
-          //   );
-          // },
           onTap: () {
             if (model.full_number != null) {
               _marksread(model.full_number ?? "");
@@ -473,8 +365,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                 ),
               ).then((_) {
                 _getUnreadCount();
-                // Provider.of<UnreadCountVm>(context, listen: false)
-                //     .fetchunreadcount(number: number ?? "");
+
                 setState(() {
                   unreadMsgCount = "0";
                   unreadMsgCount = "";
@@ -511,7 +402,6 @@ class _RecentChatViewState extends State<RecentChatView> {
                 ),
               ),
               const SizedBox(width: 12),
-
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -534,7 +424,6 @@ class _RecentChatViewState extends State<RecentChatView> {
                   ),
                 ),
               ),
-              // Arrow and Badge
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -669,5 +558,25 @@ class _RecentChatViewState extends State<RecentChatView> {
     setState(() {
       chatLoader = false;
     });
+  }
+
+  unreadChatFilter() {
+    List prioritizedLeads = [];
+    List otherLeads = [];
+
+    for (var lead in allRecentChats) {
+      bool hasUnread = unreadList.any(
+        (unread) =>
+            unread.whatsappNumber.toString().contains(lead.whatsapp_number),
+      );
+
+      if (hasUnread) {
+        prioritizedLeads.add(lead);
+      } else {
+        otherLeads.add(lead);
+      }
+    }
+
+    allRecentChats = [...prioritizedLeads, ...otherLeads];
   }
 }

@@ -17,6 +17,14 @@ abstract class SharedPrefsConstants {
   static const String idTokenKey = 'id_token';
   // static const String accessTokenKey = 'access_token';
   // static const String refreshTokenKey = 'refresh_token';
+
+  //--------------------------------------------------------------------------------------------//
+
+  ////SALESFORCE /////////////
+
+  static const String sfInstanceurl = "instanceurl";
+  static const String sfAccessToken = "accessToken";
+  static const String sfRefreshToken = "refreshToken";
 }
 
 abstract class ResultStatus {
@@ -168,4 +176,12 @@ abstract class AppConstants {
   static const String changePasswordAPIPath = '/apis/auth/forget_password';
 // =========================group Api=========================
   static const String groupAPIPath = '/api/whatsapp/groups?status=';
+
+  ///  Sales force api
+  ///
+
+  static const String baseApi =
+      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/";
+
+  static const String getDrawerItemsApi = '${baseApi}watconnect/objectconfig';
 }

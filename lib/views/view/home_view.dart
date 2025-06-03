@@ -12,6 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/screens/sf_darwer.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/utils/notification_utils.dart';
@@ -117,6 +119,8 @@ class _HomeViewState extends State<HomeView> with RouteAware {
 
   @override
   void initState() {
+    DashBoardController drProvider = Provider.of(context, listen: false);
+    drProvider.drawerApiCall();
     _tooltipBehavior = TooltipBehavior(enable: true);
     NotificationUtil.registerToken();
     getAvailableModules();
@@ -354,135 +358,349 @@ class _HomeViewState extends State<HomeView> with RouteAware {
         print("Model is not UnreadMsgModel: ${viewModel.model.runtimeType}");
       }
     }
-    return Scaffold(
-      drawer: const AppDrawerWidget(),
-      appBar: AppBar(
-        iconTheme:
-            const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
-        centerTitle: true,
-        elevation: 2,
-        backgroundColor: AppColor.navBarIconColor,
-        title: const Text(
-          "Home",
-          style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
-        ),
-        actions: [
-          IconButton(
-              tooltip: "Messages",
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NotificationPage(),
-                  ),
-                );
-              },
-              icon: Stack(
-                children: [
-                  const Icon(
-                    Icons.notifications,
-                    size: 28,
-                  ),
-                  if (totalUnreadCount > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: badges.Badge(
-                        isLabelVisible: true,
-                        label: Text(
-                          totalUnreadCount.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+    return Consumer<DashBoardController>(builder: (context, ref, child) {
+      return Scaffold(
+        drawer: ref.fromSalesForce ? SfAppDrawerWidget() : AppDrawerWidget(),
+        appBar: AppBar(
+          iconTheme:
+              const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
+          centerTitle: true,
+          elevation: 2,
+          backgroundColor: AppColor.navBarIconColor,
+          title: const Text(
+            "Home",
+            style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
+          ),
+          actions: [
+            IconButton(
+                tooltip: "Messages",
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationPage(),
+                    ),
+                  );
+                },
+                icon: Stack(
+                  children: [
+                    const Icon(
+                      Icons.notifications,
+                      size: 28,
+                    ),
+                    if (totalUnreadCount > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: badges.Badge(
+                          isLabelVisible: true,
+                          label: Text(
+                            totalUnreadCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
+                          backgroundColor:
+                              Theme.of(context).colorScheme.onTertiaryContainer,
+                          padding: const EdgeInsets.all(2),
                         ),
-                        backgroundColor:
-                            Theme.of(context).colorScheme.onTertiaryContainer,
-                        padding: const EdgeInsets.all(2),
+                      ),
+                  ],
+                )),
+            PopupMenuButton<String>(
+              position: PopupMenuPosition.under,
+              icon: const Icon(Icons.phone, size: 23, color: Colors.white),
+              itemBuilder: (BuildContext context) {
+                return allNums.map((number) {
+                  final isSelected = number.phone == selectedNumber;
+                  return PopupMenuItem<String>(
+                    value: number.phone,
+                    child: Text(
+                      "${number.name} ${number.phone} ",
+                      style: TextStyle(
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Colors.blue : Colors.black,
                       ),
                     ),
-                ],
-              )),
-          PopupMenuButton<String>(
-            position: PopupMenuPosition.under,
-            icon: const Icon(Icons.phone, size: 23, color: Colors.white),
-            itemBuilder: (BuildContext context) {
-              return allNums.map((number) {
-                final isSelected = number.phone == selectedNumber;
-                return PopupMenuItem<String>(
-                  value: number.phone,
-                  child: Text(
-                    "${number.name} ${number.phone} ",
-                    style: TextStyle(
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? Colors.blue : Colors.black,
+                  );
+                }).toList();
+              },
+              onSelected: (value) async {
+                print('Selected: $value');
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('phoneNumber', value);
+
+                EasyLoading.showToast("${value} marked as selected",
+                    toastPosition: EasyLoadingToastPosition.bottom);
+                selectedNumber = value;
+                EasyLoading.show();
+                fetch();
+
+                setState(() {});
+              },
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(height: 12),
+
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 15.0),
+              //   child: AppUtils.getDropdown(
+              //     'Select',
+              //     data: allWhNums,
+              //     onChanged: (p0) {
+              //       setState(() {
+              //         _phone = p0;
+              //         // _userType = null;
+              //       });
+              //     },
+              //     value: _phone,
+              //     validator: (value) => value == null ? 'Role is required' : null,
+              //   ),
+              // ),
+              // Container(
+              //   width: 300,
+              //   child: AppUtils.getDropdown(
+              //     'Select Category',
+              //     data: dropdownItems,
+              //     onChanged: (String? selectedCategory) {},
+              //   ),
+              // ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Wrap(
+                  spacing: 8.0,
+                  runSpacing: 8.0,
+                  alignment: WrapAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () => {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LeadListView()))
+                      },
+                      child: Card(
+                        elevation: 2,
+                        color: const Color(0xFFF6EDE8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Container(
+                          width: 160,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            image: const DecorationImage(
+                              image: AssetImage("assets/images/bg011.jpg"),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.leaderboard,
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                              Container(height: 5),
+                              const Text(
+                                "ALL Leads",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      text: (countNewLeads ?? 0).toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      children: const [
+                                        TextSpan(
+                                          text: '/ Total',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                );
-              }).toList();
-            },
-            onSelected: (value) async {
-              print('Selected: $value');
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setString('phoneNumber', value);
-
-              EasyLoading.showToast("${value} marked as selected",
-                  toastPosition: EasyLoadingToastPosition.bottom);
-              selectedNumber = value;
-              EasyLoading.show();
-              fetch();
-
-              setState(() {});
-            },
-          ),
-        ],
-      ),
-
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: 12),
-
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 15.0),
-            //   child: AppUtils.getDropdown(
-            //     'Select',
-            //     data: allWhNums,
-            //     onChanged: (p0) {
-            //       setState(() {
-            //         _phone = p0;
-            //         // _userType = null;
-            //       });
-            //     },
-            //     value: _phone,
-            //     validator: (value) => value == null ? 'Role is required' : null,
-            //   ),
-            // ),
-            // Container(
-            //   width: 300,
-            //   child: AppUtils.getDropdown(
-            //     'Select Category',
-            //     data: dropdownItems,
-            //     onChanged: (String? selectedCategory) {},
-            //   ),
-            // ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Wrap(
-                spacing: 8.0,
-                runSpacing: 8.0,
-                alignment: WrapAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () => {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LeadListView()))
-                    },
-                    child: Card(
+                    GestureDetector(
+                      onTap: () => {
+                        if (modules.contains("Campaign"))
+                          {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CampaignListView()))
+                          }
+                        else
+                          {
+                            EasyLoading.showToast(
+                                "Access to Campaign is not included in this Plan")
+                          }
+                      },
+                      child: Card(
+                        elevation: 2,
+                        color: const Color(0xfffece9f2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Container(
+                          width: 160,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            image: const DecorationImage(
+                              image: AssetImage(
+                                "assets/images/bg011.jpg",
+                              ), // Add your image path
+                              fit: BoxFit.cover, // Cover entire card
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.assignment_ind,
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                              Container(height: 5),
+                              const Text(
+                                "Pending Campa..",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      text: (campaignCount ?? 0)
+                                          .toString(), // Default text
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      children: const [
+                                        TextSpan(
+                                          text: '/ Total',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const TempleteListView()))
+                      },
+                      child: Card(
+                        elevation: 2,
+                        color: const Color(0xfffece9f2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Container(
+                          width: 160,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            image: const DecorationImage(
+                              image: AssetImage(
+                                "assets/images/bg011.jpg",
+                              ), // Add your image path
+                              fit: BoxFit.cover, // Cover entire card
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.assignment,
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                              Container(height: 5),
+                              const Text(
+                                "Total Templates",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      text: (templateCount ?? 0).toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      children: const [
+                                        TextSpan(
+                                          text: '/ Total',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Card(
                       elevation: 2,
                       color: const Color(0xFFF6EDE8),
                       shape: RoundedRectangleBorder(
@@ -494,84 +712,6 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(15),
                           image: const DecorationImage(
-                            image: AssetImage("assets/images/bg011.jpg"),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              Icons.leaderboard,
-                              size: 30,
-                              color: Colors.white,
-                            ),
-                            Container(height: 5),
-                            const Text(
-                              "ALL Leads",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                RichText(
-                                  text: TextSpan(
-                                    text: (countNewLeads ?? 0).toString(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    children: const [
-                                      TextSpan(
-                                        text: '/ Total',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => {
-                      if (modules.contains("Campaign"))
-                        {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const CampaignListView()))
-                        }
-                      else
-                        {
-                          EasyLoading.showToast(
-                              "Access to Campaign is not included in this Plan")
-                        }
-                    },
-                    child: Card(
-                      elevation: 2,
-                      color: const Color(0xfffece9f2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Container(
-                        width: 160,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          image: const DecorationImage(
                             image: AssetImage(
                               "assets/images/bg011.jpg",
                             ), // Add your image path
@@ -582,13 +722,14 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Icon(
-                              Icons.assignment_ind,
+                              Icons.message,
                               size: 30,
+                              // color: Colors.white,
                               color: Colors.white,
                             ),
                             Container(height: 5),
                             const Text(
-                              "Pending Campa..",
+                              "Auto Message",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,
@@ -599,8 +740,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                               children: [
                                 RichText(
                                   text: TextSpan(
-                                    text: (campaignCount ?? 0)
-                                        .toString(), // Default text
+                                    text: autoResponseCount ?? "",
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 30,
@@ -624,251 +764,116 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                         ),
                       ),
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: () => {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const TempleteListView()))
-                    },
-                    child: Card(
-                      elevation: 2,
-                      color: const Color(0xfffece9f2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Container(
-                        width: 160,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          image: const DecorationImage(
-                            image: AssetImage(
-                              "assets/images/bg011.jpg",
-                            ), // Add your image path
-                            fit: BoxFit.cover, // Cover entire card
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              Icons.assignment,
-                              size: 30,
-                              color: Colors.white,
-                            ),
-                            Container(height: 5),
-                            const Text(
-                              "Total Templates",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                RichText(
-                                  text: TextSpan(
-                                    text: (templateCount ?? 0).toString(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    children: const [
-                                      TextSpan(
-                                        text: '/ Total',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Card(
-                    elevation: 2,
-                    color: const Color(0xFFF6EDE8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Container(
-                      width: 160,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        image: const DecorationImage(
-                          image: AssetImage(
-                            "assets/images/bg011.jpg",
-                          ), // Add your image path
-                          fit: BoxFit.cover, // Cover entire card
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.message,
-                            size: 30,
-                            // color: Colors.white,
-                            color: Colors.white,
-                          ),
-                          Container(height: 5),
-                          const Text(
-                            "Auto Message",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  text: autoResponseCount ?? "",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  children: const [
-                                    TextSpan(
-                                      text: '/ Total',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(15),
-              child: Container(
-                // height: 5/00,
-                decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 255, 255, 255),
-                  borderRadius: BorderRadius.all(Radius.circular(15)),
-                ),
-                child: Column(
-                  children: [
-                    modules.contains("Campaign")
-                        ? campaignCount != "0"
-                            ? Container(
-                                decoration: const BoxDecoration(
-                                  color: AppColor.navBarIconColor,
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(10),
-                                  ),
-                                ),
-                                // width: 400,
-                                height: 50,
-                                child: const Center(
-                                  child: Text(
-                                    'Campaign',
-                                    style: TextStyle(
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : SizedBox()
-                        : SizedBox(),
-                    modules.contains("Campaign")
-                        ? campaignCount != "0"
-                            ? SfCircularChart(
-                                tooltipBehavior: _tooltipBehavior,
-                                legend: const Legend(
-                                    isVisible: true,
-                                    position: LegendPosition.top,
-                                    overflowMode: LegendItemOverflowMode.wrap),
-                                series: <PieSeries<_SalesData, String>>[
-                                    PieSeries<_SalesData, String>(
-                                        legendIconType: LegendIconType.circle,
-                                        radius: '100',
-                                        dataSource: businessData,
-                                        enableTooltip: true,
-                                        pointColorMapper: (_SalesData sales,
-                                                int index) =>
-                                            areaColor[index % areaColor.length],
-                                        xValueMapper: (_SalesData sales, _) =>
-                                            sales.status,
-                                        yValueMapper: (_SalesData sales, _) =>
-                                            sales.count)
-                                  ])
-                            : SizedBox()
-                        : SizedBox(),
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: AppColor.navBarIconColor,
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(10),
-                        ),
-                      ),
-                      // width: 400,
-                      height: 50,
-                      child: const Center(
-                        child: Text(
-                          'Template',
-                          style: TextStyle(
-                            color: Color.fromARGB(255, 255, 255, 255),
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SfCircularChart(
-                        tooltipBehavior: _tooltipBehavior,
-                        legend: const Legend(
-                            isVisible: true,
-                            position: LegendPosition.top,
-                            overflowMode: LegendItemOverflowMode.wrap),
-                        series: <DoughnutSeries<Templatedata, String>>[
-                          DoughnutSeries<Templatedata, String>(
-                              radius: '100',
-                              dataSource: templatedata,
-                              enableTooltip: true,
-                              pointColorMapper:
-                                  (Templatedata sales, int index) =>
-                                      areaColor[index % areaColor.length],
-                              xValueMapper: (Templatedata sales, _) =>
-                                  sales.status,
-                              yValueMapper: (Templatedata sales, _) =>
-                                  sales.count)
-                        ]),
                   ],
                 ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.all(15),
+                child: Container(
+                  // height: 5/00,
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 255, 255, 255),
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                  ),
+                  child: Column(
+                    children: [
+                      modules.contains("Campaign")
+                          ? campaignCount != "0"
+                              ? Container(
+                                  decoration: const BoxDecoration(
+                                    color: AppColor.navBarIconColor,
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                  ),
+                                  // width: 400,
+                                  height: 50,
+                                  child: const Center(
+                                    child: Text(
+                                      'Campaign',
+                                      style: TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 255, 255, 255),
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : SizedBox()
+                          : SizedBox(),
+                      modules.contains("Campaign")
+                          ? campaignCount != "0"
+                              ? SfCircularChart(
+                                  tooltipBehavior: _tooltipBehavior,
+                                  legend: const Legend(
+                                      isVisible: true,
+                                      position: LegendPosition.top,
+                                      overflowMode:
+                                          LegendItemOverflowMode.wrap),
+                                  series: <PieSeries<_SalesData, String>>[
+                                      PieSeries<_SalesData, String>(
+                                          legendIconType: LegendIconType.circle,
+                                          radius: '100',
+                                          dataSource: businessData,
+                                          enableTooltip: true,
+                                          pointColorMapper:
+                                              (_SalesData sales, int index) =>
+                                                  areaColor[
+                                                      index % areaColor.length],
+                                          xValueMapper: (_SalesData sales, _) =>
+                                              sales.status,
+                                          yValueMapper: (_SalesData sales, _) =>
+                                              sales.count)
+                                    ])
+                              : SizedBox()
+                          : SizedBox(),
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: AppColor.navBarIconColor,
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(10),
+                          ),
+                        ),
+                        // width: 400,
+                        height: 50,
+                        child: const Center(
+                          child: Text(
+                            'Template',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SfCircularChart(
+                          tooltipBehavior: _tooltipBehavior,
+                          legend: const Legend(
+                              isVisible: true,
+                              position: LegendPosition.top,
+                              overflowMode: LegendItemOverflowMode.wrap),
+                          series: <DoughnutSeries<Templatedata, String>>[
+                            DoughnutSeries<Templatedata, String>(
+                                radius: '100',
+                                dataSource: templatedata,
+                                enableTooltip: true,
+                                pointColorMapper:
+                                    (Templatedata sales, int index) =>
+                                        areaColor[index % areaColor.length],
+                                xValueMapper: (Templatedata sales, _) =>
+                                    sales.status,
+                                yValueMapper: (Templatedata sales, _) =>
+                                    sales.count)
+                          ]),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      // bottomNavigationBar: FooterNavbarPage(),
-
-      // bottomNavigationBar: const FooterNavbarPage(),
-    );
+      );
+    });
   }
 
   // Widget _buildCircleIcon(IconData icon) {

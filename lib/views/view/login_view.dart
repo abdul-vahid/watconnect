@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/views/view/loginwithsalesforce.dart';
 
 import '../../utils/app_utils.dart' show AppUtils;
 import '../../view_models/user_list_vm.dart';
@@ -162,29 +165,29 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
                         ),
-                        // Expanded(
-                        //   child: Container(
-                        //     margin: const EdgeInsets.symmetric(horizontal: 10),
-                        //     height: 50,
-                        //     child: ElevatedButton.icon(
-                        //       icon: const Icon(Icons.cloud),
-                        //       label: const Text(
-                        //         'Salesforce',
-                        //         style: TextStyle(fontSize: 16),
-                        //       ),
-                        //       style: ElevatedButton.styleFrom(
-                        //         foregroundColor: Colors.white,
-                        //         backgroundColor: const Color(0xFF233A73),
-                        //         shape: RoundedRectangleBorder(
-                        //           borderRadius: BorderRadius.circular(30),
-                        //         ),
-                        //       ),
-                        //       onPressed: () => {
-                        //         SalesforceAuth.loginWithSalesforce(context),
-                        //       },
-                        //     ),
-                        //   ),
-                        // ),
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            height: 50,
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.cloud),
+                              label: const Text(
+                                'Salesforce',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: const Color(0xFF233A73),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              onPressed: () => {
+                                SalesforceAuth.loginWithSalesforce(context),
+                              },
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 40),
@@ -302,6 +305,9 @@ class _LoginViewState extends State<LoginView> {
         if (records) {
           await AppUtils.getToken().then((onValue) {
             Navigator.pop(context);
+            DashBoardController dashBoardController =
+                Provider.of(context, listen: false);
+            dashBoardController.setLoginType(false);
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
