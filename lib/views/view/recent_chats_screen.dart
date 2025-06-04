@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
@@ -387,44 +388,54 @@ class _RecentChatViewState extends State<RecentChatView> {
           },
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: AppColor.navBarIconColor,
-                child: Text(
-                  model.contactname?.isNotEmpty == true
-                      ? model.contactname![0].toUpperCase()
-                      : '?',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColor.navBarIconColor,
+                    child: Text(
+                      model.contactname?.isNotEmpty == true
+                          ? model.contactname![0].toUpperCase()
+                          : '?',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "${model.contactname}",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${model.contactname}",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            "${model.full_number}",
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
                       ),
-                      Text(
-                        "${model.full_number}",
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      const SizedBox(height: 4),
                     ],
                   ),
                 ),
               ),
-              Row(
+              Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
@@ -434,15 +445,17 @@ class _RecentChatViewState extends State<RecentChatView> {
                       ),
                       badgeContent: Text(
                         unreadMsgCount,
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     )
                   else
                     const SizedBox.shrink(),
+                  Text(
+                    formatDateTime(model.createddate.toString()),
+                    style: const TextStyle(fontSize: 10, color: Colors.black54),
+                  ),
                 ],
-              ),
+              )
             ],
           ),
         ),
@@ -578,5 +591,20 @@ class _RecentChatViewState extends State<RecentChatView> {
     }
 
     allRecentChats = [...prioritizedLeads, ...otherLeads];
+  }
+
+  String formatDateTime(String isoString) {
+    final inputDate = DateTime.parse(isoString).toLocal();
+    final now = DateTime.now();
+
+    final isToday = inputDate.year == now.year &&
+        inputDate.month == now.month &&
+        inputDate.day == now.day;
+
+    if (isToday) {
+      return DateFormat.jm().format(inputDate);
+    } else {
+      return DateFormat('MMM dd, yy').format(inputDate);
+    }
   }
 }
