@@ -41,23 +41,25 @@ class Records {
   String? id;
   String? parent_id;
   String? contactname;
+  String? message;
   String? whatsapp_number;
   String? full_number;
   DateTime? createddate;
 
-  Records({
-    this.id,
-    this.parent_id,
-    this.contactname,
-    this.full_number,
-    this.whatsapp_number,
-    this.createddate,
-  });
+  Records(
+      {this.id,
+      this.parent_id,
+      this.contactname,
+      this.full_number,
+      this.whatsapp_number,
+      this.createddate,
+      this.message});
 
   factory Records.fromMap(Map<String, dynamic> data) {
     return Records(
       id: data['id']?.toString(),
       parent_id: data['parent_id']?.toString(),
+      message: data['message'] ?? "",
       contactname: data['contactname']?.toString(),
       full_number: data['full_number']?.toString(),
       whatsapp_number: data['whatsapp_number']?.toString(),

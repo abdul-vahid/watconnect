@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/screens/confige_listing_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 
 import '../../models/user_model/user_model.dart';
@@ -70,6 +71,16 @@ class _SfAppDrawerWidgetState extends State<SfAppDrawerWidget> {
                   Column(
                     children: [
                       ListTile(
+                        onTap: () {
+                          ref.setSelectedTitle(category.sObjectName ?? "");
+                          ref.drawerListApiCall(category.sObjectName ?? "");
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ConfigListingScreen(
+                                        type: category.sObjectName ?? "",
+                                      )));
+                        },
                         leading: Icon(
                           category.sObjectName == "Lead"
                               ? Icons.bolt

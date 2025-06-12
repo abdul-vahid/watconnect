@@ -47,9 +47,9 @@ class _RecentChatViewState extends State<RecentChatView> {
   List allRecentChats = [];
   List unreadList = [];
   String? number;
+
   @override
   void initState() {
-    // _marksread();
     _getUnreadCount();
     getLeadList();
     super.initState();
@@ -59,35 +59,37 @@ class _RecentChatViewState extends State<RecentChatView> {
   @override
   void dispose() {
     disconnectSocket();
-
     super.dispose();
   }
 
   bool noMatchedLeads = false;
   List matched = [];
   List others = [];
+
   Future<void> _getUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
 
     if (!mounted) return;
-    Provider.of<LeadListViewModel>(context, listen: false).fetch();
+
     await Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number ?? "");
 
     var unreadMsgModel;
-    print(" unreadCountVm?.viewModels ::: ${unreadCountVm?.viewModels}");
     for (var unreadModel in unreadCountVm?.viewModels ?? []) {
       unreadMsgModel = unreadModel.model as UnreadMsgModel;
     }
-    unreadList = unreadMsgModel.records ?? [];
-    setState(() {});
+
+    unreadList = unreadMsgModel?.records ?? [];
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   int selectedTagId = 0;
   List<String> tags = ["All", "Unread"];
 
-  // bool noMatchedLeads = false;
   void _filterLeads(String searchLead) {
     searchLead = searchLead.trim().toLowerCase();
 
@@ -95,6 +97,7 @@ class _RecentChatViewState extends State<RecentChatView> {
       List prioritizedLeads = [];
       List otherLeads = [];
       noMatchedLeads = false;
+
       for (var lead in allRecentChats) {
         bool hasUnread = unreadList.any(
           (unread) =>
@@ -103,37 +106,34 @@ class _RecentChatViewState extends State<RecentChatView> {
 
         if (hasUnread) {
           prioritizedLeads.add(lead);
-        } else {
-          // otherLeads.add(lead);
         }
       }
 
       allRecentChats = [...prioritizedLeads, ...otherLeads];
       allRecentChats = tempLeadModelList;
-      setState(() {});
 
-      // setState(() {
-      //   allLeads = List.from(originalAllLeads); // restore original
-      // });
+      if (mounted) {
+        setState(() {});
+      }
     } else {
       matched = [];
       others = [];
+
       for (var lead in tempLeadModelList) {
         var firstName = lead.contactname?.toLowerCase() ?? '';
         var lastName = lead.full_number?.toLowerCase() ?? '';
-        // var leadStatus = lead.leadstatus?.toLowerCase() ?? '';
 
         if (firstName.contains(searchLead) || lastName.contains(searchLead)) {
           matched.add(lead);
-        } else {
-          // others.add(lead);
         }
       }
 
-      setState(() {
-        allRecentChats = [...matched, ...others];
-        noMatchedLeads = matched.isEmpty;
-      });
+      if (mounted) {
+        setState(() {
+          allRecentChats = [...matched, ...others];
+          noMatchedLeads = matched.isEmpty;
+        });
+      }
     }
   }
 
@@ -174,14 +174,9 @@ class _RecentChatViewState extends State<RecentChatView> {
                 prefixIcon: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: IconButton(
-                    icon: const Icon(
-                      Icons.search,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      // _showFilterBottomSheet(context);
-                    },
+                    icon:
+                        const Icon(Icons.search, color: Colors.black, size: 20),
+                    onPressed: () {},
                   ),
                 ),
                 prefixIconConstraints: const BoxConstraints(minWidth: 40),
@@ -198,8 +193,6 @@ class _RecentChatViewState extends State<RecentChatView> {
   }
 
   Future<String?> _marksread(String whatsappNumber) async {
-    print("sajdjsahdjsah jhsjhkjdhakj${whatsappNumber}");
-
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
@@ -217,9 +210,9 @@ class _RecentChatViewState extends State<RecentChatView> {
   Future<void> _pullRefresh() async {
     leads?.viewModels.clear();
 
-    Provider.of<LeadListViewModel>(context, listen: false).fetchRecentChat();
-
-    Provider.of<UnreadCountVm>(context, listen: false)
+    await Provider.of<LeadListViewModel>(context, listen: false)
+        .fetchRecentChat();
+    await Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number);
     getLeadList();
     isRefresh = true;
@@ -228,7 +221,61 @@ class _RecentChatViewState extends State<RecentChatView> {
 
   Widget _pageBody() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Container(
+          height: 55,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            shrinkWrap: true,
+            itemCount: tags.length,
+            itemBuilder: (context, index) {
+              return InkWell(
+                onTap: () {
+                  if (mounted) {
+                    setState(() {
+                      selectedTagId = index;
+                    });
+                  }
+
+                  if (index == 1) {
+                    unreadChatFilter();
+                  } else {
+                    if (mounted) {
+                      setState(() {
+                        allRecentChats = tempLeadModelList;
+                      });
+                    }
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0, vertical: 4.0),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 179, 238, 243),
+                      border: Border.all(
+                        color: selectedTagId == index
+                            ? Colors.black
+                            : Colors.transparent,
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Center(
+                      child: Text(
+                        tags[index],
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
         Expanded(
           child: chatLoader
               ? const Center(
@@ -249,54 +296,6 @@ class _RecentChatViewState extends State<RecentChatView> {
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          height: 55,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            shrinkWrap: true,
-                            itemCount: tags.length,
-                            itemBuilder: (context, index) {
-                              return InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    selectedTagId = index;
-                                  });
-                                  if (index == 1) {
-                                    unreadChatFilter();
-                                  } else {
-                                    setState(() {
-                                      allRecentChats = tempLeadModelList;
-                                    });
-                                  }
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12.0, vertical: 4.0),
-                                    decoration: BoxDecoration(
-                                      color: Color.fromARGB(255, 179, 238, 243),
-                                      border: Border.all(
-                                          color: selectedTagId == index
-                                              ? Colors.black
-                                              : Colors.transparent,
-                                          width: 1.5),
-                                      borderRadius: BorderRadius.circular(18),
-                                    ),
-                                    child: Center(
-                                        child: Text(
-                                      tags[index],
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    )),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
                         Expanded(
                           child: ListView.builder(
                             itemCount: allRecentChats.length,
@@ -322,6 +321,43 @@ class _RecentChatViewState extends State<RecentChatView> {
         ),
       ],
     );
+  }
+
+  bool chatLoader = false;
+  Future<void> getLeadList() async {
+    if (mounted) {
+      setState(() {
+        chatLoader = true;
+      });
+    }
+
+    await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+            listen: false)
+        .fetchRecentChat()
+        .then((onValue) {
+      allRecentChats = [];
+      tempLeadModelList = [];
+
+      try {
+        for (var viewModel in leadlistvm.viewModels) {
+          var recentMsgmodel = viewModel.model;
+          if (recentMsgmodel?.records != null) {
+            for (var record in recentMsgmodel!.records!) {
+              allRecentChats.add(record);
+              tempLeadModelList.add(record);
+            }
+          }
+        }
+      } catch (e) {
+        allRecentChats = [];
+      }
+    });
+
+    if (mounted) {
+      setState(() {
+        chatLoader = false;
+      });
+    }
   }
 
   Widget leadRecordList(Records model, String unreadMsgCount) {
@@ -415,21 +451,30 @@ class _RecentChatViewState extends State<RecentChatView> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "${model.contactname}",
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "${model.contactname}",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          Text(
-                            "${model.full_number}",
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ],
+                            Text(
+                              "${model.full_number}",
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            Text(
+                              "${model.message}",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.black54),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -490,7 +535,7 @@ class _RecentChatViewState extends State<RecentChatView> {
     userId = decodedToken;
 
     try {
-      print("Token: $token");
+      // print("Token: $token");
 
       socket = IO.io(
         'https://admin.watconnect.com',
@@ -502,7 +547,7 @@ class _RecentChatViewState extends State<RecentChatView> {
       );
       socket!.connect();
       socket!.onConnect((_) {
-        print('Connected to WebSocket');
+        print('Connected to WebSocket recent ');
         socket!.emit("setup", userId);
       });
       socket!.on("connected", (_) {
@@ -530,47 +575,8 @@ class _RecentChatViewState extends State<RecentChatView> {
   void disconnectSocket() {
     if (socket != null) {
       socket!.disconnect();
-      print(" WebSocket Disconnected");
+      print(" WebSocket Disconnected  recent");
     }
-  }
-
-  bool chatLoader = false;
-  Future<void> getLeadList() async {
-    setState(() {
-      chatLoader = true;
-    });
-    print("getLeadList:::getLeadList{}4");
-    await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
-            listen: false)
-        .fetchRecentChat()
-        .then((onValue) {
-      print(
-          " dbfjsdlvdsl}::: }  ${leadlistvm.viewModels}   ${leadlistvm.viewModels.runtimeType}   ${leadlistvm.viewModels.length} ");
-      allRecentChats = [];
-      tempLeadModelList = [];
-      try {
-        for (var viewModel in leadlistvm.viewModels) {
-          var recentMsgmodel = viewModel.model;
-          if (recentMsgmodel?.records != null) {
-            for (var record in recentMsgmodel!.records!) {
-              print("record::: ${record}");
-              allRecentChats.add(record);
-              tempLeadModelList.add(record);
-            }
-          }
-        }
-      } catch (e) {
-        print("e:::::::: ${e}");
-        allRecentChats = [];
-      }
-      // setState(() {});
-
-      print(" dbfjsdlvdsl${allRecentChats}");
-    });
-
-    setState(() {
-      chatLoader = false;
-    });
   }
 
   unreadChatFilter() {
@@ -590,7 +596,7 @@ class _RecentChatViewState extends State<RecentChatView> {
       }
     }
 
-    allRecentChats = [...prioritizedLeads, ...otherLeads];
+    allRecentChats = [...prioritizedLeads];
   }
 
   String formatDateTime(String isoString) {

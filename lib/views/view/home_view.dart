@@ -12,7 +12,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
+import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/model/business_number_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_darwer.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
@@ -125,43 +127,63 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     NotificationUtil.registerToken();
     getAvailableModules();
     getPhoneNumber();
-
+    _getUnreadCount();
     fetch();
+    connectSocket();
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    routeObserver.unsubscribe(this);
-    disconnectSocket();
-    super.dispose();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    final route = ModalRoute.of(context);
-    if (route is PageRoute) {
-      routeObserver.subscribe(this, route);
-      print(" Subscribed to RouteObserver in HomeView");
-    }
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 
   @override
-  void didPush() {
-    super.didPush();
-    print(" didPush - HomeView is now visible");
-    _onHomeVisible();
+  void dispose() {
+    disconnectSocket();
+    routeObserver.unsubscribe(this);
+    super.dispose();
   }
 
-  /// Called when HomeView comes back to top after popping another screen
   @override
   void didPopNext() {
-    super.didPopNext();
-    print("didPopNext - Back to HomeView");
-    _onHomeVisible();
+    // Called when coming back to this screen
+    connectSocket();
   }
+
+  // @override
+  // void dispose() {
+  //   routeObserver.unsubscribe(this);
+  //   disconnectSocket();
+  //   super.dispose();
+  // }
+
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+
+  //   final route = ModalRoute.of(context);
+  //   if (route is PageRoute) {
+  //     routeObserver.subscribe(this, route);
+  //     print(" Subscribed to RouteObserver in HomeView");
+  //   }
+  // }
+
+  // @override
+  // void didPush() {
+  //   super.didPush();
+  //   print(" didPush - HomeView is now visible");
+  //   _onHomeVisible();
+  // }
+
+  /// Called when HomeView comes back to top after popping another screen
+  // @override
+  // void didPopNext() {
+  //   super.didPopNext();
+  //   print("didPopNext - Back to HomeView");
+  //   _onHomeVisible();
+  // }
 
   /// Called when navigating away from HomeView
   @override
@@ -343,7 +365,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
       if (viewModel.model is UnreadMsgModel) {
         UnreadMsgModel unreadvm = viewModel.model as UnreadMsgModel;
         var records = unreadvm.records ?? [];
-        print("recorcccccccccccds${records.length}");
+        // print("recorcccccccccccds${records.length}");
         for (var data in records) {
           String? unreadCount = data.unreadMsgCount;
 
@@ -409,39 +431,71 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                       ),
                   ],
                 )),
-            PopupMenuButton<String>(
-              position: PopupMenuPosition.under,
-              icon: const Icon(Icons.phone, size: 23, color: Colors.white),
-              itemBuilder: (BuildContext context) {
-                return allNums.map((number) {
-                  final isSelected = number.phone == selectedNumber;
-                  return PopupMenuItem<String>(
-                    value: number.phone,
-                    child: Text(
-                      "${number.name} ${number.phone} ",
-                      style: TextStyle(
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? Colors.blue : Colors.black,
-                      ),
-                    ),
-                  );
-                }).toList();
-              },
-              onSelected: (value) async {
-                print('Selected: $value');
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setString('phoneNumber', value);
+            ref.fromSalesForce
+                ? Consumer<BusinessNumberController>(
+                    builder: (context, busNumCtrl, child) {
+                    return PopupMenuButton<BusinessNumberModel>(
+                      position: PopupMenuPosition.under,
+                      icon: const Icon(Icons.phone,
+                          size: 23, color: Colors.white),
+                      itemBuilder: (BuildContext context) {
+                        return busNumCtrl.businessNumbers.map((number) {
+                          final isSelected = number.isDefault == "true";
+                          return PopupMenuItem<BusinessNumberModel>(
+                            value: number,
+                            child: Text(
+                              "${number.whasappSettingName} ${number.whasappSettingNumber} ",
+                              style: TextStyle(
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: isSelected ? Colors.blue : Colors.black,
+                              ),
+                            ),
+                          );
+                        }).toList();
+                      },
+                      onSelected: (value) async {
+                        await busNumCtrl.setBusinessNumberApiCall(
+                            busNumber: value.whasappSettingNumber ?? "");
+                      },
+                    );
+                  })
+                : PopupMenuButton<String>(
+                    position: PopupMenuPosition.under,
+                    icon:
+                        const Icon(Icons.phone, size: 23, color: Colors.white),
+                    itemBuilder: (BuildContext context) {
+                      return allNums.map((number) {
+                        final isSelected = number.phone == selectedNumber;
+                        return PopupMenuItem<String>(
+                          value: number.phone,
+                          child: Text(
+                            "${number.name} ${number.phone} ",
+                            style: TextStyle(
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isSelected ? Colors.blue : Colors.black,
+                            ),
+                          ),
+                        );
+                      }).toList();
+                    },
+                    onSelected: (value) async {
+                      print('Selected: $value');
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('phoneNumber', value);
 
-                EasyLoading.showToast("${value} marked as selected",
-                    toastPosition: EasyLoadingToastPosition.bottom);
-                selectedNumber = value;
-                EasyLoading.show();
-                fetch();
+                      EasyLoading.showToast("${value} marked as selected",
+                          toastPosition: EasyLoadingToastPosition.bottom);
+                      selectedNumber = value;
+                      EasyLoading.show();
+                      fetch();
 
-                setState(() {});
-              },
-            ),
+                      setState(() {});
+                    },
+                  ),
           ],
         ),
         body: SingleChildScrollView(
@@ -892,11 +946,11 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     templatedata.clear();
 
     for (var viewModel in templateVM!.viewModels) {
-      print("working....");
+      // print("working....");
 
       if (viewModel.model is TemplateModel) {
         TemplateModel templateModel = viewModel.model as TemplateModel;
-        print("Working haiiii...");
+        // print("Working haiiii...");
 
         if (templateModel.data != null) {
           for (var entry in templateModel.data!) {
@@ -915,7 +969,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
 
       categoryCount.forEach((category, count) {
         templatedata.add(Templatedata(category, count));
-        print("category name: $category, count: $count");
+        // print("category name: $category, count: $count");
       });
     }
   }
@@ -1019,7 +1073,10 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     for (var unreadModel in unreadCountVm?.viewModels ?? []) {
       unreadMsgModel = unreadModel.model as UnreadMsgModel;
     }
-    unreadList = unreadMsgModel.records ?? [];
+    if (unreadMsgModel != null) {
+      unreadList = unreadMsgModel.records ?? [];
+    }
+
     setState(() {});
   }
 

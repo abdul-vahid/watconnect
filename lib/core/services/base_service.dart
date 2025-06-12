@@ -20,7 +20,7 @@ class BaseService {
     token ??= "";
     // printLongString("body base service send= $body");
     final responseJsonData = await _apiService.postResponse(url, body, token);
-    print("responseJsonData:::: from the api::: ${responseJsonData}");
+    // print("responseJsonData:::: from the api::: ${responseJsonData}");
     // print("rsponse==>$responseJsonData");
     return responseJsonData;
   }

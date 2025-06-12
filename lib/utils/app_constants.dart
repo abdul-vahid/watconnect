@@ -25,6 +25,7 @@ abstract class SharedPrefsConstants {
   static const String sfInstanceurl = "instanceurl";
   static const String sfAccessToken = "accessToken";
   static const String sfRefreshToken = "refreshToken";
+  static const String sfBusinessNumber = "sfBusinessNumber";
 }
 
 abstract class ResultStatus {
@@ -55,11 +56,16 @@ abstract class AppConstants {
   // ========================salesforce credntial===============
 
   static const String clientId =
-      "3MVG9HDaKRUgW3VrsUI_RKn2LNGsiiJ8tIi0IyP8kE2a5AvSJvZc7YUk0YcTHH_kB1E6WwLoXA0fs3UG91Ky_";
-  static const String issuer = "https://test.salesforce.com/";
+      "3MVG9HDaKRUgW3VrsUI_RKn2LNBUcxtribjudS7kOePtrSPn9mK.aWox_5gvqxOTD50qyOmRcRWV6jp3jwTOs";
+
   static const String clientSecret =
-      "1B0F7E206C74DBCB338CA79605EB64CA159675AE6C5E4B6CAE0D6558ADE52C5E";
-  static const String redirectUri = 'com.wat.connect://login-callback';
+      "A34A06D1DD329F2DCEED942971BF62FC3758588B2DF22EB4FF86FA1A0B6A5C87";
+  //   static const String clientSecret = "3MVG9HDaKRUgW3VrsUI_RKn2LNGsiiJ8tIi0IyP8kE2a5AvSJvZc7YUk0YcTHH_kB1E6WwLoXA0fs3UG91Ky_";
+  static const String issuer = "https://test.salesforce.com/";
+  // static const String clientSecret =
+  //     "1B0F7E206C74DBCB338CA79605EB64CA159675AE6C5E4B6CAE0D6558ADE52C5E";
+
+  static const String redirectUri = "com.wat.connect://login-callback";
   static const String refreshTokenAPIPathsf =
       "https://test.salesforce.com/services/oauth2/token";
   static const String refreshTokenAPIPath = "/api/auth/refresh";
@@ -184,4 +190,31 @@ abstract class AppConstants {
       "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/";
 
   static const String getDrawerItemsApi = '${baseApi}watconnect/objectconfig';
+  static const String sfGetDrawerList =
+      '${baseApi}watconnect/objectconfig?sobjectname=';
+
+  static const String sfSendMessageApi =
+      '${baseApi}watconnect/messages?type=text';
+
+  static const String sfMessageHistoryApi = '${baseApi}watconnect/messages?';
+
+  static const String getToken =
+      "https://test.salesforce.com/services/oauth2/token";
+
+  static const String sfGetTemplates =
+      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/templates?";
+
+  static const String sfDeleteMsgHistory =
+      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/messages/delete?";
+
+  // static const String businessNumber = "918306524244";
+
+  static const String sfSendTemplate =
+      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/messages?type=Template";
+
+  static const String sfGetBusinessNumbs =
+      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/setting";
+
+  static const String sfSetBusinessNumb =
+      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/setting?phoneNumber=";
 }

@@ -324,8 +324,7 @@ class AppUtils {
     // }
     else if (baseListViewModel.viewModels.isNotEmpty) {
       return callBack();
-    } 
-    else {
+    } else {
       return AppUtils.getNoRecordWidget();
     }
   }

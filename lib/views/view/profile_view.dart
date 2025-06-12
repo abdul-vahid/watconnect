@@ -176,11 +176,7 @@ class _ProfileViewState extends State<ProfileView> {
     String fullPhone = "${user!.countrycode} ${user!.whatsapp_number}";
     String fullname = "${fName!} ${lName!}";
     String role = user?.userrole ?? "";
-    print("this func call when refresh");
-
-    print("logourl::: ${userModel?.logourl ?? ""}");
-
-    print("'https://admin.watconnect.com/${userModel?.id}',");
+    print("sandbox.watconnect.com/${userModel?.id}',");
 
     return SingleChildScrollView(
       child: Column(

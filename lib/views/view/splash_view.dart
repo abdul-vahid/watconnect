@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
@@ -152,9 +155,21 @@ class _SplashViewState extends State<SplashView> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String sfAccessToken =
         await prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+    String user = await prefs.getString(SharedPrefsConstants.userKey) ?? "";
+    String jstokn =
+        await prefs.getString(SharedPrefsConstants.accessTokenKey) ?? "";
+
+    log("access sf::   ${sfAccessToken}");
+    log("token js:: ${jstokn}  ");
+    log("user:: ${user}  ");
 
     if (prefs.containsKey(SharedPrefsConstants.userKey) ||
-        sfAccessToken.isNotEmpty) {
+        prefs.containsKey(SharedPrefsConstants.sfAccessToken)) {
+      if (user.isEmpty) {
+        DashBoardController dashBoardController =
+            Provider.of(context, listen: false);
+        dashBoardController.setLoginType(true);
+      }
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const FooterNavbarPage()),

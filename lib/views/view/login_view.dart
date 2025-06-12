@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/views/view/login_salesforce.dart';
 import 'package:whatsapp/views/view/loginwithsalesforce.dart';
 
 import '../../utils/app_utils.dart' show AppUtils;
@@ -55,7 +56,35 @@ class _LoginViewState extends State<LoginView> {
 
                     Image.asset("assets/images/wp.png", height: 70),
                     Container(height: 30),
+
+                    TextFormField(
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please provide Code';
+                        }
+                        return null;
+                      },
+                      // onSaved: (value) => code = value!,
+                      controller: _tcodeController,
+                      decoration: InputDecoration(
+                        hintText: "Enter Company Name ",
+                        prefixIcon: const Icon(
+                          Icons.code,
+                          color: Color(0xFF233A73),
+                        ),
+                        filled: true,
+                        fillColor: Colors.blue[50],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(
+                      height: 15,
+                    ),
                     // Email Input Field
+
                     TextFormField(
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -115,31 +144,10 @@ class _LoginViewState extends State<LoginView> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    // const SizedBox(height: 15),
 
                     // T-Code Input Field
-                    TextFormField(
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please provide Code';
-                        }
-                        return null;
-                      },
-                      // onSaved: (value) => code = value!,
-                      controller: _tcodeController,
-                      decoration: InputDecoration(
-                        hintText: "Enter your T-Code ",
-                        prefixIcon: const Icon(
-                          Icons.code,
-                          color: Color(0xFF233A73),
-                        ),
-                        filled: true,
-                        fillColor: Colors.blue[50],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                    ),
+
                     const SizedBox(height: 150),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -182,8 +190,19 @@ class _LoginViewState extends State<LoginView> {
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                               ),
-                              onPressed: () => {
-                                SalesforceAuth.loginWithSalesforce(context),
+                              onPressed: () async {
+                                // SalesforceAuth.loginWithSalesforce(context),
+                                // onTap: () async {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => WebViewPage(
+                                      url:
+                                          "https://test.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9HDaKRUgW3VrsUI_RKn2LNBUcxtribjudS7kOePtrSPn9mK.aWox_5gvqxOTD50qyOmRcRWV6jp3jwTOs&redirect_uri=https://test.salesforce.com/services/oauth2/success&scope=&state=random123",
+                                    ),
+                                  ),
+                                );
+                                // },
                               },
                             ),
                           ),

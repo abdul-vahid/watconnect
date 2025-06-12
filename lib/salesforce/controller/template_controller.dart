@@ -1,0 +1,162 @@
+import 'dart:convert';
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/main.dart';
+import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
+// import 'package:whatsapp/salesforce/api/api_helper.dart';
+import 'package:whatsapp/salesforce/model/template_model.dart';
+import 'package:whatsapp/utils/app_constants.dart';
+
+class TemplateController extends ChangeNotifier {
+  Future<void> notify() async {
+    await Future.delayed(Duration.zero);
+    notifyListeners();
+  }
+
+  List<TemplateModel> templateList = [];
+  List<String> templateNames = [];
+
+  String selectedTempName = "Select";
+
+  setSelectedTempName(String name) {
+    selectedTempName = name;
+    print("seleting temp and temp name:::: ${selectedTempName}");
+    if (selectedTempName != "Select") {
+      if (selectedTempName != "Select") {
+        for (int i = 0; i < templateList.length; i++) {
+          print("templateList[i].name    ${templateList[i].name}");
+          if (templateList[i].name == selectedTempName) {
+            setSelectedTemp(templateList[i]);
+            return;
+          }
+        }
+      }
+    }
+    notify();
+  }
+
+  TemplateModel? selectedTemplate;
+  setSelectedTemp(TemplateModel? selTemp) {
+    selectedTemplate = selTemp;
+    notify();
+  }
+
+  bool getTempLoader = false;
+
+  setGetTempLoader(bool val) {
+    getTempLoader = val;
+    notify();
+  }
+
+  Future<void> getTemplateApiCall(
+      {String category = "ALL", bool showLoader = true}) async {
+    try {
+      if (showLoader) {
+        setGetTempLoader(true);
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final busNum =
+          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+      String apiUrl =
+          "${AppConstants.sfGetTemplates}businessNumber=${busNum}&category=$category";
+      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
+
+      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
+      print(
+          "get Template response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+
+      if (response.statusCode == 200) {
+        setGetTempLoader(false);
+        final List<dynamic> data = jsonDecode(response.body);
+        templateList
+          ..clear()
+          ..addAll(data.map((e) => TemplateModel.fromJson(e)));
+
+        templateNames
+          ..clear()
+          ..addAll(templateList
+              .map((e) => e.name ?? '')
+              .where((name) => name.isNotEmpty)
+              .toSet()
+              .toList());
+        templateNames.insert(0, "Select");
+        notify();
+        log("Fetched ${templateList.length} templateList.");
+      } else {
+        setGetTempLoader(false);
+        log("templateList API failed [${response.statusCode}]: ${response.body}");
+      }
+    } catch (e) {
+      setGetTempLoader(false);
+      print("Error in templateList api: $e");
+    }
+    notifyListeners();
+  }
+
+  bool sendTempLoader = false;
+
+  setSentTempLoader(bool val) {
+    sendTempLoader = val;
+    notify();
+  }
+
+  Future<void> sendTemplateApiCall(
+      {required String tempId, required String usrNumber}) async {
+    try {
+      setSentTempLoader(true);
+      String apiUrl = "${AppConstants.sfSendTemplate}";
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+
+      Map body = {
+        "businessNumber": "918306524244",
+        "userWhatsAppNumber": usrNumber,
+        "messageBody": "null",
+        "metaTemplateId": tempId, // templateId__c
+      };
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(body),
+      );
+
+      log("headers:::: ${"$token"}  \n  ${apiUrl}  \n ${body}");
+
+      print(
+          "send Template response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+
+      if (response.statusCode == 200) {
+        setSentTempLoader(false);
+        EasyLoading.showToast("Template Send Successfully");
+        ChatMessageController msgCtrl =
+            Provider.of(navigatorKey.currentContext!, listen: false);
+        await msgCtrl.messageHistoryApiCall(
+            userNumber: usrNumber, isFirstTime: false);
+      } else {
+        setSentTempLoader(false);
+        log("send template API failed [${response.statusCode}]: ${response.body}");
+      }
+    } catch (e) {
+      setSentTempLoader(false);
+      print("Error in send template api: $e");
+    }
+  }
+}

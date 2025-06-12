@@ -20,9 +20,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
+import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/models/lead_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
@@ -174,6 +176,7 @@ class _ChatScreenState extends State<ChatScreen> {
     templateVM = Provider.of<TempleteListViewModel>(context);
 
     if (templateVM != null && templateVM?.viewModels != null)
+      // ignore: curly_braces_in_flow_control_structures
       for (var viewModel in templateVM!.viewModels) {
         TemplateModel tempmodel = viewModel.model;
         for (var record in tempmodel.data ?? []) {
@@ -217,15 +220,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 print("result on detailesss:::: ");
                 Navigator.pop(context, true);
               }
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => LeadDetailView(
-              //       model: model,
-              //     ),
-              //   ),
-              // );
-              // _showProfileDialog(context);
             },
             child: Row(
               children: [
@@ -651,10 +645,12 @@ class _ChatScreenState extends State<ChatScreen> {
     await Future.delayed(const Duration(seconds: 1));
   }
 
+  String tenatCode = "";
   Future<void> _getPhoneNumber() async {
     print("widget.wpnumber${widget.wpnumber}");
     final prefs = await SharedPreferences.getInstance();
     userName = prefs.getString('userName') ?? "Me";
+    tenatCode = prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
     setState(() {});
     String? number = prefs.getString('phoneNumber');
     print("widget.wpnumber${widget.wpnumber}");
@@ -1175,7 +1171,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                   if (title.isNotEmpty) {
                     imageUrl =
-                        "https://admin.watconnect.com/public/demo/attachment/$title";
+                        "https://admin.watconnect.com/public/${tenatCode}/attachment/$title";
                   }
 
                   bool showDateLabel = false;
@@ -3364,7 +3360,7 @@ class _ChatScreenState extends State<ChatScreen> {
       socket!.connect();
 
       socket!.onConnect((_) {
-        print('Connected to WebSocket');
+        print('Connected to WebSocket chat msg');
         socket!.emit("setup", userId);
       });
 
@@ -3442,7 +3438,9 @@ class _ChatScreenState extends State<ChatScreen> {
     if (number != null) {
       Map<String, String>? bodydata = {"whatsapp_number": whatsappNumber};
 
-      var response = await Provider.of<UnreadCountVm>(context, listen: false)
+      var response = await Provider.of<UnreadCountVm>(
+              navigatorKey.currentContext!,
+              listen: false)
           .marksreadcountmsg(
         leadnumber: whatsappNumber,
         number: number,

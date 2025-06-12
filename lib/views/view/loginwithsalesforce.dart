@@ -21,18 +21,26 @@ class SalesforceAuth {
       final AuthorizationTokenResponse? result =
           await _appAuth.authorizeAndExchangeCode(
         AuthorizationTokenRequest(
+          serviceConfiguration: const AuthorizationServiceConfiguration(
+            authorizationEndpoint:
+                'https://test.salesforce.com/services/oauth2/authorize',
+            tokenEndpoint: 'https://test.salesforce.com/services/oauth2/token',
+          ),
           AppConstants.clientId,
           AppConstants.redirectUri,
           // "https://watconnect.com/",
           clientSecret: AppConstants.clientSecret,
           issuer: AppConstants.issuer,
-          scopes: ['openid', 'offline_access', 'api'],
+
+          scopes: ['openid', 'offline_access', 'api', 'refresh_token'],
         ),
       );
 
+      print("result:::: ${result}");
+
       if (result != null) {
         print(
-            "result::::::::::::::::::: ${result.authorizationAdditionalParameters}  ${result.tokenAdditionalParameters}");
+            "result:::::::${result.tokenAdditionalParameters}}:::::::::::: ${result.authorizationAdditionalParameters}  ${result.tokenAdditionalParameters}");
         debug('ID Token: ${result.idToken}');
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(

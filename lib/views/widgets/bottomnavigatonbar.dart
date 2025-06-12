@@ -4,9 +4,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart'
     show InternetConnectionChecker;
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
 import 'package:whatsapp/models/user_model/user_model.dart';
+import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/views/view/recent_chats_screen.dart';
 
@@ -41,6 +43,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       print("userModelData initrole ${userModelData?.userrole}");
       // userModel ?? AppUtils.logout(context);
     });
+    getBusNumApiCall();
     getuserrole();
     print("init startwtwtwyw=>${userModelData?.userrole}");
     super.initState();
@@ -49,6 +52,11 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     setState(() {
       _currentPageIndex = 0;
     });
+  }
+
+  getBusNumApiCall() async {
+    BusinessNumberController busNumCtrl = Provider.of(context, listen: false);
+    await busNumCtrl.getBusinessNumberApiCall();
   }
 
   @override

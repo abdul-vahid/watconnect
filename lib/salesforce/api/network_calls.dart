@@ -14,10 +14,10 @@ class NetworkCalls {
     return response.body;
   }
 
-  static Future<String> post(
+  static Future<http.Response> post(
       String url, var body, Map<String, String>? header) async {
     var response = await http.post(Uri.parse(url), body: body, headers: header);
-    return response.body;
+    return response;
   }
 
   static Future<String> put(

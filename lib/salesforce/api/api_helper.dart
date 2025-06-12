@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer' as dev;
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:http/http.dart';
 
 // import 'package:flutter/material.dart';
 
@@ -19,7 +20,7 @@ Future<bool> isInternetAvailable() async {
 class AppApi {
   final netWorkCalls = NetworkCalls();
 
-  Future<dynamic> commonPostMethod(String url, Map params,
+  Future<Response?> commonPostMethod(String url, Map params,
       {bool sendToken = true}) async {
     final hasInternet = await isInternetAvailable();
     if (!hasInternet) {
@@ -33,9 +34,9 @@ class AppApi {
       if (sendToken) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         token = await prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-        header.putIfAbsent("Authorization", () => token);
+        header.putIfAbsent("Authorization", () => "Bearer $token");
       }
-      header.putIfAbsent("content-type", () => "application/json");
+      // header.putIfAbsent("content-type", () => "application/json");
 
       printRequest(url: url, header: header, body: params);
 
@@ -44,10 +45,12 @@ class AppApi {
         jsonEncode(params),
         header,
       ).timeout(const Duration(minutes: 2));
+      print("repose::: ${response}  ${response.statusCode} ${response.body}");
+      if (response.body.isNotEmpty) {
+        printResponse(url: url, header: header, response: response.body);
+      }
 
-      printResponse(url: url, header: header, response: response);
-
-      return jsonDecode(response);
+      return (response);
     } catch (e, stackTrace) {
       print("Error calling $url: $e\nStackTrace: $stackTrace");
       throw Exception("Failed to perform POST request: $e");
@@ -70,13 +73,13 @@ class AppApi {
         header.putIfAbsent("Authorization", () => token);
       }
 
-      header.putIfAbsent("content-type", () => "application/json");
+      // header.putIfAbsent("content-type", () => "application/json");
 
       printRequest(url: url, header: header);
 
       var response = await NetworkCalls.get(url, header)
           .timeout(const Duration(seconds: 20));
-
+      print("get reposne before log::: ${response}");
       printResponse(url: url, header: header, response: response);
 
       return jsonDecode(response);
@@ -140,11 +143,11 @@ printResponse(
     required Map<String, String>? header,
     String? response}) {
   // dev.log("response api url    >>> $url ");
-  dev.log("response response    >>> $response       $url");
+  // dev.log("response response    >>> $response       $url");
   // dev.log("response response    >>> ${response} ");
   dev.log("response api header   >>> ${jsonEncode(header)}");
 
   dev.log('\n');
   var data = jsonDecode(response ?? "");
-  dev.log("response body >>>>>>>> ${data}   ");
+  // dev.log("response body >>>>>>>> ${data}   ");
 }

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
@@ -25,7 +26,7 @@ class LeadListView extends StatefulWidget {
   State<LeadListView> createState() => _LeadListViewState();
 }
 
-class _LeadListViewState extends State<LeadListView> {
+class _LeadListViewState extends State<LeadListView> with RouteAware {
   String finalResult = "";
   IO.Socket? socket;
   String token = "your_token_here";
@@ -59,14 +60,29 @@ class _LeadListViewState extends State<LeadListView> {
   void initState() {
     selectleadList = [];
     _getUnreadCount();
+
     getLeadList();
-    super.initState();
     connectSocket();
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 
   @override
   void dispose() {
+    disconnectSocket();
+    routeObserver.unsubscribe(this);
     super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Called when coming back to this screen
+    connectSocket();
   }
 
   Future<void> _getUnreadCount() async {
@@ -544,7 +560,7 @@ class _LeadListViewState extends State<LeadListView> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 12.0, vertical: 4.0),
                                         decoration: BoxDecoration(
-                                          color: Color.fromARGB(
+                                          color: const Color.fromARGB(
                                               255, 179, 238, 243),
                                           border: Border.all(
                                               color: selectedTagId == index
@@ -592,71 +608,6 @@ class _LeadListViewState extends State<LeadListView> {
       ],
     );
   }
-
-  // List<Widget> getLeadWidgets() {
-  //   List<Widget> widgets = [];
-  //   Set<String> uniqueIds = {};
-
-  //   for (var viewModel in leadModelList) {
-  //     var msgCnt = "";
-  //     LeadModel model = viewModel;
-  //     var unreadRecord = unreadCountVm?.viewModels.firstWhere(
-  //       (unreadModel) {
-  //         var unreadMsgModel = unreadModel.model;
-
-  //         return unreadMsgModel.records?.any(
-  //               (record) => record.whatsappNumber == model.whatsapp_number,
-  //             ) ??
-  //             false;
-  //       },
-  //       orElse: () => null,
-  //     );
-
-  //     print("unreadRecord:::>>  ${unreadRecord}");
-  //     if (unreadRecord != null) {
-  //       var matchingRecords = unreadRecord.model.records?.where((record) {
-  //         msgCnt = record.unreadMsgCount;
-  //         print(
-  //             ' ${record.unreadMsgCount}  record.whatsappNumber: ${record.whatsappNumber}, model.whatsapp_number: ${model.whatsapp_number}');
-  //         return record.whatsappNumber == model.whatsapp_number;
-  //       }).toList();
-
-  //       var unreadMsgCount =
-  //           matchingRecords != null && matchingRecords.isNotEmpty
-  //               ? matchingRecords.first.unreadMsgCount
-  //               : "";
-
-  //       print("unreadMsgCount::::: ${unreadMsgCount}");
-
-  //       if (!uniqueIds.contains(model.id)) {
-  //         uniqueIds.add(model.id!);
-
-  //         widgets.add(Dismissible(
-  //           key: UniqueKey(),
-  //           onDismissed: (direction) async {
-  //             print("fiifififiifif${finalResult}");
-  //             var res = await _marksread(finalResult);
-  //           },
-  //           background: Container(
-  //             color: Colors.green,
-  //             alignment: Alignment.centerRight,
-  //             child: const Padding(
-  //               padding: EdgeInsets.only(right: 20),
-  //               child: Icon(Icons.chat_sharp, color: Colors.white),
-  //             ),
-  //           ),
-  //           child: leadRecordList(model, unreadMsgCount),
-  //         ));
-  //       }
-  //     } else {
-  //       if (!uniqueIds.contains(model.id)) {
-  //         uniqueIds.add(model.id!);
-  //         widgets.add(leadRecordList(model, ""));
-  //       }
-  //     }
-  //   }
-  //   return widgets;
-  // }
 
   Widget leadRecordList(LeadModel model, String unreadMsgCount) {
     Color statusColor;
@@ -912,13 +863,13 @@ class _LeadListViewState extends State<LeadListView> {
         'https://admin.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
-            .setPath('/ibs/socket.io')
+            .setPath('/swp/socket.io')
             .setExtraHeaders({'Authorization': 'Bearer $token'})
             .build(),
       );
       socket!.connect();
       socket!.onConnect((_) {
-        print('Connected to WebSocket');
+        print('Connected to WebSocket Leadlist');
         socket!.emit("setup", userId);
       });
       socket!.on("connected", (_) {
@@ -958,8 +909,8 @@ class _LeadListViewState extends State<LeadListView> {
         .fetch()
         .then((onValue) {
       allLeads = [];
-      print(
-          " leadlistvm.viewModels:::::::::::::::::: ${leadlistvm.viewModels}");
+      // print(
+      // " leadlistvm.viewModels:::::::::::::::::: ${leadlistvm.viewModels}");
       for (var viewModel in leadlistvm.viewModels) {
         _leadfilter.add(viewModel.model.leadstatus);
         tempLeadModelList.add(viewModel.model);

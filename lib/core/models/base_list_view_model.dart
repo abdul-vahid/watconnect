@@ -34,7 +34,7 @@ class BaseListViewModel extends ChangeNotifier {
       final jsonObject = await BaseService().get(url: url);
       // await _refreshToken(url, jsonKey);
       log("Response Data get == $jsonObject ${url}");
-      print("jsonObject:: ${jsonObject.runtimeType}");
+      // print("jsonObject:: ${jsonObject.runtimeType}");
       if (showToast) {
         if (jsonObject is Map<String, dynamic> &&
             jsonObject.containsKey('success') &&
@@ -50,14 +50,14 @@ class BaseListViewModel extends ChangeNotifier {
         records = [jsonObject];
         // return records;
       }
-      print(
-          ":____________________>>>>>>>>>> ${url} ${records.length}   ${records.runtimeType}");
+      // print(
+      //     ":____________________>>>>>>>>>> ${url} ${records.length}   ${records.runtimeType}");
       try {
         var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
         viewModels =
             modelMap.map((item) => BaseViewModel(model: item)).toList();
 
-        print("execute of the get method ${url}  ${viewModels}  ");
+        // print("execute of the get method ${url}  ${viewModels}  ");
       } catch (e, stackTrace) {
         print("catching error in parsing :: ${e}     $stackTrace");
       }
@@ -173,7 +173,7 @@ class BaseListViewModel extends ChangeNotifier {
 
     try {
       var r = await BaseService().post(url: url, body: body);
-      log("response=>$r    api>>> ${url}");
+      // log("response=>$r    api>>> ${url}");
       if (showToast) {
         if (r is Map<String, dynamic> &&
             r.containsKey('success') &&
