@@ -15,7 +15,7 @@ class APIService {
       final response = await http.get(Uri.parse(url), headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
+        'Authorization': '$token',
       });
       responseJson = returnResponse(response);
     } on SocketException {
@@ -33,7 +33,7 @@ class APIService {
       final response = await http.post(Uri.parse(url), body: body, headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
+        'Authorization': '$token',
       });
 
       responseJson = returnResponse(response);

@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
@@ -28,31 +28,23 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   final ScrollController _scrollController = ScrollController();
   String selectedCategory = "ALL";
   String userNumer = "";
+
   @override
   void initState() {
     super.initState();
     getUserNumer();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      print("is this calling");
-      _scrollToBottom();
-    });
-  }
-
-  getUserNumer() {
-    DashBoardController dbController = Provider.of(context, listen: false);
-    var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
-    var code = dbController.selectedContactInfo?.countryCode ?? "91";
-    setState(() {
-      userNumer = "${code}${usrNumber}";
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   Future.delayed(const Duration(milliseconds: 500), () {
+    //     _scrollToBottom();
+    //   });
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ChatMessageController>(builder: (context, ref, child) {
       return Scaffold(
-        // extendBodyBehindAppBar: true,
         resizeToAvoidBottomInset: true,
         appBar: const SfChatAppBar(),
         body: Stack(
@@ -61,22 +53,6 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
               onRefresh: _pullRefresh,
               child: ref.chatHistoryLoader ? Container() : _pageBody(),
             ),
-            if (ref.chatHistoryLoader)
-              Positioned.fill(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                  child: Container(
-                    color: Colors.white.withOpacity(0.2),
-                    child: Center(
-                      child: LoadingAnimationWidget.flickr(
-                        leftDotColor: AppColor.cardsColor,
-                        rightDotColor: AppColor.navBarIconColor,
-                        size: 40,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       );
@@ -88,23 +64,27 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   }
 
   void _scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (_scrollController.hasClients) {
+    if (_scrollController.hasClients) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
+          _scrollController.position.maxScrollExtent + 2800,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
-      }
-    });
+      });
+    }
   }
 
   _pageBody() {
     return Consumer<ChatMessageController>(builder: (context, ref, child) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToBottom();
-      });
       print("ref.chatHistoryList:::::: ${ref.chatHistoryList.length}");
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (ref.msgDeleteList.isEmpty) {
+          _scrollToBottom();
+        }
+      });
+
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -159,10 +139,19 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                         return Column(
                           children: [
                             if (showDateLabel) ChatDateLabel(date: currentTime),
-                            ChatBubble(
-                              item: item,
-                              buttons: buttons,
-                              currentTime: currentTime,
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 15.0),
+                              child: Container(
+                                color: ref.msgDeleteList
+                                        .contains(item.messageId ?? "")
+                                    ? Color(0xffE6E6E6)
+                                    : Colors.transparent,
+                                child: ChatBubble(
+                                  item: item,
+                                  buttons: buttons,
+                                  currentTime: currentTime,
+                                ),
+                              ),
                             ),
                           ],
                         );
@@ -376,6 +365,20 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     });
   }
 
+  getUserNumer() {
+    DashBoardController dbController = Provider.of(context, listen: false);
+    ChatMessageController chatMsgController =
+        Provider.of(context, listen: false);
+
+    chatMsgController.resetMsgDeleteList();
+
+    var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
+    var code = dbController.selectedContactInfo?.countryCode ?? "91";
+    setState(() {
+      userNumer = "${code}${usrNumber}";
+    });
+  }
+
   void reviewBottomSheetShow() {
     return showCommonBottomSheet(
       context: context,
@@ -430,6 +433,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                 if ((templateData?.headerText?.isNotEmpty ?? false) ||
                     (templateData?.body?.isNotEmpty ?? false) ||
                     (templateData?.footer?.isNotEmpty ?? false) ||
+                    (templateData?.messageBody?.isNotEmpty ?? false) ||
                     buttons.isNotEmpty)
                   Container(
                     width: double.infinity,
@@ -446,6 +450,9 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                         const SizedBox(height: 5),
                         if (templateData?.body?.isNotEmpty ?? false)
                           Text(templateData!.body!),
+                        const SizedBox(height: 5),
+                        if (templateData?.messageBody?.isNotEmpty ?? false)
+                          Text(templateData!.messageBody!),
                         const SizedBox(height: 5),
                         if (templateData?.footer?.isNotEmpty ?? false)
                           Text(templateData!.footer!),
@@ -468,7 +475,8 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                         tempc
                             .sendTemplateApiCall(
                                 tempId: templateData?.templateId ?? "",
-                                usrNumber: userNumer)
+                                usrNumber: userNumer,
+                                params: userInputs)
                             .then((onValue) {
                           Navigator.pop(context);
                         });

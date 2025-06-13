@@ -70,8 +70,8 @@ class TemplateController extends ChangeNotifier {
       final response = await http.get(
         Uri.parse(apiUrl),
         headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
         },
       );
 
@@ -114,8 +114,11 @@ class TemplateController extends ChangeNotifier {
     notify();
   }
 
-  Future<void> sendTemplateApiCall(
-      {required String tempId, required String usrNumber}) async {
+  Future<void> sendTemplateApiCall({
+    required String tempId,
+    required String usrNumber,
+    required List<String> params,
+  }) async {
     try {
       setSentTempLoader(true);
       String apiUrl = "${AppConstants.sfSendTemplate}";
@@ -125,20 +128,29 @@ class TemplateController extends ChangeNotifier {
       Map body = {
         "businessNumber": "918306524244",
         "userWhatsAppNumber": usrNumber,
-        "messageBody": "null",
+        "messageData": {
+          "category": selectedTemplate?.category ?? "",
+          "templateId": tempId
+        },
         "metaTemplateId": tempId, // templateId__c
       };
+
+      if (params.isNotEmpty) {
+        var param = await buildParamsJson(params);
+        body['params'] = param;
+        body['messageBody'] = null;
+      }
 
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
         },
         body: jsonEncode(body),
       );
 
-      log("headers:::: ${"$token"}  \n  ${apiUrl}  \n ${body}");
+      log("headers:::: ${"$token"}  \n  ${apiUrl}  \n ${jsonEncode(body)}");
 
       print(
           "send Template response :: ${response.runtimeType}  ${response.statusCode} ${response}");
@@ -158,5 +170,21 @@ class TemplateController extends ChangeNotifier {
       setSentTempLoader(false);
       print("Error in send template api: $e");
     }
+  }
+
+  String buildParamsJson(List<String> values) {
+    final List<Map<String, String>> paramList = [];
+
+    for (int i = 0; i < values.length; i++) {
+      paramList.add({
+        "name": "{{${i + 1}}}",
+        "value": values[i],
+      });
+    }
+
+    String jsonString = jsonEncode(paramList);
+    // String escapedString = jsonEncode(jsonString);
+
+    return jsonString;
   }
 }

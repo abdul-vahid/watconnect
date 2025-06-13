@@ -9,6 +9,7 @@ class TemplateModel {
   String? name;
   List<StoredParam>? storedParameterValues;
   String? templateId;
+  String? messageBody;
   String? headerType;
   String? headerText;
   dynamic footerData;
@@ -29,6 +30,7 @@ class TemplateModel {
     this.button,
     this.status,
     this.name,
+    this.messageBody,
     this.storedParameterValues,
     this.templateId,
     this.headerType,
@@ -51,6 +53,7 @@ class TemplateModel {
       params: _decodeList<Param>(json['params'], (e) => Param.fromJson(e)),
       button: json['button'] ?? "",
       body: json['Body__c'] ?? "",
+      messageBody: json['messageBody'] ?? "",
       status: json['Status__c'],
       name: json['Name'],
       storedParameterValues: _decodeList<StoredParam>(

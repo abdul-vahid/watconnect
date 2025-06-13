@@ -39,6 +39,27 @@ class SfChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       actions: [
+        Consumer<ChatMessageController>(builder: (context, msgCtrol, child) {
+          return msgCtrol.msgDeleteList.isEmpty
+              ? SizedBox()
+              : InkWell(
+                  onTap: () {
+                    DashBoardController dbController =
+                        Provider.of(context, listen: false);
+
+                    String code =
+                        dbController.selectedContactInfo?.countryCode ?? "91";
+                    String num =
+                        dbController.selectedContactInfo?.whatsappNumber ?? "";
+                    String whatsappNum = "$code$num";
+                    msgCtrol.chatMsgDeleteApiCall(whatsappNum);
+                  },
+                  child: Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                  ),
+                );
+        }),
         PopupMenuButton<String>(
           icon: const Icon(Icons.more_vert, color: Colors.white),
           onSelected: (String value) {

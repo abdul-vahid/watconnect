@@ -25,20 +25,32 @@ class BusinessNumberController extends ChangeNotifier {
       final response = await http.get(
         Uri.parse(apiUrl),
         headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
         },
       );
 
-      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
+      log("headers:::: ${"$token"}    ${apiUrl}");
       print(
-          "get getBusinessNumberApiCall response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+          "get getBusinessNumberApiCall response :: ${response.runtimeType} $apiUrl ${response.statusCode} ${response}");
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         businessNumbers
           ..clear()
           ..addAll(data.map((e) => BusinessNumberModel.fromJson(e)));
+        final prefs = await SharedPreferences.getInstance();
+
+        final defaultNumber = businessNumbers.firstWhere(
+          (b) => b.isDefault == "true",
+          orElse: () => businessNumbers.first,
+        );
+
+        await prefs.setString(
+          SharedPrefsConstants.sfBusinessNumber,
+          defaultNumber.whasappSettingNumber ?? "",
+        );
+
         notify();
         log("Fetched ${businessNumbers.length} businessNumbers.");
       } else {
@@ -58,8 +70,8 @@ class BusinessNumberController extends ChangeNotifier {
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
         },
       );
 

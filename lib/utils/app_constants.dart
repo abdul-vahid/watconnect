@@ -204,8 +204,11 @@ abstract class AppConstants {
   static const String sfGetTemplates =
       "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/templates?";
 
-  static const String sfDeleteMsgHistory =
+  static const String sfDeleteChatHistory =
       "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/messages/delete?";
+
+  static const String sfDeleteChatMsg =
+      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/messages/selectdMessageDelete?";
 
   // static const String businessNumber = "918306524244";
 

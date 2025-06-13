@@ -36,7 +36,7 @@ class AppApi {
         token = await prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
         header.putIfAbsent("Authorization", () => "Bearer $token");
       }
-      // header.putIfAbsent("content-type", () => "application/json");
+      header.putIfAbsent("content-type", () => "application/json");
 
       printRequest(url: url, header: header, body: params);
 
@@ -70,7 +70,7 @@ class AppApi {
       if (sendToken) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         token = await prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-        header.putIfAbsent("Authorization", () => token);
+        header.putIfAbsent("Authorization", () => "Bearer ${token}");
       }
 
       // header.putIfAbsent("content-type", () => "application/json");

@@ -51,8 +51,8 @@ class ChatMessageController extends ChangeNotifier {
       final response = await http.get(
         Uri.parse(url),
         headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
         },
       );
 
@@ -67,11 +67,17 @@ class ChatMessageController extends ChangeNotifier {
       } else {
         log("History API failed [${response.statusCode}]: ${response.body}");
       }
+      notify();
     } catch (e) {
       log("Error in messageHistoryApiCall: $e");
     }
 
     if (isFirstTime) _setChatHistoryLoader(false);
+  }
+
+  Future<void> notify() async {
+    await Future.delayed(Duration.zero);
+    notifyListeners();
   }
 
   Future<void> sendMessageApiCall({
@@ -147,15 +153,15 @@ class ChatMessageController extends ChangeNotifier {
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
       String apiUrl =
-          "${AppConstants.sfDeleteMsgHistory}businessNumber=${busNum}&whatsAppNumber=${wpNum}";
+          "${AppConstants.sfDeleteChatHistory}businessNumber=${busNum}&whatsAppNumber=${wpNum}";
 
       final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
 
       final response = await http.delete(
         Uri.parse(apiUrl),
         headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
         },
       );
 
@@ -171,6 +177,63 @@ class ChatMessageController extends ChangeNotifier {
       }
     } catch (e) {
       print("Error in chat history delete api: $e");
+    }
+    notifyListeners();
+  }
+
+  List<String> msgDeleteList = [];
+
+  setMsgDeleteList(String id) {
+    if (msgDeleteList.contains(id)) {
+      msgDeleteList.remove(id);
+    } else {
+      msgDeleteList.add(id);
+    }
+
+    log("ids to delete::::::    ${msgDeleteList}");
+    notify();
+  }
+
+  resetMsgDeleteList() {
+    msgDeleteList.clear();
+    notify();
+  }
+
+  Future<void> chatMsgDeleteApiCall(String wpNum) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final busNum =
+          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+
+      String ids = msgDeleteList.join(",");
+
+      String apiUrl =
+          "${AppConstants.sfDeleteChatMsg}businessNumber=${busNum}&whatsAppNumber=${wpNum}&metaMessageId=$ids";
+
+      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+
+      final response = await http.delete(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      log("headers:::: ${"$token"}    ${apiUrl}");
+      print(
+          "delete msg response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+
+      if (response.statusCode == 200) {
+        await messageHistoryApiCall(userNumber: wpNum, isFirstTime: false);
+        EasyLoading.showToast("Chat Messages Deleted Successfully");
+        resetMsgDeleteList();
+        await messageHistoryApiCall(userNumber: wpNum, isFirstTime: false);
+      } else {
+        log("delete msg  API failed [${response.statusCode}]: ${response.body}");
+      }
+    } catch (e) {
+      print("Error in chat msg delete api: $e");
     }
     notifyListeners();
   }

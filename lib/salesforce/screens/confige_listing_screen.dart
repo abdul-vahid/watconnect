@@ -206,12 +206,11 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
           padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
           child: InkWell(
             onTap: () async {
+              showBlurOnlyLoaderDialog(context);
               ChatMessageController cmProvider =
                   Provider.of(context, listen: false);
               DashBoardController dbProvider =
                   Provider.of(context, listen: false);
-
-              showBlurOnlyLoaderDialog(context);
 
               dbProvider.setSelectedContaactInfo(drawerListItem);
               await cmProvider
@@ -290,12 +289,12 @@ void showBlurOnlyLoaderDialog(BuildContext context) {
   showDialog(
     context: context,
     barrierDismissible: false,
-    barrierColor: Colors.transparent,
+    barrierColor: Colors.black.withOpacity(0.2),
     builder: (BuildContext context) {
       return Stack(
         children: [
           BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 0.0, sigmaY: 0.0),
+            filter: ImageFilter.blur(sigmaX: 0.1, sigmaY: 0.1),
             child: const SizedBox.expand(),
           ),
           const Center(
