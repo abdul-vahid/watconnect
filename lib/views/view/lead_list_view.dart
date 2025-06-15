@@ -589,14 +589,14 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                   var unreadCount = "0";
                                   var lead = allLeads[index];
 
-                                  for (var p in unreadList) {
-                                    if (p.whatsappNumber
-                                        .toString()
-                                        .contains(lead.whatsapp_number)) {
-                                      unreadCount = p.unreadMsgCount;
-                                      break;
-                                    }
-                                  }
+                                  // for (var p in unreadList) {
+                                  //   if (p.whatsappNumber
+                                  //       .toString()
+                                  //       .contains(lead.whatsappNumber)) {
+                                  //     unreadCount = p.unreadMsgCount;
+                                  //     break;
+                                  //   }
+                                  // }
 
                                   return leadRecordList(lead, unreadCount);
                                 },
@@ -655,13 +655,13 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           onTap: () async {
             // print("model=>${model.toMap()}");
             var num = "";
-            if (model.whatsapp_number!.contains("+")) {
-              num = model.whatsapp_number ?? "";
+            if (model.whatsappNumber!.contains("+")) {
+              num = model.whatsappNumber ?? "";
             } else {
-              num = "${model.countryCode}${model.whatsapp_number}";
+              num = "${model.countryCode}${model.whatsappNumber}";
             }
-            print("model  finalResult=>${model.whatsapp_number}");
-            if (model.whatsapp_number != null) {
+            print("model  finalResult=>${model.whatsappNumber}");
+            if (model.whatsappNumber != null) {
               _marksread(num);
 
               final result = await Navigator.push(
@@ -674,9 +674,9 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                         : (model.lastname != null && model.lastname!.isNotEmpty)
                             ? model.lastname!
                             : "No Name Available",
-                    wpnumber: model.whatsapp_number!.contains("+")
-                        ? model.whatsapp_number ?? ""
-                        : "${model.countryCode}${model.whatsapp_number ?? ""}",
+                    wpnumber: model.whatsappNumber!.contains("+")
+                        ? model.whatsappNumber ?? ""
+                        : "${model.countryCode}${model.whatsappNumber ?? ""}",
                     id: model.id,
                     model: model,
                   ),
@@ -752,7 +752,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                       ),
                     ),
                     Text(
-                      "${model.whatsapp_number?.isNotEmpty == true ? model.whatsapp_number!.contains("+") ? model.whatsapp_number ?? "" : "${model.countryCode}${model.whatsapp_number ?? ""}" : ''}",
+                      "${model.whatsappNumber?.isNotEmpty == true ? model.whatsappNumber!.contains("+") ? model.whatsappNumber ?? "" : "${model.countryCode}${model.whatsappNumber ?? ""}" : ''}",
                       style: const TextStyle(fontSize: 12),
                     ),
                     Text(
@@ -909,12 +909,18 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
         .fetch()
         .then((onValue) {
       allLeads = [];
-      // print(
-      // " leadlistvm.viewModels:::::::::::::::::: ${leadlistvm.viewModels}");
+      print(
+          " leadlistvm.viewModels:::::::::::::::::: ${leadlistvm.viewModels}");
       for (var viewModel in leadlistvm.viewModels) {
-        _leadfilter.add(viewModel.model.leadstatus);
-        tempLeadModelList.add(viewModel.model);
-        allLeads.add(viewModel.model);
+        var leadmodel = viewModel.model;
+        if (leadmodel?.records != null) {
+          for (var record in leadmodel!.records!) {
+            tempLeadModelList.add(record);
+            allLeads.add(record);
+          }
+        }
+
+        // print("allLeads>>>>>>>>> ${allLeads[0].firstname}");
       }
 
       setState(() {

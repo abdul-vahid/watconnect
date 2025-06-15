@@ -56,7 +56,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
     var createdDate = widget.model?.createddate;
 
     var parsedDate = DateTime.parse(createdDate.toString());
-    amount = widget.model?.amount ?? "";
+    // amount = widget.model?. ?? "";
     dateformat = DateFormat('dd-MM-yyyy').format(parsedDate);
     return Scaffold(
       backgroundColor: Colors.white,
@@ -109,7 +109,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
   }
 
   Widget _pageBody(model) {
-    print("widget.model?.whatsapp_number${widget.model?.whatsapp_number}");
+    print("widget.model?.whatsapp_number${widget.model?.whatsappNumber}");
     // print("widget.model?.createdbyname${widget.model?.ownername}");
 
     print("model$model");
@@ -172,9 +172,9 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                           const Divider(),
                           recordRow("Email", widget.model?.email),
                           const Divider(),
-                          recordRow("Phone", widget.model?.whatsapp_number),
+                          recordRow("Phone", widget.model?.whatsappNumber),
                           const Divider(),
-                          recordRow("Expected Amount", widget.model?.amount),
+                          // recordRow("Expected Amount", widget.model?.amount),
                           const Divider(),
                           Row(
                             children: [
@@ -200,17 +200,17 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          recordRow(
-                              "Payment Terms", widget.model?.paymentterms),
+                          // recordRow(
+                          //     "Payment Terms", widget.model?.p),
                           const Divider(),
                           recordRow("Assigned User", widget.model?.ownername),
                           const Divider(),
-                          recordRow("Company", widget.model?.company),
+                          // recordRow("Company", widget.model?.company),
                           const Divider(),
                           recordRow("Lead Source", widget.model?.leadsource),
                           const Divider(),
-                          recordRow(
-                              "Payment Model", widget.model?.paymentmodel),
+                          // recordRow(
+                          //     "Payment Model", widget.model?.paymentmodel),
                           const Divider(),
                           recordRow("Status", widget.model?.leadstatus),
                           const Divider(),
@@ -238,15 +238,15 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          recordRow("Description", widget.model?.description),
+                          // recordRow("Description", widget.model?.),
                           const Divider(),
-                          recordRow("city", widget.model?.city),
+                          // recordRow("city", widget.model?.city),
                           const Divider(),
-                          recordRow("country", widget.model?.country),
+                          // recordRow("country", widget.model?.country),
                           const Divider(),
-                          recordRow("zipcode", widget.model?.zipcode),
+                          // recordRow("zipcode", widget.model?.zipcode),
                           const Divider(),
-                          recordRow("street", widget.model?.street),
+                          // recordRow("street", widget.model?.street),
                           const Divider(),
                           const SizedBox(height: 15),
                         ],

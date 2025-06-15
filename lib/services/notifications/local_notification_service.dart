@@ -203,9 +203,9 @@ class LocalNotificationService {
         builder: (_) => ChatScreen(
           leadName:
               "${matchedModel!.firstname ?? ""} ${matchedModel.lastname ?? ""}",
-          wpnumber: matchedModel.whatsapp_number!.contains("+")
-              ? matchedModel.whatsapp_number ?? ""
-              : "${matchedModel.countryCode}${matchedModel.whatsapp_number ?? ""}",
+          wpnumber: matchedModel.whatsappNumber!.contains("+")
+              ? matchedModel.whatsappNumber ?? ""
+              : "${matchedModel.countryCode}${matchedModel.whatsappNumber ?? ""}",
           id: matchedModel.id,
           model: matchedModel,
         ),

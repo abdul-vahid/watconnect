@@ -517,9 +517,7 @@ class _ProfileViewState extends State<ProfileView> {
     // SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (selectedImage != null) {
-      String baseApiUrl = "https://admin.watconnect.com/ibs";
-      // String baseApiUrl = "https://sandbox.watconnect.com/swp";
-      var url = "$baseApiUrl/api/auth/${user?.id ?? ""}/profile";
+      var url = "${AppConstants.baseUrl}/api/auth/${user?.id ?? ""}/profile";
 
       UserListViewModel()
           .uploadFile(selectedImage, userMap.toString(), url)

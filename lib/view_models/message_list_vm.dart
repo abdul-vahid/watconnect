@@ -139,7 +139,7 @@ class MessageViewModel extends BaseListViewModel {
     // debug("Token2 == $token");
     token ??= "";
     var url = Uri.parse(
-        "$baseUrl/webhook_template/documentId?whatsapp_setting_number=$number");
+        "${AppConstants.baseUrl}/webhook_template/documentId?whatsapp_setting_number=$number");
 
     var request = http.MultipartRequest("POST", url);
 
@@ -198,7 +198,7 @@ class MessageViewModel extends BaseListViewModel {
       print("No token found");
       return null;
     }
-    var url = Uri.parse("$baseUrl/whatsapp/files/$id");
+    var url = Uri.parse("${AppConstants.baseUrl}/whatsapp/files/$id");
     print("Request URL: $url");
     var request = http.MultipartRequest("POST", url);
 
@@ -254,9 +254,9 @@ class MessageViewModel extends BaseListViewModel {
     }
     String uri = "";
     if (isFromCamp) {
-      uri = "$baseUrl/whatsapp/campaign/file/null";
+      uri = "${AppConstants.baseUrl}/whatsapp/campaign/file/null";
     } else {
-      uri = "$baseUrl/whatsapp/campaign/file/$id";
+      uri = "${AppConstants.baseUrl}/whatsapp/campaign/file/$id";
     }
 
     var url = Uri.parse(uri);
@@ -327,15 +327,12 @@ class MessageViewModel extends BaseListViewModel {
     return delete(url: url, body: bodyy);
   }
 
-  String baseUrl = "https://admin.watconnect.com/ibs/api";
-  // String baseUrl = "https://sandbox.watconnect.com/swp/api";
-
   Future<dynamic> uploadvideo(File file, String? number) async {
     print("ulaoodoaooaooa");
     var token = await AppUtils.getToken();
     token ??= "";
     var url = Uri.parse(
-        "$baseUrl/webhook_template/documentId?whatsapp_setting_number=$number");
+        "${AppConstants.baseUrl}/webhook_template/documentId?whatsapp_setting_number=$number");
     print("videieieie=>URL=>>>>>>>$url");
     var request = http.MultipartRequest("POST", url);
 

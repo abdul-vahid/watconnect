@@ -10,6 +10,7 @@ class BaseService {
   Future<dynamic> get({required String url}) async {
     var token = await AppUtils.getToken();
     final responseJsonData = await _apiService.getResponse(url, token!);
+    log("token:::::: ${token}");
     log("responseiso=>$responseJsonData");
     return responseJsonData;
   }

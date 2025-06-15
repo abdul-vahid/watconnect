@@ -18,6 +18,7 @@ class APIService {
         'Authorization': '$token',
       });
       responseJson = returnResponse(response);
+      print("responseJson::: get api response :::: ${responseJson}");
     } on SocketException {
       throw FetchDataException('No Internet Connection');
     }

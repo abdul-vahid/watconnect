@@ -43,17 +43,21 @@ class BaseListViewModel extends ChangeNotifier {
         }
       }
 
-      print("");
+      print("jsonObject is! List:::: ${jsonObject is! List}");
       var records = jsonObject;
       if (jsonObject is! List) {
         debug("not an array");
         records = [jsonObject];
         // return records;
       }
-      // print(
-      //     ":____________________>>>>>>>>>> ${url} ${records.length}   ${records.runtimeType}");
+      print(
+          ":____________________>>>>>>>>>> ${url} ${records.length}   ${records.runtimeType}  ${records}  ${records[0]['records']}");
       try {
+        var rec = records[0]['records'];
         var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
+
+        print("modelMap::::::::: ${modelMap}   ${url}   ");
+
         viewModels =
             modelMap.map((item) => BaseViewModel(model: item)).toList();
 

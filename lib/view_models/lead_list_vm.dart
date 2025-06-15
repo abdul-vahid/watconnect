@@ -15,9 +15,11 @@ class LeadListViewModel extends BaseListViewModel {
 
   Future<void> fetch() async {
     String url = AppUtils.getUrl(AppConstants.leadAPIPath);
-    await get(url: url, baseModel: LeadModel()).then((onValue) {
-      // print("viewModels::: ${viewModels}");
-    });
+    await get(url: url, baseModel: LeadResponseModel());
+    // .then((onValue) {
+    //   print("viewModels::: ${viewModels}");
+    //   print("fetch val::: ${onValue}");
+    // });
   }
 
   Future<void> fetchRecentChat() async {
@@ -35,7 +37,7 @@ class LeadListViewModel extends BaseListViewModel {
     String url = AppUtils.getUrl(AppConstants.leadAPIPath);
     print("urll=>$url");
     debug("===========>${addleadModel.toJson()}");
-    var result = await post(url: url, body: addleadModel.toJson());
+    var result = await post(url: url, body: addleadModel.toJson().toString());
     print("result=>$result");
     return result;
   }
@@ -50,7 +52,7 @@ class LeadListViewModel extends BaseListViewModel {
   Future<void> update(String? id, LeadModel leadModel) async {
     String url = AppUtils.getUrl("${AppConstants.leadAPIPath}/$id");
     debug(' check===$url');
-    var result = await put(url: url, body: leadModel.toJson());
+    var result = await put(url: url, body: leadModel.toJson().toString());
     print("rssssssssssssss=>$result");
     return result;
   }

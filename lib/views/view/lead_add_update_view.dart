@@ -601,7 +601,7 @@ class _Forms extends State<LeadAddView> {
                               const SizedBox(height: 5),
                               AppUtils.getTextFormField(
                                 'Enter your phone number',
-                                initialValue: widget.model?.whatsapp_number,
+                                initialValue: widget.model?.whatsappNumber,
                                 onSaved: (wpnumber) {
                                   _whatsapnumber = '${wpnumber}';
                                   print(
@@ -702,121 +702,121 @@ class _Forms extends State<LeadAddView> {
                 ],
               ),
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  // First column
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Title'),
-                        const SizedBox(height: 5),
-                        AppUtils.getDropdown(
-                          '--Select--',
-                          onSaved: (newValue) {
-                            _title = newValue;
-                          },
-                          onChanged: (value) {
-                            setState(() {
-                              _title = value;
-                            });
-                          },
-                          data: _titles,
-                          value: widget.model?.title,
-                        ),
-                        const SizedBox(height: 10),
-                        const Text('Lead Source'),
-                        const SizedBox(height: 5),
-                        AppUtils.getDropdown(
-                          '--Select--',
-                          onChanged: (value) {
-                            setState(() {
-                              _leadsource = value;
-                            });
-                          },
-                          data: _leadsources,
-                          value: widget.model?.leadsource,
-                        ),
-                        const SizedBox(height: 10),
-                        // const Text('Lead Status'),
-                        // const SizedBox(height: 5),
-                        // AppUtils.getDropdown(
-                        //   '--Select--',
-                        //   onChanged: (value) {
-                        //     setState(() {
-                        //       _leadstatus = value;
-                        //     });
-                        //   },
-                        //   validator: (value) =>
-                        //       value == null ? 'Required' : null,
-                        //   data: _leadsstatus,
-                        //   value: widget.model?.leadstatus,
-                        // ),
-                        const SizedBox(height: 10),
-                        const Text('Industry'),
-                        const SizedBox(height: 5),
-                        AppUtils.getDropdown(
-                          '--Select--',
-                          onChanged: (value) {
-                            setState(() {
-                              _industry = value;
-                            });
-                          },
-                          data: _industries,
-                          value: widget.model?.industry,
-                        ),
-                      ],
-                    ),
-                  ),
+              // Row(
+              //   children: [
+              // First column
+              // Expanded(
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       const Text('Title'),
+              //       const SizedBox(height: 5),
+              //       AppUtils.getDropdown(
+              //         '--Select--',
+              //         onSaved: (newValue) {
+              //           _title = newValue;
+              //         },
+              //         onChanged: (value) {
+              //           setState(() {
+              //             _title = value;
+              //           });
+              //         },
+              //         data: _titles,
+              //         value: widget.model?.title,
+              //       ),
+              //       const SizedBox(height: 10),
+              //       const Text('Lead Source'),
+              //       const SizedBox(height: 5),
+              //       AppUtils.getDropdown(
+              //         '--Select--',
+              //         onChanged: (value) {
+              //           setState(() {
+              //             _leadsource = value;
+              //           });
+              //         },
+              //         data: _leadsources,
+              //         value: widget.model?.leadsource,
+              //       ),
+              //       const SizedBox(height: 10),
+              //       // const Text('Lead Status'),
+              //       // const SizedBox(height: 5),
+              //       // AppUtils.getDropdown(
+              //       //   '--Select--',
+              //       //   onChanged: (value) {
+              //       //     setState(() {
+              //       //       _leadstatus = value;
+              //       //     });
+              //       //   },
+              //       //   validator: (value) =>
+              //       //       value == null ? 'Required' : null,
+              //       //   data: _leadsstatus,
+              //       //   value: widget.model?.leadstatus,
+              //       // ),
+              //       const SizedBox(height: 10),
+              //       const Text('Industry'),
+              //       const SizedBox(height: 5),
+              //       AppUtils.getDropdown(
+              //         '--Select--',
+              //         onChanged: (value) {
+              //           setState(() {
+              //             _industry = value;
+              //           });
+              //         },
+              //         data: _industries,
+              //         value: widget.model?.industry,
+              //       ),
+              //     ],
+              //   ),
+              // ),
 
-                  const SizedBox(width: 10), // Space between the columns
+              // const SizedBox(width: 10), // Space between the columns
 
-                  // Second column
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Payment Model'),
-                        const SizedBox(height: 5),
-                        AppUtils.getDropdown(
-                          '--Select--',
-                          onChanged: (value) {
-                            setState(() {
-                              _payment = value;
-                            });
-                          },
-                          data: _payments,
-                          value: widget.model?.paymentmodel,
-                        ),
-                        const SizedBox(height: 10),
-                        const Text('Payment Terms'),
-                        const SizedBox(height: 5),
-                        AppUtils.getDropdown(
-                          '--Select--',
-                          onChanged: (value) {
-                            setState(() {
-                              _paymentterm = value;
-                            });
-                          },
-                          data: _paymentterms,
-                          value: widget.model?.paymentterms,
-                        ),
-                        const SizedBox(height: 10),
-                        const SizedBox(height: 10),
-                        const Text('Expected Amount (\u{20B9})'),
-                        const SizedBox(height: 5),
-                        AppUtils.getTextFormField(
-                          'Enter Expected Amount',
-                          initialValue: widget.model?.amount,
-                          onSaved: (amount) {
-                            _amount = amount;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              // Second column
+              // Expanded(
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       const Text('Payment Model'),
+              //       const SizedBox(height: 5),
+              //       AppUtils.getDropdown(
+              //         '--Select--',
+              //         onChanged: (value) {
+              //           setState(() {
+              //             _payment = value;
+              //           });
+              //         },
+              //         data: _payments,
+              //         value: widget.model?.paymentmodel,
+              //       ),
+              //       const SizedBox(height: 10),
+              //       const Text('Payment Terms'),
+              //       const SizedBox(height: 5),
+              //       AppUtils.getDropdown(
+              //         '--Select--',
+              //         onChanged: (value) {
+              //           setState(() {
+              //             _paymentterm = value;
+              //           });
+              //         },
+              //         data: _paymentterms,
+              //         value: widget.model?.paymentterms,
+              //       ),
+              //       const SizedBox(height: 10),
+              //       const SizedBox(height: 10),
+              //       const Text('Expected Amount (\u{20B9})'),
+              //       const SizedBox(height: 5),
+              //       AppUtils.getTextFormField(
+              //         'Enter Expected Amount',
+              //         initialValue: widget.model?.amount,
+              //         onSaved: (amount) {
+              //           _amount = amount;
+              //         },
+              //       ),
+              //     ],
+              //   ),
+              // ),
+              //   ],
+              // ),
               const SizedBox(height: 25),
               Row(
                 children: [
@@ -845,97 +845,97 @@ class _Forms extends State<LeadAddView> {
               const SizedBox(
                 height: 10,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Street'),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        AppUtils.getTextFormField(
-                          'Enter your street',
-                          initialValue: widget.model?.street,
-                          onSaved: (street) {
-                            _street = street;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 05,
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('City'),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        AppUtils.getTextFormField(
-                          'Enter your City',
-                          initialValue: widget.model?.city,
-                          onSaved: (value) {
-                            _city = value;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Expanded(
+              //       child: Column(
+              //         crossAxisAlignment: CrossAxisAlignment.start,
+              //         children: [
+              //           const Text('Street'),
+              //           const SizedBox(
+              //             height: 5,
+              //           ),
+              //           AppUtils.getTextFormField(
+              //             'Enter your street',
+              //             initialValue: widget.model?.street,
+              //             onSaved: (street) {
+              //               _street = street;
+              //             },
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //     const SizedBox(
+              //       width: 05,
+              //     ),
+              //     Expanded(
+              //       child: Column(
+              //         crossAxisAlignment: CrossAxisAlignment.start,
+              //         children: [
+              //           const Text('City'),
+              //           const SizedBox(
+              //             height: 5,
+              //           ),
+              //           AppUtils.getTextFormField(
+              //             'Enter your City',
+              //             initialValue: widget.model?.city,
+              //             onSaved: (value) {
+              //               _city = value;
+              //             },
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //   ],
+              // ),
               const SizedBox(
                 height: 10,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('State'),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        AppUtils.getTextFormField(
-                          'Enter your State',
-                          initialValue: widget.model?.state,
-                          onSaved: (value) {
-                            _selectedState = value;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 05,
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Zip/Postal code'),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        AppUtils.getTextFormField(
-                          'Enter your zip code',
-                          initialValue: widget.model?.zipcode,
-                          onSaved: (value) {
-                            _zipcode = value;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Expanded(
+              //       child: Column(
+              //         crossAxisAlignment: CrossAxisAlignment.start,
+              //         children: [
+              //           const Text('State'),
+              //           const SizedBox(
+              //             height: 5,
+              //           ),
+              //           AppUtils.getTextFormField(
+              //             'Enter your State',
+              //             initialValue: widget.model?.state,
+              //             onSaved: (value) {
+              //               _selectedState = value;
+              //             },
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //     const SizedBox(
+              //       width: 05,
+              //     ),
+              //     Expanded(
+              //       child: Column(
+              //         crossAxisAlignment: CrossAxisAlignment.start,
+              //         children: [
+              //           const Text('Zip/Postal code'),
+              //           const SizedBox(
+              //             height: 5,
+              //           ),
+              //           AppUtils.getTextFormField(
+              //             'Enter your zip code',
+              //             initialValue: widget.model?.zipcode,
+              //             onSaved: (value) {
+              //               _zipcode = value;
+              //             },
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //   ],
+              // ),
 
               const SizedBox(
                 height: 10,
@@ -959,13 +959,13 @@ class _Forms extends State<LeadAddView> {
               const SizedBox(
                 height: 5,
               ),
-              AppUtils.getTextFormField(
-                'Enter description',
-                initialValue: widget.model?.description,
-                onSaved: (description) {
-                  _description = description;
-                },
-              ),
+              // AppUtils.getTextFormField(
+              //   'Enter description',
+              //   initialValue: widget.model?.description,
+              //   onSaved: (description) {
+              //     _description = description;
+              //   },
+              // ),
               const SizedBox(
                 height: 15,
               ),
@@ -992,26 +992,26 @@ class _Forms extends State<LeadAddView> {
         firstname: _firstname?.trim(),
         lastname: _lastname?.trim(),
         email: _email?.trim(),
-        whatsapp_number: _whatsapnumber?.trim(),
-        city: _city?.trim(),
-        company: _company,
+        whatsappNumber: _whatsapnumber?.trim(),
+        // city: _city?.trim(),
+        // company: _company,
         leadsource: _leadsource,
         leadstatus: _leadstatus,
-        salutation: _salutation,
+        // salutation: _salutation,
         ownerid: userId,
-        industry: _industry,
-        title: _title?.trim(),
-        street: _street?.trim(),
-        state: _selectedState?.trim(),
-        country: _selectedCountry,
+        // industry: _industry,
+        // title: _title?.trim(),
+        // street: _street?.trim(),
+        // state: _selectedState?.trim(),
+        // country: _selectedCountry,
         countryCode: selectedCountry,
-        zipcode: _zipcode?.trim(),
-        description: _description?.trim(),
+        // zipcode: _zipcode?.trim(),
+        // description: _description?.trim(),
         ownername: _asignStaff,
         // ownerid: "c3c74964-d091-4fa3-8d9e-fa041d9c0d40",
-        paymentterms: _paymentterm,
-        paymentmodel: _payment,
-        amount: _amount,
+        // paymentterms: _paymentterm,
+        // paymentmodel: _payment,
+        // amount: _amount,
       );
       AppUtils.onLoading(context, "Saving, please wait...");
 
@@ -1105,27 +1105,27 @@ class _Forms extends State<LeadAddView> {
         firstname: _firstname?.trim(),
         lastname: _lastname?.trim(),
         email: _email?.trim(),
-        whatsapp_number: _whatsapnumber?.trim(),
-        city: _city?.trim(),
-        company: _company?.trim(),
+        whatsappNumber: _whatsapnumber?.trim(),
+        // city: _city?.trim(),
+        // company: _company?.trim(),
         leadsource: _leadsource,
         leadstatus: _leadstatus,
-        salutation: _salutation,
-        industry: _industry,
-        title: _title?.trim(),
+        // salutation: _salutation,
+        // industry: _industry,
+        // title: _title?.trim(),
         ownername: _asignStaff,
         ownerid: userId,
-        paymentmodel: _payment,
-        paymentterms: _paymentterm,
-        street: _street?.trim(),
-        state: _selectedState?.trim(),
-        country: _selectedCountry,
+        // paymentmodel: _payment,
+        // paymentterms: _paymentterm,
+        // street: _street?.trim(),
+        // state: _selectedState?.trim(),
+        // country: _selectedCountry,
         countryCode: selectedCountry,
-        zipcode: _zipcode?.trim(),
-        description: _description?.trim(),
+        // zipcode: _zipcode?.trim(),
+        // description: _description?.trim(),
         // amount: _amount,
       );
-      print("lelelelelel;eelelle=>>>${leadModel.toMap()}");
+      print("lelelelelel;eelelle=>>>${leadModel.toJson()}");
       AppUtils.onLoading(context, "Updating, please wait...");
       Provider.of<LeadListViewModel>(context, listen: false)
           .update(id, leadModel)

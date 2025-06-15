@@ -665,13 +665,10 @@ class _CampaignListView extends State<CampaignListView> {
                                               onTap: () async {
                                                 var token =
                                                     await AppUtils.getToken();
-                                                String baseApiUrl =
-                                                    "https://admin.watconnect.com/ibs";
-                                                // String baseApiUrl =
-                                                //     "https://sandbox.watconnect.com/swp";
+
                                                 FileDownloader.downloadFile(
                                                   url:
-                                                      "$baseApiUrl/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}",
+                                                      "${AppConstants.baseUrl}/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}",
                                                   name: allCampaigns[index]
                                                       .fileTitle,
                                                   headers: {
