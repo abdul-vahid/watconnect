@@ -196,7 +196,7 @@ class AppUtils {
 
         List<String> stringList = List<String>.from(availableModule);
 
-        // print("stringList::::::::: $stringList  ${stringList.runtimeType}");
+        print("stringList::::::::: $stringList  ${stringList.runtimeType}");
         await prefs.setStringList(
             SharedPrefsConstants.userAvailableMoulesKey, stringList);
 

@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:whatsapp/models/recent_chat_model.dart';
+import 'package:whatsapp/models/tags_lsit_model.dart';
 import '../core/models/base_list_view_model.dart';
 import '../models/lead_model.dart';
 import '../utils/app_constants.dart';
@@ -27,17 +30,23 @@ class LeadListViewModel extends BaseListViewModel {
     await get(url: url, baseModel: RecentChatModel());
   }
 
+  Future<void> fetchLeadTags() async {
+    String url = AppUtils.getUrl(AppConstants.getAllTagsApi);
+    String apiUrl = "${url}?status=true";
+    await get(url: apiUrl, baseModel: TagsModel());
+  }
+
   Future<void> fetchCampLeads() async {
     String url = AppUtils.getUrl(AppConstants.allCampLeads);
     await get(url: url, baseModel: RecentChatModel());
   }
 
-  Future<dynamic> addlead(LeadModel addleadModel) async {
+  Future<dynamic> addlead(Map addLeadBody) async {
     print("working.....");
     String url = AppUtils.getUrl(AppConstants.leadAPIPath);
     print("urll=>$url");
-    debug("===========>${addleadModel.toJson()}");
-    var result = await post(url: url, body: addleadModel.toJson().toString());
+    String jsonString = jsonEncode(addLeadBody);
+    var result = await post(url: url, body: jsonString);
     print("result=>$result");
     return result;
   }

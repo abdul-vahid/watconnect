@@ -31,6 +31,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
 
   @override
   void initState() {
+    print("tag list::: ${widget.model?.tagNames ?? []}");
     // bottomnavigationbar animated
     super.initState();
   }
@@ -170,12 +171,15 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                           const Divider(),
                           recordRow("Last Name", widget.model?.lastname),
                           const Divider(),
+                          recordRow("Date of Birth", widget.model?.dob),
+                          const Divider(),
                           recordRow("Email", widget.model?.email),
                           const Divider(),
-                          recordRow("Phone", widget.model?.whatsappNumber),
+                          recordRow("Phone",
+                              "${widget.model?.countryCode} ${widget.model?.whatsappNumber}"),
                           const Divider(),
                           // recordRow("Expected Amount", widget.model?.amount),
-                          const Divider(),
+                          // const Divider(),
                           Row(
                             children: [
                               Expanded(
@@ -188,7 +192,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                                   child: const Padding(
                                     padding: EdgeInsets.all(8.0),
                                     child: Text(
-                                      'Leads Information',
+                                      'Lead Information',
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
@@ -206,49 +210,90 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                           recordRow("Assigned User", widget.model?.ownername),
                           const Divider(),
                           // recordRow("Company", widget.model?.company),
-                          const Divider(),
+                          // const Divider(),
                           recordRow("Lead Source", widget.model?.leadsource),
                           const Divider(),
                           // recordRow(
                           //     "Payment Model", widget.model?.paymentmodel),
-                          const Divider(),
+                          // const Divider(),
                           recordRow("Status", widget.model?.leadstatus),
                           const Divider(),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: AppColor.navBarIconColor,
-                                      borderRadius: BorderRadius.circular(08)),
-                                  height: 40,
-                                  width: 350,
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(
-                                      'Address Information',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              )
-                            ],
+                          Container(
+                            decoration: BoxDecoration(
+                                color: AppColor.navBarIconColor,
+                                borderRadius: BorderRadius.circular(08)),
+                            height: 40,
+                            width: double.infinity,
+                            child: const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'Address Information',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.white),
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 10),
-                          // recordRow("Description", widget.model?.),
-                          const Divider(),
+                          recordRow("Address", widget.model?.address),
+                          // const Divider(),
                           // recordRow("city", widget.model?.city),
-                          const Divider(),
+                          // const Divider(),
                           // recordRow("country", widget.model?.country),
-                          const Divider(),
+                          // const Divider(),
                           // recordRow("zipcode", widget.model?.zipcode),
-                          const Divider(),
+                          // const Divider(),
                           // recordRow("street", widget.model?.street),
                           const Divider(),
                           const SizedBox(height: 15),
+
+                          Container(
+                            decoration: BoxDecoration(
+                                color: AppColor.navBarIconColor,
+                                borderRadius: BorderRadius.circular(08)),
+                            height: 40,
+                            width: double.infinity,
+                            child: const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'Tags Information',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.white),
+                              ),
+                            ),
+                          ),
+
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children:
+                                  (widget.model?.tagNames ?? []).map((tag) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xffE6E6E6),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(tag.name ?? ""),
+                                );
+                              }).toList(),
+                            ),
+                          )
+
+                          //  Wrap(
+                          //     spacing: 10,
+                          //   children: widget.model.tagNames.map(tag){
+                          //     return Container(
+                          //       child: Text(tag.name),
+                          //     );
+                          //   },
+                          //  )
                         ],
                       ),
                     ),
@@ -431,7 +476,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
 
   Future<void> _navigateToEdit() async {
     Provider.of<LeadListViewModel>(context, listen: false).fetch();
-    final result = await Navigator.push(
+    final result = Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => LeadAddView(model: widget.model),

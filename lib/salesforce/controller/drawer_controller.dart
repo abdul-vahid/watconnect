@@ -70,6 +70,8 @@ class DashBoardController extends ChangeNotifier {
         sendToken: true,
       );
 
+      print("congig resposne:::: ${response}   ");
+
       List temp = response["data"];
 
       drawerListItems = temp.map((e) => SfDrawerItemModel.fromJson(e)).toList();

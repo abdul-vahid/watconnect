@@ -589,14 +589,14 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                   var unreadCount = "0";
                                   var lead = allLeads[index];
 
-                                  // for (var p in unreadList) {
-                                  //   if (p.whatsappNumber
-                                  //       .toString()
-                                  //       .contains(lead.whatsappNumber)) {
-                                  //     unreadCount = p.unreadMsgCount;
-                                  //     break;
-                                  //   }
-                                  // }
+                                  for (var p in unreadList) {
+                                    if (p.whatsappNumber
+                                        .toString()
+                                        .contains(lead.whatsappNumber)) {
+                                      unreadCount = p.unreadMsgCount;
+                                      break;
+                                    }
+                                  }
 
                                   return leadRecordList(lead, unreadCount);
                                 },
@@ -919,8 +919,6 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
             allLeads.add(record);
           }
         }
-
-        // print("allLeads>>>>>>>>> ${allLeads[0].firstname}");
       }
 
       setState(() {

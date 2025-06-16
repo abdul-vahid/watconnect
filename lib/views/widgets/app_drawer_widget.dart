@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/views/view/tags_list_view.dart';
 import 'package:whatsapp/views/view/templete_list_view.dart';
 import 'package:whatsapp/views/view/whatsap_setting_view.dart';
 import 'package:whatsapp/views/widgets/bottomnavigatonbar.dart';
@@ -117,8 +118,10 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
               );
             },
           ),
-          modules.contains("Campaign") ? Divider() : SizedBox(),
-          modules.contains("Campaign")
+          modules.contains("Campaign") || modules.contains("Campaigns")
+              ? Divider()
+              : SizedBox(),
+          modules.contains("Campaign") || modules.contains("Campaigns")
               ? ListTile(
                   leading: Icon(
                     FontAwesomeIcons.personHarassing,
@@ -126,9 +129,6 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
                   ),
                   title: Text(
                     'Campaign',
-                    // style: GoogleFonts.montserrat(
-                    //   fontWeight: FontWeight.bold,
-                    // ),
                   ),
                   onTap: () {
                     Navigator.push(
@@ -219,6 +219,29 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
           //     // );
           //   },
           // ),
+
+          Divider(),
+
+          // modules.contains("Tag") || modules.contains("Tags")
+          //     ? Divider()
+          //     : SizedBox(),
+          // modules.contains("Tag") || modules.contains("Tag")
+          //     ?
+          ListTile(
+            leading: Icon(
+              FontAwesomeIcons.tags,
+              color: AppColor.navBarIconColor,
+            ),
+            title: Text(
+              'Tags',
+            ),
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => TagsListView()));
+            },
+          ),
+          // : SizedBox(),
+
           Divider(),
           ListTile(
             leading: Icon(

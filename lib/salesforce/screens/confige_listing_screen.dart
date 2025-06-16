@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
-import 'package:whatsapp/salesforce/controller/template_controller.dart';
+// import 'package:whatsapp/salesforce/controller/template_controller.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/app_color.dart';
@@ -18,7 +18,7 @@ class ConfigListingScreen extends StatefulWidget {
 }
 
 class _ConfigListingScreenState extends State<ConfigListingScreen> {
-  TextEditingController textController = new TextEditingController();
+  final TextEditingController textController = new TextEditingController();
   String selectedValue = "";
   @override
   void initState() {

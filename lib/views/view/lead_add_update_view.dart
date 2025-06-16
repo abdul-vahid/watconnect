@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
 
 import 'package:provider/provider.dart';
 import 'package:whatsapp/models/get_user.dart';
+import 'package:whatsapp/models/tags_lsit_model.dart';
 import 'package:whatsapp/view_models/get_user_vm.dart';
 import '../../models/lead_model.dart';
 import '../../models/user_data_model/user_data_model.dart';
@@ -259,6 +263,8 @@ class _Forms extends State<LeadAddView> {
   Map<String, String> code = {};
   bool isEdit = false;
   String? selectedCountry;
+  TextEditingController dobController = new TextEditingController();
+  String? selectedDate;
   String? leadStatus;
 // ---country code -----
   void fillCountryCodeMap() {
@@ -279,10 +285,15 @@ class _Forms extends State<LeadAddView> {
     // print("Dial Code Map=> $code");
   }
 
+  List<TagRecord> tagsNameSet = [];
+
+  List<Map<String, String>> selectedTagList = [];
+
   @override
   void initState() {
     Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
     Provider.of<UserDataListViewModel>(context, listen: false).fetchUser();
+    getTags();
     super.initState();
     final model = widget.model;
     if (model != null) {
@@ -290,8 +301,17 @@ class _Forms extends State<LeadAddView> {
     }
 
     if (isEdit) {
-      print("widget.model?.countryCode:::: ${widget.model?.countryCode}");
+      print("widget.model?.countryCode:::: ${widget.model?.tagNames}");
+
       selectedCountry = widget.model?.countryCode;
+      dobController.text = widget.model?.dob ?? "";
+      selectedDate = widget.model?.dob ?? "";
+      selectedTagList = (widget.model?.tagNames ?? [])
+          .map((tag) => {
+                'name': tag.name ?? '',
+                'id': tag.id ?? '',
+              })
+          .toList();
     } else {
       leadStatus = _leadsstatus[0];
       _leadstatus = _leadsstatus[0];
@@ -390,6 +410,9 @@ class _Forms extends State<LeadAddView> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.cardsColor,
                   padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 onPressed: isEdit ? updateData : onButtonPressed,
                 child: Text(
@@ -403,9 +426,8 @@ class _Forms extends State<LeadAddView> {
               ),
             ),
 
-            const SizedBox(width: 10), // Space between buttons
+            const SizedBox(width: 10),
 
-            // Second button (Cancel)
             Expanded(
               child: OutlinedButton(
                 onPressed: () {
@@ -413,6 +435,9 @@ class _Forms extends State<LeadAddView> {
                 },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   side: const BorderSide(
                     width: 1.0,
                     color: Colors.black,
@@ -475,155 +500,144 @@ class _Forms extends State<LeadAddView> {
                         )
                       ],
                     ),
-                    const SizedBox(height: 23),
+                    const SizedBox(height: 15),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // First Name Field
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('First Name'),
-                              const SizedBox(height: 5),
-                              AppUtils.getTextFormField(
-                                'Enter First Name',
-                                initialValue: widget.model?.firstname,
-                                onSaved: (fName) {
-                                  _firstname = fName;
-                                },
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return 'Please provide first name';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-
-                        // Last Name Field
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Last Name'),
-                              const SizedBox(height: 5),
-                              AppUtils.getTextFormField(
-                                'Enter your Last Name',
-                                initialValue: widget.model?.lastname,
-                                onSaved: (lName) {
-                                  _lastname = lName;
-                                },
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return 'Please enter last name';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ],
-                          ),
+                        const Text('First Name'),
+                        const SizedBox(height: 5),
+                        AppUtils.getTextFormField(
+                          'Enter First Name',
+                          initialValue: widget.model?.firstname,
+                          onSaved: (fName) {
+                            _firstname = fName;
+                          },
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return 'Please provide first name';
+                            }
+                            return null;
+                          },
                         ),
                       ],
                     ),
+                    const SizedBox(width: 10),
                     const SizedBox(height: 10),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Country Code'),
-                              const SizedBox(height: 5),
-                              // AppUtils.getDropdown(
-                              //   '',
-                              //   // initialValue: widget.model?.whatsapp_number,
-                              //   onSaved: (wpnumber) {
-                              //     _whatsapnumber = wpnumber;
-                              //   },
-                              //   validator: (value) {
-                              //     if (value == null || value.isEmpty) {
-                              //       return 'Please enter phone number';
-                              //     } else if (value.length != 12) {
-                              //       return 'Phone number must be 10 digits';
-                              //     } else if (!RegExp(r'^[0-9]+$')
-                              //         .hasMatch(value)) {
-                              //       return 'Phone number must contain only digits';
-                              //     }
-                              //     return null;
-                              //   },
-                              //   data: _countrycode,
-                              // ),
-                              DropdownButtonFormField<String>(
-                                isDense: true,
-                                decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  border: OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(8)),
-                                  ),
-                                ),
-                                value: selectedCountry,
-                                isExpanded: true,
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    selectedCountry = newValue!;
-                                  });
-                                },
-                                items: countryCodeMap.entries
-                                    .map<DropdownMenuItem<String>>(
-                                  (MapEntry<String, String> entry) {
-                                    return DropdownMenuItem<String>(
-                                      value: entry.key,
-                                      child: Text(entry.value),
-                                    );
-                                  },
-                                ).toList(),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(width: 10),
-                        // Phone Field
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Phone'),
-                              const SizedBox(height: 5),
-                              AppUtils.getTextFormField(
-                                'Enter your phone number',
-                                initialValue: widget.model?.whatsappNumber,
-                                onSaved: (wpnumber) {
-                                  _whatsapnumber = '${wpnumber}';
-                                  print(
-                                      "sdfdsfssdfjhsdkfjskdjfskdjsdk4${_whatsapnumber}");
-                                },
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter phone number';
-                                  } else if (value.length != 10) {
-                                    return 'Phone number must be 10 digits';
-                                  } else if (!RegExp(r'^[0-9]+$')
-                                      .hasMatch(value)) {
-                                    return 'Phone number must contain only digits';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    const Text('Last Name'),
+                    const SizedBox(height: 5),
+                    AppUtils.getTextFormField(
+                      'Enter your Last Name',
+                      initialValue: widget.model?.lastname,
+                      onSaved: (lName) {
+                        _lastname = lName;
+                      },
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter last name';
+                        }
+                        return null;
+                      },
                     ),
+
+                    const SizedBox(height: 10),
+
+                    const Text('Date of Birth'),
+                    const SizedBox(height: 5),
+                    AppUtils.getTextFormField(
+                      'Select Date of Birth',
+                      controller: dobController,
+                      // initialValue: widget.model?.dob,
+                      onSaved: (dt) {
+                        selectedDate = dt;
+                      },
+                      onTap: () async {
+                        DateTime? pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                        );
+                        if (pickedDate != null) {
+                          String formattedDate =
+                              "${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.year}";
+
+                          dobController.text = formattedDate;
+                          selectedDate =
+                              "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+
+                          print("selectedDate::::::::::: ${selectedDate}");
+                        }
+                      },
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please select date of birth';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(
+                      height: 12,
+                    ),
+
+                    const Text('Country Code'),
+                    const SizedBox(height: 5),
+
+                    DropdownButtonFormField<String>(
+                      isDense: true,
+                      decoration: const InputDecoration(
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                        ),
+                      ),
+                      value: selectedCountry,
+                      isExpanded: true,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedCountry = newValue!;
+                        });
+                      },
+                      items:
+                          countryCodeMap.entries.map<DropdownMenuItem<String>>(
+                        (MapEntry<String, String> entry) {
+                          return DropdownMenuItem<String>(
+                            value: entry.key,
+                            child: Text(entry.value),
+                          );
+                        },
+                      ).toList(),
+                    ),
+
+                    const SizedBox(
+                      height: 12,
+                    ),
+
+                    const Text('Phone'),
+                    const SizedBox(height: 5),
+                    AppUtils.getTextFormField(
+                      'Enter your phone number',
+                      initialValue: widget.model?.whatsappNumber,
+                      onSaved: (wpnumber) {
+                        _whatsapnumber = '${wpnumber}';
+                        print(
+                            "sdfdsfssdfjhsdkfjskdjfskdjsdk4${_whatsapnumber}");
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter phone number';
+                        } else if (value.length != 10) {
+                          return 'Phone number must be 10 digits';
+                        } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                          return 'Phone number must contain only digits';
+                        }
+                        return null;
+                      },
+                    ),
+
                     const SizedBox(height: 10),
                     // Email Field
                     Column(
@@ -665,13 +679,12 @@ class _Forms extends State<LeadAddView> {
                           _asignStaff = value;
                         });
                       },
-
                       validator: (value) =>
                           value == null ? 'Please Provide User' : null,
                       data: userData,
                       value: userData.contains(widget.model?.ownername)
                           ? widget.model?.ownername
-                          : defaultSel, // Fix here
+                          : defaultSel,
                     ),
                   ],
                 ),
@@ -702,6 +715,63 @@ class _Forms extends State<LeadAddView> {
                 ],
               ),
               const SizedBox(height: 10),
+
+              const Text('Tags'),
+
+              const SizedBox(height: 5),
+
+              MultiSelectDialogField<TagRecord>(
+                dialogWidth: MediaQuery.of(context).size.width * .45,
+                dialogHeight: MediaQuery.of(context).size.height * .35,
+                items: tagsNameSet.map((tag) {
+                  return MultiSelectItem<TagRecord>(tag, tag.name ?? "Unnamed");
+                }).toList(),
+                initialValue: selectedTagList.map((tagMap) {
+                  return tagsNameSet.firstWhere(
+                    (tag) => tag.id == tagMap['id'],
+                    orElse: () =>
+                        TagRecord(id: tagMap['id'], name: tagMap['name']),
+                  );
+                }).toList(),
+                title: const Text("Select Tags"),
+                selectedColor: Colors.blue,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blue, width: 1),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                buttonText: const Text("Select Tags"),
+                chipDisplay: MultiSelectChipDisplay.none(),
+                onConfirm: (List<TagRecord> selectedTags) {
+                  setState(() {
+                    selectedTagList = selectedTags.map((tag) {
+                      return {
+                        'id': tag.id ?? '',
+                        'name': tag.name ?? '',
+                      };
+                    }).toList();
+                  });
+                  debugPrint("Selected tags: $selectedTagList");
+                },
+              ),
+
+              Wrap(
+                spacing: 8.0,
+                children: selectedTagList.map((tagMap) {
+                  return Chip(
+                    label: Text(tagMap['name'] ?? "Tag"),
+                    deleteIcon: const Icon(Icons.close),
+                    onDeleted: () {
+                      setState(() {
+                        selectedTagList
+                            .removeWhere((t) => t['id'] == tagMap['id']);
+                      });
+                    },
+                    backgroundColor: Colors.blue.withOpacity(0.2),
+                    labelStyle: const TextStyle(color: Colors.blue),
+                  );
+                }).toList(),
+              ),
+
               // Row(
               //   children: [
               // First column
@@ -724,19 +794,19 @@ class _Forms extends State<LeadAddView> {
               //         data: _titles,
               //         value: widget.model?.title,
               //       ),
-              //       const SizedBox(height: 10),
-              //       const Text('Lead Source'),
-              //       const SizedBox(height: 5),
-              //       AppUtils.getDropdown(
-              //         '--Select--',
-              //         onChanged: (value) {
-              //           setState(() {
-              //             _leadsource = value;
-              //           });
-              //         },
-              //         data: _leadsources,
-              //         value: widget.model?.leadsource,
-              //       ),
+              const SizedBox(height: 10),
+              const Text('Lead Source'),
+              const SizedBox(height: 5),
+              AppUtils.getDropdown(
+                '--Select--',
+                onChanged: (value) {
+                  setState(() {
+                    _leadsource = value;
+                  });
+                },
+                data: _leadsources,
+                value: widget.model?.leadsource,
+              ),
               //       const SizedBox(height: 10),
               //       // const Text('Lead Status'),
               //       // const SizedBox(height: 5),
@@ -890,8 +960,8 @@ class _Forms extends State<LeadAddView> {
               //   ],
               // ),
               const SizedBox(
-                height: 10,
-              ),
+                  // height: 10,
+                  ),
               // Row(
               //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
               //   children: [
@@ -941,13 +1011,14 @@ class _Forms extends State<LeadAddView> {
                 height: 10,
               ),
 
-              const Text('Country'),
+              const Text('Address'),
               const SizedBox(
                 height: 5,
               ),
               AppUtils.getTextFormField(
-                'Enter Your Country',
-                initialValue: "India",
+                'Enter Your Address',
+                maxLines: 2,
+                initialValue: "",
                 onSaved: (country) {
                   _selectedCountry = country;
                 },
@@ -955,10 +1026,7 @@ class _Forms extends State<LeadAddView> {
               const SizedBox(
                 height: 10,
               ),
-              const Text('Description'),
-              const SizedBox(
-                height: 5,
-              ),
+
               // AppUtils.getTextFormField(
               //   'Enter description',
               //   initialValue: widget.model?.description,
@@ -981,41 +1049,49 @@ class _Forms extends State<LeadAddView> {
   }
 
   void onButtonPressed() {
-    print("_leadstatus::: ${_leadstatus}");
+    print("_leadstatus::: ${_leadstatus}    ${selectedTagList}");
+
+    // return;
+
     // ignore: prefer_typing_uninitialized_variables
     var userId;
     if (_addleadFormKey.currentState!.validate()) {
       _addleadFormKey.currentState!.save();
       userId = userMap.keys
           .firstWhere((k) => userMap[k] == _asignStaff, orElse: () => null);
-      LeadModel addleadModel = LeadModel(
-        firstname: _firstname?.trim(),
-        lastname: _lastname?.trim(),
-        email: _email?.trim(),
-        whatsappNumber: _whatsapnumber?.trim(),
-        // city: _city?.trim(),
-        // company: _company,
-        leadsource: _leadsource,
-        leadstatus: _leadstatus,
-        // salutation: _salutation,
-        ownerid: userId,
-        // industry: _industry,
-        // title: _title?.trim(),
-        // street: _street?.trim(),
-        // state: _selectedState?.trim(),
-        // country: _selectedCountry,
-        countryCode: selectedCountry,
-        // zipcode: _zipcode?.trim(),
-        // description: _description?.trim(),
-        ownername: _asignStaff,
-        // ownerid: "c3c74964-d091-4fa3-8d9e-fa041d9c0d40",
-        // paymentterms: _paymentterm,
-        // paymentmodel: _payment,
-        // amount: _amount,
-      );
+      // LeadModel addleadModel = LeadModel(
+      //     firstname: _firstname?.trim(),
+      //     lastname: _lastname?.trim(),
+      //     email: _email?.trim(),
+      //     whatsappNumber: _whatsapnumber?.trim(),
+      //     leadsource: _leadsource,
+      //     leadstatus: _leadstatus,
+      //     ownerid: userId,
+      //     countryCode: selectedCountry,
+      //     ownername: _asignStaff,
+      //     address: _selectedCountry?.trim());
+
+      Map body = {
+        "firstname": _firstname?.trim(),
+        "lastname": _lastname?.trim(),
+        "country_code": selectedCountry,
+        "whatsapp_number": _whatsapnumber?.trim(),
+        "email": _email?.trim(),
+        "dob": selectedDate,
+        "tag_names": selectedTagList,
+        "leadsource": _leadsource,
+        "leadstatus": _leadstatus,
+        "ownername": _asignStaff,
+        "ownerid": userId,
+        "address": _selectedCountry?.trim(),
+        "blocked": false
+      };
+
       AppUtils.onLoading(context, "Saving, please wait...");
 
-      _getleadData?.addlead(addleadModel).then((value) {
+      print("addleadModel:::::::::::::::::::::::  ${body}");
+
+      _getleadData?.addlead(body).then((value) {
         debug("value#### $value");
         Navigator.pop(context);
         Navigator.pop(context);
@@ -1175,5 +1251,28 @@ class _Forms extends State<LeadAddView> {
         AppUtils.getAlert(context, errorMessages, title: "Error Alert");
       });
     }
+  }
+
+  List tags = [];
+  var leadlistvm;
+  Future<void> getTags() async {
+    await Provider.of<LeadListViewModel>(context, listen: false)
+        .fetchLeadTags()
+        .then((onValue) {
+      tags = [];
+      leadlistvm = Provider.of<LeadListViewModel>(context, listen: false);
+
+      for (var viewModel in leadlistvm.viewModels) {
+        var leadmodel = viewModel.model;
+        if (leadmodel?.records != null) {
+          for (var record in leadmodel!.records!) {
+            tags.add(record);
+            tagsNameSet.add(record);
+            // allLeads.add(record);
+          }
+        }
+      }
+      setState(() {});
+    });
   }
 }

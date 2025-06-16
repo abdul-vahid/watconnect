@@ -183,6 +183,10 @@ abstract class AppConstants {
 // =========================group Api=========================
   static const String groupAPIPath = '/api/whatsapp/groups?status=';
 
+  static const String getAllTagsApi = '/api/whatsapp/tag';
+
+//================================================================================================================================================================================
+//=========================================================================================================================================================================================
   ///  Sales force api
   ///
 
@@ -201,23 +205,26 @@ abstract class AppConstants {
   static const String getToken =
       "https://test.salesforce.com/services/oauth2/token";
 
-  static const String sfGetTemplates =
-      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/templates?";
+  static const String sfGetTemplates = "${baseApi}watconnect/templates?";
 
   static const String sfDeleteChatHistory =
-      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/messages/delete?";
+      "${baseApi}watconnect/messages/delete?";
 
   static const String sfDeleteChatMsg =
-      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/messages/selectdMessageDelete?";
+      "${baseApi}watconnect/messages/selectdMessageDelete?";
 
   // static const String businessNumber = "918306524244";
 
   static const String sfSendTemplate =
-      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/messages?type=Template";
+      "${baseApi}watconnect/messages?type=Template";
 
-  static const String sfGetBusinessNumbs =
-      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/setting";
+  static const String sfGetBusinessNumbs = "${baseApi}watconnect/setting";
 
   static const String sfSetBusinessNumb =
-      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/watconnect/setting?phoneNumber=";
+      "${baseApi}watconnect/setting?phoneNumber=";
+
+  static const String sfGetCampaign = "${baseApi}watconnect/campaign?";
+
+  static const String sfGetCampaignHistory =
+      "${baseApi}watconnect/campaign/history?";
 }
