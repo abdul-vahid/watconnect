@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/sfCampaign_controller.dart';
 import 'package:whatsapp/salesforce/model/campaign_model.dart';
 import 'package:whatsapp/salesforce/screens/confige_listing_screen.dart';
+import 'package:whatsapp/salesforce/screens/sf_add_camp.dart';
+import 'package:whatsapp/salesforce/screens/sf_campaign_detail.dart';
 import 'package:whatsapp/utils/app_color.dart';
 
 class SfCampaignScreen extends StatefulWidget {
@@ -26,6 +30,29 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: CircleAvatar(
+              backgroundColor: AppColor.navBarIconColor,
+              child: IconButton(
+                icon: const Icon(
+                  FontAwesomeIcons.add,
+                  size: 25,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SfAddCampScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,
@@ -40,41 +67,43 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
         elevation: 5,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50.0),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: TextField(
-              controller: searchController,
-              // onChanged: ref.filterRecs,
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: 'Search...',
-                hintStyle: TextStyle(
-                  color: AppColor.textoriconColor.withOpacity(0.6),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.all(10),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.search,
-                      color: Color.fromARGB(255, 0, 0, 0),
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      // _showFilterBottomSheet(context);
-                    },
+          child: Consumer<SfcampaignController>(builder: (context, ref, child) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              child: TextField(
+                controller: searchController,
+                onChanged: ref.searchCamp,
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: 'Search...',
+                  hintStyle: TextStyle(
+                    color: AppColor.textoriconColor.withOpacity(0.6),
                   ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.all(10),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.search,
+                        color: Color.fromARGB(255, 0, 0, 0),
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        // _showFilterBottomSheet(context);
+                      },
+                    ),
+                  ),
+                  prefixIconConstraints: const BoxConstraints(minWidth: 40),
                 ),
-                prefixIconConstraints: const BoxConstraints(minWidth: 40),
               ),
-            ),
-          ),
+            );
+          }),
         ),
       ),
       body: RefreshIndicator(
@@ -107,24 +136,38 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
                         child: Text(
                           "No Campaigns Found..",
                           style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
                             child: Padding(
                               padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
-                              child: ListView.builder(
-                                itemCount: campController.sfCampaignList.length,
-                                itemBuilder: (context, index) {
-                                  return campListItem(
-                                      campController.sfCampaignList[index],
-                                      index + 1);
-                                },
+                                  const EdgeInsets.symmetric(horizontal: 12.0),
+                              child: Text(
+                                "${campController.sfCampaignList.length} Campaigns Available",
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
+                            ),
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              itemCount: campController.sfCampaignList.length,
+                              itemBuilder: (context, index) {
+                                return campListItem(
+                                  campController.sfCampaignList[index],
+                                  index + 1,
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -139,7 +182,6 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
     Color statusColor;
     statusColor = Colors.lightBlue.withOpacity(0.7);
     return InkWell(
-      onTap: () {},
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -165,7 +207,14 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
           child: InkWell(
             onTap: () async {
               showBlurOnlyLoaderDialog(context);
+              SfcampaignController campController =
+                  Provider.of(context, listen: false);
+              campController.setSelectedCampaign(sfCampaignList);
               Navigator.pop(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SfCampaignDetailScreen()));
             },
             child: Row(
               children: [
@@ -205,30 +254,38 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              sfCampaignList.status == null
-                                  ? SizedBox()
-                                  : Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: IntrinsicWidth(
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.blue,
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              "${sfCampaignList.status}",
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                        ),
+
+                              Text(
+                                "Start Time : ${campDate(sfCampaignList.startDateTime ?? "")}",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+
+                              // sfCampaignList.status == null
+                              //     ? SizedBox()
+                              //     :
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: IntrinsicWidth(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "${sfCampaignList.status ?? "Pending"}",
+                                        style: const TextStyle(
+                                            fontSize: 12, color: Colors.white),
                                       ),
-                                    )
+                                    ),
+                                  ),
+                                ),
+                              )
                             ],
                           ),
                         ),
@@ -243,4 +300,10 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
       ),
     );
   }
+}
+
+campDate(String startDateTime) {
+  DateTime dt = DateTime.parse(startDateTime);
+  String readable = DateFormat('MMMM d, y – h:mm a').format(dt);
+  return readable;
 }

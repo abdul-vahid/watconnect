@@ -1,5 +1,11 @@
 class SfCampaignModel {
   String? id;
+  String? totalRead;
+  String? totalFail;
+  String? whatsAppTemplate;
+  String? whatsAppCustomerNo;
+  String? whatsAppObjConfigration;
+  String? responseRate;
   String? status;
   String? createdDate;
   String? read;
@@ -15,7 +21,13 @@ class SfCampaignModel {
 
   SfCampaignModel({
     this.id,
+    this.totalRead,
+    this.responseRate,
+    this.totalFail,
+    this.whatsAppTemplate,
     this.status,
+    this.whatsAppObjConfigration,
+    this.whatsAppCustomerNo,
     this.createdDate,
     this.read,
     this.delivered,
@@ -32,6 +44,12 @@ class SfCampaignModel {
   factory SfCampaignModel.fromJson(Map<String, dynamic> json) {
     return SfCampaignModel(
       id: json['Id'],
+      responseRate: json['Response_Rate__c'],
+      totalFail: json['Total_Failed__c'],
+      totalRead: json['Total_Read__c'],
+      whatsAppTemplate: json['WhatsApp_Template__c'],
+      whatsAppObjConfigration: json['WhatsApp_Object_Configuration__c'],
+      whatsAppCustomerNo: json['WhatsApp_Customer_Number__c'],
       status: json['Status'],
       createdDate: json['Created_Date__c'],
       read: json['Read__c'],

@@ -81,7 +81,7 @@ class _CampaignListView extends State<CampaignListView> {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          modules.contains("Campaign")
+          modules.contains("Campaign") || modules.contains("Campaigns")
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: CircleAvatar(

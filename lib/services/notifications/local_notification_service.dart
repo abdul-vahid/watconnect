@@ -185,16 +185,25 @@ class LocalNotificationService {
     var leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
 
     for (var viewModel in leadlistvm.viewModels) {
-      debug("Found lead ID: ${viewModel.model.id}");
-      if (viewModel.model.id.toString() == leadId) {
-        matchedModel = viewModel.model;
-        break;
+      var leadmodel = viewModel.model;
+      print("leadmodel:::::   ::   ${leadmodel}");
+      print(
+          "leadmodel?.records:::::::::: ${leadmodel?.records}  ${leadmodel?.records.length}");
+      if (leadmodel?.records != null) {
+        for (var record in leadmodel!.records!) {
+          if (record.id.toString() == leadId) {
+            matchedModel = record;
+            break;
+          }
+        }
       }
     }
 
     if (matchedModel == null) {
       debug("No matching lead found for ID: $leadId");
       return;
+    } else {
+      print("model found::::::::::: ${matchedModel.firstname}");
     }
     print("From Page ::: 1");
     Navigator.push(

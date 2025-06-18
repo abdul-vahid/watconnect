@@ -129,7 +129,7 @@ class AppUtils {
         //   fontSize: 12,
         // ),
 
-        contentPadding: const EdgeInsets.fromLTRB(5.0, 10.0, 5.0, 10.0),
+        contentPadding: const EdgeInsets.fromLTRB(10.0, 10.0, 5.0, 10.0),
         focusedBorder: OutlineInputBorder(
           borderSide: const BorderSide(color: AppColor.navBarIconColor),
           borderRadius: BorderRadius.circular(8.0),

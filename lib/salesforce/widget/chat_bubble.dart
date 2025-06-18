@@ -10,10 +10,12 @@ class ChatBubble extends StatelessWidget {
   final SfChatHistoryModel item;
   final List<ButtonItem> buttons;
   final DateTime currentTime;
+  String tempBody;
 
-  const ChatBubble({
+  ChatBubble({
     super.key,
     required this.item,
+    required this.tempBody,
     required this.buttons,
     required this.currentTime,
   });
@@ -109,9 +111,9 @@ class ChatBubble extends StatelessWidget {
                                   ],
                                 )
                               : SizedBox(),
-                      if (item.templateBody?.isNotEmpty ?? false)
+                      if (tempBody.isNotEmpty)
                         Text(
-                          item.templateBody!,
+                          tempBody,
                           style: const TextStyle(fontSize: 16),
                         ),
                       if (item.message?.isNotEmpty ?? false)

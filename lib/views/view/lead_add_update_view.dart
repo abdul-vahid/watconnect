@@ -5,7 +5,7 @@ import 'package:multi_select_flutter/util/multi_select_item.dart';
 
 import 'package:provider/provider.dart';
 import 'package:whatsapp/models/get_user.dart';
-import 'package:whatsapp/models/tags_lsit_model.dart';
+import 'package:whatsapp/models/tags_list_model.dart';
 import 'package:whatsapp/view_models/get_user_vm.dart';
 import '../../models/lead_model.dart';
 import '../../models/user_data_model/user_data_model.dart';
@@ -312,6 +312,12 @@ class _Forms extends State<LeadAddView> {
                 'id': tag.id ?? '',
               })
           .toList();
+      _leadstatus = widget.model?.leadstatus ?? "";
+      _leadsource = widget.model?.leadsource ?? "";
+      print("widget.model?.address ::::::::::: ${widget.model?.address}");
+      _selectedCountry = widget.model?.address ?? "";
+      _asignStaff = widget.model?.ownername ?? "";
+      // userId = widget.model?.ownername??"";
     } else {
       leadStatus = _leadsstatus[0];
       _leadstatus = _leadsstatus[0];
@@ -1018,7 +1024,7 @@ class _Forms extends State<LeadAddView> {
               AppUtils.getTextFormField(
                 'Enter Your Address',
                 maxLines: 2,
-                initialValue: "",
+                initialValue: widget.model?.address,
                 onSaved: (country) {
                   _selectedCountry = country;
                 },
@@ -1201,55 +1207,82 @@ class _Forms extends State<LeadAddView> {
         // description: _description?.trim(),
         // amount: _amount,
       );
-      print("lelelelelel;eelelle=>>>${leadModel.toJson()}");
+
+      Map body = {
+        "id": widget.model?.id,
+        "firstname": _firstname?.trim(),
+        "lastname": _lastname?.trim(),
+        "country_code": selectedCountry,
+        "whatsapp_number": _whatsapnumber?.trim(),
+        "email": _email?.trim(),
+        "dob": selectedDate,
+        "tag_names": selectedTagList,
+        "leadsource": _leadsource,
+        "leadstatus": _leadstatus,
+        "ownername": _asignStaff,
+        "ownerid": userId,
+        "address": _selectedCountry?.trim(),
+        "blocked": false
+      };
+
+      print("lelelelelel;eelelle=>>>${body}");
       AppUtils.onLoading(context, "Updating, please wait...");
-      Provider.of<LeadListViewModel>(context, listen: false)
-          .update(id, leadModel)
-          .then((value) {
+
+      print("addleadModel:::::::::::::::::::::::  ${body}");
+
+      _getleadData?.updatelead(body, widget.model?.id ?? "").then((value) {
+        debug("value#### $value");
         // Navigator.pop(context);
-        // Future.delayed(Duration(milliseconds: 100), () {
-        //   Navigator.pop(context, true);
-        // });
-
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MultiProvider(
-              providers: [
-                ChangeNotifierProvider(
-                  create: (_) => LeadListViewModel(context),
-                ),
-              ],
-              child: const LeadListView(),
+        // Navigator.pop(context);
+        if (value.isNotEmpty) {
+          debug("value#### $value");
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MultiProvider(
+                providers: [
+                  ChangeNotifierProvider(
+                    create: (_) => LeadListViewModel(context),
+                  ),
+                ],
+                child: const LeadListView(),
+              ),
             ),
-          ),
-          (Route<dynamic> route) => route.isFirst,
-        );
-        // Navigator.pushAndRemoveUntil(
-        //   context,
-        //   MaterialPageRoute(
-        //       builder: (context) => MultiProvider(
-        //             providers: [
-        //               ChangeNotifierProvider(
-        //                   create: (_) => LeadListViewModel(context))
-        //             ],
-        //             child: const LeadListView(),
-        //           ))
-
-        // );
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   const SnackBar(
-        //     content: Text('Your record has been updated.'),
-        //     duration: Duration(seconds: 3),
-        //     backgroundColor: Colors.green,
-        //   ),
-        // );
+            (Route<dynamic> route) => route.isFirst,
+          );
+        } else {}
       }).catchError((error, stackTrace) {
-        List<String> errorMessages = AppUtils.getErrorMessages(error);
         Navigator.pop(context);
-
+        List<String> errorMessages = AppUtils.getErrorMessages(error);
+        print("errorMessages:::: ${errorMessages}");
         AppUtils.getAlert(context, errorMessages, title: "Error Alert");
       });
+
+      // Provider.of<LeadListViewModel>(context, listen: false)
+      //     .update(id, leadModel)
+      //     .then((value) {
+
+      //   Navigator.pushAndRemoveUntil(
+      //     context,
+      //     MaterialPageRoute(
+      //       builder: (context) => MultiProvider(
+      //         providers: [
+      //           ChangeNotifierProvider(
+      //             create: (_) => LeadListViewModel(context),
+      //           ),
+      //         ],
+      //         child: const LeadListView(),
+      //       ),
+      //     ),
+      //     (Route<dynamic> route) => route.isFirst,
+      //   );
+
+      // }).catchError((error, stackTrace) {
+      //   List<String> errorMessages = AppUtils.getErrorMessages(error);
+      //   Navigator.pop(context);
+
+      //   AppUtils.getAlert(context, errorMessages, title: "Error Alert");
+      // });
     }
   }
 

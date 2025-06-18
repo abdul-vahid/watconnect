@@ -3,17 +3,23 @@ import 'dart:convert';
 class Record {
   String? whatsappNumber;
   String? unreadMsgCount;
+  String? name;
+  String? parentId;
 
-  Record({this.whatsappNumber, this.unreadMsgCount});
+  Record({this.whatsappNumber, this.unreadMsgCount, this.name, this.parentId});
 
   factory Record.fromMap(Map<String, dynamic> data) => Record(
         whatsappNumber: data['whatsapp_number'] as String?,
         unreadMsgCount: data['unread_msg_count'] as String?,
+        name: data['name'] as String?,
+        parentId: data['parent_id'] as String?,
       );
 
   Map<String, dynamic> toMap() => {
         'whatsapp_number': whatsappNumber,
         'unread_msg_count': unreadMsgCount,
+        'name': name,
+        'parent_id': parentId
       };
 
   /// `dart:convert`

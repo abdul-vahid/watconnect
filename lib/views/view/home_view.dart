@@ -15,7 +15,7 @@ import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datu
 import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/model/business_number_model.dart';
-import 'package:whatsapp/salesforce/screens/sf_campaign_screen.dart';
+import 'package:whatsapp/salesforce/screens/sf_campaign_listing_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_darwer.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
@@ -135,22 +135,10 @@ class _HomeViewState extends State<HomeView> with RouteAware {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    routeObserver.subscribe(this, ModalRoute.of(context)!);
-  }
-
-  @override
   void dispose() {
     disconnectSocket();
     routeObserver.unsubscribe(this);
     super.dispose();
-  }
-
-  @override
-  void didPopNext() {
-    // Called when coming back to this screen
-    connectSocket();
   }
 
   // @override
@@ -187,26 +175,6 @@ class _HomeViewState extends State<HomeView> with RouteAware {
   // }
 
   /// Called when navigating away from HomeView
-  @override
-  void didPushNext() {
-    super.didPushNext();
-    print(" didPushNext - Leaving HomeView");
-    _onHomeHidden();
-  }
-
-  void _onHomeVisible() {
-    if (!_isVisible) {
-      _isVisible = true;
-      connectSocket();
-    }
-  }
-
-  void _onHomeHidden() {
-    if (_isVisible) {
-      _isVisible = false;
-      disconnectSocket();
-    }
-  }
 
   List<String> modules = [];
   Future<void> getAvailableModules() async {
@@ -1093,10 +1061,10 @@ class _HomeViewState extends State<HomeView> with RouteAware {
       // print("Token: $token");
 
       socket = IO.io(
-        'https://admin.watconnect.com',
+        'https://sandbox.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
-            .setPath('/ibs/socket.io')
+            .setPath('/swp/socket.io')
             .setExtraHeaders({'Authorization': 'Bearer $token'})
             .build(),
       );

@@ -213,8 +213,6 @@ abstract class AppConstants {
   static const String sfDeleteChatMsg =
       "${baseApi}watconnect/messages/selectdMessageDelete?";
 
-  // static const String businessNumber = "918306524244";
-
   static const String sfSendTemplate =
       "${baseApi}watconnect/messages?type=Template";
 
@@ -227,4 +225,6 @@ abstract class AppConstants {
 
   static const String sfGetCampaignHistory =
       "${baseApi}watconnect/campaign/history?";
+
+  static const String sfAddCampaign = "${baseApi}watconnect/campaign";
 }

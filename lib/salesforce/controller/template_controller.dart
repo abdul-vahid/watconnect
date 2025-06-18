@@ -23,6 +23,12 @@ class TemplateController extends ChangeNotifier {
 
   String selectedTempName = "Select";
 
+  String selectedTempCategory = "ALL";
+  setSeletcedTempCate(String tempCate) {
+    selectedTempCategory = tempCate;
+    notify();
+  }
+
   setSelectedTempName(String name) {
     selectedTempName = name;
     print("seleting temp and temp name:::: ${selectedTempName}");
@@ -48,6 +54,29 @@ class TemplateController extends ChangeNotifier {
 
   bool getTempLoader = false;
 
+  TextEditingController campTempController = TextEditingController();
+
+  resetController() {
+    campTempController.clear();
+    notify();
+  }
+
+  List<String> tempParamsList = [];
+  setTempParams(List<String> paramList) {
+    tempParamsList = paramList;
+    notify();
+  }
+
+  resetTempParamList() {
+    tempParamsList.clear();
+    notify();
+  }
+
+  setCampTempController(String val) {
+    campTempController.text = val;
+    notify();
+  }
+
   setGetTempLoader(bool val) {
     getTempLoader = val;
     notify();
@@ -64,7 +93,7 @@ class TemplateController extends ChangeNotifier {
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
       String apiUrl =
-          "${AppConstants.sfGetTemplates}businessNumber=${busNum}&category=$category";
+          "${AppConstants.sfGetTemplates}businessnumber=${busNum}&category=$category";
       final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
 
       final response = await http.get(
@@ -124,21 +153,33 @@ class TemplateController extends ChangeNotifier {
       String apiUrl = "${AppConstants.sfSendTemplate}";
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-
-      Map body = {
-        "businessNumber": "918306524244",
-        "userWhatsAppNumber": usrNumber,
-        "messageData": {
-          "category": selectedTemplate?.category ?? "",
-          "templateId": tempId
-        },
-        "metaTemplateId": tempId, // templateId__c
-      };
-
-      if (params.isNotEmpty) {
-        var param = await buildParamsJson(params);
-        body['params'] = param;
-        body['messageBody'] = null;
+      final busNum =
+          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+      Map body = {};
+      var paramToSend = await buildParamsJson(params);
+      if (params.isEmpty) {
+        body = {
+          "businessnumber": busNum,
+          "userWhatsAppNumber": usrNumber,
+          "messageData": {
+            "category": selectedTemplate?.category ?? "",
+            "templateId": tempId,
+          },
+          "metaTemplateId": tempId, // templateId__c
+        };
+      } else {
+        body = {
+          "businessnumber": busNum,
+          "userWhatsAppNumber": usrNumber,
+          "messageData": {
+            "category": selectedTemplate?.category ?? "",
+            "templateId": tempId,
+            "value": paramToSend,
+          },
+          "metaTemplateId": tempId,
+          "params": paramToSend,
+          "messageBody": paramToSend
+        };
       }
 
       final response = await http.post(

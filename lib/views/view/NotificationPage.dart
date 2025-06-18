@@ -111,7 +111,7 @@ class _NotificationPageState extends State<NotificationPage> {
                             ),
                           ),
                         ),
-                        title: Text(record.whatsappNumber ?? "No Number"),
+                        title: Text(record.name ?? record.whatsappNumber ?? ""),
                         subtitle: Text(
                             "Unread Count: ${record.unreadMsgCount ?? "0"}"),
                         trailing: Row(

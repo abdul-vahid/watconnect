@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -13,8 +14,12 @@ import 'package:whatsapp/salesforce/widget/chat_buttons.dart';
 import 'package:whatsapp/salesforce/widget/chat_date_lable.dart';
 import 'package:whatsapp/salesforce/widget/custom_bottom_sheet.dart';
 import 'package:whatsapp/salesforce/widget/custom_drop_down.dart';
+import 'package:whatsapp/salesforce/widget/header_type_preview.dart';
+import 'package:whatsapp/salesforce/widget/pick_media_buttons.dart';
 import 'package:whatsapp/salesforce/widget/sf_chat_appbar.dart';
 import 'package:whatsapp/utils/app_color.dart';
+
+final GlobalKey<FormState> _addTemplateFormKey = GlobalKey<FormState>();
 
 class SfMessageChatScreen extends StatefulWidget {
   const SfMessageChatScreen({super.key});
@@ -26,7 +31,7 @@ class SfMessageChatScreen extends StatefulWidget {
 class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   TextEditingController msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  String selectedCategory = "ALL";
+
   String userNumer = "";
 
   @override
@@ -123,6 +128,16 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                           }
                         }
 
+                        String tempBody = "";
+
+                        if (item.templateParams!.isEmpty) {
+                          tempBody = item.templateBody ?? "";
+                        } else {
+                          tempBody = replaceTemplateParams(
+                              item.templateBody ?? "",
+                              item.templateParams ?? "");
+                        }
+
                         List<ButtonItem> buttons =
                             (item.button?.isNotEmpty ?? false)
                                 ? item.getParsedButtons()
@@ -131,7 +146,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                         final hasContent =
                             (item.message?.isNotEmpty ?? false) ||
                                 (item.templateName?.isNotEmpty ?? false) ||
-                                (item.templateBody?.isNotEmpty ?? false) ||
+                                (tempBody.isNotEmpty) ||
                                 (item.publicUrl?.isNotEmpty ?? false);
 
                         if (!hasContent) return const SizedBox();
@@ -147,6 +162,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                                     ? Color(0xffE6E6E6)
                                     : Colors.transparent,
                                 child: ChatBubble(
+                                  tempBody: tempBody,
                                   item: item,
                                   buttons: buttons,
                                   currentTime: currentTime,
@@ -193,88 +209,6 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  void bottomSheetShow() {
-    return showCommonBottomSheet(
-        context: context,
-        title: "Category And Templete",
-        col: Consumer<TemplateController>(builder: (context, tempc, child) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CustomDropdown(
-                items: const [
-                  'ALL',
-                  'UTILITY',
-                  'MARKETING',
-                ],
-                selectedValue: selectedCategory,
-                onChanged: (newVal) async {
-                  if (newVal != null) {
-                    setState(() {
-                      selectedCategory = newVal;
-                      tempc.setSelectedTempName("Select");
-                    });
-                    tempc.setSelectedTemp(null);
-                    await tempc.getTemplateApiCall(category: selectedCategory);
-                  }
-                },
-              ),
-              const SizedBox(
-                height: 12,
-              ),
-              CustomDropdown(
-                items: tempc.templateNames,
-                selectedValue: tempc.selectedTempName,
-                enabled: !tempc.getTempLoader,
-                onChanged: (newVal) {
-                  if (newVal != null) {
-                    setState(() {
-                      tempc.setSelectedTempName(newVal);
-                      print("NEW VAL::::: ${tempc.selectedTempName}");
-                    });
-                  }
-                },
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              InkWell(
-                onTap: () {
-                  if (tempc.selectedTemplate == null) {
-                    EasyLoading.showToast("Select Template to continue");
-                  } else {
-                    Navigator.pop(context);
-                    reviewBottomSheetShow();
-                  }
-                },
-                child: IntrinsicWidth(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColor.navBarIconColor,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
-                      child: Center(
-                        child: Text(
-                          "Review Template",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 40,
-              ),
-            ],
-          );
-        }));
-  }
-
   sendMsgRow() {
     ChatMessageController chatMsgController =
         Provider.of(context, listen: false);
@@ -308,11 +242,12 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                 } else {
                   tempCtrl.setSelectedTemp(null);
                   tempCtrl.setSelectedTempName("Select");
-                  setState(() {
-                    selectedCategory = "ALL";
-                  });
-                  await tempCtrl.getTemplateApiCall(category: selectedCategory);
-                  bottomSheetShow();
+
+                  // selectedCategory = "ALL";
+                  tempCtrl.setSeletcedTempCate("ALL");
+                  await tempCtrl.getTemplateApiCall(
+                      category: tempCtrl.selectedTempCategory);
+                  TemplatebottomSheetShow(context);
                 }
               },
               child: Container(
@@ -366,38 +301,140 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   }
 
   getUserNumer() {
-    DashBoardController dbController = Provider.of(context, listen: false);
     ChatMessageController chatMsgController =
         Provider.of(context, listen: false);
 
     chatMsgController.resetMsgDeleteList();
+    DashBoardController dbController = Provider.of(context, listen: false);
+  }
+}
 
-    var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
-    var code = dbController.selectedContactInfo?.countryCode ?? "91";
-    setState(() {
-      userNumer = "${code}${usrNumber}";
-    });
+String replaceTemplateParams(String templateBody, String paramsJsonString) {
+  try {
+    final List<dynamic> paramsList = paramsJsonString.isNotEmpty
+        ? List<Map<String, dynamic>>.from((jsonDecode(paramsJsonString) as List)
+            .map((e) => e as Map<String, dynamic>))
+        : [];
+
+    for (var param in paramsList) {
+      final name = param['name']?.toString() ?? '';
+      final value = param['value']?.toString() ?? '';
+      if (name.isNotEmpty) {
+        templateBody = templateBody.replaceAll(name, value);
+      }
+    }
+  } catch (e) {
+    print('Error replacing template params: $e');
   }
 
-  void reviewBottomSheetShow() {
-    return showCommonBottomSheet(
+  return templateBody;
+}
+
+void TemplatebottomSheetShow(context, {bool isFromCamp = false}) {
+  return showCommonBottomSheet(
       context: context,
-      title: "Review Template",
-      col: Consumer<TemplateController>(
-        builder: (context, tempc, child) {
-          var templateData = tempc.selectedTemplate;
+      title: "Category And Templete",
+      col: Consumer<TemplateController>(builder: (context, tempc, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CustomDropdown(
+              items: const [
+                'ALL',
+                'UTILITY',
+                'MARKETING',
+              ],
+              selectedValue: tempc.selectedTempCategory,
+              onChanged: (newVal) async {
+                if (newVal != null) {
+                  tempc.setSeletcedTempCate(newVal);
+                  // selectedCategory = newVal;
+                  tempc.setSelectedTempName("Select");
 
-          // Fresh list of controllers every time
-          List<TextEditingController> controllers = List.generate(
-            templateData?.storedParameterValues?.length ?? 0,
-            (_) => TextEditingController(),
-          );
+                  tempc.setSelectedTemp(null);
+                  await tempc.getTemplateApiCall(
+                    category: tempc.selectedTempCategory,
+                  );
+                }
+              },
+            ),
+            const SizedBox(
+              height: 12,
+            ),
+            CustomDropdown(
+              items: tempc.templateNames,
+              selectedValue: tempc.selectedTempName,
+              enabled: !tempc.getTempLoader,
+              onChanged: (newVal) {
+                if (newVal != null) {
+                  tempc.setSelectedTempName(newVal);
+                  print("NEW VAL::::: ${tempc.selectedTempName}");
+                }
+              },
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            InkWell(
+              onTap: () {
+                if (tempc.selectedTemplate == null) {
+                  EasyLoading.showToast("Select Template to continue");
+                } else {
+                  Navigator.pop(context);
+                  reviewBottomSheetShow(context, fromCamp: isFromCamp);
+                }
+              },
+              child: IntrinsicWidth(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColor.navBarIconColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
+                    child: Center(
+                      child: Text(
+                        "Review Template",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 40,
+            ),
+          ],
+        );
+      }));
+}
 
-          List<ButtonItem> buttons = (templateData?.button?.isNotEmpty ?? false)
-              ? templateData!.getParsedButtons()
-              : [];
+void reviewBottomSheetShow(context, {bool fromCamp = false}) {
+  return showCommonBottomSheet(
+    context: context,
+    title: "Review Template",
+    col: Consumer<TemplateController>(
+      builder: (context, tempc, child) {
+        var templateData = tempc.selectedTemplate;
 
-          return Center(
+        // Fresh list of controllers every time
+        List<TextEditingController> controllers = List.generate(
+          templateData?.storedParameterValues?.length ?? 0,
+          (_) => TextEditingController(),
+        );
+
+        List<ButtonItem> buttons = (templateData?.button?.isNotEmpty ?? false)
+            ? templateData!.getParsedButtons()
+            : [];
+
+        String headerType = templateData?.headerType ?? "";
+
+        return Center(
+          child: Form(
+            key: _addTemplateFormKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -418,7 +455,13 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                     controllers.length,
                     (index) => Padding(
                       padding: const EdgeInsets.only(bottom: 12.0),
-                      child: TextField(
+                      child: TextFormField(
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please provide Placeholder value';
+                          }
+                          return null;
+                        },
                         controller: controllers[index],
                         decoration: InputDecoration(
                           labelText: 'Placeholder ${index + 1}',
@@ -445,6 +488,12 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (headerType == "VIDEO" ||
+                            headerType == "IMAGE" ||
+                            headerType == "DOCUMENT")
+                          HeaderTypePreview(
+                            headerType: headerType,
+                          ),
                         if (templateData?.headerText?.isNotEmpty ?? false)
                           Text(templateData!.headerText!),
                         const SizedBox(height: 5),
@@ -457,6 +506,21 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                         if (templateData?.footer?.isNotEmpty ?? false)
                           Text(templateData!.footer!),
                         if (buttons.isNotEmpty) ChatButtons(buttons: buttons),
+                        if (headerType == "IMAGE")
+                          PickMediaButton(
+                            label: "Pick Image",
+                            onTap: () {},
+                          )
+                        else if (headerType == "VIDEO")
+                          PickMediaButton(
+                            label: "Pick Video",
+                            onTap: () {},
+                          )
+                        else if (headerType == "DOCUMENT")
+                          PickMediaButton(
+                            label: "Pick Document",
+                            onTap: () {},
+                          )
                       ],
                     ),
                   ),
@@ -466,20 +530,16 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                   padding: const EdgeInsets.only(top: 10.0),
                   child: InkWell(
                     onTap: () {
-                      if (tempc.sendTempLoader) {
-                      } else {
-                        List<String> userInputs =
-                            controllers.map((e) => e.text.trim()).toList();
-                        print("User Inputs: $userInputs");
-
-                        tempc
-                            .sendTemplateApiCall(
-                                tempId: templateData?.templateId ?? "",
-                                usrNumber: userNumer,
-                                params: userInputs)
-                            .then((onValue) {
-                          Navigator.pop(context);
-                        });
+                      if (_addTemplateFormKey.currentState!.validate()) {
+                        if (tempc.sendTempLoader) {
+                        } else {
+                          if (fromCamp) {
+                            tempc.resetTempParamList();
+                            sendCampTemp(context, controllers);
+                          } else {
+                            sendChatTemp(context, controllers);
+                          }
+                        }
                       }
                     },
                     child: IntrinsicWidth(
@@ -519,9 +579,48 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                 const SizedBox(height: 40),
               ],
             ),
-          );
-        },
-      ),
-    );
-  }
+          ),
+        );
+      },
+    ),
+  );
+}
+
+void sendChatTemp(context, List<TextEditingController> controllers) {
+  TemplateController tempc = Provider.of(context, listen: false);
+  var templateData = tempc.selectedTemplate;
+  DashBoardController dbController = Provider.of(context, listen: false);
+
+  var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
+  var code = dbController.selectedContactInfo?.countryCode ?? "91";
+  String userNumer = "${code}${usrNumber}";
+  List<String> userInputs = controllers.map((e) => e.text.trim()).toList();
+  print("User Inputs: $userInputs");
+
+  tempc
+      .sendTemplateApiCall(
+          tempId: templateData?.templateId ?? "",
+          usrNumber: userNumer,
+          params: userInputs)
+      .then((onValue) {
+    Navigator.pop(context);
+  });
+}
+
+void sendCampTemp(context, List<TextEditingController> controllers) {
+  Navigator.pop(context);
+  TemplateController tempc = Provider.of(context, listen: false);
+  List<String> userInputs = controllers.map((e) => e.text.trim()).toList();
+  tempc.setTempParams(userInputs);
+  tempc.setCampTempController(tempc.selectedTempName);
+
+  // TemplateController tempc = Provider.of(context, listen: false);
+  // var templateData = tempc.selectedTemplate;
+  // DashBoardController dbController = Provider.of(context, listen: false);
+
+  // var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
+  // var code = dbController.selectedContactInfo?.countryCode ?? "91";
+  // String userNumer = "${code}${usrNumber}";
+  // List<String> userInputs = controllers.map((e) => e.text.trim()).toList();
+  // print("User Inputs: $userInputs");
 }

@@ -220,27 +220,28 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
           //   },
           // ),
 
-          Divider(),
+          // Divider(),
 
-          // modules.contains("Tag") || modules.contains("Tags")
-          //     ? Divider()
-          //     : SizedBox(),
-          // modules.contains("Tag") || modules.contains("Tag")
-          //     ?
-          ListTile(
-            leading: Icon(
-              FontAwesomeIcons.tags,
-              color: AppColor.navBarIconColor,
-            ),
-            title: Text(
-              'Tags',
-            ),
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => TagsListView()));
-            },
-          ),
-          // : SizedBox(),
+          modules.contains("Tag") || modules.contains("Tags")
+              ? Divider()
+              : SizedBox(),
+          modules.contains("Tags") || modules.contains("Tag")
+              ? ListTile(
+                  leading: Icon(
+                    FontAwesomeIcons.tags,
+                    color: AppColor.navBarIconColor,
+                  ),
+                  title: Text(
+                    'Tags',
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => TagsListView()));
+                  },
+                )
+              : SizedBox(),
 
           Divider(),
           ListTile(

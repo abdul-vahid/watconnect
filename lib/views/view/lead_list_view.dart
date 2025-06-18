@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart'
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
+import 'package:whatsapp/salesforce/screens/sf_dashboard.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
 import '../../models/lead_model.dart';
@@ -171,10 +172,16 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           ),
         ],
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back,
-              color: Color.fromARGB(255, 255, 255, 255)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+            icon: const Icon(Icons.arrow_back,
+                color: Color.fromARGB(255, 255, 255, 255)),
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const FooterNavbarPage()),
+                (route) => false, // remove all previous routes
+              );
+            }),
         automaticallyImplyLeading: false,
         title: const Text(
           'Leads',
@@ -860,7 +867,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       // print("Token: $token");
 
       socket = IO.io(
-        'https://admin.watconnect.com',
+        'https://sandbox.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .setPath('/swp/socket.io')

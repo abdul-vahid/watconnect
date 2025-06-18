@@ -153,7 +153,7 @@ class ChatMessageController extends ChangeNotifier {
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
       String apiUrl =
-          "${AppConstants.sfDeleteChatHistory}businessNumber=${busNum}&whatsAppNumber=${wpNum}";
+          "${AppConstants.sfDeleteChatHistory}businessnumber=${busNum}&whatsAppNumber=${wpNum}";
 
       final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
 
@@ -208,7 +208,7 @@ class ChatMessageController extends ChangeNotifier {
       String ids = msgDeleteList.join(",");
 
       String apiUrl =
-          "${AppConstants.sfDeleteChatMsg}businessNumber=${busNum}&whatsAppNumber=${wpNum}&metaMessageId=$ids";
+          "${AppConstants.sfDeleteChatMsg}businessnumber=${busNum}&whatsAppNumber=${wpNum}&metaMessageId=$ids";
 
       final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
 

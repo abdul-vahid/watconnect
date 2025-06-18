@@ -3,6 +3,7 @@ import 'dart:convert';
 class SfChatHistoryModel {
   String? name;
   String? button;
+  String? templateParams;
   String? templateBody;
   String? templateName;
   String? messageId;
@@ -19,6 +20,7 @@ class SfChatHistoryModel {
       {this.templateBody,
       this.button,
       this.templateName,
+      this.templateParams,
       this.messageId,
       this.createdDate,
       this.name,
@@ -35,6 +37,7 @@ class SfChatHistoryModel {
         name: json['Name'] ?? "",
         button: json['button'] ?? "",
         templateBody: json['Tempalate_Body'] ?? "",
+        templateParams: json["Template_Params__r.Params_value__c"] ?? "",
         templateName: json['Tempalate_Name'] ?? "",
         messageId: json['Meta_Message_Id__c'] ?? "",
         createdDate: json['CreatedDate'] ?? "",

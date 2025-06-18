@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:whatsapp/models/recent_chat_model.dart';
-import 'package:whatsapp/models/tags_lsit_model.dart';
+import 'package:whatsapp/models/tags_list_model.dart';
 import '../core/models/base_list_view_model.dart';
 import '../models/lead_model.dart';
 import '../utils/app_constants.dart';
@@ -47,6 +47,17 @@ class LeadListViewModel extends BaseListViewModel {
     print("urll=>$url");
     String jsonString = jsonEncode(addLeadBody);
     var result = await post(url: url, body: jsonString);
+    print("result=>$result");
+    return result;
+  }
+
+  Future<dynamic> updatelead(Map addLeadBody, String leadId) async {
+    print("working.....");
+    String url = AppUtils.getUrl(AppConstants.leadAPIPath);
+    String apiUrl = "${url}/${leadId}";
+    print("urll=>$url");
+    String jsonString = jsonEncode(addLeadBody);
+    var result = await put(url: apiUrl, body: jsonString);
     print("result=>$result");
     return result;
   }
