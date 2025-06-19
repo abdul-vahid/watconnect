@@ -9,6 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
 import 'package:whatsapp/models/user_model/user_model.dart';
 import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/screens/sf_profile_screen.dart';
+import 'package:whatsapp/salesforce/screens/sf_recent_chat_screen.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/views/view/recent_chats_screen.dart';
 
@@ -146,14 +149,16 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       );
   @override
   Widget build(BuildContext context) {
+    DashBoardController drProvider = Provider.of(context, listen: false);
+
     final _pageOptions = [
       HomeView(),
-      ProfileView(),
+      drProvider.fromSalesForce ? SfProfileScreen() : ProfileView(),
       if (userModelData?.userrole == "ADMIN") const UserListView(),
       // const Whtsapphone(),
-      const RecentChatView(),
+      drProvider.fromSalesForce ? SfRecentChatScreen() : RecentChatView(),
     ];
-    print("dsfffffffffffffffffffffffffff=>${userModelData?.userrole}");
+    // print("dsfffffffffffffffffffffffffff=>${userModelData?.userrole}");
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(

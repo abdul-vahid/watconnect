@@ -87,95 +87,89 @@ class _SfCampaignDetailScreenState extends State<SfCampaignDetailScreen> {
               child: Consumer<SfcampaignController>(
                   builder: (context, campController, child) {
                 var selectedCampData = campController.selectedCampaign;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            spreadRadius: 2,
-                            blurRadius: 7,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        spreadRadius: 2,
+                        blurRadius: 7,
+                        offset: const Offset(0, 4),
                       ),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 15),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 15),
 
-                          _buildRow("Campaign Name",
-                              value: selectedCampData?.name ?? ""),
+                      buildRow("Campaign Name",
+                          value: selectedCampData?.name ?? ""),
 
-                          _buildRow("Campaign Status",
-                              value: selectedCampData?.status ?? ""),
+                      buildRow("Campaign Status",
+                          value: selectedCampData?.status ?? ""),
 
-                          // _buildRow(
-                          //   "Campaign Type",
-                          // ),
+                      // _buildRow(
+                      //   "Campaign Type",
+                      // ),
 
-                          _buildRow("Template Name",
-                              value: "${selectedCampData?.templateName ?? ""}"),
+                      buildRow("Template Name",
+                          value: "${selectedCampData?.templateName ?? ""}"),
 
-                          _buildRow("Business Number",
-                              value: selectedCampData?.bussinessNumber ?? ""),
+                      buildRow("Business Number",
+                          value: selectedCampData?.bussinessNumber ?? ""),
 
-                          _buildRow(
-                            "Time",
-                            value:
-                                "${campDate(selectedCampData?.startDateTime ?? "")}",
-                          ),
-
-                          _buildRow(
-                            "Sent",
-                            value: selectedCampData?.sent ?? "",
-                          ),
-
-                          _buildRow(
-                            "Delivered",
-                            value: selectedCampData?.delivered ?? "",
-                          ),
-
-                          _buildRow(
-                            "Read",
-                            value: selectedCampData?.read ?? "-",
-                          ),
-
-                          _buildRow(
-                            "Total Failed",
-                            value: selectedCampData?.totalFail ?? "-",
-                          ),
-
-                          _buildRow(
-                            "Total Delivered",
-                            value: selectedCampData?.totalDelivered ?? "",
-                          ),
-
-                          _buildRow(
-                            "Total Read",
-                            value: selectedCampData?.totalRead ?? "-",
-                          ),
-                          _buildRow(
-                            "Total Response",
-                            value: selectedCampData?.totalResponse ?? "-",
-                          ),
-
-                          _buildRow(
-                            "Response Rate",
-                            value: selectedCampData?.responseRate ?? "-",
-                          ),
-
-                          // const Divider(),
-                          const SizedBox(height: 15),
-                          // _messageHistoryRow(),
-                        ],
+                      buildRow(
+                        "Time",
+                        value:
+                            "${campDate(selectedCampData?.startDateTime ?? "")}",
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+
+                      buildRow(
+                        "Sent",
+                        value: selectedCampData?.sent ?? "",
+                      ),
+
+                      buildRow(
+                        "Delivered",
+                        value: selectedCampData?.delivered ?? "",
+                      ),
+
+                      buildRow(
+                        "Read",
+                        value: selectedCampData?.read ?? "-",
+                      ),
+
+                      buildRow(
+                        "Total Failed",
+                        value: selectedCampData?.totalFail ?? "-",
+                      ),
+
+                      buildRow(
+                        "Total Delivered",
+                        value: selectedCampData?.totalDelivered ?? "",
+                      ),
+
+                      buildRow(
+                        "Total Read",
+                        value: selectedCampData?.totalRead ?? "-",
+                      ),
+                      buildRow(
+                        "Total Response",
+                        value: selectedCampData?.totalResponse ?? "-",
+                      ),
+
+                      buildRow(
+                        "Response Rate",
+                        value: selectedCampData?.responseRate ?? "-",
+                      ),
+
+                      // const Divider(),
+                      const SizedBox(height: 15),
+                      // _messageHistoryRow(),
+                    ],
+                  ),
                 );
               }),
             ),
@@ -184,7 +178,7 @@ class _SfCampaignDetailScreenState extends State<SfCampaignDetailScreen> {
   }
 }
 
-Widget _buildRow(String label, {dynamic value = ""}) {
+Widget buildRow(String label, {dynamic value = ""}) {
   String displayValue = "";
 
   if (value is List) {

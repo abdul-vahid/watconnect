@@ -123,14 +123,20 @@ class _HomeViewState extends State<HomeView> with RouteAware {
   @override
   void initState() {
     DashBoardController drProvider = Provider.of(context, listen: false);
-    drProvider.drawerApiCall();
-    _tooltipBehavior = TooltipBehavior(enable: true);
-    NotificationUtil.registerToken();
-    getAvailableModules();
-    getPhoneNumber();
-    _getUnreadCount();
-    fetch();
-    connectSocket();
+
+    if (drProvider.fromSalesForce) {
+      drProvider.drawerApiCall();
+      drProvider.getProfileApiCall();
+    } else {
+      _tooltipBehavior = TooltipBehavior(enable: true);
+      NotificationUtil.registerToken();
+      getAvailableModules();
+      getPhoneNumber();
+      _getUnreadCount();
+      fetch();
+      connectSocket();
+    }
+
     super.initState();
   }
 
@@ -317,7 +323,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
       CampaignCountModel campmodel = viewModel.model;
       campaignCount = campmodel.result?.pending;
     }
-    print("cammma=>${campaignCount}");
+    // print("cammma=>${campaignCount}");
 
     for (var viewModel in templateVM!.viewModels) {
       TemplateModel tempmodel = viewModel.model;
