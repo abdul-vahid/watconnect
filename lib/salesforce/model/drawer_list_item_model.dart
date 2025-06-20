@@ -4,13 +4,15 @@ class SfDrawerItemModel {
   String? name;
   String? id;
   String? lastMsg;
+  int? unreadCount;
 
   SfDrawerItemModel(
       {this.countryCode,
       this.whatsappNumber,
       this.name,
       this.id,
-      this.lastMsg});
+      this.lastMsg,
+      this.unreadCount});
 
   factory SfDrawerItemModel.fromJson(Map<String, dynamic> json) {
     return SfDrawerItemModel(
@@ -18,6 +20,7 @@ class SfDrawerItemModel {
         whatsappNumber: json['whatsapp_number'] ?? "",
         name: json['name'] ?? "",
         id: json['id'],
-        lastMsg: json['last_message']);
+        lastMsg: json['last_message'],
+        unreadCount: json['unread_count']);
   }
 }

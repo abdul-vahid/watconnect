@@ -6,7 +6,7 @@ class SfProfileModel {
   String? phone;
   String? email;
   String? name;
-  String? id;
+  String? userId;
 
   SfProfileModel({
     this.isActive,
@@ -16,7 +16,7 @@ class SfProfileModel {
     this.phone,
     this.email,
     this.name,
-    this.id,
+    this.userId,
   });
 
   factory SfProfileModel.fromJson(Map<String, dynamic> json) {
@@ -28,7 +28,7 @@ class SfProfileModel {
       phone: json['Phone'] ?? "",
       email: json['Email'] ?? "",
       name: json['Name'] ?? "",
-      id: json['Id'] ?? "",
+      userId: json['Id'] ?? "",
     );
   }
 
@@ -41,7 +41,7 @@ class SfProfileModel {
       'Phone': phone,
       'Email': email,
       'Name': name,
-      'Id': id,
+      'Id': userId,
     };
   }
 }

@@ -4,7 +4,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/main.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/model/business_number_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 
@@ -85,6 +88,9 @@ class BusinessNumberController extends ChangeNotifier {
         prefs.setString(SharedPrefsConstants.sfBusinessNumber, busNumber);
         EasyLoading.showToast("Business Number set Successfully");
         getBusinessNumberApiCall();
+        DashBoardController dbController =
+            Provider.of(navigatorKey.currentContext!, listen: false);
+        dbController.getDasBoardReportApiCall();
       } else {
         log("send template API failed [${response.statusCode}]: ${response.body}");
       }

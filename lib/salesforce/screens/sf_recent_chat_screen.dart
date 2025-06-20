@@ -155,6 +155,7 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
               )
                   .then((onValue) {
                 Navigator.pop(context);
+                dbProvider.resentUnreadCountApiCall(phNum);
               });
               Navigator.push(
                   context,
@@ -186,37 +187,56 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 9,
+                              child: Text(
                                 "${drawerListItem.name}",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Text(
-                                "${drawerListItem.lastMsg ?? ""} ",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.grey
-                                    // fontWeight: FontWeight.bold,
-                                    ),
+                            ),
+                            const Spacer(),
+                            Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.green,
+                                shape: BoxShape.circle,
                               ),
-                            ],
-                          ),
+                              child: Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Text(
+                                    drawerListItem.unreadCount.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        Text(
+                          "${drawerListItem.lastMsg ?? ""} ",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                       ],
                     ),
                   ),
-                ),
+                )
               ],
             ),
           ),

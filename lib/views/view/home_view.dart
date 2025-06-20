@@ -15,8 +15,10 @@ import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datu
 import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/model/business_number_model.dart';
+import 'package:whatsapp/salesforce/screens/confige_listing_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_campaign_listing_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_darwer.dart';
+import 'package:whatsapp/salesforce/widget/sf_dashboard_card.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/utils/notification_utils.dart';
@@ -125,8 +127,10 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     DashBoardController drProvider = Provider.of(context, listen: false);
 
     if (drProvider.fromSalesForce) {
+      drProvider.getDasBoardReportApiCall();
       drProvider.drawerApiCall();
       drProvider.getProfileApiCall();
+      _tooltipBehavior = TooltipBehavior(enable: true);
     } else {
       _tooltipBehavior = TooltipBehavior(enable: true);
       NotificationUtil.registerToken();
@@ -332,6 +336,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     }
 
     getBusinessWidgets();
+
     getTemplateData();
 
     int totalUnreadCount = 0;
@@ -477,55 +482,148 @@ class _HomeViewState extends State<HomeView> with RouteAware {
             ? SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => SfCampaignScreen()));
-                        },
-                        child: Card(
-                          elevation: 2,
-                          color: const Color(0xFFF6EDE8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Container(
-                            width: 160,
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              image: const DecorationImage(
-                                image: AssetImage("assets/images/bg011.jpg"),
-                                fit: BoxFit.cover,
-                              ),
+                  child: Consumer<DashBoardController>(
+                      builder: (context, dbController, child) {
+                    return Column(
+                      children: [
+                        Row(
+                          children: [
+                            DashboardCardItem(
+                              icon: Icons.leaderboard,
+                              countText: "${dbController.totalCamp} / Total",
+                              title: "Campaigns",
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SfCampaignScreen()),
+                                );
+                              },
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Icon(
-                                  Icons.leaderboard,
-                                  size: 30,
-                                  color: Colors.white,
-                                ),
-                                Container(height: 5),
-                                const Text(
-                                  "Campaigns",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
+                            DashboardCardItem(
+                              icon: Icons.bolt,
+                              countText: "${dbController.totalLead} / Total",
+                              title: "Leads",
+                              onTap: () {
+                                ref.setSelectedTitle("Lead");
+                                ref.drawerListApiCall("Lead");
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ConfigListingScreen(type: "Lead"),
                                   ),
-                                ),
-                              ],
+                                );
+                              },
                             ),
-                          ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        dbController.totalCamp == "0"
+                            ? SizedBox()
+                            : Column(
+                                children: [
+                                  Container(
+                                    decoration: const BoxDecoration(
+                                      color: AppColor.navBarIconColor,
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(10),
+                                      ),
+                                    ),
+                                    height: 50,
+                                    child: const Center(
+                                      child: Text(
+                                        'Campaign',
+                                        style: TextStyle(
+                                          color: Color.fromARGB(
+                                              255, 255, 255, 255),
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SfCircularChart(
+                                      tooltipBehavior: _tooltipBehavior,
+                                      legend: const Legend(
+                                          isVisible: true,
+                                          position: LegendPosition.top,
+                                          overflowMode:
+                                              LegendItemOverflowMode.wrap),
+                                      series: <PieSeries<_SalesData, String>>[
+                                        PieSeries<_SalesData, String>(
+                                            legendIconType:
+                                                LegendIconType.circle,
+                                            radius: '100',
+                                            dataSource: businessData,
+                                            enableTooltip: true,
+                                            pointColorMapper: (_SalesData sales,
+                                                    int index) =>
+                                                areaColor[
+                                                    index % areaColor.length],
+                                            xValueMapper:
+                                                (_SalesData sales, _) =>
+                                                    sales.status,
+                                            yValueMapper:
+                                                (_SalesData sales, _) =>
+                                                    sales.count)
+                                      ])
+                                ],
+                              ),
+                        dbController.totalLead == "0"
+                            ? SizedBox()
+                            : Column(
+                                children: [
+                                  Container(
+                                    decoration: const BoxDecoration(
+                                      color: AppColor.navBarIconColor,
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(10),
+                                      ),
+                                    ),
+                                    height: 50,
+                                    child: const Center(
+                                      child: Text(
+                                        'Leads',
+                                        style: TextStyle(
+                                          color: Color.fromARGB(
+                                              255, 255, 255, 255),
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SfCircularChart(
+                                      tooltipBehavior: _tooltipBehavior,
+                                      legend: const Legend(
+                                          isVisible: true,
+                                          position: LegendPosition.top,
+                                          overflowMode:
+                                              LegendItemOverflowMode.wrap),
+                                      series: <DoughnutSeries<Templatedata,
+                                          String>>[
+                                        DoughnutSeries<Templatedata, String>(
+                                            radius: '100',
+                                            dataSource: templatedata,
+                                            enableTooltip: true,
+                                            pointColorMapper:
+                                                (Templatedata sales,
+                                                        int index) =>
+                                                    areaColor[index %
+                                                        areaColor.length],
+                                            xValueMapper:
+                                                (Templatedata sales, _) =>
+                                                    sales.status,
+                                            yValueMapper:
+                                                (Templatedata sales, _) =>
+                                                    sales.count)
+                                      ]),
+                                ],
+                              ),
+                      ],
+                    );
+                  }),
                 ),
               )
             : SingleChildScrollView(
@@ -1126,6 +1224,28 @@ class _HomeViewState extends State<HomeView> with RouteAware {
       print(" WebSocket Disconnected on home");
     }
   }
+
+  void getSfCampWidgets() {
+    DashBoardController dbController = Provider.of(context, listen: false);
+    businessData.clear();
+    businessData
+        .add(_SalesData("Pending", dbController.campStatus?.pending ?? 0));
+    businessData.add(
+        _SalesData("In Progress", dbController.campStatus?.inProgress ?? 0));
+    businessData
+        .add(_SalesData("Completed", dbController.campStatus?.completed ?? 0));
+  }
+
+  void getSfTemplateData() {
+    DashBoardController dbController = Provider.of(context, listen: false);
+    templatedata.clear();
+    templatedata
+        .add(Templatedata("Pending", dbController.tempStatus?.pending ?? 0));
+    templatedata.add(
+        Templatedata("In Progress", dbController.tempStatus?.pending ?? 0));
+    templatedata
+        .add(Templatedata("Approved", dbController.tempStatus?.approved ?? 0));
+  }
 }
 
 class _SalesData {
@@ -1139,6 +1259,4 @@ class Templatedata {
   Templatedata(this.status, this.count);
   final String status;
   final int count;
-  // final String status;
-  // final int count;
 }

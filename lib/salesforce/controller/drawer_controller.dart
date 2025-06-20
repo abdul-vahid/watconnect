@@ -8,7 +8,8 @@ import 'package:whatsapp/salesforce/api/api_helper.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/model/drawer_model.dart';
 import 'package:whatsapp/salesforce/model/sf_profile_model.dart';
-import 'package:whatsapp/salesforce/model/sf_recent_chat_model.dart';
+import 'package:whatsapp/salesforce/model/sf_report_models.dart';
+import 'package:whatsapp/salesforce/screens/sf_home_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 
 class DashBoardController extends ChangeNotifier {
@@ -29,6 +30,8 @@ class DashBoardController extends ChangeNotifier {
     notify();
   }
 
+  List<SalesData> sfCampaignData = [];
+  List<Templatedata> sfTemplatedata = [];
   Future<void> drawerApiCall() async {
     try {
       final response = await AppApi().commonGetMethod(
@@ -156,22 +159,18 @@ class DashBoardController extends ChangeNotifier {
     try {
       setRecentChatListLoader(true);
       final prefs = await SharedPreferences.getInstance();
-
       final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
       String apiUrl = "${AppConstants.sfRecentChat}?businessnumber=${busNum}";
-
-      final response = await http.post(
+      final response = await http.get(
         Uri.parse(apiUrl),
         headers: {
           'Authorization': 'Bearer $token',
           "Content-Type": "application/json"
         },
       );
-
-      log("headers:::: ${"Bearer $token"}    ${AppConstants.sfRecentChat}");
+      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
       print(
           " Recent Chat response :: ${response.runtimeType}  ${response.statusCode} ${response}");
 
@@ -194,5 +193,110 @@ class DashBoardController extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Future<void> resentUnreadCountApiCall(String custNum) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+      final busNum =
+          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+      String apiUrl = "${AppConstants.sfRecentChat}";
+
+      Map body = {"Business Number": busNum, "Customer Number": custNum};
+
+      final response = await http.post(Uri.parse(apiUrl),
+          headers: {
+            'Authorization': 'Bearer $token',
+            "Content-Type": "application/json"
+          },
+          body: jsonEncode(body));
+      log("headers:::: ${"Bearer $token"}    ${AppConstants.sfRecentChat}");
+      print(
+          " reset Un read response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+
+      if (response.statusCode == 200) {
+        recentChatListApiCall();
+      } else {
+        log("SF reset Un read failed [${response.statusCode}]: ${response.body}");
+      }
+
+      notify();
+    } catch (e) {
+      setRecentChatListLoader(false);
+      print("Error in Recent Chat: $e");
+    }
+
+    notifyListeners();
+  }
+
+  TemplateStatsModel? tempStatus;
+  CampaignStatsModel? campStatus;
+  String totalLead = "";
+  String totalCamp = "";
+
+  Future<void> getDasBoardReportApiCall() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final busNum =
+          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+      String apiUrl =
+          "${AppConstants.sfDashBoardReport}businessnumber=${busNum}";
+      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
+      print(
+          "get dashboard Report response :: ${response.runtimeType}  ${response.statusCode} ${response.body}");
+
+      if (response.statusCode == 200) {
+        var reportList = jsonDecode(response.body);
+
+        print(
+            "reportList  ${reportList}['Total Records'].toString():::::: ${reportList[2]['Total Records'].toString()}");
+
+        tempStatus = TemplateStatsModel.fromJson(reportList[0]);
+
+        campStatus = CampaignStatsModel.fromJson(reportList[1]);
+        var campCount = campStatus!.completed! +
+            campStatus!.inProgress! +
+            campStatus!.pending!;
+
+        totalCamp = campCount.toString();
+        totalLead = reportList[2]['Total Records'].toString();
+        getSfCampWidgets();
+        getSfTemplateData();
+        notify();
+      } else {
+        log(" get dashboard Report API failed [${response.statusCode}]: ${response.body}");
+      }
+    } catch (e) {
+      print("Error in dashboard Report api: $e");
+    }
+
+    notifyListeners();
+  }
+
+  void getSfCampWidgets() {
+    sfCampaignData.clear();
+    sfCampaignData.add(SalesData("Pending", campStatus?.pending ?? 0));
+    sfCampaignData.add(SalesData("In Progress", campStatus?.inProgress ?? 0));
+    sfCampaignData.add(SalesData("Completed", campStatus?.completed ?? 0));
+    notify();
+  }
+
+  void getSfTemplateData() {
+    sfTemplatedata.clear();
+    sfTemplatedata.add(Templatedata("Pending", tempStatus?.pending ?? 0));
+    sfTemplatedata.add(Templatedata("In Progress", tempStatus?.pending ?? 0));
+    sfTemplatedata.add(Templatedata("Approved", tempStatus?.approved ?? 0));
+    notify();
   }
 }

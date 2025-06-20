@@ -230,5 +230,7 @@ abstract class AppConstants {
 
   static const String sfGetProfile = "${baseApi}watconnect/Profile";
 
-  static const String sfRecentChat = "${baseApi}watconnect/RecentChat";
+  static const String sfRecentChat = "${baseApi}watconnect/whatsappRecentChat";
+
+  static const String sfDashBoardReport = "${baseApi}watconnect/report?";
 }

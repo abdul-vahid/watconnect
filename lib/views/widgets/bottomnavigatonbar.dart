@@ -10,6 +10,7 @@ import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
 import 'package:whatsapp/models/user_model/user_model.dart';
 import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/screens/sf_home_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_profile_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_recent_chat_screen.dart';
 import 'package:whatsapp/utils/app_utils.dart';
@@ -152,7 +153,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     DashBoardController drProvider = Provider.of(context, listen: false);
 
     final _pageOptions = [
-      HomeView(),
+      drProvider.fromSalesForce ? SfHomeScreen() : HomeView(),
       drProvider.fromSalesForce ? SfProfileScreen() : ProfileView(),
       if (userModelData?.userrole == "ADMIN") const UserListView(),
       // const Whtsapphone(),
