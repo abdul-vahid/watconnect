@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/sfCampaign_controller.dart';
 import 'package:whatsapp/salesforce/model/campaign_model.dart';
@@ -45,7 +47,7 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => SfAddCampScreen(),
+                      builder: (context) => const SfAddCampScreen(),
                     ),
                   );
                 },
@@ -88,15 +90,41 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
                   ),
                   prefixIcon: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.search,
-                        color: Color.fromARGB(255, 0, 0, 0),
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        // _showFilterBottomSheet(context);
-                      },
+                    child: Stack(
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.filter_list,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            _showFilterBottomSheet(context);
+                          },
+                        ),
+                        ref.campaignStatusList.length == 0
+                            ? SizedBox()
+                            : Positioned(
+                                left: 8,
+                                top: 5,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.brown),
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Text(
+                                        ref.campaignStatusList.length
+                                            .toString(),
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                      ],
                     ),
                   ),
                   prefixIconConstraints: const BoxConstraints(minWidth: 40),
@@ -145,7 +173,7 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
                             child: Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 12.0),
@@ -214,7 +242,7 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => SfCampaignDetailScreen()));
+                      builder: (context) => const SfCampaignDetailScreen()));
             },
             child: Row(
               children: [
@@ -278,7 +306,7 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
                                     ),
                                     child: Center(
                                       child: Text(
-                                        "${sfCampaignList.status ?? "Pending"}",
+                                        sfCampaignList.status ?? "Pending",
                                         style: const TextStyle(
                                             fontSize: 12, color: Colors.white),
                                       ),
@@ -299,6 +327,168 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
         ),
       ),
     );
+  }
+
+  void _showFilterBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        useSafeArea: true,
+        isScrollControlled: true,
+        enableDrag: false,
+        builder: (BuildContext context) {
+          return Consumer<SfcampaignController>(
+              builder: (context, campController, child) {
+            return Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: AppColor.navBarIconColor,
+                                borderRadius: BorderRadius.circular(8)),
+                            height: 40,
+                            width: 350,
+                            child: const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Center(
+                                child: Text(
+                                  'Campaign Status Filter',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color:
+                                          Color.fromARGB(255, 255, 255, 255)),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    MultiSelectDialogField<String>(
+                      items: [
+                        'All',
+                        'In Progress',
+                        'Completed',
+                        'Pending',
+                      ].map((e) => MultiSelectItem<String>(e, e)).toList(),
+                      title: const Flexible(
+                        child: Text(
+                          "Select Leads Status",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                      buttonText: const Text("Select Leads Status"),
+                      searchable: true,
+                      dialogWidth: 300,
+                      dialogHeight: 250,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.grey,
+                        ),
+                      ),
+                      onConfirm: (List<String> selected) {
+                        campController.setCampStatusList(selected);
+                        // Update selectleadList with the confirmed selections
+                        // selectleadList = selected;
+                      },
+                      initialValue: [],
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8.0,
+                      children:
+                          campController.campaignStatusList.map((selectedItem) {
+                        return Chip(
+                          label: Text(selectedItem),
+                          deleteIcon: const Icon(Icons.close),
+                          onDeleted: () {
+                            campController
+                                .removeFromCampStatusList(selectedItem);
+                          },
+                          backgroundColor: Colors.blue.withOpacity(0.2),
+                          labelStyle: const TextStyle(color: Colors.blue),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(
+                      height: 25,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            campController.resetCampStatusList();
+                            campController.filterCamp();
+
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Clear Filters',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            campController.filterCamp();
+                            Navigator.pop(context);
+                            // Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Filters',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 25,
+                    )
+                  ],
+                ),
+              ),
+            );
+          });
+        });
   }
 }
 

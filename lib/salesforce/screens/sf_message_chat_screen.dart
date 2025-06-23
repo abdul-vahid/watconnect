@@ -1,10 +1,18 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_sound/public/flutter_sound_player.dart';
+import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_sound/flutter_sound.dart' as fs;
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/controller/template_controller.dart';
@@ -31,19 +39,183 @@ class SfMessageChatScreen extends StatefulWidget {
 class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   TextEditingController msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  File? _audioFile;
+
+  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
+  final FlutterSoundPlayer _player = FlutterSoundPlayer();
+  bool _isRecording = false;
+  StreamSubscription? _previewPlayerSubscription;
+
+  Duration _totalDuration = Duration.zero;
+  Duration _currentPosition = Duration.zero;
+  bool _isPlayingPreview = false;
+
+  String? _audioPath;
 
   String userNumer = "";
 
   @override
   void initState() {
     super.initState();
+    _initializeAudio();
     getUserNumer();
+  }
 
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   Future.delayed(const Duration(milliseconds: 500), () {
-    //     _scrollToBottom();
-    //   });
-    // });
+  Future<void> _initializeAudio() async {
+    await _player.openPlayer();
+    await _recorder.openRecorder();
+  }
+
+  @override
+  void dispose() {
+    _recorder.closeRecorder();
+    _player.closePlayer();
+    _previewPlayerSubscription?.cancel();
+    msgController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _startRecording() async {
+    var status = await Permission.microphone.request();
+    if (!status.isGranted) return;
+
+    Directory tempDir = await getTemporaryDirectory();
+    _audioPath = '${tempDir.path}/voice_msg.aac';
+
+    await _recorder.startRecorder(
+      toFile: _audioPath,
+      codec: fs.Codec.aacADTS,
+    );
+
+    setState(() {
+      _isRecording = true;
+    });
+  }
+
+  Future<void> _stopRecordingAndPreview() async {
+    // await _recorder.stopRecorder();
+    String? recordedPath = await _recorder.stopRecorder();
+
+    setState(() {
+      _audioFile = File(recordedPath!);
+      _isRecording = false;
+    });
+
+    print("_audioFile::::::::::::::    ${_audioFile}");
+
+    await Future.delayed(Duration(milliseconds: 300));
+    _showPreviewDialog();
+  }
+
+  void _showPreviewDialog() async {
+    if (_audioPath == null) return;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            Future<void> startPlayer() async {
+              await _player.startPlayer(
+                fromURI: _audioPath!,
+                codec: fs.Codec.aacADTS,
+                whenFinished: () {
+                  setState(() {
+                    _isPlayingPreview = false;
+                    _currentPosition = Duration.zero;
+                  });
+                },
+              );
+
+              setState(() {
+                _isPlayingPreview = true;
+              });
+
+              _previewPlayerSubscription?.cancel();
+              _previewPlayerSubscription = _player.onProgress?.listen((event) {
+                setState(() {
+                  _currentPosition = event.position;
+                  _totalDuration = event.duration;
+                });
+              });
+            }
+
+            Future<void> stopPlayer() async {
+              await _player.stopPlayer();
+              _previewPlayerSubscription?.cancel();
+              setState(() {
+                _isPlayingPreview = false;
+                _currentPosition = Duration.zero;
+              });
+            }
+
+            return AlertDialog(
+              title: const Text('Voice Message Preview'),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      _isPlayingPreview
+                          ? Icons.pause_circle_filled
+                          : Icons.play_circle_fill,
+                      size: 48,
+                      color: AppColor.navBarIconColor,
+                    ),
+                    onPressed: () {
+                      _isPlayingPreview ? stopPlayer() : startPlayer();
+                    },
+                  ),
+                  // Slider(
+                  //   value: _currentPosition.inMilliseconds.toDouble(),
+                  //   max: _totalDuration.inMilliseconds.toDouble() > 0
+                  //       ? _totalDuration.inMilliseconds.toDouble()
+                  //       : 1,
+                  //   onChanged: (value) async {
+                  //     final seekTo = Duration(milliseconds: value.toInt());
+                  //     await _player.seekToPlayer(seekTo);
+                  //     setState(() {
+                  //       _currentPosition = seekTo;
+                  //     });
+                  //   },
+                  // ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     Text(_formatDuration(_currentPosition)),
+                  //     Text(_formatDuration(_totalDuration)),
+                  //   ],
+                  // ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    stopPlayer();
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Send'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    stopPlayer();
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Cancel'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    return "${twoDigits(duration.inMinutes)}:${twoDigits(duration.inSeconds.remainder(60))}";
   }
 
   @override
@@ -181,32 +353,22 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
 
   _buildMessageInputArea() {
     return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
-        child: sendMsgRow());
-  }
-
-  sendMsg(String msg) {
-    print("we are calling this:::  ${msg}");
-    if (msg.trim().isEmpty) {
-      EasyLoading.showToast("Type something.....",
-          toastPosition: EasyLoadingToastPosition.center);
-    } else {
-      DashBoardController dbController = Provider.of(context, listen: false);
-
-      ChatMessageController messageController =
-          Provider.of(context, listen: false);
-      messageController.sendMessageApiCall(
-        msg: msg,
-        usrNumber: dbController.selectedContactInfo?.whatsappNumber ?? "",
-        code: dbController.selectedContactInfo?.countryCode ?? "91",
-      );
-      msgController.clear();
-      Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
-    }
-  }
-
-  bool isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_isRecording)
+            const Row(
+              children: [
+                Icon(Icons.fiber_manual_record, color: Colors.red),
+                SizedBox(width: 6),
+                Text("Recording..."),
+              ],
+            ),
+          sendMsgRow(),
+        ],
+      ),
+    );
   }
 
   sendMsgRow() {
@@ -222,6 +384,25 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                   child: TextField(
                     controller: msgController,
                     decoration: InputDecoration(
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.only(right: 4.0),
+                          child: GestureDetector(
+                            onLongPress: _startRecording,
+                            onLongPressUp: _stopRecordingAndPreview,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                  color: Color.fromARGB(255, 168, 205, 235),
+                                  shape: BoxShape.circle),
+                              padding: const EdgeInsets.all(10),
+                              child: Icon(
+                                _isRecording
+                                    ? Icons.stop
+                                    : Icons.mic_none_sharp,
+                                color: _isRecording ? Colors.red : Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
                         hintText: 'Type a message...',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
@@ -298,6 +479,30 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
         ],
       );
     });
+  }
+
+  sendMsg(String msg) {
+    print("we are calling this:::  ${msg}");
+    if (msg.trim().isEmpty) {
+      EasyLoading.showToast("Type something.....",
+          toastPosition: EasyLoadingToastPosition.center);
+    } else {
+      DashBoardController dbController = Provider.of(context, listen: false);
+
+      ChatMessageController messageController =
+          Provider.of(context, listen: false);
+      messageController.sendMessageApiCall(
+        msg: msg,
+        usrNumber: dbController.selectedContactInfo?.whatsappNumber ?? "",
+        code: dbController.selectedContactInfo?.countryCode ?? "91",
+      );
+      msgController.clear();
+      Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+    }
+  }
+
+  bool isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
   getUserNumer() {

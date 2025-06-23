@@ -3,6 +3,8 @@ import 'dart:convert';
 class Permission {
   String? name;
 
+  static var microphone;
+
   Permission({this.name});
 
   factory Permission.fromMap(Map<String, dynamic> data) => Permission(

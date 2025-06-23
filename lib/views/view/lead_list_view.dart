@@ -61,7 +61,6 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   void initState() {
     selectleadList = [];
     _getUnreadCount();
-
     getLeadList();
     connectSocket();
     super.initState();

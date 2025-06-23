@@ -71,6 +71,12 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires access to your photo library to upload or select images.</string>
 
+ <key>NSMicrophoneUsageDescription</key>
+<string>We need access to your microphone to record voice messages.</string>
+<key>NSDocumentsFolderUsageDescription</key>
+<string>We need access to save your voice messages.</string>
+
+
 	<!-- Photo Library Add permission (optional, for saving photos) -->
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>This app needs permission to save photos to your library.</string>

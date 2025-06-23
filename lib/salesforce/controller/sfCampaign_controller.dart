@@ -31,6 +31,22 @@ class SfcampaignController extends ChangeNotifier {
     notify();
   }
 
+  List<String> campaignStatusList = [];
+  setCampStatusList(List<String> selCampStatus) {
+    campaignStatusList = selCampStatus;
+    notify();
+  }
+
+  removeFromCampStatusList(String campStatus) {
+    campaignStatusList.remove(campStatus);
+    notify();
+  }
+
+  resetCampStatusList() {
+    campaignStatusList.clear();
+    notify();
+  }
+
   Future<void> getCampaignApiCall() async {
     try {
       setGetCampLoader(true);
@@ -177,6 +193,17 @@ class SfcampaignController extends ChangeNotifier {
     } else {
       sfCampaignList = sfTempCampaignList.where((e) {
         return e.name!.toLowerCase().contains(searchVal.toLowerCase());
+      }).toList();
+    }
+    notify();
+  }
+
+  filterCamp() {
+    if (campaignStatusList.isEmpty || campaignStatusList.contains('All')) {
+      sfCampaignList = sfTempCampaignList;
+    } else {
+      sfCampaignList = sfTempCampaignList.where((e) {
+        return campaignStatusList.contains(e.status);
       }).toList();
     }
     notify();
