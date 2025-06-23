@@ -3,24 +3,23 @@ import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
-// import 'package:whatsapp/salesforce/model/sf_recent_chat_model.dart';
 import 'package:whatsapp/salesforce/screens/confige_listing_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/app_color.dart';
 
-class SfRecentChatScreen extends StatefulWidget {
-  const SfRecentChatScreen({super.key});
+class SfNotificationScreen extends StatefulWidget {
+  const SfNotificationScreen({super.key});
 
   @override
-  State<SfRecentChatScreen> createState() => _SfRecentChatScreenState();
+  State<SfNotificationScreen> createState() => _SfNotificationScreenState();
 }
 
-class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
+class _SfNotificationScreenState extends State<SfNotificationScreen> {
   @override
   void initState() {
+    print("calling api");
     DashBoardController dasbController = Provider.of(context, listen: false);
-    dasbController.recentChatListApiCall();
-    // TODO: implement initState
+    dasbController.sfNotificationHistoryApiCall();
     super.initState();
   }
 
@@ -34,7 +33,7 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
         elevation: 2,
         backgroundColor: AppColor.navBarIconColor,
         title: const Text(
-          "Recent Chats",
+          "Notification",
           style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
         ),
       ),
@@ -55,7 +54,7 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
       return Column(
         children: [
           Expanded(
-            child: dashBoardController.recentChatListLoader
+            child: dashBoardController.sfNotificationListLoader
                 ? const Center(
                     child: SizedBox(
                       height: 50,
@@ -63,10 +62,10 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                       child: CircularProgressIndicator(),
                     ),
                   )
-                : dashBoardController.sfRecentChatList.isEmpty
+                : dashBoardController.sfNoticationList.isEmpty
                     ? const Center(
                         child: Text(
-                          "No Recent Chats Found..",
+                          "No Notifications Available..",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -82,7 +81,7 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 12.0),
                               child: Text(
-                                "${dashBoardController.sfRecentChatList.length} Chats Available",
+                                "${dashBoardController.sfNoticationList.length} Notifications Available",
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
@@ -94,10 +93,10 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                             child: ListView.builder(
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               itemCount:
-                                  dashBoardController.sfRecentChatList.length,
+                                  dashBoardController.sfNoticationList.length,
                               itemBuilder: (context, index) {
                                 var item =
-                                    dashBoardController.sfRecentChatList[index];
+                                    dashBoardController.sfNoticationList[index];
                                 return renctChatListItem(item);
                               },
                             ),
@@ -155,7 +154,7 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
               )
                   .then((onValue) {
                 Navigator.pop(context);
-                dbProvider.resentUnreadCountApiCall(phNum);
+                dbProvider.resentUnreadCountApiCall(phNum, isFromChat: false);
               });
               Navigator.push(
                   context,

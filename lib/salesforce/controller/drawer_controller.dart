@@ -133,6 +133,7 @@ class DashBoardController extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         sfUserData = SfProfileModel.fromJson(jsonDecode(response.body));
+        sfDeviceTokenApiCall(sfUserData?.userId ?? "");
         notify();
         log("Fetched ${sfUserData?.name ?? ""}  get sfGetProfile .");
       } else {
@@ -162,7 +163,8 @@ class DashBoardController extends ChangeNotifier {
       final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      String apiUrl = "${AppConstants.sfRecentChat}?businessnumber=${busNum}";
+      String apiUrl =
+          "${AppConstants.sfRecentChat}?businessnumber=${busNum}&recordlimit=5000&objectname=Lead";
       final response = await http.get(
         Uri.parse(apiUrl),
         headers: {
@@ -195,7 +197,8 @@ class DashBoardController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> resentUnreadCountApiCall(String custNum) async {
+  Future<void> resentUnreadCountApiCall(String custNum,
+      {bool isFromChat = true}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
@@ -216,7 +219,11 @@ class DashBoardController extends ChangeNotifier {
           " reset Un read response :: ${response.runtimeType}  ${response.statusCode} ${response}");
 
       if (response.statusCode == 200) {
-        recentChatListApiCall();
+        if (isFromChat) {
+          recentChatListApiCall();
+        } else {
+          sfNotificationHistoryApiCall();
+        }
       } else {
         log("SF reset Un read failed [${response.statusCode}]: ${response.body}");
       }
@@ -298,5 +305,105 @@ class DashBoardController extends ChangeNotifier {
     sfTemplatedata.add(Templatedata("In Progress", tempStatus?.pending ?? 0));
     sfTemplatedata.add(Templatedata("Approved", tempStatus?.approved ?? 0));
     notify();
+  }
+
+  String sfFcm = "";
+  setSfFcmToken(String tokn) {
+    sfFcm = tokn;
+    print(
+        "setting the firebase fcm in salesforece:::::::::::::::::::  ${sfFcm}");
+    notify();
+  }
+
+  String sfDeviceTokn = "";
+  setSfDeviceToken(String devTokn) {
+    sfDeviceTokn = devTokn;
+
+    print(
+        "setting the device id in salesforece::::::::::::::: ${sfDeviceTokn}");
+
+    notify();
+  }
+
+  Future<void> sfDeviceTokenApiCall(String usrId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      String apiUrl = "${AppConstants.sfDeviceToken}";
+      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+
+      Map body = {"userId": usrId, "deviceId": sfDeviceTokn, "fcmToken": sfFcm};
+      final response = await http.post(Uri.parse(apiUrl),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(body));
+
+      log("headers:::: ${"Bearer $token"}    ${apiUrl}    ${body}");
+      print(
+          "get sf device token response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+
+      if (response.statusCode == 200) {
+        notify();
+      } else {
+        log(" sf device token API failed [${response.statusCode}]: ${response.body}");
+      }
+    } catch (e) {
+      print("Error in sf device token  api: $e");
+    }
+
+    notifyListeners();
+  }
+
+  bool sfNotificationListLoader = false;
+
+  setSfNotificationListLoader(bool val) {
+    sfNotificationListLoader = val;
+    notify();
+  }
+
+  List<SfDrawerItemModel> sfNoticationList = [];
+  List<SfDrawerItemModel> tempSfNotificationList = [];
+
+  Future<void> sfNotificationHistoryApiCall() async {
+    try {
+      setSfNotificationListLoader(true);
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+      final busNum =
+          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+      String apiUrl =
+          "${AppConstants.sfNotificationHistory}?businessnumber=${busNum}";
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          "Content-Type": "application/json"
+        },
+      );
+      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
+      print(
+          "SF Notification List response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        sfNoticationList
+          ..clear()
+          ..addAll(data.map((e) => SfDrawerItemModel.fromJson(e)));
+        tempSfNotificationList = sfNoticationList;
+        setSfNotificationListLoader(false);
+      } else {
+        setSfNotificationListLoader(false);
+        log("SF Notification List  failed [${response.statusCode}]: ${response.body}");
+      }
+
+      notify();
+    } catch (e) {
+      setRecentChatListLoader(false);
+      print("Error in SF Notification List: $e");
+    }
+
+    notifyListeners();
   }
 }

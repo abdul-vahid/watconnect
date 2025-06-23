@@ -207,6 +207,9 @@ class AppUtils {
         await prefs.setString(SharedPrefsConstants.usertenantcodeKey,
             decodedToken['tenantcode'] ?? "");
 
+        await prefs.setBool(SharedPrefsConstants.hasWalletKey,
+            decodedToken['has_wallet'] ?? false);
+
         userModel.authToken =
             prefs.getString(SharedPrefsConstants.accessTokenKey);
 

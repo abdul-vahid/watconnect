@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/main.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 
 import 'function_lib.dart';
 import '../models/lead_model.dart';
@@ -91,17 +92,38 @@ class NotificationUtil {
     isInitialized = true;
   }
 
-  static void registerToken() async {
-    _firebaseMessaging?.getToken().then((token) {
+  static Future<void> registerToken() async {
+    try {
+      final token = await _firebaseMessaging?.getToken();
+
       debug("registerToken value => $token");
-      UserListViewModel().registerFCMToken(token!).then((value) {
-        debug("FCM token registered to backend => $value");
-      }, onError: (error, stackTrace) {
-        debug("FCM token registration error => $error");
-      });
-    }).catchError((e) {
-      debug("FCM getToken error => $e");
-    });
+
+      if (token == null) {
+        debug("FCM token is null");
+        return;
+      }
+      String deviceId = await getDeviceId();
+
+      final context = navigatorKey.currentContext;
+      if (context == null) {
+        debug("Navigator context is null");
+        return;
+      }
+
+      final drProvider =
+          Provider.of<DashBoardController>(context, listen: false);
+
+      if (drProvider.fromSalesForce) {
+        drProvider.setSfFcmToken(token);
+        drProvider.setSfDeviceToken(deviceId);
+        debug("Skipping FCM registration due to fromSalesForce flag");
+      } else {
+        await UserListViewModel().registerFCMToken(token, deviceId);
+        debug("FCM token registered to backend => $token");
+      }
+    } catch (e, stackTrace) {
+      debug("Error in registerToken: $e");
+    }
   }
 
   void NavigationFunc(String leadId, BuildContext cntxt) {

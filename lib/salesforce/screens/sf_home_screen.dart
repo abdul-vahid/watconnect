@@ -8,8 +8,10 @@ import 'package:whatsapp/salesforce/model/business_number_model.dart';
 import 'package:whatsapp/salesforce/screens/confige_listing_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_campaign_listing_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_darwer.dart';
+import 'package:whatsapp/salesforce/screens/sf_notification_screen.dart';
 import 'package:whatsapp/salesforce/widget/sf_dashboard_card.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/views/view/NotificationPage.dart';
 
 class SfHomeScreen extends StatefulWidget {
@@ -30,6 +32,7 @@ class _SfHomeScreenState extends State<SfHomeScreen> {
     drProvider.drawerApiCall();
     drProvider.getProfileApiCall();
     _tooltipBehavior = TooltipBehavior(enable: true);
+    NotificationUtil.registerToken();
     super.initState();
   }
 
@@ -61,7 +64,7 @@ class _SfHomeScreenState extends State<SfHomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const NotificationPage(),
+                    builder: (context) => const SfNotificationScreen(),
                   ),
                 );
               },

@@ -11,6 +11,8 @@ abstract class SharedPrefsConstants {
   static const String userDecodedTokenKey = "decoded_token_key";
   static const String usertenantcodeKey = "tenantcode";
 
+  static const String hasWalletKey = "hasWallet";
+
   static const String userAvailableMoulesKey = "modules";
   static const String userrolekey = "userrole";
 
@@ -185,6 +187,16 @@ abstract class AppConstants {
 
   static const String getAllTagsApi = '/api/whatsapp/tag';
 
+  static const String getWalletApi = '${baseUrl}/api/whatsapp/wallet/balance';
+
+  static const String getTransactionApi =
+      '${baseUrl}/api/whatsapp/wallet/transactions';
+
+  static const String checkWalletBalance =
+      '${baseUrl}/api/whatsapp/wallet/check_balance';
+
+  static const String debitWalletBalance = '${baseUrl}/api/whatsapp/wallet';
+
 //================================================================================================================================================================================
 //=========================================================================================================================================================================================
   ///  Sales force api
@@ -230,7 +242,12 @@ abstract class AppConstants {
 
   static const String sfGetProfile = "${baseApi}watconnect/Profile";
 
-  static const String sfRecentChat = "${baseApi}watconnect/whatsappRecentChat";
+  static const String sfRecentChat = "${baseApi}watconnect/Recentchat";
+
+  static const String sfNotificationHistory =
+      "${baseApi}watconnect/whatsappNotification";
 
   static const String sfDashBoardReport = "${baseApi}watconnect/report?";
+
+  static const String sfDeviceToken = "${baseApi}watconnect/usermobiledevice";
 }

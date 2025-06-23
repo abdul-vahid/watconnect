@@ -124,14 +124,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
 
   @override
   void initState() {
-    DashBoardController drProvider = Provider.of(context, listen: false);
-
-    if (drProvider.fromSalesForce) {
-      drProvider.getDasBoardReportApiCall();
-      drProvider.drawerApiCall();
-      drProvider.getProfileApiCall();
-      _tooltipBehavior = TooltipBehavior(enable: true);
-    } else {
+    {
       _tooltipBehavior = TooltipBehavior(enable: true);
       NotificationUtil.registerToken();
       getAvailableModules();
@@ -362,7 +355,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     }
     return Consumer<DashBoardController>(builder: (context, ref, child) {
       return Scaffold(
-        drawer: ref.fromSalesForce ? SfAppDrawerWidget() : AppDrawerWidget(),
+        drawer: AppDrawerWidget(),
         appBar: AppBar(
           iconTheme:
               const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
@@ -411,652 +404,358 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                       ),
                   ],
                 )),
-            ref.fromSalesForce
-                ? Consumer<BusinessNumberController>(
-                    builder: (context, busNumCtrl, child) {
-                    return PopupMenuButton<BusinessNumberModel>(
-                      position: PopupMenuPosition.under,
-                      icon: const Icon(Icons.phone,
-                          size: 23, color: Colors.white),
-                      itemBuilder: (BuildContext context) {
-                        return busNumCtrl.businessNumbers.map((number) {
-                          final isSelected = number.isDefault == "true";
-                          return PopupMenuItem<BusinessNumberModel>(
-                            value: number,
-                            child: Text(
-                              "${number.whasappSettingName} ${number.whasappSettingNumber} ",
-                              style: TextStyle(
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: isSelected ? Colors.blue : Colors.black,
-                              ),
-                            ),
-                          );
-                        }).toList();
-                      },
-                      onSelected: (value) async {
-                        await busNumCtrl.setBusinessNumberApiCall(
-                            busNumber: value.whasappSettingNumber ?? "");
-                      },
-                    );
-                  })
-                : PopupMenuButton<String>(
-                    position: PopupMenuPosition.under,
-                    icon:
-                        const Icon(Icons.phone, size: 23, color: Colors.white),
-                    itemBuilder: (BuildContext context) {
-                      return allNums.map((number) {
-                        final isSelected = number.phone == selectedNumber;
-                        return PopupMenuItem<String>(
-                          value: number.phone,
-                          child: Text(
-                            "${number.name} ${number.phone} ",
-                            style: TextStyle(
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: isSelected ? Colors.blue : Colors.black,
-                            ),
-                          ),
-                        );
-                      }).toList();
-                    },
-                    onSelected: (value) async {
-                      print('Selected: $value');
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('phoneNumber', value);
+            PopupMenuButton<String>(
+              position: PopupMenuPosition.under,
+              icon: const Icon(Icons.phone, size: 23, color: Colors.white),
+              itemBuilder: (BuildContext context) {
+                return allNums.map((number) {
+                  final isSelected = number.phone == selectedNumber;
+                  return PopupMenuItem<String>(
+                    value: number.phone,
+                    child: Text(
+                      "${number.name} ${number.phone} ",
+                      style: TextStyle(
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? Colors.blue : Colors.black,
+                      ),
+                    ),
+                  );
+                }).toList();
+              },
+              onSelected: (value) async {
+                print('Selected: $value');
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('phoneNumber', value);
 
-                      EasyLoading.showToast("${value} marked as selected",
-                          toastPosition: EasyLoadingToastPosition.bottom);
-                      selectedNumber = value;
-                      EasyLoading.show();
-                      fetch();
+                EasyLoading.showToast("${value} marked as selected",
+                    toastPosition: EasyLoadingToastPosition.bottom);
+                selectedNumber = value;
+                EasyLoading.show();
+                fetch();
 
-                      setState(() {});
-                    },
-                  ),
+                setState(() {});
+              },
+            ),
           ],
         ),
-        body: ref.fromSalesForce
-            ? SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Consumer<DashBoardController>(
-                      builder: (context, dbController, child) {
-                    return Column(
-                      children: [
-                        Row(
-                          children: [
-                            DashboardCardItem(
-                              icon: Icons.leaderboard,
-                              countText: "${dbController.totalCamp} / Total",
-                              title: "Campaigns",
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => SfCampaignScreen()),
-                                );
-                              },
-                            ),
-                            DashboardCardItem(
-                              icon: Icons.bolt,
-                              countText: "${dbController.totalLead} / Total",
-                              title: "Leads",
-                              onTap: () {
-                                ref.setSelectedTitle("Lead");
-                                ref.drawerListApiCall("Lead");
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ConfigListingScreen(type: "Lead"),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        dbController.totalCamp == "0"
-                            ? SizedBox()
-                            : Column(
-                                children: [
-                                  Container(
-                                    decoration: const BoxDecoration(
-                                      color: AppColor.navBarIconColor,
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(10),
-                                      ),
-                                    ),
-                                    height: 50,
-                                    child: const Center(
-                                      child: Text(
-                                        'Campaign',
-                                        style: TextStyle(
-                                          color: Color.fromARGB(
-                                              255, 255, 255, 255),
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SfCircularChart(
-                                      tooltipBehavior: _tooltipBehavior,
-                                      legend: const Legend(
-                                          isVisible: true,
-                                          position: LegendPosition.top,
-                                          overflowMode:
-                                              LegendItemOverflowMode.wrap),
-                                      series: <PieSeries<_SalesData, String>>[
-                                        PieSeries<_SalesData, String>(
-                                            legendIconType:
-                                                LegendIconType.circle,
-                                            radius: '100',
-                                            dataSource: businessData,
-                                            enableTooltip: true,
-                                            pointColorMapper: (_SalesData sales,
-                                                    int index) =>
-                                                areaColor[
-                                                    index % areaColor.length],
-                                            xValueMapper:
-                                                (_SalesData sales, _) =>
-                                                    sales.status,
-                                            yValueMapper:
-                                                (_SalesData sales, _) =>
-                                                    sales.count)
-                                      ])
-                                ],
-                              ),
-                        dbController.totalLead == "0"
-                            ? SizedBox()
-                            : Column(
-                                children: [
-                                  Container(
-                                    decoration: const BoxDecoration(
-                                      color: AppColor.navBarIconColor,
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(10),
-                                      ),
-                                    ),
-                                    height: 50,
-                                    child: const Center(
-                                      child: Text(
-                                        'Leads',
-                                        style: TextStyle(
-                                          color: Color.fromARGB(
-                                              255, 255, 255, 255),
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SfCircularChart(
-                                      tooltipBehavior: _tooltipBehavior,
-                                      legend: const Legend(
-                                          isVisible: true,
-                                          position: LegendPosition.top,
-                                          overflowMode:
-                                              LegendItemOverflowMode.wrap),
-                                      series: <DoughnutSeries<Templatedata,
-                                          String>>[
-                                        DoughnutSeries<Templatedata, String>(
-                                            radius: '100',
-                                            dataSource: templatedata,
-                                            enableTooltip: true,
-                                            pointColorMapper:
-                                                (Templatedata sales,
-                                                        int index) =>
-                                                    areaColor[index %
-                                                        areaColor.length],
-                                            xValueMapper:
-                                                (Templatedata sales, _) =>
-                                                    sales.status,
-                                            yValueMapper:
-                                                (Templatedata sales, _) =>
-                                                    sales.count)
-                                      ]),
-                                ],
-                              ),
-                      ],
-                    );
-                  }),
-                ),
-              )
-            : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    SizedBox(height: 12),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(height: 12),
 
-                    // Padding(
-                    //   padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                    //   child: AppUtils.getDropdown(
-                    //     'Select',
-                    //     data: allWhNums,
-                    //     onChanged: (p0) {
-                    //       setState(() {
-                    //         _phone = p0;
-                    //         // _userType = null;
-                    //       });
-                    //     },
-                    //     value: _phone,
-                    //     validator: (value) => value == null ? 'Role is required' : null,
-                    //   ),
-                    // ),
-                    // Container(
-                    //   width: 300,
-                    //   child: AppUtils.getDropdown(
-                    //     'Select Category',
-                    //     data: dropdownItems,
-                    //     onChanged: (String? selectedCategory) {},
-                    //   ),
-                    // ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
-                        alignment: WrapAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onTap: () => {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const LeadListView()))
-                            },
-                            child: Card(
-                              elevation: 2,
-                              color: const Color(0xFFF6EDE8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Container(
-                                width: 160,
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  image: const DecorationImage(
-                                    image:
-                                        AssetImage("assets/images/bg011.jpg"),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(
-                                      Icons.leaderboard,
-                                      size: 30,
-                                      color: Colors.white,
-                                    ),
-                                    Container(height: 5),
-                                    const Text(
-                                      "ALL Leads",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        RichText(
-                                          text: TextSpan(
-                                            text:
-                                                (countNewLeads ?? 0).toString(),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 30,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            children: const [
-                                              TextSpan(
-                                                text: '/ Total',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 15.0),
+              //   child: AppUtils.getDropdown(
+              //     'Select',
+              //     data: allWhNums,
+              //     onChanged: (p0) {
+              //       setState(() {
+              //         _phone = p0;
+              //         // _userType = null;
+              //       });
+              //     },
+              //     value: _phone,
+              //     validator: (value) => value == null ? 'Role is required' : null,
+              //   ),
+              // ),
+              // Container(
+              //   width: 300,
+              //   child: AppUtils.getDropdown(
+              //     'Select Category',
+              //     data: dropdownItems,
+              //     onChanged: (String? selectedCategory) {},
+              //   ),
+              // ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Wrap(
+                  spacing: 8.0,
+                  runSpacing: 8.0,
+                  alignment: WrapAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () => {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LeadListView()))
+                      },
+                      child: Card(
+                        elevation: 2,
+                        color: const Color(0xFFF6EDE8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Container(
+                          width: 160,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            image: const DecorationImage(
+                              image: AssetImage("assets/images/bg011.jpg"),
+                              fit: BoxFit.cover,
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () => {
-                              if (modules.contains("Campaign") ||
-                                  modules.contains('Campaigns'))
-                                {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const CampaignListView()))
-                                }
-                              else
-                                {
-                                  EasyLoading.showToast(
-                                      "Access to Campaign is not included in this Plan")
-                                }
-                            },
-                            child: Card(
-                              elevation: 2,
-                              color: const Color(0xfffece9f2),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.leaderboard,
+                                size: 30,
+                                color: Colors.white,
                               ),
-                              child: Container(
-                                width: 160,
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  image: const DecorationImage(
-                                    image: AssetImage(
-                                      "assets/images/bg011.jpg",
-                                    ), // Add your image path
-                                    fit: BoxFit.cover, // Cover entire card
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(
-                                      Icons.assignment_ind,
-                                      size: 30,
-                                      color: Colors.white,
-                                    ),
-                                    Container(height: 5),
-                                    const Text(
-                                      "Pending Campa..",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        RichText(
-                                          text: TextSpan(
-                                            text: (campaignCount ?? 0)
-                                                .toString(), // Default text
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 30,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            children: const [
-                                              TextSpan(
-                                                text: '/ Total',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                              Container(height: 5),
+                              const Text(
+                                "ALL Leads",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () => {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const TempleteListView()))
-                            },
-                            child: Card(
-                              elevation: 2,
-                              color: const Color(0xfffece9f2),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Container(
-                                width: 160,
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  image: const DecorationImage(
-                                    image: AssetImage(
-                                      "assets/images/bg011.jpg",
-                                    ), // Add your image path
-                                    fit: BoxFit.cover, // Cover entire card
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(
-                                      Icons.assignment,
-                                      size: 30,
-                                      color: Colors.white,
-                                    ),
-                                    Container(height: 5),
-                                    const Text(
-                                      "Total Templates",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        RichText(
-                                          text: TextSpan(
-                                            text:
-                                                (templateCount ?? 0).toString(),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 30,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            children: const [
-                                              TextSpan(
-                                                text: '/ Total',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Card(
-                            elevation: 2,
-                            color: const Color(0xFFF6EDE8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Container(
-                              width: 160,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
-                                image: const DecorationImage(
-                                  image: AssetImage(
-                                    "assets/images/bg011.jpg",
-                                  ), // Add your image path
-                                  fit: BoxFit.cover, // Cover entire card
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
                                 children: [
-                                  const Icon(
-                                    Icons.message,
-                                    size: 30,
-                                    // color: Colors.white,
-                                    color: Colors.white,
+                                  RichText(
+                                    text: TextSpan(
+                                      text: (countNewLeads ?? 0).toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      children: const [
+                                        TextSpan(
+                                          text: '/ Total',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  Container(height: 5),
-                                  const Text(
-                                    "Auto Message",
-                                    style: TextStyle(
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => {
+                        if (modules.contains("Campaign") ||
+                            modules.contains('Campaigns'))
+                          {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CampaignListView()))
+                          }
+                        else
+                          {
+                            EasyLoading.showToast(
+                                "Access to Campaign is not included in this Plan")
+                          }
+                      },
+                      child: Card(
+                        elevation: 2,
+                        color: const Color(0xfffece9f2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Container(
+                          width: 160,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            image: const DecorationImage(
+                              image: AssetImage(
+                                "assets/images/bg011.jpg",
+                              ), // Add your image path
+                              fit: BoxFit.cover, // Cover entire card
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.assignment_ind,
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                              Container(height: 5),
+                              const Text(
+                                "Pending Campa..",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      text: (campaignCount ?? 0)
+                                          .toString(), // Default text
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      children: const [
+                                        TextSpan(
+                                          text: '/ Total',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const TempleteListView()))
+                      },
+                      child: Card(
+                        elevation: 2,
+                        color: const Color(0xfffece9f2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Container(
+                          width: 160,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            image: const DecorationImage(
+                              image: AssetImage(
+                                "assets/images/bg011.jpg",
+                              ), // Add your image path
+                              fit: BoxFit.cover, // Cover entire card
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.assignment,
+                                size: 30,
+                                color: Colors.white,
+                              ),
+                              Container(height: 5),
+                              const Text(
+                                "Total Templates",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      text: (templateCount ?? 0).toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      children: const [
+                                        TextSpan(
+                                          text: '/ Total',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Card(
+                      elevation: 2,
+                      color: const Color(0xFFF6EDE8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Container(
+                        width: 160,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          image: const DecorationImage(
+                            image: AssetImage(
+                              "assets/images/bg011.jpg",
+                            ), // Add your image path
+                            fit: BoxFit.cover, // Cover entire card
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.message,
+                              size: 30,
+                              // color: Colors.white,
+                              color: Colors.white,
+                            ),
+                            Container(height: 5),
+                            const Text(
+                              "Auto Message",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                RichText(
+                                  text: TextSpan(
+                                    text: autoResponseCount ?? "",
+                                    style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 14,
+                                      fontSize: 30,
                                       fontWeight: FontWeight.w600,
                                     ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      RichText(
-                                        text: TextSpan(
-                                          text: autoResponseCount ?? "",
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 30,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          children: const [
-                                            TextSpan(
-                                              text: '/ Total',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ],
+                                    children: const [
+                                      TextSpan(
+                                        text: '/ Total',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
                                         ),
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(15),
-                      child: Container(
-                        // height: 5/00,
-                        decoration: const BoxDecoration(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          borderRadius: BorderRadius.all(Radius.circular(15)),
-                        ),
-                        child: Column(
-                          children: [
-                            modules.contains("Campaign")
-                                ? campaignCount != "0"
-                                    ? Container(
-                                        decoration: const BoxDecoration(
-                                          color: AppColor.navBarIconColor,
-                                          borderRadius: BorderRadius.all(
-                                            Radius.circular(10),
-                                          ),
-                                        ),
-                                        // width: 400,
-                                        height: 50,
-                                        child: const Center(
-                                          child: Text(
-                                            'Campaign',
-                                            style: TextStyle(
-                                              color: Color.fromARGB(
-                                                  255, 255, 255, 255),
-                                              fontSize: 18,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    : SizedBox()
-                                : SizedBox(),
-                            modules.contains("Campaign")
-                                ? campaignCount != "0"
-                                    ? SfCircularChart(
-                                        tooltipBehavior: _tooltipBehavior,
-                                        legend: const Legend(
-                                            isVisible: true,
-                                            position: LegendPosition.top,
-                                            overflowMode:
-                                                LegendItemOverflowMode.wrap),
-                                        series: <PieSeries<_SalesData, String>>[
-                                            PieSeries<_SalesData, String>(
-                                                legendIconType: LegendIconType
-                                                    .circle,
-                                                radius: '100',
-                                                dataSource: businessData,
-                                                enableTooltip: true,
-                                                pointColorMapper:
-                                                    (_SalesData sales,
-                                                            int index) =>
-                                                        areaColor[index %
-                                                            areaColor.length],
-                                                xValueMapper:
-                                                    (_SalesData sales, _) =>
-                                                        sales.status,
-                                                yValueMapper:
-                                                    (_SalesData sales, _) =>
-                                                        sales.count)
-                                          ])
-                                    : SizedBox()
-                                : SizedBox(),
-                            Container(
-                              decoration: const BoxDecoration(
-                                color: AppColor.navBarIconColor,
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(10),
                                 ),
-                              ),
-                              // width: 400,
-                              height: 50,
-                              child: const Center(
-                                child: Text(
-                                  'Template',
-                                  style: TextStyle(
-                                    color: Color.fromARGB(255, 255, 255, 255),
-                                    fontSize: 18,
-                                  ),
-                                ),
-                              ),
+                              ],
                             ),
-                            SfCircularChart(
-                                tooltipBehavior: _tooltipBehavior,
-                                legend: const Legend(
-                                    isVisible: true,
-                                    position: LegendPosition.top,
-                                    overflowMode: LegendItemOverflowMode.wrap),
-                                series: <DoughnutSeries<Templatedata, String>>[
-                                  DoughnutSeries<Templatedata, String>(
-                                      radius: '100',
-                                      dataSource: templatedata,
-                                      enableTooltip: true,
-                                      pointColorMapper: (Templatedata sales,
-                                              int index) =>
-                                          areaColor[index % areaColor.length],
-                                      xValueMapper: (Templatedata sales, _) =>
-                                          sales.status,
-                                      yValueMapper: (Templatedata sales, _) =>
-                                          sales.count)
-                                ]),
                           ],
                         ),
                       ),
@@ -1064,6 +763,111 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                   ],
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.all(15),
+                child: Container(
+                  // height: 5/00,
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 255, 255, 255),
+                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                  ),
+                  child: Column(
+                    children: [
+                      modules.contains("Campaign")
+                          ? campaignCount != "0"
+                              ? Container(
+                                  decoration: const BoxDecoration(
+                                    color: AppColor.navBarIconColor,
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                  ),
+                                  // width: 400,
+                                  height: 50,
+                                  child: const Center(
+                                    child: Text(
+                                      'Campaign',
+                                      style: TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 255, 255, 255),
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : SizedBox()
+                          : SizedBox(),
+                      modules.contains("Campaign")
+                          ? campaignCount != "0"
+                              ? SfCircularChart(
+                                  tooltipBehavior: _tooltipBehavior,
+                                  legend: const Legend(
+                                      isVisible: true,
+                                      position: LegendPosition.top,
+                                      overflowMode:
+                                          LegendItemOverflowMode.wrap),
+                                  series: <PieSeries<_SalesData, String>>[
+                                      PieSeries<_SalesData, String>(
+                                          legendIconType: LegendIconType.circle,
+                                          radius: '100',
+                                          dataSource: businessData,
+                                          enableTooltip: true,
+                                          pointColorMapper:
+                                              (_SalesData sales, int index) =>
+                                                  areaColor[
+                                                      index % areaColor.length],
+                                          xValueMapper: (_SalesData sales, _) =>
+                                              sales.status,
+                                          yValueMapper: (_SalesData sales, _) =>
+                                              sales.count)
+                                    ])
+                              : SizedBox()
+                          : SizedBox(),
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: AppColor.navBarIconColor,
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(10),
+                          ),
+                        ),
+                        // width: 400,
+                        height: 50,
+                        child: const Center(
+                          child: Text(
+                            'Template',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SfCircularChart(
+                          tooltipBehavior: _tooltipBehavior,
+                          legend: const Legend(
+                              isVisible: true,
+                              position: LegendPosition.top,
+                              overflowMode: LegendItemOverflowMode.wrap),
+                          series: <DoughnutSeries<Templatedata, String>>[
+                            DoughnutSeries<Templatedata, String>(
+                                radius: '100',
+                                dataSource: templatedata,
+                                enableTooltip: true,
+                                pointColorMapper:
+                                    (Templatedata sales, int index) =>
+                                        areaColor[index % areaColor.length],
+                                xValueMapper: (Templatedata sales, _) =>
+                                    sales.status,
+                                yValueMapper: (Templatedata sales, _) =>
+                                    sales.count)
+                          ]),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     });
   }

@@ -4,12 +4,10 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
-import 'package:path/path.dart' as p;
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
@@ -18,7 +16,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'package:video_player/video_player.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
@@ -60,6 +57,9 @@ class _Forms extends State<CampaignAddUpdateView> {
   bool isEdit = false;
   int count = 0;
   String? base64Img;
+
+  int? csvrows;
+
   var leadlistvm;
   ImagePicker picker = ImagePicker();
   XFile? pickedFile;
@@ -636,7 +636,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                   readOnly: true,
                   onTap: () async {
                     final result = await FilePicker.platform.pickFiles(
-                      allowMultiple: true,
+                      allowMultiple: false,
                       type: FileType.custom,
                       allowedExtensions: ['csv'],
                     );
@@ -653,14 +653,32 @@ class _Forms extends State<CampaignAddUpdateView> {
                     debug('File Type: ${file?.extension}');
                     debug('File Path: ${file?.path}');
                     csvFile = File(file!.path.toString());
-                    debug('csvFile Path: ${csvFile}');
-                    final convertBytes =
-                        File(file!.path.toString()).readAsBytesSync();
-                    base64Img = base64Encode(convertBytes);
-                    String fileName = file!.path.toString().split('/').last;
-                    fileNameController.text = fileName;
-                    await saveFileToPrefs();
-                    setState(() {});
+
+                    final analysis = await analyzeCsvFile(csvFile!);
+
+                    print("analysis:::: result:::  ${analysis}");
+
+                    if (analysis['isValid']) {
+                      print("Total Rows: ${analysis['rowCount']}");
+                      print("Country Code Counts:");
+                      (analysis['countryCodeCounts'] as Map<String, int>)
+                          .forEach((code, count) => print("$code: $count"));
+
+                      debug('csvFile Path: ${csvFile}');
+
+                      csvrows = analysis['rowCount'];
+                      final convertBytes =
+                          File(file!.path.toString()).readAsBytesSync();
+                      base64Img = base64Encode(convertBytes);
+                      String fileName = file!.path.toString().split('/').last;
+                      fileNameController.text = fileName;
+                      await saveFileToPrefs();
+                      setState(() {});
+                    } else {
+                      print("Invalid CSV");
+                      EasyLoading.showToast(
+                          "File must contain headers in order: Name, Country Code, Number.");
+                    }
                   },
                 ),
               const SizedBox(height: 10),
@@ -718,16 +736,6 @@ class _Forms extends State<CampaignAddUpdateView> {
         ),
       ),
     );
-  }
-
-  String formatDateWithTimezone(DateTime dateTime) {
-    dateTime = dateTime.toLocal();
-    Duration offset = dateTime.timeZoneOffset;
-    String hours = offset.inHours.abs().toString().padLeft(2, '0');
-    String minutes = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
-    String sign = offset.isNegative ? '-' : '+';
-
-    return "${DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(dateTime)}$sign$hours:$minutes";
   }
 
   void onButtonPressed() async {
@@ -1798,72 +1806,6 @@ class _Forms extends State<CampaignAddUpdateView> {
     );
   }
 
-  void _showPermissionDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text("Storage Permission Required"),
-        content:
-            Text("Please allow storage access to save and view CSV files."),
-        actions: [
-          TextButton(
-            onPressed: () {
-              openAppSettings();
-              Navigator.pop(context);
-            },
-            child: Text("Open Settings"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel"),
-          )
-        ],
-      ),
-    );
-  }
-
-  // Future<bool> requestStoragePermission(BuildContext context) async {
-
-  // PermissionStatus status = await Permission.storage.status;
-
-  // // If already granted
-  // if (status.isGranted) return true;
-
-  // // If denied (but not permanently)
-  // if (status.isDenied) {
-  //   PermissionStatus newStatus = await Permission.storage.request();
-  //   return newStatus.isGranted;
-  // }
-
-  // // If permanently denied
-  // if (status.isPermanentlyDenied) {
-  //   // Show dialog to guide user to settings
-  //   await showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Storage Permission Needed'),
-  //       content: const Text(
-  //           'To download files, you must enable storage permission in app settings.'),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.of(context).pop(),
-  //           child: Text('Cancel'),
-  //         ),
-  //         TextButton(
-  //           onPressed: () async {
-  //             Navigator.of(context).pop();
-  //             await openAppSettings();
-  //           },
-  //           child: Text('Open Settings'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  //   return false;
-  // }
-
-  // }
-
   Future<String> getDownloadPath() async {
     Directory dir = Directory('/storage/emulated/0/Download');
     if (!await dir.exists()) {
@@ -2143,18 +2085,6 @@ class _Forms extends State<CampaignAddUpdateView> {
     });
   }
 
-  Future<int> _getAndroidVersion() async {
-    try {
-      return int.parse((await File('/system/build.prop').readAsLines())
-          .firstWhere((line) => line.contains('ro.build.version.sdk'))
-          .split('=')[1]);
-    } catch (_) {
-      return Platform.version.contains('Android')
-          ? int.tryParse(Platform.version.split(' ')[1].split('.')[0]) ?? 33
-          : 33;
-    }
-  }
-
   Future<void> downloadCSV(BuildContext context) async {
     List<List<dynamic>> rows = [
       ["Name", "Country Code", "Number"],
@@ -2187,5 +2117,61 @@ class _Forms extends State<CampaignAddUpdateView> {
         const SnackBar(content: Text("Unable to access Downloads directory")),
       );
     }
+  }
+}
+
+Future<Map<String, dynamic>> analyzeCsvFile(File file) async {
+  final result = {
+    'isValid': false,
+    'rowCount': 0,
+    'countryCodeCounts': <String, int>{},
+  };
+
+  try {
+    final content = await file.readAsString();
+
+    final rows = content
+        .split('\n')
+        .map((row) => row.trim())
+        .where((row) => row.isNotEmpty)
+        .toList();
+
+    if (rows.isEmpty) return result;
+
+    final headers =
+        rows[0].split(',').map((h) => h.trim().toLowerCase()).toList();
+
+    const expectedHeaders = ['name', 'countrycode', 'number'];
+
+    final isHeaderValid = headers.length >= 3 &&
+        List.generate(
+                expectedHeaders.length, (i) => headers[i] == expectedHeaders[i])
+            .every((e) => e);
+
+    if (!isHeaderValid) return result;
+
+    result['isValid'] = true;
+
+    // Count data rows (excluding header)
+    final dataRows = rows.sublist(1);
+    result['rowCount'] = dataRows.length;
+
+    // Count country codes
+    final Map<String, int> codeCounts = {};
+    for (final row in dataRows) {
+      final columns = row.split(',').map((e) => e.trim()).toList();
+      if (columns.length < 2) continue;
+
+      final code = columns[1];
+      if (code.isNotEmpty) {
+        codeCounts[code] = (codeCounts[code] ?? 0) + 1;
+      }
+    }
+
+    result['countryCodeCounts'] = codeCounts;
+
+    return result;
+  } catch (_) {
+    return result;
   }
 }

@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/views/view/balance_transaction_list_screen.dart';
 import 'package:whatsapp/views/view/tags_list_view.dart';
 import 'package:whatsapp/views/view/templete_list_view.dart';
 import 'package:whatsapp/views/view/whatsap_setting_view.dart';
@@ -45,11 +46,13 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
   }
 
   List<String> modules = [];
+  bool hasWallet = false;
   Future<void> getAvailableModules() async {
     final prefs = await SharedPreferences.getInstance();
     modules = await prefs
             .getStringList(SharedPrefsConstants.userAvailableMoulesKey) ??
         [];
+    hasWallet = await prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
     setState(() {});
 
     print("modules:::: ${modules}");
@@ -239,6 +242,26 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => TagsListView()));
+                  },
+                )
+              : SizedBox(),
+
+          hasWallet ? Divider() : SizedBox(),
+          hasWallet
+              ? ListTile(
+                  leading: Icon(
+                    FontAwesomeIcons.wallet,
+                    color: AppColor.navBarIconColor,
+                  ),
+                  title: Text(
+                    'My Wallet',
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                BalanceTransactionListScreen()));
                   },
                 )
               : SizedBox(),

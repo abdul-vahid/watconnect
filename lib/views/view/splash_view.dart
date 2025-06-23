@@ -272,16 +272,16 @@ class _SplashViewState extends State<SplashView> {
   //   }
   // }
 
-  static void registerToken() async {
-    _firebaseMessaging?.getToken().then((token) {
-      debug("registerToken value => $token");
-      UserListViewModel().registerFCMToken(token!).then((value) {
-        debug("FCM token registered to backend => $value");
-      }, onError: (error, stackTrace) {
-        debug("FCM token registration error => $error");
-      });
-    }).catchError((e) {
-      debug("FCM getToken error => $e");
-    });
-  }
+  // static void registerToken() async {
+  //   _firebaseMessaging?.getToken().then((token) {
+  //     debug("registerToken value => $token");
+  //     UserListViewModel().registerFCMToken(token!).then((value) {
+  //       debug("FCM token registered to backend => $value");
+  //     }, onError: (error, stackTrace) {
+  //       debug("FCM token registration error => $error");
+  //     });
+  //   }).catchError((e) {
+  //     debug("FCM getToken error => $e");
+  //   });
+  // }
 }

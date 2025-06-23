@@ -25,26 +25,6 @@ class UserListViewModel extends BaseListViewModel {
     return await post(url: url, body: userModel.toJson());
   }
 
-  Future<String> getDeviceId() async {
-    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      print("Device: Android");
-      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      // print("Aanaannn=>${androidInfo.id} "); 
-      // print("Aanaannndevice=>${androidInfo.device}");
-      // print("Aanadeviceannn=>${androidInfo.name}");
-      // print("ANDROID ID => ${androidInfo.androidId}");
-      return androidInfo.id ?? "unknown_device_id";
-    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-      print("Device: iOS");
-      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      return iosInfo.identifierForVendor ?? "unknown_device_id"; 
-    } else {
-      print("Device: Unsupported");
-      return "unsupported_platform";
-    }
-  }
-
   // Future<dynamic> registerFCMToken(String token) async {
   //   String url = AppUtils.getUrl(AppConstants.notificationfcm);
   //   print("Notifcation Url=>${url}");
@@ -62,18 +42,16 @@ class UserListViewModel extends BaseListViewModel {
   //   return post(url: url, body: jsonEncode(userModel));
   // }
 
-  Future<dynamic> registerFCMToken(String token) async {
+  Future<dynamic> registerFCMToken(String token, String devId) async {
     String url = AppUtils.getUrl(AppConstants.notificationfcm);
     print("Notification URL => $url");
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var userModel = AppUtils.getSessionUser(prefs);
 
-    String deviceId = await getDeviceId();
+    Map<String, String> body = {"fcm_token": token, "device_id": devId};
 
-    Map<String, String> body = {"fcm_token": token, "device_id": deviceId};
-
-    print("Request body => $body");
+    print("Request body to set fcm => $body");
 
     return post(url: url, body: jsonEncode(body));
   }
@@ -286,5 +264,25 @@ class UserListViewModel extends BaseListViewModel {
     }
 
     return viewModels;
+  }
+}
+
+Future<String> getDeviceId() async {
+  final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    print("Device: Android");
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    // print("Aanaannn=>${androidInfo.id} ");
+    // print("Aanaannndevice=>${androidInfo.device}");
+    // print("Aanadeviceannn=>${androidInfo.name}");
+    // print("ANDROID ID => ${androidInfo.androidId}");
+    return androidInfo.id ?? "unknown_device_id";
+  } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+    print("Device: iOS");
+    IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+    return iosInfo.identifierForVendor ?? "unknown_device_id";
+  } else {
+    print("Device: Unsupported");
+    return "unsupported_platform";
   }
 }

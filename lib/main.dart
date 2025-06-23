@@ -30,6 +30,7 @@ import 'package:whatsapp/view_models/tags_list_vm.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/view_models/user_data_list_vm.dart';
+import 'package:whatsapp/view_models/wallet_controller.dart';
 import 'firebase_options.dart';
 import 'view_models/campaign_vm.dart';
 import 'view_models/chart_list_vm.dart';
@@ -104,6 +105,7 @@ class MyApp extends StatelessWidget {
           create: (_) => ChatMessageController(),
         ),
         ChangeNotifierProvider(create: (_) => SfcampaignController()),
+        ChangeNotifierProvider(create: (_) => WalletController())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

@@ -151,7 +151,8 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
   @override
   Widget build(BuildContext context) {
     DashBoardController drProvider = Provider.of(context, listen: false);
-
+    print(
+        "drProvider::::: from salesforce:::::::  ${drProvider.fromSalesForce}");
     final _pageOptions = [
       drProvider.fromSalesForce ? SfHomeScreen() : HomeView(),
       drProvider.fromSalesForce ? SfProfileScreen() : ProfileView(),
