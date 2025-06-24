@@ -80,31 +80,31 @@ class _CampaignListView extends State<CampaignListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          modules.contains("Campaign") || modules.contains("Campaigns")
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: CircleAvatar(
-                    backgroundColor: AppColor.navBarIconColor,
-                    child: IconButton(
-                      icon: const Icon(
-                        FontAwesomeIcons.add,
-                        size: 25,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CampaignAddUpdateView(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                )
-              : const SizedBox(),
-        ],
+        // actions: [
+        //   modules.contains("Campaign") || modules.contains("Campaigns")
+        //       ? Padding(
+        //           padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        //           child: CircleAvatar(
+        //             backgroundColor: AppColor.navBarIconColor,
+        //             child: IconButton(
+        //               icon: const Icon(
+        //                 FontAwesomeIcons.add,
+        //                 size: 25,
+        //                 color: Colors.white,
+        //               ),
+        //               onPressed: () {
+        //                 Navigator.push(
+        //                   context,
+        //                   MaterialPageRoute(
+        //                     builder: (context) => CampaignAddUpdateView(),
+        //                   ),
+        //                 );
+        //               },
+        //             ),
+        //           ),
+        //         )
+        //       : const SizedBox(),
+        // ],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
@@ -658,62 +658,62 @@ class _CampaignListView extends State<CampaignListView> {
                                           ],
                                         ),
                                       ),
-                                      const SizedBox(width: 10),
-                                      allCampaigns[index].fileTitle == null
-                                          ? const SizedBox()
-                                          : GestureDetector(
-                                              onTap: () async {
-                                                var token =
-                                                    await AppUtils.getToken();
+                                      // const SizedBox(width: 10),
+                                      // allCampaigns[index].fileTitle == null
+                                      //     ? const SizedBox()
+                                      //     : GestureDetector(
+                                      //         onTap: () async {
+                                      //           var token =
+                                      //               await AppUtils.getToken();
 
-                                                FileDownloader.downloadFile(
-                                                  url:
-                                                      "${AppConstants.baseUrl}/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}",
-                                                  name: allCampaigns[index]
-                                                      .fileTitle,
-                                                  headers: {
-                                                    'Authorization': token ?? ""
-                                                  },
-                                                  downloadDestination:
-                                                      DownloadDestinations
-                                                          .publicDownloads,
-                                                  notificationType:
-                                                      NotificationType.all,
-                                                  onDownloadCompleted: (path) {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text(
-                                                            'Download Complete'),
-                                                        backgroundColor:
-                                                            Colors.green,
-                                                      ),
-                                                    );
-                                                  },
-                                                  onProgress:
-                                                      (fileName, progress) {
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text(
-                                                            'Downloading..'),
-                                                        backgroundColor:
-                                                            Colors.green,
-                                                      ),
-                                                    );
-                                                  },
-                                                );
-                                              },
-                                              child: Container(
-                                                child: Image.asset(
-                                                  'assets/images/download.png',
-                                                  height: 30,
-                                                  width: 30,
-                                                ),
-                                              ),
-                                            ),
+                                      //           FileDownloader.downloadFile(
+                                      //             url:
+                                      //                 "${AppConstants.baseUrl}/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}",
+                                      //             name: allCampaigns[index]
+                                      //                 .fileTitle,
+                                      //             headers: {
+                                      //               'Authorization': token ?? ""
+                                      //             },
+                                      //             downloadDestination:
+                                      //                 DownloadDestinations
+                                      //                     .publicDownloads,
+                                      //             notificationType:
+                                      //                 NotificationType.all,
+                                      //             onDownloadCompleted: (path) {
+                                      //               ScaffoldMessenger.of(
+                                      //                       context)
+                                      //                   .showSnackBar(
+                                      //                 const SnackBar(
+                                      //                   content: Text(
+                                      //                       'Download Complete'),
+                                      //                   backgroundColor:
+                                      //                       Colors.green,
+                                      //                 ),
+                                      //               );
+                                      //             },
+                                      //             onProgress:
+                                      //                 (fileName, progress) {
+                                      //               ScaffoldMessenger.of(
+                                      //                       context)
+                                      //                   .showSnackBar(
+                                      //                 const SnackBar(
+                                      //                   content: Text(
+                                      //                       'Downloading..'),
+                                      //                   backgroundColor:
+                                      //                       Colors.green,
+                                      //                 ),
+                                      //               );
+                                      //             },
+                                      //           );
+                                      //         },
+                                      //         child: Container(
+                                      //           child: Image.asset(
+                                      //             'assets/images/download.png',
+                                      //             height: 30,
+                                      //             width: 30,
+                                      //           ),
+                                      //         ),
+                                      //       ),
                                     ],
                                   ),
                                 ),

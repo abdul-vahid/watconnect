@@ -75,8 +75,17 @@ abstract class AppConstants {
   static const String channelId = "spark";
   static const String channelName = "Spark";
   static const String channelDescription = " Spark";
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   static const String baseUrl = "https://sandbox.watconnect.com/swp";
   // static const String baseUrl = "https://admin.watconnect.com/ibs";
+
+  static const String baseImgUrl = "https://sandbox.watconnect.com/";
+  // static const String baseImgUrl = "https://admin.watconnect.com/";
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   static const bool kDebugMode = true;
   // ==================Login Api==================
   static const String loginAPIPath = '/api/auth/login';
@@ -196,6 +205,10 @@ abstract class AppConstants {
       '${baseUrl}/api/whatsapp/wallet/check_balance';
 
   static const String debitWalletBalance = '${baseUrl}/api/whatsapp/wallet';
+
+  static const String templateRates = '${baseUrl}/api/whatsapp/template_rates';
+
+  // /whatsapp/
 
 //================================================================================================================================================================================
 //=========================================================================================================================================================================================

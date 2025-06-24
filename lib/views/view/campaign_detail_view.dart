@@ -202,115 +202,115 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
             color: Colors.white,
           ),
         ),
-        actions: [
-          if (widget.record?.campaignStatus != 'Completed')
-            // PopupMenuButton<String>(
-            //   icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
-            //   onSelected: (value) async {
-            //     if (value == 'edit') {
-            //       if (widget.record != null) {
-            //         final result = await Navigator.push(
-            //           context,
-            //           MaterialPageRoute(
-            //             builder: (context) =>
-            //                 CampaignAddUpdateView(model: widget.record),
-            //           ),
-            //         );
-            //         if (result == true) {
-            //           print("result on detailesss:::: ");
-            //           Navigator.pop(context, true);
-            //         }
-            //       }
-            //     }
+        // actions: [
+        // if (widget.record?.campaignStatus != 'Completed')
+        // PopupMenuButton<String>(
+        //   icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
+        //   onSelected: (value) async {
+        //     if (value == 'edit') {
+        //       if (widget.record != null) {
+        //         final result = await Navigator.push(
+        //           context,
+        //           MaterialPageRoute(
+        //             builder: (context) =>
+        //                 CampaignAddUpdateView(model: widget.record),
+        //           ),
+        //         );
+        //         if (result == true) {
+        //           print("result on detailesss:::: ");
+        //           Navigator.pop(context, true);
+        //         }
+        //       }
+        //     }
 
-            //     PopupMenuButton<String>(
-            //       icon: const Icon(Icons.more_vert,
-            //           size: 23, color: Colors.white),
-            //       onSelected: (value) async {
-            //         if (value == 'edit') {
-            //           // _navigateToEdit();
-            //           if (widget.record != null) {
-            //             final result = await Navigator.push(
-            //               context,
-            //               MaterialPageRoute(
-            //                 builder: (context) =>
-            //                     CampaignAddUpdateView(model: widget.record),
-            //               ),
-            //             );
-            //             if (result == true) {
-            //               print("result on detailesss:::: ");
-            //               Navigator.pop(context, true);
-            //             }
-            //           }
-            //         }
-            //         print("Vallallalla=>${value}");
-            //         if (value == 'delete') {
-            //           print("shhsjhjsh");
-            //         }
-            //       },
-            //       itemBuilder: (BuildContext context) {
-            //         return [
-            //           const PopupMenuItem<String>(
-            //             value: 'edit',
-            //             child: Text('Edit'),
-            //           ),
-            //           const PopupMenuItem<String>(
-            //             value: 'delete',
-            //             child: Text('delete'),
-            //           ),
-            //         ];
-            //       },
-            //     );
-            //   },
-            //   itemBuilder: (BuildContext context) {
-            //     return [
-            //       const PopupMenuItem<String>(
-            //         value: 'edit',
-            //         child: Text('Edit'),
-            //       ),
-            //       const PopupMenuItem<String>(
-            //         value: 'delete',
-            //         child: Text('Delete'),
-            //       ),
-            //     ];
-            //   },
-            // ),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
-              onSelected: (value) async {
-                if (value == 'edit') {
-                  if (widget.record != null) {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            CampaignAddUpdateView(model: widget.record),
-                      ),
-                    );
-                    if (result == true) {
-                      print("Edit successful, returning to previous screen.");
-                      Navigator.pop(context, true);
-                    }
-                  }
-                } else if (value == 'delete') {
-                  print("wowoowowowowowo");
-                  _showDeleteDialog();
-                }
-              },
-              itemBuilder: (BuildContext context) {
-                return [
-                  const PopupMenuItem<String>(
-                    value: 'edit',
-                    child: Text('Edit'),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'delete',
-                    child: Text('Delete'),
-                  ),
-                ];
-              },
-            ),
-        ],
+        //     PopupMenuButton<String>(
+        //       icon: const Icon(Icons.more_vert,
+        //           size: 23, color: Colors.white),
+        //       onSelected: (value) async {
+        //         if (value == 'edit') {
+        //           // _navigateToEdit();
+        //           if (widget.record != null) {
+        //             final result = await Navigator.push(
+        //               context,
+        //               MaterialPageRoute(
+        //                 builder: (context) =>
+        //                     CampaignAddUpdateView(model: widget.record),
+        //               ),
+        //             );
+        //             if (result == true) {
+        //               print("result on detailesss:::: ");
+        //               Navigator.pop(context, true);
+        //             }
+        //           }
+        //         }
+        //         print("Vallallalla=>${value}");
+        //         if (value == 'delete') {
+        //           print("shhsjhjsh");
+        //         }
+        //       },
+        //       itemBuilder: (BuildContext context) {
+        //         return [
+        //           const PopupMenuItem<String>(
+        //             value: 'edit',
+        //             child: Text('Edit'),
+        //           ),
+        //           const PopupMenuItem<String>(
+        //             value: 'delete',
+        //             child: Text('delete'),
+        //           ),
+        //         ];
+        //       },
+        //     );
+        //   },
+        //   itemBuilder: (BuildContext context) {
+        //     return [
+        //       const PopupMenuItem<String>(
+        //         value: 'edit',
+        //         child: Text('Edit'),
+        //       ),
+        //       const PopupMenuItem<String>(
+        //         value: 'delete',
+        //         child: Text('Delete'),
+        //       ),
+        //     ];
+        //   },
+        // ),
+        // PopupMenuButton<String>(
+        //   icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
+        //   onSelected: (value) async {
+        //     if (value == 'edit') {
+        //       if (widget.record != null) {
+        //         final result = await Navigator.push(
+        //           context,
+        //           MaterialPageRoute(
+        //             builder: (context) =>
+        //                 CampaignAddUpdateView(model: widget.record),
+        //           ),
+        //         );
+        //         if (result == true) {
+        //           print("Edit successful, returning to previous screen.");
+        //           Navigator.pop(context, true);
+        //         }
+        //       }
+        //     } else if (value == 'delete') {
+        //       print("wowoowowowowowo");
+        //       _showDeleteDialog();
+        //     }
+        //   },
+        //   itemBuilder: (BuildContext context) {
+        //     return [
+        //       const PopupMenuItem<String>(
+        //         value: 'edit',
+        //         child: Text('Edit'),
+        //       ),
+        //       const PopupMenuItem<String>(
+        //         value: 'delete',
+        //         child: Text('Delete'),
+        //       ),
+        //     ];
+        //   },
+        // ),
+        // ],
       ),
       body: _pageBody(record),
     );

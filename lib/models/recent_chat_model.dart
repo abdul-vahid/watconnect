@@ -41,6 +41,7 @@ class Records {
   String? id;
   String? parent_id;
   String? contactname;
+  String? country_code;
   String? message;
   String? whatsapp_number;
   String? full_number;
@@ -50,6 +51,7 @@ class Records {
       {this.id,
       this.parent_id,
       this.contactname,
+      this.country_code,
       this.full_number,
       this.whatsapp_number,
       this.createddate,
@@ -59,6 +61,7 @@ class Records {
     return Records(
       id: data['id']?.toString(),
       parent_id: data['parent_id']?.toString(),
+      country_code: data['country_code'].toString(),
       message: data['message'] ?? "",
       contactname: data['contactname']?.toString(),
       full_number: data['full_number']?.toString(),

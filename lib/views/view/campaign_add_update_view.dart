@@ -21,6 +21,7 @@ import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/view_models/message_list_vm.dart';
+import 'package:whatsapp/view_models/wallet_controller.dart';
 import 'package:whatsapp/views/view/clone_campaign_view.dart';
 import '../../models/campaign_model/campaign_model.dart';
 
@@ -89,8 +90,12 @@ class _Forms extends State<CampaignAddUpdateView> {
   List<Map<String, dynamic>> selectedMembers = [];
   List<Map<String, dynamic>> allContactDetails = [];
 
+  List<Map<String, dynamic>> allAmtContactDetails = [];
+
   List<Map<String, dynamic>> selectedGroups = [];
   List<Map<String, dynamic>> allGroupDetails = [];
+
+  Map<String, dynamic> csvAnalysis = {};
 
   List<String> selectedCampleadList = [];
   List campLeadNameNum = [];
@@ -111,6 +116,9 @@ class _Forms extends State<CampaignAddUpdateView> {
     saveNumberData();
     _fetchTemplates();
     campLeadList();
+
+    WalletController walletController = Provider.of(context, listen: false);
+    walletController.templateRatesApiCall();
 
     final model = widget.model;
     if (model != null) {
@@ -655,6 +663,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                     csvFile = File(file!.path.toString());
 
                     final analysis = await analyzeCsvFile(csvFile!);
+                    csvAnalysis = analysis;
 
                     print("analysis:::: result:::  ${analysis}");
 
@@ -764,7 +773,20 @@ class _Forms extends State<CampaignAddUpdateView> {
     print(
       "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}",
     );
-    addCampaignTemplate();
+
+    Map body = {
+      'template_id': SelectedTemplateCategory,
+      'group_ids': selectedGroupIds,
+      "lead_ids": selectedMembers,
+    };
+
+    WalletController walletController = Provider.of(context, listen: false);
+    walletController.calAmount(csv: csvAnalysis, body: body);
+
+    // print("body:::::::::::      ${body}");
+
+    // addCampaignTemplate();
+//  ===============================================================
     // if (_addleadFormKey.currentState!.validate()) {
     //   print("validatinggggg");
     //   if (_name == null || _name.toString().isEmpty) {
@@ -2068,7 +2090,8 @@ class _Forms extends State<CampaignAddUpdateView> {
                 "name": record.contactname,
                 "member_id": record.id,
                 "recordtypename": "lead",
-                "whatsapp_number": record.full_number
+                "whatsapp_number": record.full_number,
+                "country_code": record.country_code
               };
               allContactDetails.add(body);
               campLeads.add(record);

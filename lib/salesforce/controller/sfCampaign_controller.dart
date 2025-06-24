@@ -50,13 +50,11 @@ class SfcampaignController extends ChangeNotifier {
   Future<void> getCampaignApiCall() async {
     try {
       setGetCampLoader(true);
-
       final prefs = await SharedPreferences.getInstance();
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
       String apiUrl = "${AppConstants.sfGetCampaign}businessnumber=${busNum}";
       final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-
       final response = await http.get(
         Uri.parse(apiUrl),
         headers: {
@@ -64,7 +62,6 @@ class SfcampaignController extends ChangeNotifier {
           'Content-Type': 'application/json',
         },
       );
-
       log("headers:::: ${"Bearer $token"}    ${apiUrl}");
       print(
           "get campaing response :: ${response.runtimeType}  ${response.statusCode} ${response}");

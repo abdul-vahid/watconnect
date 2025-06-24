@@ -134,22 +134,21 @@ class MessageViewModel extends BaseListViewModel {
   }
 
   Future<dynamic> uploadFile(File file, String? number) async {
-    // final APIService _apiService = APIService();
     var token = await AppUtils.getToken();
-    // debug("Token2 == $token");
-    token ??= "";
-    var url = Uri.parse(
-        "${AppConstants.baseUrl}/webhook_template/documentId?whatsapp_setting_number=$number");
+    if (token == null || token.isEmpty) {
+      debug("Missing token!");
+      return null;
+    }
 
-    var request = http.MultipartRequest("POST", url);
+    final url = Uri.parse(
+      "${AppConstants.baseUrl}/api/webhook_template/documentId?whatsapp_setting_number=$number",
+    );
 
-    // Detect MIME type
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
     final fileStream = http.ByteStream(file.openRead());
     final length = await file.length();
 
-    // Attach file
-    var multipartFile = http.MultipartFile(
+    final multipartFile = http.MultipartFile(
       'file',
       fileStream,
       length,
@@ -157,25 +156,24 @@ class MessageViewModel extends BaseListViewModel {
       contentType: MediaType.parse(mimeType),
     );
 
-    request.files.add(multipartFile);
+    final request = http.MultipartRequest("POST", url)
+      ..files.add(multipartFile)
+      ..headers.addAll({
+        "Authorization": token,
+        // No need to add Content-Type for multipart
+      });
 
-    // Add headers if required
-    request.headers.addAll({
-      "Authorization": token,
-      "Content-Type": "multipart/form-data",
-    });
-    log("Request URL: $url");
-    // debug("Request Headers: ${request.headers}");
-    debug("Request Fields: ${request.fields}");
-    debug("Request Files: ${request.files}");
-    var response = await request.send();
-    var responseBody = await response.stream.bytesToString();
+    log("Uploading file to $url");
+
+    final response = await request.send();
+    final responseBody = await response.stream.bytesToString();
+
     if (response.statusCode == 200) {
-      print("File uploaded successfully");
-      debug("File uploaded successfully$responseBody");
+      debug("File uploaded successfully: $responseBody");
       return responseBody;
     } else {
-      print("Failed to upload file: ${response.reasonPhrase}");
+      debug(
+          "File upload failed: ${response.statusCode} - ${response.reasonPhrase}");
       return null;
     }
   }
@@ -198,7 +196,7 @@ class MessageViewModel extends BaseListViewModel {
       print("No token found");
       return null;
     }
-    var url = Uri.parse("${AppConstants.baseUrl}/whatsapp/files/$id");
+    var url = Uri.parse("${AppConstants.baseUrl}/api/whatsapp/files/$id");
     print("Request URL: $url");
     var request = http.MultipartRequest("POST", url);
 
@@ -254,9 +252,9 @@ class MessageViewModel extends BaseListViewModel {
     }
     String uri = "";
     if (isFromCamp) {
-      uri = "${AppConstants.baseUrl}/whatsapp/campaign/file/null";
+      uri = "${AppConstants.baseUrl}/api/whatsapp/campaign/file/null";
     } else {
-      uri = "${AppConstants.baseUrl}/whatsapp/campaign/file/$id";
+      uri = "${AppConstants.baseUrl}/api/whatsapp/campaign/file/$id";
     }
 
     var url = Uri.parse(uri);
@@ -332,7 +330,7 @@ class MessageViewModel extends BaseListViewModel {
     var token = await AppUtils.getToken();
     token ??= "";
     var url = Uri.parse(
-        "${AppConstants.baseUrl}/webhook_template/documentId?whatsapp_setting_number=$number");
+        "${AppConstants.baseUrl}/api/webhook_template/documentId?whatsapp_setting_number=$number");
     print("videieieie=>URL=>>>>>>>$url");
     var request = http.MultipartRequest("POST", url);
 

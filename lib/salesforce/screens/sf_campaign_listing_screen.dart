@@ -386,7 +386,7 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
                       ].map((e) => MultiSelectItem<String>(e, e)).toList(),
                       title: const Flexible(
                         child: Text(
-                          "Select Leads Status",
+                          "Select Campaign Status",
                           style: TextStyle(fontSize: 18),
                         ),
                       ),

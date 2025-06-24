@@ -406,4 +406,31 @@ class DashBoardController extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  List<String> configStatusList = [];
+  setConfigStatusList(List<String> selConfigStatus) {
+    configStatusList = selConfigStatus;
+    notify();
+  }
+
+  removeFromConfigStatusList(String configStatus) {
+    configStatusList.remove(configStatus);
+    notify();
+  }
+
+  resetConfigStatusList() {
+    configStatusList.clear();
+    notify();
+  }
+
+  filterConfig() {
+    if (configStatusList.isEmpty || configStatusList.contains('All')) {
+      drawerListItems = tempDrawerListItems;
+    } else {
+      drawerListItems = tempDrawerListItems.where((e) {
+        return configStatusList.contains(e.status);
+      }).toList();
+    }
+    notify();
+  }
 }

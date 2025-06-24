@@ -43,13 +43,13 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
 
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
-  bool _isRecording = false;
+
   StreamSubscription? _previewPlayerSubscription;
 
   Duration _totalDuration = Duration.zero;
   Duration _currentPosition = Duration.zero;
   bool _isPlayingPreview = false;
-
+  bool _isRecording = false;
   String? _audioPath;
 
   String userNumer = "";

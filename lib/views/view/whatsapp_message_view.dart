@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 // import 'dart:io' as IO;
+import 'package:flutter_sound/flutter_sound.dart' as fs;
 
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'dart:convert';
@@ -14,11 +15,14 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart' show Consumer, Provider;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
@@ -29,18 +33,11 @@ import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
+import 'package:whatsapp/view_models/wallet_controller.dart';
 import 'package:whatsapp/views/view/lead_detail_view.dart';
-
-import 'package:provider/provider.dart';
-import 'package:flutter_sound/flutter_sound.dart' as fs;
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:permission_handler/permission_handler.dart' as ph;
-import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/build_attachment_widget.dart';
-import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/build_button_widget.dart';
-import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/build_header_media.dart';
-import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/build_media_widget.dart';
-import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/delete_chat_his_dialog.dart';
-import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/whatsapp_chat_func.dart';
+import 'package:whatsapp/views/view/show_pdf.dart';
+import 'package:whatsapp/views/view/show_video.dart';
+import 'package:whatsapp/views/view/view_fullscreen_img.dart';
 
 import '../../models/template_model/template_model.dart';
 import '../../models/user_model/user_model.dart';
@@ -88,6 +85,14 @@ class _ChatScreenState extends State<ChatScreen> {
   var templeteViewModel;
   List deleteMgs = [];
   String messageid = "";
+
+  File? _audioFile;
+
+  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
+  final FlutterSoundPlayer _player = FlutterSoundPlayer();
+
+  StreamSubscription? _previewPlayerSubscription;
+
   late MessageViewModel messageViewModel;
   final TextEditingController _controller = TextEditingController();
   TextEditingController fileNameController = TextEditingController();
@@ -118,19 +123,6 @@ class _ChatScreenState extends State<ChatScreen> {
   String userName = "";
   TextEditingController _templateController = TextEditingController();
 
-  File? _audioFile;
-
-  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
-  final FlutterSoundPlayer _player = FlutterSoundPlayer();
-  bool _isRecording = false;
-  StreamSubscription? _previewPlayerSubscription;
-
-  Duration _totalDuration = Duration.zero;
-  Duration _currentPosition = Duration.zero;
-  bool _isPlayingPreview = false;
-
-  String? _audioPath;
-
   IO.Socket? socket;
   String token = "your_token_here";
   var userId;
@@ -139,6 +131,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void initState() {
+    WalletController walletController = Provider.of(context, listen: false);
+
+    walletController.templateRatesApiCall();
     leadId = widget.wpnumber ?? "";
     WidgetsBinding.instance.addPostFrameCallback((_) {
       MessageController msgController =
@@ -146,9 +141,10 @@ class _ChatScreenState extends State<ChatScreen> {
       msgController.clearDeleteList();
     });
     connectSocket();
+    _initializeAudio();
     templateNames.add("Select Template Name");
     // connectSocket();
-    _initializeAudio();
+
     _fetchTemplates();
     super.initState();
     _pullRefresh();
@@ -167,156 +163,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    disconnectSocket();
     _recorder.closeRecorder();
     _player.closePlayer();
     _previewPlayerSubscription?.cancel();
-    _controller.dispose();
+    disconnectSocket();
+
     super.dispose();
-  }
-
-  Future<void> _startRecording() async {
-    print("starting with recording---------------");
-    try {
-      var status = await ph.Permission.microphone.request();
-      if (!status.isGranted) return;
-
-      Directory tempDir = await getTemporaryDirectory();
-      _audioPath = '${tempDir.path}/voice_msg.aac';
-
-      await _recorder.startRecorder(
-        toFile: _audioPath,
-        codec: fs.Codec.aacADTS,
-      );
-
-      setState(() {
-        _isRecording = true;
-      });
-    } catch (e, stackTrace) {
-      print(
-          "some error catching in rec audio:::::::::   ${e}      ${stackTrace}");
-    }
-  }
-
-  Future<void> _stopRecordingAndPreview() async {
-    // await _recorder.stopRecorder();
-    String? recordedPath = await _recorder.stopRecorder();
-
-    setState(() {
-      _audioFile = File(recordedPath!);
-      _isRecording = false;
-    });
-
-    print("_audioFile::::::::::::::    ${_audioFile}");
-
-    await Future.delayed(Duration(milliseconds: 300));
-    _showPreviewDialog();
-  }
-
-  void _showPreviewDialog() async {
-    if (_audioPath == null) return;
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            Future<void> startPlayer() async {
-              await _player.startPlayer(
-                fromURI: _audioPath!,
-                codec: fs.Codec.aacADTS,
-                whenFinished: () {
-                  setState(() {
-                    _isPlayingPreview = false;
-                    _currentPosition = Duration.zero;
-                  });
-                },
-              );
-
-              setState(() {
-                _isPlayingPreview = true;
-              });
-
-              _previewPlayerSubscription?.cancel();
-              _previewPlayerSubscription = _player.onProgress?.listen((event) {
-                setState(() {
-                  _currentPosition = event.position;
-                  _totalDuration = event.duration;
-                });
-              });
-            }
-
-            Future<void> stopPlayer() async {
-              await _player.stopPlayer();
-              _previewPlayerSubscription?.cancel();
-              setState(() {
-                _isPlayingPreview = false;
-                _currentPosition = Duration.zero;
-              });
-            }
-
-            return AlertDialog(
-              title: const Text('Voice Message Preview'),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      _isPlayingPreview
-                          ? Icons.pause_circle_filled
-                          : Icons.play_circle_fill,
-                      size: 48,
-                      color: AppColor.navBarIconColor,
-                    ),
-                    onPressed: () {
-                      _isPlayingPreview ? stopPlayer() : startPlayer();
-                    },
-                  ),
-                  // Slider(
-                  //   value: _currentPosition.inMilliseconds.toDouble(),
-                  //   max: _totalDuration.inMilliseconds.toDouble() > 0
-                  //       ? _totalDuration.inMilliseconds.toDouble()
-                  //       : 1,
-                  //   onChanged: (value) async {
-                  //     final seekTo = Duration(milliseconds: value.toInt());
-                  //     await _player.seekToPlayer(seekTo);
-                  //     setState(() {
-                  //       _currentPosition = seekTo;
-                  //     });
-                  //   },
-                  // ),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     Text(_formatDuration(_currentPosition)),
-                  //     Text(_formatDuration(_totalDuration)),
-                  //   ],
-                  // ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    stopPlayer();
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Send'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    stopPlayer();
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Cancel'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
   }
 
   void _scrollToBottom() {
@@ -430,7 +282,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               onSelected: (String value) {
                 if (value == 'Clear Chat') {
-                  showDeleteDialog(context, deletechat);
+                  _showDeleteDialog();
                 }
               },
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -472,6 +324,68 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  // void _showProfileDialog(BuildContext context) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         content: SingleChildScrollView(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               const Center(
+  //                 child: CircleAvatar(
+  //                   radius: 50,
+  //                   backgroundImage: NetworkImage(
+  //                     'https://www.w3schools.com/w3images/avatar2.png',
+  //                   ),
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 10),
+  //               Center(
+  //                 child: Text(
+  //                   widget.leadName ?? "No Name Provided",
+  //                   style: const TextStyle(
+  //                       fontWeight: FontWeight.bold, fontSize: 18),
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 10),
+  //               Center(
+  //                 child: Text(
+  //                   widget.wpnumber ?? "No Name Provided",
+  //                   style: const TextStyle(
+  //                       fontWeight: FontWeight.bold, fontSize: 18),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //             child: Container(
+  //               padding:
+  //                   const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+  //               decoration: BoxDecoration(
+  //                 color: AppColor.navBarIconColor,
+  //                 borderRadius: BorderRadius.circular(8),
+  //               ),
+  //               child: const Text(
+  //                 "Close",
+  //                 style: TextStyle(
+  //                   color: Colors.white,
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
   void deletechat() async {
     print("delete function callin g working");
     final prefs = await SharedPreferences.getInstance();
@@ -481,8 +395,81 @@ class _ChatScreenState extends State<ChatScreen> {
         .msghistorydelete(leadnumber: widget.wpnumber, number: number)
         .then((value) => {
               _pullRefresh(),
+              // Navigator.pop(context),
               print("deeeelete sucefulyyy"),
             });
+  }
+
+  Future<void> _showDeleteDialog() async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Are you sure you want to delete this Chat histoy?',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 15),
+              const Divider(),
+              const SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.grey,
+                      backgroundColor: Colors.grey[200],
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'No',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  const SizedBox(width: 20),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: AppColor.navBarIconColor,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Yes',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    onPressed: () {
+                      deletechat();
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> messagesendd(String text) async {
@@ -971,6 +958,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
+    print("image:::::::::::::::::::::::::::    ${image}");
     if (image != null) {
       print("type===> image  $type");
       String? response = await messageViewModel.uploadFile(image!, number);
@@ -989,6 +977,96 @@ class _ChatScreenState extends State<ChatScreen> {
           "to": widget.wpnumber,
           "type": type,
           type: {"id": doucmentid, "caption": caps ?? "Image caption"}
+        };
+        print("ississiis=>$imagebody");
+        String? responseimage = await messageViewModel
+            .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
+            .then((value) {
+          print("value----->$value");
+          return null;
+        });
+
+        String? leadid = widget.id;
+        print("leadid=>$leadid");
+
+        String? sendimagedatabase = await messageViewModel
+            .uploadFiledb(image!, number, leadid)
+            .then((value) {
+          print("value----upload dididi->${value}");
+
+          Map<String, dynamic> response = jsonDecode(value);
+
+          fileid = response['records']?[0]['id'];
+
+          print("ID: $fileid");
+          return null;
+        });
+
+        Map<String, dynamic> imagehistorydata = {
+          "parent_id": leadid,
+          "name": widget.leadName,
+          "message_template_id": null,
+          "whatsapp_number": widget.wpnumber,
+          "message": caps ?? "",
+          "status": "Outgoing",
+          "recordtypename": "lead",
+          "file_id": fileid,
+          // "caption": caps ?? "",
+          "business_number": number,
+          "is_read": true
+        };
+        print("\x1B[33mdsdsfsdfsd${imagehistorydata}\x1B[0m");
+
+        print("fileidfileid${fileid}");
+        String? sendhistoryimage = await messageViewModel
+            .sendimagehistory(
+          msghistorydata: imagehistorydata,
+        )
+            .then((value) {
+          print("\x1B[32msendhistoryimagesendhistoryimage${value}\x1B[0m");
+          return null;
+        });
+      } else {
+        debugPrint('Image upload failed or response was null');
+      }
+    } else {
+      debugPrint('No image selected');
+    }
+    print("after all functions arecalled::::");
+    setState(() {
+      isImageSent = true;
+      getHistory();
+      showLoader = false;
+      image = null;
+    });
+  }
+
+  void sendAudio(String type, String? caps) async {
+    print("woking....");
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+
+    print("image:::::::::::::::::::::::::::    ${_audioFile}");
+    if (_audioFile != null) {
+      print("type===> image  $type");
+      String? response = await messageViewModel.uploadFile(_audioFile!, number);
+
+      if (response != null) {
+        debugPrint('Image uploaded successfully, Response: $response');
+
+        var jsonResponse = jsonDecode(response);
+        String? doucmentid = jsonResponse['id'];
+
+        debugPrint('Uploaded File ID: $doucmentid');
+        debugPrint("widget.model.whatsapp_number${widget.wpnumber}");
+        Map<String, dynamic> imagebody = {
+          "messaging_product": "whatsapp",
+          "recipient_type": "individual",
+          "to": widget.wpnumber,
+          "type": type,
+          type: {
+            "id": doucmentid,
+          }
         };
         print("ississiis=>$imagebody");
         String? responseimage = await messageViewModel
@@ -1209,7 +1287,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                   if (title.isNotEmpty) {
                     imageUrl =
-                        "https://admin.watconnect.com/public/${tenatCode}/attachment/$title";
+                        "${AppConstants.baseImgUrl}public/${tenatCode}/attachment/$title";
                   }
 
                   bool showDateLabel = false;
@@ -1378,21 +1456,19 @@ class _ChatScreenState extends State<ChatScreen> {
                                                         children: [
                                                           if (imageUrl
                                                               .isNotEmpty)
-                                                            buildAttachmentWidget(
-                                                                imageUrl,
-                                                                context),
+                                                            _buildAttachmentWidget(
+                                                                imageUrl),
                                                           if (allMessages[index]
                                                                       .header !=
                                                                   null &&
                                                               imageUrl.isEmpty)
-                                                            buildHeaderMedia(
+                                                            _buildHeaderMedia(
                                                                 allMessages[
                                                                         index]
                                                                     .header!,
                                                                 allMessages[
                                                                         index]
-                                                                    .headerBody,
-                                                                context),
+                                                                    .headerBody),
                                                           if (allMessages[index]
                                                                       .message !=
                                                                   null &&
@@ -1456,7 +1532,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                             ),
                                                           if (butttons
                                                               .isNotEmpty)
-                                                            buildButtons(
+                                                            _buildButtons(
                                                                 butttons),
                                                           if (allMessages[index]
                                                                   .status ==
@@ -1511,6 +1587,13 @@ class _ChatScreenState extends State<ChatScreen> {
   void singlemsgdelete(List idsToDelete) async {
     print("Single delete attempt for message with ID: $idsToDelete");
 
+    // if (msghistoryid.isEmpty) {
+    //   print("Invalid message ID. Cannot delete.");
+    //   return;
+    // }
+    // var msghistoryidd = msghistoryid;
+    // print("sdhsdhjdhjsdhfdks=>$msghistoryidd");
+
     var bodyy = jsonEncode({"ids": idsToDelete});
 
     print("Request hdshsd jhds body: $bodyy");
@@ -1522,7 +1605,12 @@ class _ChatScreenState extends State<ChatScreen> {
       print("number=>$number");
       await Provider.of<MessageViewModel>(context, listen: false)
           .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
-
+      // Navigator.of(context).pop();
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   content: Text("deleted sucefully"),
+      //   backgroundColor: Colors.green,
+      // )
+      // );
       EasyLoading.showToast("Deleted Succeffuly");
 
       MessageController msgController =
@@ -1542,266 +1630,107 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildMessageInputArea() {
     messageViewModel = Provider.of<MessageViewModel>(context);
 
-    print(
-        " messageViewModel.viewModels.length:::::: ${messageViewModel.viewModels}   ${showLoader} ");
-
     return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: StatefulBuilder(
-          builder: (context, setState) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          if (_isRecording)
+            const Row(
               children: [
-                if (_isRecording)
-                  const Row(
-                    children: [
-                      Icon(Icons.fiber_manual_record, color: Colors.red),
-                      SizedBox(width: 6),
-                      Text("Recording..."),
-                    ],
-                  ),
-                Row(
+                Icon(Icons.fiber_manual_record, color: Colors.red),
+                SizedBox(width: 6),
+                Text("Recording..."),
+              ],
+            ),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.attach_file),
+                onPressed: _showPicker,
+              ),
+              Expanded(
+                child: Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.attach_file),
-                      onPressed: _showPicker,
-                    ),
+                    if (image != null && !isImageSent)
+                      _buildFilePreview(image!),
                     Expanded(
-                      child: Row(
-                        children: [
-                          image != null && isImageSent == false
-                              ? image.toString().split('.').last.contains('pdf')
-                                  ? Container(
-                                      width: 50,
-                                      height: 50,
-                                      margin: const EdgeInsets.only(right: 8.0),
-                                      decoration: BoxDecoration(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        child: Image.asset(
-                                          "assets/images/pdf.png",
-                                          width: 50,
-                                          height: 50,
-                                          fit: BoxFit
-                                              .cover, // Ensures full coverage
-                                        ),
-                                      ),
-                                    )
-                                  : image
-                                          .toString()
-                                          .split('.')
-                                          .last
-                                          .contains('mp4')
-                                      ? const Icon(
-                                          Icons.play_arrow,
-                                          color: Colors.black,
-                                        )
-                                      : image
-                                                  .toString()
-                                                  .split('.')
-                                                  .last
-                                                  .contains('jpg') ||
-                                              image
-                                                  .toString()
-                                                  .split('.')
-                                                  .last
-                                                  .contains('png') ||
-                                              image
-                                                  .toString()
-                                                  .split('.')
-                                                  .last
-                                                  .contains('jpeg')
-                                          ? Container(
-                                              height: 50,
-                                              width: 50,
-                                              child: Image.file(
-                                                image!,
-                                                fit: BoxFit.cover,
-                                              ),
-                                            )
-                                          : Container(
-                                              width: 50,
-                                              height: 50,
-                                              margin: const EdgeInsets.only(
-                                                  right: 8.0),
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                                // image: DecorationImage(
-                                                //   image: FileImage(image!),
-                                                //   fit: BoxFit.cover,
-                                                // ),
-                                              ),
-                                              child: Image.asset(
-                                                "assets/images/file.png",
-                                                width: 50,
-                                                height: 50,
-                                                fit: BoxFit
-                                                    .cover, // Ensures full coverage
-                                              ),
-                                            )
-                              : const SizedBox.shrink(),
-                          Expanded(
-                            child: TextField(
-                              controller: _controller,
-                              decoration: InputDecoration(
-                                suffixIcon: Padding(
-                                  padding: const EdgeInsets.only(right: 4.0),
-                                  child: GestureDetector(
-                                    onLongPress: _startRecording,
-                                    onLongPressUp: _stopRecordingAndPreview,
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                          color: Color.fromARGB(
-                                              255, 168, 205, 235),
-                                          shape: BoxShape.circle),
-                                      padding: const EdgeInsets.all(10),
-                                      child: Icon(
-                                        _isRecording
-                                            ? Icons.stop
-                                            : Icons.mic_none_sharp,
-                                        color: _isRecording
-                                            ? Colors.red
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                hintText: 'Type a message...',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide: BorderSide.none,
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFFF1F1F1),
-                              ),
-                            ),
+                      child: TextField(
+                        controller: _controller,
+                        decoration: InputDecoration(
+                          hintText: 'Type a message...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
                           ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 148, 188, 206),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.code, color: Colors.white),
-                          onPressed: () {
-                            _getBootmSheet();
-                          },
+                          filled: true,
+                          fillColor: const Color(0xFFF1F1F1),
                         ),
                       ),
                     ),
-                    allMessages.isEmpty
-                        ? SizedBox()
-                        : Container(
-                            decoration: BoxDecoration(
-                              color: AppColor.cardsColor,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: showLoader
-                                ? const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: SizedBox(
-                                      height: 30,
-                                      width: 30,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                : IconButton(
-                                    icon: const Icon(Icons.send,
-                                        color: Colors.white),
-                                    onPressed: () async {
-                                      print("image$image");
-                                      setState(() {
-                                        showLoader = true;
-                                      });
-
-                                      if (image != null) {
-                                        String fileExtension = path
-                                            .extension(image!.path)
-                                            .toLowerCase();
-                                        print("File Extension: $fileExtension");
-
-                                        if (fileExtension == '.jpg' ||
-                                            fileExtension == '.jpeg') {
-                                          print(" Sending Image...");
-                                          filesend("image");
-                                        } else if (fileExtension == '.mp4' ||
-                                            fileExtension == '.avi' ||
-                                            fileExtension == '.mov') {
-                                          print(" Sending Video...");
-                                          filesend("video");
-                                        } else if (fileExtension == '.html' ||
-                                            fileExtension == '.txt') {
-                                          print(" Sending text document...");
-                                          filesend("document");
-                                        } else {
-                                          print(" Sending Document...");
-                                          filesend("document");
-                                        }
-                                      } else if (_controller.text
-                                          .trim()
-                                          .isNotEmpty) {
-                                        setState(() {
-                                          showLoader = false;
-
-                                          image = null;
-                                          getHistory();
-                                        });
-                                        messagesendd(_controller.text)
-                                            .then((onValue) async {
-                                          var leadnumber = widget.wpnumber;
-                                          final prefs = await SharedPreferences
-                                              .getInstance();
-                                          String? number =
-                                              prefs.getString('phoneNumber');
-                                          print("number=>$number");
-                                          await Provider.of<MessageViewModel>(
-                                                  context,
-                                                  listen: false)
-                                              .Fetchmsghistorydata(
-                                                  leadnumber: leadnumber,
-                                                  number: number);
-                                        });
-                                      } else if (_controller.text
-                                          .trim()
-                                          .isNotEmpty) {
-                                        showLoader = false;
-                                        EasyLoading.showToast(
-                                            "please Type a Message");
-                                        print(
-                                            "⚠ No file or text entered. Doing nothing.");
-                                      } else {
-                                        showLoader = false;
-                                        EasyLoading.showToast(
-                                          "Please type a message",
-                                          toastPosition:
-                                              EasyLoadingToastPosition.center,
-                                        );
-                                        print(
-                                            "⚠ No file or text entered. Doing nothing.");
-                                      }
-                                      _controller.clear();
-                                      setState(() {});
-                                    },
-                                  ),
-                          ),
                   ],
                 ),
-              ],
-            );
-          },
-        ));
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 4.0),
+                child: Listener(
+                  onPointerDown: (_) => _startRecording(setState),
+                  onPointerUp: (_) => _stopRecording(setState),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 168, 205, 235),
+                      shape: BoxShape.circle,
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Icon(
+                      _isRecording ? Icons.stop : Icons.mic_none_sharp,
+                      color: _isRecording ? Colors.red : Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 148, 188, 206),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.code, color: Colors.white),
+                    onPressed: () {
+                      WalletController wc = Provider.of(context, listen: false);
+                      wc.setFinalAmt("");
+                      _getBootmSheet();
+                    },
+                  ),
+                ),
+              ),
+              if (allMessages.isNotEmpty)
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColor.cardsColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: showLoader
+                      ? const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: SizedBox(
+                            height: 30,
+                            width: 30,
+                            child:
+                                CircularProgressIndicator(color: Colors.white),
+                          ),
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.send, color: Colors.white),
+                          onPressed: _handleSendMessage,
+                        ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _showSimpleDialog(String id) async {
@@ -1874,6 +1803,7 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       },
     );
+    ;
   }
 
   Future<void> _fetchTemplates() async {
@@ -1912,12 +1842,18 @@ class _ChatScreenState extends State<ChatScreen> {
         if (campaignModel?.data != null) {
           for (var record in campaignModel!.data!) {
             if (record.status != null) {
-              print("rec name ::${record.name}  ${selectedTemplateName}");
+              // print("rec name ::${record.name}  ${selectedTemplateName}");
               if (selectedTemplateName == record.name) {
                 currentTemplate = record;
                 selectedTemplateId = currentTemplate.id;
                 selectedLanguage = currentTemplate.language;
-                log("current template::::: ${currentTemplate}  ${currentTemplate.name}");
+
+                WalletController walletController =
+                    Provider.of(context, listen: false);
+                walletController.calculateAmount(
+                    currentTemplate.category, widget.model?.countryCode ?? "");
+
+                log("current template:::  ${currentTemplate.category}   :: ${currentTemplate}  ${currentTemplate.name}");
                 print(
                     "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}");
                 components = currentTemplate.components;
@@ -2077,7 +2013,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                   "assets/images/pdf.png",
                                                   height: 100,
                                                 )
-                                              : buildMediaWidget(
+                                              : _buildMediaWidget(
                                                   selectedHeader.format,
                                                   imgToShow),
 
@@ -2444,6 +2380,10 @@ class _ChatScreenState extends State<ChatScreen> {
                                       });
                                     });
                                   }
+
+                                  WalletController walletController =
+                                      Provider.of(context, listen: false);
+                                  walletController.debitWalletBalApiCall();
                                   getHistory();
                                 },
                                 child: _isLoading
@@ -2469,6 +2409,7 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       },
     );
+    ;
   }
 
   Future<void> _getBootmSheet() {
@@ -2575,6 +2516,18 @@ class _ChatScreenState extends State<ChatScreen> {
                       },
                       value: selectedTemplateName,
                     ),
+                    Consumer<WalletController>(
+                        builder: (context, wltController, child) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Cost : ${wltController.finalAmount}"),
+                          ],
+                        ),
+                      );
+                    }),
                     Center(
                       child: ElevatedButton(
                         style: ButtonStyle(
@@ -2598,17 +2551,26 @@ class _ChatScreenState extends State<ChatScreen> {
                           log("selectedBody['text']>>> ${selectedBody.text}  ");
                           final regex = RegExp(r'\{\{\d+\}\}');
 
-                          if (regex.hasMatch(selectedBody.text) ||
-                              selectedHeader.format != "TEXT") {
-                            Navigator.of(context).pop();
-                            _sendTemplateSheet();
-                          } else {
+                          if (selectedHeader == null ||
+                              selectedHeader.format == null) {
                             String templateToSend = selectedTemplateName ??
                                 _templateController.text;
                             print("Template to send: $templateToSend");
                             templetesendd(templateToSend, []);
-
                             Navigator.of(context).pop();
+                          } else {
+                            if (regex.hasMatch(selectedBody.text) ||
+                                selectedHeader.format != null ||
+                                selectedHeader.format != "TEXT") {
+                              Navigator.of(context).pop();
+                              _sendTemplateSheet();
+                            } else {
+                              String templateToSend = selectedTemplateName ??
+                                  _templateController.text;
+                              print("Template to send: $templateToSend");
+                              templetesendd(templateToSend, []);
+                              Navigator.of(context).pop();
+                            }
                           }
                         },
                         child: const Text(
@@ -2625,6 +2587,11 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       },
     );
+  }
+
+  String capitalize(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
   }
 
   Future<void> sendParamsApiCall(
@@ -2755,6 +2722,86 @@ class _ChatScreenState extends State<ChatScreen> {
     print("sendCampParam>>> $campaignResponse");
   }
 
+  Future<File?> urlToFile(String imageUrl) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+
+      if (response.statusCode == 200) {
+        final directory = await getTemporaryDirectory();
+
+        final filePath = '${directory.path}/downloaded_image.png';
+
+        File file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
+
+        return file;
+      }
+    } catch (e) {
+      print("Error downloading image: $e");
+    }
+    return null;
+  }
+
+  Widget _buildMediaWidget(String format, String content) {
+    print("format:::::: ${format}  ${content}");
+    switch (format) {
+      case "IMAGE":
+        return content.isEmpty
+            ? Container(
+                height: 80,
+                width: 80,
+                child: Image.asset("assets/images/img_placeholder.png"),
+              )
+            : Image.network(content, fit: BoxFit.cover);
+
+      case "VIDEO":
+        return content.isNotEmpty
+            ? Container(
+                height: 150,
+                width: 150,
+                decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(8)),
+                child: const Center(
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+              )
+            : Container(
+                height: 150,
+                width: double.infinity,
+                color: Colors.black12,
+                child: const Center(
+                  child: Icon(Icons.videocam_off, size: 40, color: Colors.grey),
+                ),
+              );
+
+      case "DOCUMENT":
+        return content.isNotEmpty
+            ? GestureDetector(
+                onTap: () {
+                  // openDocument(documentUrl); // Function to open the document
+                },
+                child: Row(
+                  children: [
+                    Image.asset(
+                      "assets/images/doc.png",
+                      height: 120,
+                      width: 120,
+                    ),
+                  ],
+                ),
+              )
+            : const SizedBox(); // Empty if no document
+
+      default:
+        return const SizedBox(); // If format is unknown
+    }
+  }
+
   Future<void> sendDocTemp(
       String tempToSend,
       bool isChecked,
@@ -2809,7 +2856,7 @@ class _ChatScreenState extends State<ChatScreen> {
         print("Proxy response: $fileId");
       } else {
         var res = await messageViewModel.uploadFile(image!, number);
-        print("res>>>>> ${res}   ${res.runtimeType}  ${jsonDecode(res)}   }");
+        print("res>>>>> ${res}   ${res.runtimeType}  ${jsonDecode(res)} }");
         var rs = jsonDecode(res);
         print("rs:::: ${rs}   ${rs["id"]}");
         // fileId = res["id"].toString();
@@ -2996,6 +3043,316 @@ class _ChatScreenState extends State<ChatScreen> {
         });
   }
 
+  String replacePlaceholders(String messageBody, String? bodyTextParamsString) {
+    print("bodyTextParamsString:::::::::::::: $bodyTextParamsString");
+
+    if (bodyTextParamsString == null || bodyTextParamsString.isEmpty) {
+      return messageBody;
+    }
+
+    try {
+      // Convert Dart-style map string to JSON-style string
+      final fixedString = bodyTextParamsString
+          .replaceAllMapped(RegExp(r'(\w+):'), (match) => '"${match[1]}":')
+          .replaceAllMapped(RegExp(r':\s*([^,}]+)'), (match) {
+        final value = match[1]!.trim();
+        // If it's already quoted, number, or boolean/null, keep as is
+        if (value.startsWith('"') ||
+            value == 'null' ||
+            value == 'true' ||
+            value == 'false' ||
+            num.tryParse(value) != null) {
+          return ': $value';
+        }
+        return ': "$value"'; // wrap in quotes if plain word
+      });
+
+      final Map<String, dynamic> params = jsonDecode(fixedString);
+
+      params.forEach((key, value) {
+        messageBody = messageBody.replaceAll('{{$key}}', value.toString());
+      });
+    } catch (e) {
+      print('Error decoding or replacing placeholders: $e');
+    }
+
+    return messageBody;
+  }
+
+  Widget _buildAttachmentWidget(String url) {
+    String fileType = url.split('.').last.toLowerCase();
+    print("printing:: file type::: ${fileType}");
+    switch (fileType) {
+      case 'pdf':
+        return InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ViewPdf(
+                            pdfUrl: url,
+                          )));
+            },
+            child: Image.asset("assets/images/pdf.png",
+                height: 120, width: MediaQuery.of(context).size.width * 0.65));
+
+      case 'docx':
+      case 'doc':
+        return InkWell(
+            onTap: () {
+              openDocument(context, url);
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) => OpenAllDocs(
+              //               url: url,
+              //             )));
+            },
+            child: Image.asset("assets/images/doc.png",
+                height: 120, width: MediaQuery.of(context).size.width * 0.65));
+
+      case 'pptx':
+      case 'ppt':
+        return InkWell(
+            onTap: () {
+              openDocument(context, url);
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) => OpenAllDocs(
+              //               url: url,
+              //             )));
+            },
+            child: Image.asset("assets/images/powerpoint.png",
+                height: 120, width: MediaQuery.of(context).size.width * 0.65));
+
+      case 'xlsx':
+      case 'xls':
+        return InkWell(
+            onTap: () {
+              openDocument(context, url);
+            },
+            child: Image.asset("assets/images/excel.png",
+                height: 120, width: MediaQuery.of(context).size.width * 0.65));
+
+      case 'mp4':
+        return InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ViewVideo(
+                            videoUrl: url,
+                          )));
+            },
+            child: _buildVideoPlaceholder());
+      case 'png':
+      case 'jpg':
+      case 'jpeg':
+        return InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => PreviewImage(
+                            imgUrl: url,
+                          )));
+            },
+            child: Image.network(url,
+                height: 120,
+                width: MediaQuery.of(context).size.width * 0.65,
+                fit: BoxFit.cover));
+      default:
+        return InkWell(
+            onTap: () {
+              openDocument(context, url);
+            },
+            child: Image.asset("assets/images/file.png",
+                height: 120, width: MediaQuery.of(context).size.width * 0.65));
+    }
+  }
+
+// Video placeholder widget
+  Widget _buildVideoPlaceholder() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2.0),
+      child: Container(
+        height: 120,
+        width: MediaQuery.of(context).size.width * 0.65,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 30),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderMedia(String header, String headerBody) {
+    switch (header) {
+      case "IMAGE":
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => PreviewImage(
+                          imgUrl: headerBody,
+                        )));
+            // showDialog(
+            //   context: context,
+            //   builder: (BuildContext context) {
+            //     return AlertDialog(
+            //       title: const Text("Image Details"),
+            //       content: Column(
+            //         mainAxisSize: MainAxisSize.min,
+            //         children: [
+            //           Image.network(
+            //             headerBody,
+            //             height: 300,
+            //             width: 300,
+            //             fit: BoxFit.cover,
+            //             loadingBuilder: (BuildContext context, Widget child,
+            //                 ImageChunkEvent? loadingProgress) {
+            //               if (loadingProgress == null) {
+            //                 return child;
+            //               } else {
+            //                 return Center(
+            //                   child: CircularProgressIndicator(
+            //                     value: loadingProgress.expectedTotalBytes !=
+            //                             null
+            //                         ? loadingProgress.cumulativeBytesLoaded /
+            //                             (loadingProgress.expectedTotalBytes ??
+            //                                 1)
+            //                         : null,
+            //                   ),
+            //                 );
+            //               }
+            //             },
+            //             errorBuilder: (context, error, stackTrace) {
+            //               return const SizedBox.shrink();
+            //             },
+            //           ),
+            //         ],
+            //       ),
+            //       actions: <Widget>[
+            //         TextButton(
+            //           onPressed: () {
+            //             Navigator.of(context).pop();
+            //           },
+            //           child: Container(
+            //             padding: const EdgeInsets.symmetric(
+            //                 vertical: 8, horizontal: 16),
+            //             decoration: BoxDecoration(
+            //               color: AppColor.navBarIconColor,
+            //               borderRadius: BorderRadius.circular(8),
+            //             ),
+            //             child: const Text(
+            //               "Close",
+            //               style: TextStyle(
+            //                 color: Colors.white,
+            //               ),
+            //             ),
+            //           ),
+            //         ),
+            //       ],
+            //     );
+            //   },
+            // );
+          },
+          child: Image.network(headerBody,
+              height: 120,
+              width: MediaQuery.of(context).size.width * 0.65,
+              fit: BoxFit.cover),
+        );
+      case "VIDEO":
+        return InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ViewVideo(
+                            videoUrl: headerBody,
+                          )));
+            },
+            child: _buildVideoPlaceholder());
+
+      case "DOCUMENT":
+        return InkWell(
+          onTap: () {
+            try {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ViewPdf(
+                            pdfUrl: headerBody,
+                          )));
+            } catch (e) {
+              print("erorore opening file>>> ${e}");
+            }
+          },
+          child: Image.asset(
+            "assets/images/doc.png",
+            height: 120,
+            width: 120,
+          ),
+        );
+      default:
+        return SizedBox.shrink();
+    }
+  }
+
+  Widget _buildButtons(List<dynamic> buttons) {
+    return Wrap(
+      spacing: 10,
+      children: buttons.map((button) {
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () async {
+                  if (button['type'] == "PHONE_NUMBER") {
+                    final Uri phoneUri =
+                        Uri.parse("tel:${button['phone_number']}");
+                    if (await canLaunchUrl(phoneUri)) await launchUrl(phoneUri);
+                  } else if (button['type'] == "URL") {
+                    final Uri url = Uri.parse(button['url']);
+
+                    if (!await launchUrl(url,
+                        mode: LaunchMode.externalApplication)) {
+                      throw Exception('Could not launch $url');
+                    }
+                  }
+                  print("Button clicked: ${button['text']}");
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[200],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    side:
+                        BorderSide(color: AppColor.navBarIconColor, width: 1.5),
+                  ),
+                ),
+                child: Text(
+                  button['text'] ?? "",
+                  style: TextStyle(
+                    color: AppColor.navBarIconColor,
+                    fontWeight: FontWeight.w700,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Future<void> getHistory() async {
     var leadnumber = widget.wpnumber;
     final prefs = await SharedPreferences.getInstance();
@@ -3065,6 +3422,42 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  bool isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
+
+  void openDocument(BuildContext context, String url) async {
+    final filename = url.split('/').last;
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/$filename');
+
+    // Show loading dialog (optional)
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // Check and download
+    if (!await file.exists()) {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        await file.writeAsBytes(response.bodyBytes);
+      } else {
+        Navigator.pop(context); // remove loader
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to download file')),
+        );
+        return;
+      }
+    }
+
+    Navigator.pop(context);
+    OpenFile.open(file.path);
+  }
+
   Future<String?> _marksread(String whatsappNumber) async {
     print("sajdjsahdjsah jhsjhkjdhakj${whatsappNumber}");
 
@@ -3085,4 +3478,246 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     return null;
   }
+
+  Future<void> _startRecording(StateSetter setState) async {
+    _audioFile = null;
+
+    final status = await Permission.microphone.request();
+    if (!status.isGranted) {
+      EasyLoading.showToast("Microphone permission denied");
+      return;
+    }
+
+    try {
+      final Directory tempDir = await getTemporaryDirectory();
+      final String filePath =
+          '${tempDir.path}/voice_msg_${DateTime.now().millisecondsSinceEpoch}.aac';
+      _audioPath = filePath;
+
+      await _recorder.startRecorder(
+        toFile: filePath,
+        codec: fs.Codec.aacADTS,
+      );
+
+      setState(() {
+        _isRecording = true;
+      });
+    } catch (e) {
+      debugPrint("Recording error: $e");
+      EasyLoading.showToast("Failed to start recording");
+    }
+  }
+
+  Future<void> _stopRecording(StateSetter setState) async {
+    try {
+      String? recordedPath = await _recorder.stopRecorder();
+      if (recordedPath != null) {
+        _audioFile = File(recordedPath);
+        setState(() {
+          _isRecording = false;
+        });
+        await Future.delayed(const Duration(milliseconds: 300));
+        _showPreviewDialog();
+      }
+    } catch (e) {
+      debugPrint("Stop recording error: $e");
+      EasyLoading.showToast("Failed to stop recording");
+    }
+  }
+
+  Future<void> _stopRecordingAndPreview() async {
+    print("print  is stop func caliinggggG:::::::   ");
+
+    // await _recorder.stopRecorder();
+    String? recordedPath = await _recorder.stopRecorder();
+
+    setState(() {
+      _audioFile = File(recordedPath!);
+      _isRecording = false;
+    });
+
+    print("_audioFile::::::::::::::    ${_audioFile}");
+
+    await Future.delayed(Duration(milliseconds: 300));
+    _showPreviewDialog();
+  }
+
+  void _showPreviewDialog() async {
+    if (_audioPath == null) return;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            Future<void> startPlayer() async {
+              await _player.startPlayer(
+                fromURI: _audioPath!,
+                codec: fs.Codec.aacADTS,
+                whenFinished: () {
+                  setState(() {
+                    _isPlayingPreview = false;
+                    // _currentPosition = Duration.zero;
+                  });
+                },
+              );
+
+              setState(() {
+                _isPlayingPreview = true;
+              });
+
+              _previewPlayerSubscription?.cancel();
+              _previewPlayerSubscription = _player.onProgress?.listen((event) {
+                setState(() {
+                  // _currentPosition = event.position;
+                  // _totalDuration = event.duration;
+                });
+              });
+            }
+
+            Future<void> stopPlayer() async {
+              await _player.stopPlayer();
+              _previewPlayerSubscription?.cancel();
+              setState(() {
+                _isPlayingPreview = false;
+                // _currentPosition = Duration.zero;
+              });
+            }
+
+            return AlertDialog(
+              title: const Text('Voice Message Preview'),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      _isPlayingPreview
+                          ? Icons.pause_circle_filled
+                          : Icons.play_circle_fill,
+                      size: 48,
+                      color: AppColor.navBarIconColor,
+                    ),
+                    onPressed: () {
+                      _isPlayingPreview ? stopPlayer() : startPlayer();
+                    },
+                  ),
+
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     Text(_formatDuration(_currentPosition)),
+                  //     Text(_formatDuration(_totalDuration)),
+                  //   ],
+                  // ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    stopPlayer();
+                    sendAudio("audio", "");
+
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Send'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    stopPlayer();
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Cancel'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  bool _isPlayingPreview = false;
+  bool _isRecording = false;
+  String? _audioPath;
+
+  Future<void> _handleSendMessage() async {
+    setState(() {
+      showLoader = true;
+    });
+
+    if (image != null) {
+      String fileExtension = path.extension(image!.path).toLowerCase();
+      print("File Extension: $fileExtension");
+
+      if (['.jpg', '.jpeg', '.png'].contains(fileExtension)) {
+        print("📤 Sending Image...");
+        filesend("image");
+      } else if (['.mp4', '.avi', '.mov'].contains(fileExtension)) {
+        print("📤 Sending Video...");
+        filesend("video");
+      } else if (['.html', '.txt'].contains(fileExtension)) {
+        print("📤 Sending Text Document...");
+        filesend("document");
+      } else {
+        print("📤 Sending Document...");
+        filesend("document");
+      }
+
+      setState(() {
+        image = null;
+      });
+    } else if (_controller.text.trim().isNotEmpty) {
+      await messagesendd(_controller.text.trim());
+
+      final prefs = await SharedPreferences.getInstance();
+      final leadnumber = widget.wpnumber;
+      final number = prefs.getString('phoneNumber');
+
+      if (number != null) {
+        await Provider.of<MessageViewModel>(context, listen: false)
+            .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
+      }
+
+      _controller.clear();
+      getHistory();
+    } else {
+      EasyLoading.showToast("Please type a message or attach a file");
+      print("⚠ No file or text entered.");
+    }
+
+    setState(() {
+      showLoader = false;
+    });
+  }
+}
+
+Widget _buildFilePreview(File image) {
+  final ext = path.extension(image.path).toLowerCase();
+
+  if (ext.contains('pdf')) {
+    return _previewAsset("assets/images/pdf.png");
+  } else if (ext.contains('mp4')) {
+    return const Icon(Icons.play_arrow, color: Colors.black);
+  } else if (['.jpg', '.jpeg', '.png'].contains(ext)) {
+    return Container(
+      height: 50,
+      width: 50,
+      child: Image.file(image, fit: BoxFit.cover),
+    );
+  } else {
+    return _previewAsset("assets/images/file.png");
+  }
+}
+
+Widget _previewAsset(String asset) {
+  return Container(
+    width: 50,
+    height: 50,
+    margin: const EdgeInsets.only(right: 8.0),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(8.0),
+      child: Image.asset(asset, fit: BoxFit.cover),
+    ),
+  );
 }
