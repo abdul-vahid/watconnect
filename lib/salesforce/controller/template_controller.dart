@@ -161,24 +161,31 @@ class TemplateController extends ChangeNotifier {
         body = {
           "businessnumber": busNum,
           "userWhatsAppNumber": usrNumber,
-          "messageData": {
-            "category": selectedTemplate?.category ?? "",
-            "templateId": tempId,
-          },
-          "metaTemplateId": tempId, // templateId__c
+          "metaTemplateId": tempId
+          // "businessnumber": busNum,
+          // "userWhatsAppNumber": usrNumber,
+          // "messageData": {
+          //   "category": selectedTemplate?.category ?? "",
+          //   "templateId": tempId,
+          // },
+          // "metaTemplateId": tempId, // templateId__c
         };
       } else {
         body = {
           "businessnumber": busNum,
           "userWhatsAppNumber": usrNumber,
-          "messageData": {
-            "category": selectedTemplate?.category ?? "",
-            "templateId": tempId,
-            "value": paramToSend,
-          },
           "metaTemplateId": tempId,
-          "params": paramToSend,
-          "messageBody": paramToSend
+          "params": paramToSend
+          // "businessnumber": busNum,
+          // "userWhatsAppNumber": usrNumber,
+          // "messageData": {
+          //   "category": selectedTemplate?.category ?? "",
+          //   "templateId": tempId,
+          //   "value": paramToSend,
+          // },
+          // "metaTemplateId": tempId,
+          // "params": paramToSend,
+          // "messageBody": paramToSend
         };
       }
 

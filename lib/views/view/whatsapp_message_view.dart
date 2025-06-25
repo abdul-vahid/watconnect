@@ -2778,10 +2778,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   ],
                 ),
               )
-            : const SizedBox(); // Empty if no document
+            : const SizedBox();
 
       default:
-        return const SizedBox(); // If format is unknown
+        return const SizedBox();
     }
   }
 

@@ -59,7 +59,7 @@ class DashBoardController extends ChangeNotifier {
     notify();
   }
 
-  String selectedTitle = "";
+  String selectedTitle = "Lead";
   setSelectedTitle(String val) {
     selectedTitle = val;
     notify();
@@ -164,7 +164,7 @@ class DashBoardController extends ChangeNotifier {
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
       String apiUrl =
-          "${AppConstants.sfRecentChat}?businessnumber=${busNum}&recordlimit=5000&objectname=Lead";
+          "${AppConstants.sfRecentChat}?businessnumber=${busNum}&recordlimit=5000&objectname=${selectedTitle}";
       final response = await http.get(
         Uri.parse(apiUrl),
         headers: {

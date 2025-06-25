@@ -794,6 +794,7 @@ void reviewBottomSheetShow(context, {bool fromCamp = false}) {
 void sendChatTemp(context, List<TextEditingController> controllers) {
   TemplateController tempc = Provider.of(context, listen: false);
   var templateData = tempc.selectedTemplate;
+  print("templateData:::::::::     ${templateData?.templateId ?? ""}");
   DashBoardController dbController = Provider.of(context, listen: false);
 
   var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";

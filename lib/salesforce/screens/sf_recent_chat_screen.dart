@@ -76,6 +76,46 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Consumer<DashBoardController>(
+                              builder: (context, ref, child) {
+                            return Container(
+                                height: 65,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 15.0),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.white,
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        value: ref.selectedTitle,
+                                        isExpanded: true,
+                                        onChanged: (newValue) {
+                                          // setState(() {
+                                          //   selectedValue = newValue!;
+                                          // });
+                                          ref.setSelectedTitle(newValue ?? "");
+                                        },
+                                        items: ref.drawerItems
+                                            .map<DropdownMenuItem<String>>(
+                                                (item) {
+                                          return DropdownMenuItem<String>(
+                                            value: item.sObjectName,
+                                            child: Text(item.sObjectName ?? ""),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ),
+                                ));
+                          }),
                           Padding(
                             padding: EdgeInsets.symmetric(vertical: 8),
                             child: Padding(
