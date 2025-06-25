@@ -903,6 +903,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       socket!.on("receivedwhatsappmessage", (data) {
         print(" New WhatsApp message: $data");
         _getUnreadCount();
+        // getLeadList();
       });
 
       socket!.onDisconnect((_) {

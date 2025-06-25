@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 // import 'dart:io' as IO;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_sound/flutter_sound.dart' as fs;
 
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -3220,10 +3221,24 @@ class _ChatScreenState extends State<ChatScreen> {
                             imgUrl: url,
                           )));
             },
-            child: Image.network(url,
-                height: 120,
-                width: MediaQuery.of(context).size.width * 0.65,
-                fit: BoxFit.cover));
+            child: CachedNetworkImage(
+              imageUrl: url,
+              height: 120,
+              width: MediaQuery.of(context).size.width * 0.65,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              errorWidget: (context, url, error) =>
+                  const Icon(Icons.broken_image),
+            )
+
+            //  Image.network(url,
+            //     height: 120,
+            //     width: MediaQuery.of(context).size.width * 0.65,
+            //     fit: BoxFit.cover)
+
+            );
       default:
         return InkWell(
             onTap: () {
@@ -3256,79 +3271,85 @@ class _ChatScreenState extends State<ChatScreen> {
     switch (header) {
       case "IMAGE":
         return InkWell(
-          onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => PreviewImage(
-                          imgUrl: headerBody,
-                        )));
-            // showDialog(
-            //   context: context,
-            //   builder: (BuildContext context) {
-            //     return AlertDialog(
-            //       title: const Text("Image Details"),
-            //       content: Column(
-            //         mainAxisSize: MainAxisSize.min,
-            //         children: [
-            //           Image.network(
-            //             headerBody,
-            //             height: 300,
-            //             width: 300,
-            //             fit: BoxFit.cover,
-            //             loadingBuilder: (BuildContext context, Widget child,
-            //                 ImageChunkEvent? loadingProgress) {
-            //               if (loadingProgress == null) {
-            //                 return child;
-            //               } else {
-            //                 return Center(
-            //                   child: CircularProgressIndicator(
-            //                     value: loadingProgress.expectedTotalBytes !=
-            //                             null
-            //                         ? loadingProgress.cumulativeBytesLoaded /
-            //                             (loadingProgress.expectedTotalBytes ??
-            //                                 1)
-            //                         : null,
-            //                   ),
-            //                 );
-            //               }
-            //             },
-            //             errorBuilder: (context, error, stackTrace) {
-            //               return const SizedBox.shrink();
-            //             },
-            //           ),
-            //         ],
-            //       ),
-            //       actions: <Widget>[
-            //         TextButton(
-            //           onPressed: () {
-            //             Navigator.of(context).pop();
-            //           },
-            //           child: Container(
-            //             padding: const EdgeInsets.symmetric(
-            //                 vertical: 8, horizontal: 16),
-            //             decoration: BoxDecoration(
-            //               color: AppColor.navBarIconColor,
-            //               borderRadius: BorderRadius.circular(8),
-            //             ),
-            //             child: const Text(
-            //               "Close",
-            //               style: TextStyle(
-            //                 color: Colors.white,
-            //               ),
-            //             ),
-            //           ),
-            //         ),
-            //       ],
-            //     );
-            //   },
-            // );
-          },
-          child: Image.network(headerBody,
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => PreviewImage(
+                            imgUrl: headerBody,
+                          )));
+              // showDialog(
+              //   context: context,
+              //   builder: (BuildContext context) {
+              //     return AlertDialog(
+              //       title: const Text("Image Details"),
+              //       content: Column(
+              //         mainAxisSize: MainAxisSize.min,
+              //         children: [
+              //           Image.network(
+              //             headerBody,
+              //             height: 300,
+              //             width: 300,
+              //             fit: BoxFit.cover,
+              //             loadingBuilder: (BuildContext context, Widget child,
+              //                 ImageChunkEvent? loadingProgress) {
+              //               if (loadingProgress == null) {
+              //                 return child;
+              //               } else {
+              //                 return Center(
+              //                   child: CircularProgressIndicator(
+              //                     value: loadingProgress.expectedTotalBytes !=
+              //                             null
+              //                         ? loadingProgress.cumulativeBytesLoaded /
+              //                             (loadingProgress.expectedTotalBytes ??
+              //                                 1)
+              //                         : null,
+              //                   ),
+              //                 );
+              //               }
+              //             },
+              //             errorBuilder: (context, error, stackTrace) {
+              //               return const SizedBox.shrink();
+              //             },
+              //           ),
+              //         ],
+              //       ),
+              //       actions: <Widget>[
+              //         TextButton(
+              //           onPressed: () {
+              //             Navigator.of(context).pop();
+              //           },
+              //           child: Container(
+              //             padding: const EdgeInsets.symmetric(
+              //                 vertical: 8, horizontal: 16),
+              //             decoration: BoxDecoration(
+              //               color: AppColor.navBarIconColor,
+              //               borderRadius: BorderRadius.circular(8),
+              //             ),
+              //             child: const Text(
+              //               "Close",
+              //               style: TextStyle(
+              //                 color: Colors.white,
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //       ],
+              //     );
+              //   },
+              // );
+            },
+            child: CachedNetworkImage(
+              imageUrl: headerBody,
               height: 120,
               width: MediaQuery.of(context).size.width * 0.65,
-              fit: BoxFit.cover),
-        );
+              fit: BoxFit.cover,
+              placeholder: (context, url) => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              errorWidget: (context, url, error) =>
+                  const Icon(Icons.broken_image),
+            ));
       case "VIDEO":
         return InkWell(
             onTap: () {
