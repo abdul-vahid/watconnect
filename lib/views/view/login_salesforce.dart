@@ -86,10 +86,14 @@ class _WebViewPageState extends State<WebViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text(
-        "Salesforce Login",
-        style: TextStyle(color: Colors.white),
-      )),
+          leading: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
+          title: const Text(
+            "Salesforce Login",
+            style: TextStyle(color: Colors.white),
+          )),
       body: Column(
         children: [
           Expanded(child: WebViewWidget(controller: _controller)),
