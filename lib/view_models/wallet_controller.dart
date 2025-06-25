@@ -356,11 +356,13 @@ class WalletController extends ChangeNotifier {
   }
 
   calculateAmount(String tempCate, String code) {
-    print("tempCate:::::::::   ${tempCate}    ${code}");
+    String cCode = code.replaceAll("+", '');
+    print("tempCate:::::::::   ${tempCate}    ${code}   ${cCode}");
+
     String amt = "";
 
     final matches =
-        templateRatesList.where((rate) => rate.countryCode == code).toList();
+        templateRatesList.where((rate) => rate.countryCode == cCode).toList();
     if (matches.isNotEmpty) {
       final matchedRate = matches.first;
       amt = tempCate.toUpperCase() == "MARKETING"

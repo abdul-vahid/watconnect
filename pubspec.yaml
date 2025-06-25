@@ -99,6 +99,8 @@ dependencies:
   webview_flutter: ^4.13.0
   xml: ^6.5.0
   flutter_sound: ^9.28.0
+  just_audio: ^0.10.4
+  focus_detector: ^2.0.1
   # video_thumbnail: ^0.5.3/
 
 

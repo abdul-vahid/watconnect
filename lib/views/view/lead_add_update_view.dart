@@ -4,8 +4,10 @@ import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/models/get_user.dart';
 import 'package:whatsapp/models/tags_list_model.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/get_user_vm.dart';
 import '../../models/lead_model.dart';
 import '../../models/user_data_model/user_data_model.dart';
@@ -265,6 +267,7 @@ class _Forms extends State<LeadAddView> {
   String? selectedCountry;
   TextEditingController dobController = new TextEditingController();
   String? selectedDate;
+  bool hasWallet = false;
   String? leadStatus;
 // ---country code -----
   void fillCountryCodeMap() {
@@ -294,6 +297,7 @@ class _Forms extends State<LeadAddView> {
     Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
     Provider.of<UserDataListViewModel>(context, listen: false).fetchUser();
     getTags();
+    getWalletStatus();
     super.initState();
     final model = widget.model;
     if (model != null) {
@@ -722,61 +726,66 @@ class _Forms extends State<LeadAddView> {
               ),
               const SizedBox(height: 10),
 
-              const Text('Tags'),
+              hasWallet ? const Text('Tags') : SizedBox(),
 
-              const SizedBox(height: 5),
+              hasWallet ? const SizedBox(height: 5) : SizedBox(),
 
-              MultiSelectDialogField<TagRecord>(
-                dialogWidth: MediaQuery.of(context).size.width * .45,
-                dialogHeight: MediaQuery.of(context).size.height * .35,
-                items: tagsNameSet.map((tag) {
-                  return MultiSelectItem<TagRecord>(tag, tag.name ?? "Unnamed");
-                }).toList(),
-                initialValue: selectedTagList.map((tagMap) {
-                  return tagsNameSet.firstWhere(
-                    (tag) => tag.id == tagMap['id'],
-                    orElse: () =>
-                        TagRecord(id: tagMap['id'], name: tagMap['name']),
-                  );
-                }).toList(),
-                title: const Text("Select Tags"),
-                selectedColor: Colors.blue,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blue, width: 1),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                buttonText: const Text("Select Tags"),
-                chipDisplay: MultiSelectChipDisplay.none(),
-                onConfirm: (List<TagRecord> selectedTags) {
-                  setState(() {
-                    selectedTagList = selectedTags.map((tag) {
-                      return {
-                        'id': tag.id ?? '',
-                        'name': tag.name ?? '',
-                      };
-                    }).toList();
-                  });
-                  debugPrint("Selected tags: $selectedTagList");
-                },
-              ),
+              hasWallet
+                  ? MultiSelectDialogField<TagRecord>(
+                      dialogWidth: MediaQuery.of(context).size.width * .45,
+                      dialogHeight: MediaQuery.of(context).size.height * .35,
+                      items: tagsNameSet.map((tag) {
+                        return MultiSelectItem<TagRecord>(
+                            tag, tag.name ?? "Unnamed");
+                      }).toList(),
+                      initialValue: selectedTagList.map((tagMap) {
+                        return tagsNameSet.firstWhere(
+                          (tag) => tag.id == tagMap['id'],
+                          orElse: () =>
+                              TagRecord(id: tagMap['id'], name: tagMap['name']),
+                        );
+                      }).toList(),
+                      title: const Text("Select Tags"),
+                      selectedColor: Colors.blue,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blue, width: 1),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      buttonText: const Text("Select Tags"),
+                      chipDisplay: MultiSelectChipDisplay.none(),
+                      onConfirm: (List<TagRecord> selectedTags) {
+                        setState(() {
+                          selectedTagList = selectedTags.map((tag) {
+                            return {
+                              'id': tag.id ?? '',
+                              'name': tag.name ?? '',
+                            };
+                          }).toList();
+                        });
+                        debugPrint("Selected tags: $selectedTagList");
+                      },
+                    )
+                  : SizedBox(),
 
-              Wrap(
-                spacing: 8.0,
-                children: selectedTagList.map((tagMap) {
-                  return Chip(
-                    label: Text(tagMap['name'] ?? "Tag"),
-                    deleteIcon: const Icon(Icons.close),
-                    onDeleted: () {
-                      setState(() {
-                        selectedTagList
-                            .removeWhere((t) => t['id'] == tagMap['id']);
-                      });
-                    },
-                    backgroundColor: Colors.blue.withOpacity(0.2),
-                    labelStyle: const TextStyle(color: Colors.blue),
-                  );
-                }).toList(),
-              ),
+              hasWallet
+                  ? Wrap(
+                      spacing: 8.0,
+                      children: selectedTagList.map((tagMap) {
+                        return Chip(
+                          label: Text(tagMap['name'] ?? "Tag"),
+                          deleteIcon: const Icon(Icons.close),
+                          onDeleted: () {
+                            setState(() {
+                              selectedTagList
+                                  .removeWhere((t) => t['id'] == tagMap['id']);
+                            });
+                          },
+                          backgroundColor: Colors.blue.withOpacity(0.2),
+                          labelStyle: const TextStyle(color: Colors.blue),
+                        );
+                      }).toList(),
+                    )
+                  : SizedBox(),
 
               // Row(
               //   children: [
@@ -1084,7 +1093,7 @@ class _Forms extends State<LeadAddView> {
         "whatsapp_number": _whatsapnumber?.trim(),
         "email": _email?.trim(),
         "dob": selectedDate,
-        "tag_names": selectedTagList,
+        "tag_names": hasWallet ? selectedTagList : SizedBox(),
         "leadsource": _leadsource,
         "leadstatus": _leadstatus,
         "ownername": _asignStaff,
@@ -1216,7 +1225,7 @@ class _Forms extends State<LeadAddView> {
         "whatsapp_number": _whatsapnumber?.trim(),
         "email": _email?.trim(),
         "dob": selectedDate,
-        "tag_names": selectedTagList,
+        "tag_names": hasWallet ? selectedTagList : [],
         "leadsource": _leadsource,
         "leadstatus": _leadstatus,
         "ownername": _asignStaff,
@@ -1307,5 +1316,12 @@ class _Forms extends State<LeadAddView> {
       }
       setState(() {});
     });
+  }
+
+  Future<void> getWalletStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    hasWallet = await prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
+    setState(() {});
   }
 }

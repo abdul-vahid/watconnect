@@ -53,12 +53,12 @@ class _RecentChatViewState extends State<RecentChatView> {
     _getUnreadCount();
     getLeadList();
     super.initState();
-    connectSocket();
+    // connectSocket();
   }
 
   @override
   void dispose() {
-    disconnectSocket();
+    // disconnectSocket();
     super.dispose();
   }
 

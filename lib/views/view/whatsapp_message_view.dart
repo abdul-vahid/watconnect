@@ -11,9 +11,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/public/flutter_sound_player.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:focus_detector/focus_detector.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as path;
@@ -35,6 +37,7 @@ import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/view_models/wallet_controller.dart';
 import 'package:whatsapp/views/view/lead_detail_view.dart';
+import 'package:whatsapp/views/view/show_audio.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
 import 'package:whatsapp/views/view/view_fullscreen_img.dart';
@@ -71,6 +74,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool isImageSent = false;
   bool _isLoading = true;
   int lenOfRec = 0;
+  bool hasWallet = false;
   String? globalParentId;
   XFile? selectedImage;
   String base64Image = '';
@@ -92,6 +96,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
 
   StreamSubscription? _previewPlayerSubscription;
+  final AudioPlayer audioPlayer = AudioPlayer();
+
+  bool _isPlaying = false;
 
   late MessageViewModel messageViewModel;
   final TextEditingController _controller = TextEditingController();
@@ -129,6 +136,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String leadId = "lead_456";
   String phNum = "+919876543210";
 
+  bool _listenerAdded = false;
   @override
   void initState() {
     WalletController walletController = Provider.of(context, listen: false);
@@ -140,7 +148,8 @@ class _ChatScreenState extends State<ChatScreen> {
           Provider.of<MessageController>(context, listen: false);
       msgController.clearDeleteList();
     });
-    connectSocket();
+
+    // connectSocket();
     _initializeAudio();
     templateNames.add("Select Template Name");
     // connectSocket();
@@ -157,6 +166,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _initializeAudio() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    hasWallet = await prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
+    setState(() {});
     await _player.openPlayer();
     await _recorder.openRecorder();
   }
@@ -165,8 +178,9 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _recorder.closeRecorder();
     _player.closePlayer();
+    audioPlayer.dispose();
     _previewPlayerSubscription?.cancel();
-    disconnectSocket();
+    // disconnectSocket();
 
     super.dispose();
   }
@@ -217,107 +231,118 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Consumer<MessageController>(
         builder: (context, msgController, child) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: GestureDetector(
-            onTap: () async {
-              if (widget.model == null) {
-                return;
-              }
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LeadDetailView(
-                    model: widget.model,
-                  ),
-                ),
-              );
+      return FocusDetector(
+        onFocusGained: () {
+          log('\x1B[95mFCM     Chat Screen focused again::::::::::::::::::::::::::::::::::::::::::::::::::');
 
-              if (result == true) {
-                print("result on detailesss:::: ");
-                Navigator.pop(context, true);
-              }
-            },
-            child: Row(
-              children: [
-                const CircleAvatar(
-                  backgroundImage: NetworkImage(
-                    'https://www.w3schools.com/w3images/avatar2.png',
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    widget.leadName ?? "",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            msgController.msgToDelete.length > 0
-                ? IconButton(
-                    icon: const Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      _showSimpleDialog("");
-                    },
-                  )
-                : SizedBox(),
-            PopupMenuButton<String>(
+          // print("Screen focused again");
+          connectSocket();
+        },
+        onFocusLost: () {
+          disconnectSocket();
+        },
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            leading: IconButton(
               icon: const Icon(
-                Icons.more_vert,
+                Icons.arrow_back,
                 color: Colors.white,
               ),
-              onSelected: (String value) {
-                if (value == 'Clear Chat') {
-                  _showDeleteDialog();
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: GestureDetector(
+              onTap: () async {
+                if (widget.model == null) {
+                  return;
+                }
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LeadDetailView(
+                      model: widget.model,
+                    ),
+                  ),
+                );
+
+                if (result == true) {
+                  print("result on detailesss:::: ");
+                  Navigator.pop(context, true);
                 }
               },
-              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                const PopupMenuItem<String>(
-                  value: 'Clear Chat',
-                  child: Text('Clear Chat'),
-                ),
-              ],
-            ),
-          ],
-        ),
-        body: Container(
-          child: Stack(
-            children: [
-              RefreshIndicator(
-                onRefresh: _pullRefresh,
-                child: _isLoading ? Container() : _pageBody(),
+              child: Row(
+                children: [
+                  const CircleAvatar(
+                    backgroundImage: NetworkImage(
+                      'https://www.w3schools.com/w3images/avatar2.png',
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      widget.leadName ?? "",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
               ),
-              if (_isLoading)
-                Positioned.fill(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                    child: Container(
-                      color: Colors.white.withOpacity(0.2),
-                      child: Center(
-                        child: LoadingAnimationWidget.flickr(
-                          leftDotColor: AppColor.cardsColor,
-                          rightDotColor: AppColor.navBarIconColor,
-                          size: 40,
+            ),
+            actions: [
+              msgController.msgToDelete.length > 0
+                  ? IconButton(
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        _showSimpleDialog("");
+                      },
+                    )
+                  : SizedBox(),
+              PopupMenuButton<String>(
+                icon: const Icon(
+                  Icons.more_vert,
+                  color: Colors.white,
+                ),
+                onSelected: (String value) {
+                  if (value == 'Clear Chat') {
+                    _showDeleteDialog();
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'Clear Chat',
+                    child: Text('Clear Chat'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          body: Container(
+            child: Stack(
+              children: [
+                RefreshIndicator(
+                  onRefresh: _pullRefresh,
+                  child: _isLoading ? Container() : _pageBody(),
+                ),
+                if (_isLoading)
+                  Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                      child: Container(
+                        color: Colors.white.withOpacity(0.2),
+                        child: Center(
+                          child: LoadingAnimationWidget.flickr(
+                            leftDotColor: AppColor.cardsColor,
+                            rightDotColor: AppColor.navBarIconColor,
+                            size: 40,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       );
@@ -1080,7 +1105,7 @@ class _ChatScreenState extends State<ChatScreen> {
         print("leadid=>$leadid");
 
         String? sendimagedatabase = await messageViewModel
-            .uploadFiledb(image!, number, leadid)
+            .uploadFiledb(_audioFile!, number, leadid)
             .then((value) {
           print("value----upload dididi->${value}");
 
@@ -2169,222 +2194,170 @@ class _ChatScreenState extends State<ChatScreen> {
                                     _isLoading = true;
                                   });
 
-                                  Map<String, String> bodyTextParams = {};
-                                  List compoTextParams = [];
-                                  List numberedCampParam = [];
+                                  try {
+                                    Map<String, String> bodyTextParams = {};
+                                    List compoTextParams = [];
+                                    List numberedCampParam = [];
 
-                                  bool anyEmpty = controllers.any(
-                                      (controller) => controller.text.isEmpty);
-                                  if (anyEmpty) {
-                                    EasyLoading.showToast(
-                                        'All fields are required');
+                                    bool anyEmpty = controllers.any(
+                                        (controller) =>
+                                            controller.text.isEmpty);
+                                    if (anyEmpty) {
+                                      EasyLoading.showToast(
+                                          'All fields are required');
+                                      return;
+                                    }
 
-                                    setState(() {
-                                      _isLoading = false;
-                                    });
-                                    return;
-                                  }
+                                    File? imageFile;
+                                    String docId = "";
 
-                                  File? imageFile;
-                                  String docId = "";
+                                    for (int i = 0;
+                                        i < controllers.length;
+                                        i++) {
+                                      bodyTextParams[(i + 1).toString()] =
+                                          controllers[i].text;
+                                      Map body = {
+                                        "type": "text",
+                                        "text": controllers[i].text,
+                                      };
+                                      compoTextParams.add(body);
+                                      numberedCampParam.add(bodyTextParams);
+                                    }
 
-                                  for (int i = 0; i < controllers.length; i++) {
-                                    bodyTextParams[(i + 1).toString()] =
-                                        controllers[i].text;
-                                    Map body = {
-                                      "type": "text",
-                                      "text": controllers[i].text
-                                    };
-                                    compoTextParams.add(body);
-                                    numberedCampParam.add(bodyTextParams);
-                                  }
+                                    String templateToSend =
+                                        selectedTemplateName ??
+                                            _templateController.text;
 
-                                  String templateToSend =
-                                      selectedTemplateName ??
-                                          _templateController.text;
+                                    if (selectedHeader == null) {
+                                      await sendTextTemplate(
+                                        templateToSend,
+                                        compoTextParams,
+                                        isChecked,
+                                        bodyTextParams,
+                                      );
+                                      return;
+                                    }
 
-                                  print(
-                                      "selected header:: >><><>< ${selectedHeader}");
-
-                                  if (selectedHeader == null) {
-                                    setState(() {
-                                      _isLoading = true;
-                                    });
-                                    await sendTextTemplate(
-                                            templateToSend,
-                                            compoTextParams,
-                                            isChecked,
-                                            bodyTextParams)
-                                        .then((onValue) {
-                                      setState(() {
-                                        _isLoading = false;
-                                        image = null;
-                                        Navigator.pop(context);
+                                    if (selectedHeader.format == "IMAGE" ||
+                                        selectedHeader.format == "VIDEO") {
+                                      if (!isOtherFileSelected) {
+                                        EasyLoading.showToast(
+                                            "Choose File To Continue");
                                         return;
-                                      });
-                                    });
-                                  }
+                                      }
 
-                                  print(
-                                      "selected button::: ${selectedButtons} ");
-
-                                  if (selectedHeader.format == "IMAGE" ||
-                                      selectedHeader.format == "VIDEO") {
-                                    if (isOtherFileSelected) {
                                       final prefs =
                                           await SharedPreferences.getInstance();
                                       String? number =
                                           prefs.getString('phoneNumber');
                                       String? leadid = widget.id;
-                                      // String? sendimagedatabase =
+
                                       await messageViewModel
                                           .uploadFiledb(image!, number, leadid)
                                           .then((value) async {
-                                        print(
-                                            "video sedn video send send----upload dididi->$value");
-
                                         Map<String, dynamic> response =
                                             jsonDecode(value);
-
                                         fileid = response['records']?[0]['id'];
-
-                                        print("ID: $fileid");
                                       });
-                                    } else {
-                                      EasyLoading.showToast(
-                                          "Choose File To Continue");
 
-                                      setState(() {
-                                        _isLoading = false;
-                                      });
-                                      return;
+                                      await sendParamsApiCall(
+                                        templateToSend,
+                                        compoTextParams,
+                                        isChecked,
+                                        bodyTextParams,
+                                        imgToShow,
+                                      );
 
-                                      // image = await urlToFile(imgToShow);
-                                    }
-                                  }
-
-                                  if ((selectedHeader.format == "IMAGE" ||
-                                      selectedHeader.format == "VIDEO")) {
-                                    print("this is call from here 1    }");
-
-                                    await sendParamsApiCall(
-                                            templateToSend,
-                                            compoTextParams,
-                                            isChecked,
-                                            bodyTextParams,
-                                            imgToShow)
-                                        .then((val) async {
-                                      var leadnumber = widget.wpnumber;
-                                      final prefs =
-                                          await SharedPreferences.getInstance();
-                                      String? number =
+                                      String? numberr =
                                           prefs.getString('phoneNumber');
-                                      print("number=>$number");
+                                      String? leadnumber = widget.wpnumber;
+
                                       await Provider.of<MessageViewModel>(
                                               context,
                                               listen: false)
                                           .Fetchmsghistorydata(
                                               leadnumber: leadnumber,
-                                              number: number)
-                                          .then((onValue) {
-                                        setState(() {
-                                          _isLoading = false;
-                                          image = null;
-                                          Navigator.pop(context);
+                                              number: number);
+                                    } else if (selectedHeader.format ==
+                                        "DOCUMENT") {
+                                      if (isOtherFileSelected == true) {
+                                        final prefs = await SharedPreferences
+                                            .getInstance();
+                                        String? number =
+                                            prefs.getString('phoneNumber');
+                                        String? leadid = widget.id;
+
+                                        await messageViewModel
+                                            .uploadFiledb(
+                                                image!, number, leadid)
+                                            .then((value) {
+                                          Map<String, dynamic> response =
+                                              jsonDecode(value);
+                                          fileid =
+                                              response['records']?[0]['id'];
                                         });
-                                      });
-                                    });
-                                  } else if (selectedHeader.format ==
-                                      "DOCUMENT") {
-                                    if (isOtherFileSelected == true) {
-                                      print("image :: ${image}");
+                                      }
+
+                                      await sendDocTemp(
+                                        templateToSend,
+                                        isChecked,
+                                        imgToShow,
+                                        bodyTextParams,
+                                        compoTextParams,
+                                        isOtherFileSelected,
+                                        fileid,
+                                      );
+
                                       final prefs =
                                           await SharedPreferences.getInstance();
                                       String? number =
                                           prefs.getString('phoneNumber');
-                                      String? leadid = widget.id;
-                                      String? sendimagedatabase =
-                                          await messageViewModel
-                                              .uploadFiledb(
-                                                  image!, number, leadid)
-                                              .then((value) {
-                                        print(
-                                            "video sedn video send send----upload dididi->$value");
+                                      String? leadnumber = widget.wpnumber;
 
-                                        Map<String, dynamic> response =
-                                            jsonDecode(value);
+                                      await Provider.of<MessageViewModel>(
+                                              context,
+                                              listen: false)
+                                          .Fetchmsghistorydata(
+                                              leadnumber: leadnumber,
+                                              number: number);
+                                    } else if (selectedHeader.format ==
+                                        "TEXT") {
+                                      await sendTextTemplate(
+                                        templateToSend,
+                                        compoTextParams,
+                                        isChecked,
+                                        bodyTextParams,
+                                      );
 
-                                        fileid = response['records']?[0]['id'];
+                                      final prefs =
+                                          await SharedPreferences.getInstance();
+                                      String? number =
+                                          prefs.getString('phoneNumber');
+                                      String? leadnumber = widget.wpnumber;
 
-                                        print("ID: $fileid");
-                                        return null;
-                                      });
+                                      await Provider.of<MessageViewModel>(
+                                              context,
+                                              listen: false)
+                                          .Fetchmsghistorydata(
+                                              leadnumber: leadnumber,
+                                              number: number);
                                     }
-                                    await sendDocTemp(
-                                            templateToSend,
-                                            isChecked,
-                                            imgToShow,
-                                            bodyTextParams,
-                                            compoTextParams,
-                                            isOtherFileSelected,
-                                            fileid)
-                                        .then((value) async {
-                                      var leadnumber = widget.wpnumber;
-                                      final prefs =
-                                          await SharedPreferences.getInstance();
-                                      String? number =
-                                          prefs.getString('phoneNumber');
-                                      print("number=>$number");
-                                      await Provider.of<MessageViewModel>(
-                                              context,
-                                              listen: false)
-                                          .Fetchmsghistorydata(
-                                              leadnumber: leadnumber,
-                                              number: number)
-                                          .then((onValue) {
-                                        setState(
-                                          () {
-                                            image = null;
-                                            _isLoading = false;
-                                            Navigator.pop(context);
-                                          },
-                                        );
-                                      });
-                                    });
-                                  } else if (selectedHeader.format == "TEXT") {
-                                    await sendTextTemplate(
-                                            templateToSend,
-                                            compoTextParams,
-                                            isChecked,
-                                            bodyTextParams)
-                                        .then((value) async {
-                                      var leadnumber = widget.wpnumber;
-                                      final prefs =
-                                          await SharedPreferences.getInstance();
-                                      String? number =
-                                          prefs.getString('phoneNumber');
-                                      print("number=>$number");
-                                      await Provider.of<MessageViewModel>(
-                                              context,
-                                              listen: false)
-                                          .Fetchmsghistorydata(
-                                              leadnumber: leadnumber,
-                                              number: number)
-                                          .then((onValue) {
-                                        getHistory();
-                                        setState(() {
-                                          _isLoading = false;
-                                          image = null;
-                                        });
-                                        Navigator.pop(context);
-                                      });
-                                    });
-                                  }
+                                  } finally {
+                                    if (hasWallet) {
+                                      WalletController walletController =
+                                          Provider.of(context, listen: false);
+                                      walletController.debitWalletBalApiCall();
+                                    }
 
-                                  WalletController walletController =
-                                      Provider.of(context, listen: false);
-                                  walletController.debitWalletBalApiCall();
-                                  getHistory();
+                                    getHistory();
+
+                                    setState(() {
+                                      image = null;
+                                      _isLoading = false;
+                                    });
+
+                                    Navigator.pop(context);
+                                  }
                                 },
                                 child: _isLoading
                                     ? const CircularProgressIndicator(
@@ -2516,18 +2489,21 @@ class _ChatScreenState extends State<ChatScreen> {
                       },
                       value: selectedTemplateName,
                     ),
-                    Consumer<WalletController>(
-                        builder: (context, wltController, child) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("Cost : ${wltController.finalAmount}"),
-                          ],
-                        ),
-                      );
-                    }),
+                    hasWallet
+                        ? Consumer<WalletController>(
+                            builder: (context, wltController, child) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 5.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text("Cost : ${wltController.finalAmount}"),
+                                ],
+                              ),
+                            );
+                          })
+                        : SizedBox(),
                     Center(
                       child: ElevatedButton(
                         style: ButtonStyle(
@@ -2569,6 +2545,12 @@ class _ChatScreenState extends State<ChatScreen> {
                                   _templateController.text;
                               print("Template to send: $templateToSend");
                               templetesendd(templateToSend, []);
+                              if (hasWallet) {
+                                WalletController walletController =
+                                    Provider.of(context, listen: false);
+                                walletController.debitWalletBalApiCall();
+                              }
+
                               Navigator.of(context).pop();
                             }
                           }
@@ -3146,6 +3128,86 @@ class _ChatScreenState extends State<ChatScreen> {
                           )));
             },
             child: _buildVideoPlaceholder());
+
+      case 'aac':
+        return InkWell(
+          onTap: () async {
+            showDialog(
+              context: context,
+              builder: (context) => AudioDialog(audioUrl: url),
+            );
+            // Navigator.push(
+            //     context,
+            //     MaterialPageRoute(
+            //         builder: (context) => ShowAudioScreen(
+            //               audioUrl: url,
+            //             )));
+
+            // if (_isPlaying) {
+            //   await audioPlayer.stop();
+            //   setState(() {
+            //     _isPlaying = false;
+            //   });
+            //   return;
+            // }
+
+            // try {
+            // await audioPlayer.setUrl(url);
+            // await audioPlayer.play();
+
+            // // update UI to show "playing"
+            // setState(() {
+            //   _isPlaying = true;
+            // });
+
+            // Listen for playback completion (once)
+            // audioPlayer.playerStateStream.listen((state) {
+            //   if (state.processingState == ProcessingState.completed ||
+            //       state.playing == false) {
+            //     if (mounted) {
+            //       setState(() {
+            //         _isPlaying = false;
+            //       });
+            //     }
+            //   }
+            // });
+            // } catch (e) {
+            //   print("Error playing audio: $e");
+            // }
+          },
+          child: Container(
+            height: 60,
+            width: MediaQuery.of(context).size.width * 0.5,
+            decoration: BoxDecoration(
+              color: Colors.deepOrangeAccent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: Container(
+                    height: 30,
+                    width: 30,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: Icon(
+                      _isPlaying
+                          ? Icons.spatial_audio_off_rounded
+                          : Icons.headphones,
+                      size: 20,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+
       case 'png':
       case 'jpg':
       case 'jpeg':
@@ -3378,7 +3440,7 @@ class _ChatScreenState extends State<ChatScreen> {
       // print("Token: $token");
 
       socket = IO.io(
-        'https://admin.watconnect.com',
+        'https://sandbox.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .setPath('/ibs/socket.io')
@@ -3399,6 +3461,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       socket!.on("receivedwhatsappmessage", (data) {
         print("New WhatsApp message: $data");
+        print("call the history apisssssssssssss");
         getHistory();
         _marksread(widget.wpnumber ?? "");
       });
@@ -3651,22 +3714,24 @@ class _ChatScreenState extends State<ChatScreen> {
       print("File Extension: $fileExtension");
 
       if (['.jpg', '.jpeg', '.png'].contains(fileExtension)) {
+        EasyLoading.showToast("Sending Image...");
         print("📤 Sending Image...");
         filesend("image");
       } else if (['.mp4', '.avi', '.mov'].contains(fileExtension)) {
+        EasyLoading.showToast("Sending Video...");
+
         print("📤 Sending Video...");
         filesend("video");
       } else if (['.html', '.txt'].contains(fileExtension)) {
+        EasyLoading.showToast("Sending File...");
         print("📤 Sending Text Document...");
         filesend("document");
       } else {
+        EasyLoading.showToast("Sending File...");
+
         print("📤 Sending Document...");
         filesend("document");
       }
-
-      setState(() {
-        image = null;
-      });
     } else if (_controller.text.trim().isNotEmpty) {
       await messagesendd(_controller.text.trim());
 
@@ -3687,6 +3752,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     setState(() {
+      // image = null;
+
       showLoader = false;
     });
   }

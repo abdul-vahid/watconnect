@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
@@ -62,27 +65,27 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     selectleadList = [];
     _getUnreadCount();
     getLeadList();
-    connectSocket();
+    // connectSocket();
     super.initState();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    routeObserver.subscribe(this, ModalRoute.of(context)!);
-  }
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   routeObserver.subscribe(this, ModalRoute.of(context)!);
+  // }
 
   @override
   void dispose() {
-    disconnectSocket();
-    routeObserver.unsubscribe(this);
+    // disconnectSocket();
+    // routeObserver.unsubscribe(this);
     super.dispose();
   }
 
   @override
   void didPopNext() {
     // Called when coming back to this screen
-    connectSocket();
+    // connectSocket();
   }
 
   Future<void> _getUnreadCount() async {
@@ -145,109 +148,120 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     leadlistvm = Provider.of<LeadListViewModel>(context);
     userlistvm = Provider.of<UserDataListViewModel>(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: CircleAvatar(
-              backgroundColor: AppColor.navBarIconColor,
-              child: IconButton(
-                icon: const Icon(
-                  FontAwesomeIcons.add,
-                  size: 25,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LeadAddView(),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
-        leading: IconButton(
-            icon: const Icon(Icons.arrow_back,
-                color: Color.fromARGB(255, 255, 255, 255)),
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const FooterNavbarPage()),
-                (route) => false, // remove all previous routes
-              );
-            }),
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'Leads',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-        elevation: 5,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50.0),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: TextField(
-              controller: textController,
-              onChanged: _filterLeads,
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: 'Search...',
-                hintStyle: TextStyle(
-                  color: AppColor.textoriconColor.withOpacity(0.6),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.all(10),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Stack(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.filter_list,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          _showFilterBottomSheet(context);
-                        },
-                      ),
-                      selectleadList.isEmpty
-                          ? const SizedBox()
-                          : Container(
-                              decoration: const BoxDecoration(
-                                  color: AppColor.navBarIconColor,
-                                  shape: BoxShape.circle),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "${selectleadList.length}",
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            )
-                    ],
+    return FocusDetector(
+      onFocusGained: () {
+        // print("Screen focused again");
+        log('\x1B[95mFCM     Leads Screen focused again::::::::::::::::::::::::::::::::::::::::::::::::::');
+
+        connectSocket();
+      },
+      onFocusLost: () {
+        disconnectSocket();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          actions: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: CircleAvatar(
+                backgroundColor: AppColor.navBarIconColor,
+                child: IconButton(
+                  icon: const Icon(
+                    FontAwesomeIcons.add,
+                    size: 25,
+                    color: Colors.white,
                   ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LeadAddView(),
+                      ),
+                    );
+                  },
                 ),
-                prefixIconConstraints: const BoxConstraints(minWidth: 40),
+              ),
+            ),
+          ],
+          leading: IconButton(
+              icon: const Icon(Icons.arrow_back,
+                  color: Color.fromARGB(255, 255, 255, 255)),
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const FooterNavbarPage()),
+                  (route) => false, // remove all previous routes
+                );
+              }),
+          automaticallyImplyLeading: false,
+          title: const Text(
+            'Leads',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+          centerTitle: true,
+          elevation: 5,
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(50.0),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              child: TextField(
+                controller: textController,
+                onChanged: _filterLeads,
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: 'Search...',
+                  hintStyle: TextStyle(
+                    color: AppColor.textoriconColor.withOpacity(0.6),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.all(10),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Stack(
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.filter_list,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            _showFilterBottomSheet(context);
+                          },
+                        ),
+                        selectleadList.isEmpty
+                            ? const SizedBox()
+                            : Container(
+                                decoration: const BoxDecoration(
+                                    color: AppColor.navBarIconColor,
+                                    shape: BoxShape.circle),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "${selectleadList.length}",
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              )
+                      ],
+                    ),
+                  ),
+                  prefixIconConstraints: const BoxConstraints(minWidth: 40),
+                ),
               ),
             ),
           ),
         ),
+        body: RefreshIndicator(onRefresh: _pullRefresh, child: _pageBody()
+            //  AppUtils.getAppBody(leadlistvm!, _pageBody),
+            ),
       ),
-      body: RefreshIndicator(onRefresh: _pullRefresh, child: _pageBody()
-          //  AppUtils.getAppBody(leadlistvm!, _pageBody),
-          ),
     );
   }
 
@@ -758,7 +772,11 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                       ),
                     ),
                     Text(
-                      "${model.whatsappNumber?.isNotEmpty == true ? model.whatsappNumber!.contains("+") ? model.whatsappNumber ?? "" : "${model.countryCode}${model.whatsappNumber ?? ""}" : ''}",
+                      model.whatsappNumber?.isNotEmpty == true
+                          ? model.whatsappNumber!.contains("+")
+                              ? model.whatsappNumber ?? ""
+                              : "${model.countryCode}${model.whatsappNumber ?? ""}"
+                          : '',
                       style: const TextStyle(fontSize: 12),
                     ),
                     Text(
@@ -945,7 +963,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     for (var lead in allLeads) {
       bool hasUnread = unreadList.any(
         (unread) =>
-            unread.whatsappNumber.toString().contains(lead.whatsapp_number),
+            unread.whatsappNumber.toString().contains(lead.whatsappNumber),
       );
 
       if (hasUnread) {
@@ -954,8 +972,12 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
         otherLeads.add(lead);
       }
     }
+    print("prioritizedLeads:::::::::  ${prioritizedLeads}");
+    print("otherLeads:::::::::  ${otherLeads}");
 
-    allLeads = [...prioritizedLeads, ...otherLeads];
+    allLeads = [
+      ...prioritizedLeads,
+    ];
     setState(() {});
   }
 }
