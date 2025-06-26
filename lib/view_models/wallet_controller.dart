@@ -157,10 +157,12 @@ class WalletController extends ChangeNotifier {
           "check balance response :: ${response.runtimeType}  ${response.statusCode} ${response.body}");
       var data = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        hasBalance = true;
+        hasBalance = data['sufficient'];
         res = data["success"];
         msg = data["message"];
         EasyLoading.showToast(msg);
+
+        print("hasBalance in api calll:::::::::::  ${hasBalance}");
         notify();
       } else {
         msg = data["message"];
@@ -324,6 +326,7 @@ class WalletController extends ChangeNotifier {
   }
 
   String finalAmount = "";
+  // bool hasBalance = false;
 
   double calculateTotalCost({
     required Map<String, int> codeCounts,
@@ -355,7 +358,7 @@ class WalletController extends ChangeNotifier {
     return total;
   }
 
-  calculateAmount(String tempCate, String code) {
+  calculateAmount(String tempCate, String code) async {
     String cCode = code.replaceAll("+", '');
     print("tempCate:::::::::   ${tempCate}    ${code}   ${cCode}");
 
@@ -371,7 +374,7 @@ class WalletController extends ChangeNotifier {
     }
 
     setFinalAmt(amt.toString());
-    checkWalletBalApiCall();
+    await checkWalletBalApiCall();
     notify();
   }
 

@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_sound/public/flutter_sound_player.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_sound/flutter_sound.dart' as fs;
 import 'package:flutter_sound/flutter_sound.dart';
@@ -57,6 +59,9 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   @override
   void initState() {
     super.initState();
+    ChatMessageController chatMsgController =
+        Provider.of(context, listen: false);
+    chatMsgController.setSelectedFile(null);
     _initializeAudio();
     getUserNumer();
   }
@@ -380,6 +385,14 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
           Expanded(
             child: Row(
               children: [
+                IconButton(
+                    icon: const Icon(Icons.attach_file),
+                    onPressed: () {
+                      showPicker(context);
+                    }
+
+                    //  showPicker(context),
+                    ),
                 Expanded(
                   child: TextField(
                     controller: msgController,
@@ -454,7 +467,22 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
           ),
           InkWell(
             onTap: () {
-              sendMsg(msgController.text);
+              ChatMessageController chatMsgCtrl =
+                  Provider.of(context, listen: false);
+              if (msgController.text.isNotEmpty) {
+                sendMsg(msgController.text.trim());
+              }
+              if (chatMsgCtrl.selectedFile != null) {
+                DashBoardController dbController =
+                    Provider.of(context, listen: false);
+
+                var usrNumber =
+                    dbController.selectedContactInfo?.whatsappNumber ?? "";
+                var code =
+                    dbController.selectedContactInfo?.countryCode ?? "91";
+                String userNumer = "${code}${usrNumber}";
+                chatMsgCtrl.sfCreateFileApiCall(userNumer);
+              }
             },
             child: Container(
               decoration: BoxDecoration(
@@ -464,7 +492,8 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
               child: Center(
                   child: Padding(
                 padding: const EdgeInsets.all(10.0),
-                child: chatMsgController.sendMsgLoader == true
+                child: chatMsgController.sendMsgLoader == true ||
+                        chatMsgController.createFileLoader
                     ? Container(
                         height: 25,
                         width: 25,
@@ -533,6 +562,115 @@ String replaceTemplateParams(String templateBody, String paramsJsonString) {
   }
 
   return templateBody;
+}
+
+void showPicker(BuildContext context) async {
+  await showModalBottomSheet(
+    context: context,
+    backgroundColor: AppColor.navBarIconColor,
+    builder: (context) => Wrap(
+      children: <Widget>[
+        ListTile(
+          leading: Icon(Icons.photo_library, color: Colors.white),
+          title: const Text(
+            'Choose from Gallery',
+            style: TextStyle(color: Colors.white),
+          ),
+          onTap: () {
+            pickImageFromGallery(context);
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.camera_alt, color: Colors.white),
+          title: const Text(
+            'Take a Photo',
+            style: TextStyle(color: Colors.white),
+          ),
+          onTap: () {
+            pickImageFromCamera(context);
+          },
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> pickImageFromGallery(context) async {
+  final pickedFile = await FilePicker.platform.pickFiles(
+    allowMultiple: false,
+    type: FileType.custom,
+    allowedExtensions: [
+      "jpg",
+      "jpeg",
+      "png",
+      "gif",
+      "pdf",
+      "html",
+      "txt",
+      "doc",
+      "docx",
+      "ppt",
+      "pptx",
+      "xls",
+      "xlsx",
+      "mp4",
+      "mov",
+      "avi",
+      "mkv",
+      "csv",
+      "rtf",
+      "odt",
+      "zip",
+      "rar",
+    ],
+  );
+  if (pickedFile != null) {
+    // EasyLoading.showToast("Picked Successfully");
+
+    ChatMessageController chatMsgController =
+        Provider.of(context, listen: false);
+    var file = pickedFile.files.first;
+    File image = File(file.path!);
+    chatMsgController.setSelectedFile(image);
+  }
+  // Navigator.of(context).pop();
+}
+
+Future<void> pickImageFromCamera(context) async {
+  ImagePicker picker = ImagePicker();
+  final pickedFile = await picker.pickImage(
+    source: ImageSource.camera,
+    imageQuality: 80,
+  );
+  if (pickedFile != null) {
+    ChatMessageController chatMsgController =
+        Provider.of(context, listen: false);
+    File image = File(pickedFile.path);
+    chatMsgController.setSelectedFile(image);
+  }
+  // Navigator.of(context).pop();
+}
+
+Future<File?> pickImaFromGallery() async {
+  final pickedFile = await FilePicker.platform.pickFiles(
+    allowMultiple: false,
+    type: FileType.custom,
+    allowedExtensions: [
+      "jpg",
+      'png',
+    ],
+  );
+  if (pickedFile != null) {
+    // setState(() {
+    //   file = pickedFile.files.first;
+    //   image = File(file!.path!);
+    //   print("image::: ${image}");
+    //   fileNameController.text = file!.name;
+    // });
+    // return image;
+  } else {
+    return null;
+  }
 }
 
 void TemplatebottomSheetShow(context, {bool isFromCamp = false}) {

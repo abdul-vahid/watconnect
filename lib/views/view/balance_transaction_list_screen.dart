@@ -47,20 +47,21 @@ class _BalanceTransactionListScreenState
             children: [
               BalanceRow(
                 leftLabel: "Available Credits",
-                leftValue: walletController.balanceData?.availableCredits ?? "",
+                leftValue:
+                    walletController.balanceData?.availableCredits ?? "0",
                 leftColor: const Color(0xff198754),
                 rightLabel: "Total Credited",
-                rightValue: walletController.balanceData?.totalCredited ?? "",
+                rightValue: walletController.balanceData?.totalCredited ?? "0",
                 rightColor: Colors.blueAccent,
               ),
               const SizedBox(height: 10),
               BalanceRow(
                 leftLabel: "Total Debited",
-                leftValue: walletController.balanceData?.totalDebited ?? "",
+                leftValue: walletController.balanceData?.totalDebited ?? "0",
                 leftColor: const Color(0xff198754),
                 rightLabel: "Last Recharged On",
                 rightValue: formatDateTime(
-                    walletController.balanceData?.lastRechargedOn ?? ""),
+                    walletController.balanceData?.lastRechargedOn ?? "_"),
                 rightColor: Colors.blueAccent,
               ),
               const SizedBox(
@@ -73,77 +74,82 @@ class _BalanceTransactionListScreenState
               const SizedBox(
                 height: 10,
               ),
-              Expanded(
-                child: ListView.builder(
-                    itemCount: walletController.transactionList.length,
-                    itemBuilder: (context, index) {
-                      var transactionData =
-                          walletController.transactionList[index];
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border(
-                            left: BorderSide(
-                              color: Colors.lightBlue.withOpacity(0.8),
-                              width: 5,
-                            ),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.5),
-                              offset: const Offset(0, 3),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 6, horizontal: 4),
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildDetailRow(
-                              context,
-                              icon: Icons.calendar_today,
-                              label: 'Date',
-                              value: formatDateTime(
-                                  transactionData.createdDate ?? ""),
-                            ),
-                            const SizedBox(height: 6),
-                            _buildDetailRow(
-                              context,
-                              icon: Icons.swap_horiz,
-                              label: 'Type',
-                              value: transactionData.type ?? "",
-                            ),
-                            const SizedBox(height: 6),
-                            _buildDetailRow(
-                              context,
-                              icon: Icons.money,
-                              label: 'Amount',
-                              value: transactionData.amount ?? "",
-                              valueColor: Colors.green[700],
-                            ),
-                            const SizedBox(height: 6),
-                            _buildDetailRow(
-                              context,
-                              icon: Icons.info_outline,
-                              label: 'Reason',
-                              value: transactionData.reason ?? "",
-                            ),
-                            const SizedBox(height: 6),
-                            _buildDetailRow(
-                              context,
-                              icon: Icons.info_outline,
-                              label: 'Balance After',
-                              value: transactionData.balanceAfter ?? "",
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-              )
+              walletController.transactionList.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 28.0),
+                      child: Center(child: Text("No Transactions Available")),
+                    )
+                  : Expanded(
+                      child: ListView.builder(
+                          itemCount: walletController.transactionList.length,
+                          itemBuilder: (context, index) {
+                            var transactionData =
+                                walletController.transactionList[index];
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border(
+                                  left: BorderSide(
+                                    color: Colors.lightBlue.withOpacity(0.8),
+                                    width: 5,
+                                  ),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.5),
+                                    offset: const Offset(0, 3),
+                                    blurRadius: 6,
+                                  ),
+                                ],
+                              ),
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 6, horizontal: 4),
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildDetailRow(
+                                    context,
+                                    icon: Icons.calendar_today,
+                                    label: 'Date',
+                                    value: formatDateTime(
+                                        transactionData.createdDate ?? ""),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  _buildDetailRow(
+                                    context,
+                                    icon: Icons.swap_horiz,
+                                    label: 'Type',
+                                    value: transactionData.type ?? "",
+                                  ),
+                                  const SizedBox(height: 6),
+                                  _buildDetailRow(
+                                    context,
+                                    icon: Icons.money,
+                                    label: 'Amount',
+                                    value: transactionData.amount ?? "",
+                                    valueColor: Colors.green[700],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  _buildDetailRow(
+                                    context,
+                                    icon: Icons.info_outline,
+                                    label: 'Reason',
+                                    value: transactionData.reason ?? "",
+                                  ),
+                                  const SizedBox(height: 6),
+                                  _buildDetailRow(
+                                    context,
+                                    icon: Icons.info_outline,
+                                    label: 'Balance After',
+                                    value: transactionData.balanceAfter ?? "",
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                    )
             ],
           ),
         );

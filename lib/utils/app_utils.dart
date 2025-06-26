@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -206,6 +207,8 @@ class AppUtils {
 
         await prefs.setString(SharedPrefsConstants.usertenantcodeKey,
             decodedToken['tenantcode'] ?? "");
+
+        log("has wallet:::::::::::::::::::::::::::::::::::     ${decodedToken['has_wallet']}");
 
         await prefs.setBool(SharedPrefsConstants.hasWalletKey,
             decodedToken['has_wallet'] ?? false);

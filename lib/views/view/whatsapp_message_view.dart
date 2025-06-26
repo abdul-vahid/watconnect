@@ -141,7 +141,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     WalletController walletController = Provider.of(context, listen: false);
-
+    getWalletStatus();
     walletController.templateRatesApiCall();
     leadId = widget.wpnumber ?? "";
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -166,11 +166,15 @@ class _ChatScreenState extends State<ChatScreen> {
     print("Lead Number =>${widget.wpnumber} ");
   }
 
-  Future<void> _initializeAudio() async {
+  getWalletStatus() async {
+    print("is thi func even getting called:::::  ");
     final prefs = await SharedPreferences.getInstance();
-
     hasWallet = await prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
+    print("hasWallet:::::::::::::::::   ${hasWallet}");
     setState(() {});
+  }
+
+  Future<void> _initializeAudio() async {
     await _player.openPlayer();
     await _recorder.openRecorder();
   }
@@ -1874,10 +1878,13 @@ class _ChatScreenState extends State<ChatScreen> {
                 selectedTemplateId = currentTemplate.id;
                 selectedLanguage = currentTemplate.language;
 
-                WalletController walletController =
-                    Provider.of(context, listen: false);
-                walletController.calculateAmount(
-                    currentTemplate.category, widget.model?.countryCode ?? "");
+                if (hasWallet) {
+                  WalletController walletController =
+                      Provider.of(context, listen: false);
+
+                  walletController.calculateAmount(currentTemplate.category,
+                      widget.model?.countryCode ?? "");
+                }
 
                 log("current template:::  ${currentTemplate.category}   :: ${currentTemplate}  ${currentTemplate.name}");
                 print(
@@ -2506,61 +2513,72 @@ class _ChatScreenState extends State<ChatScreen> {
                           })
                         : SizedBox(),
                     Center(
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                          minimumSize:
-                              WidgetStateProperty.all(const Size(10, 20)),
-                          padding: WidgetStateProperty.all(
-                              const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 10)),
-                          backgroundColor:
-                              WidgetStateProperty.all(AppColor.navBarIconColor),
-                        ),
-                        onPressed: () {
-                          print(
-                              "selectedTemplateName>>> ${selectedTemplateName}");
-                          if (selectedTemplateName == null ||
-                              selectedTemplateName == "Select Template Name") {
-                            EasyLoading.showToast("Select Template Name");
-                            return;
-                          }
-                          log("all comp info >> >>  ${selectedHeader}  ${selectedBody} ${selectedFooter} ${selectedButtons}}");
-                          log("selectedBody['text']>>> ${selectedBody.text}  ");
-                          final regex = RegExp(r'\{\{\d+\}\}');
-
-                          if (selectedHeader == null ||
-                              selectedHeader.format == null) {
-                            String templateToSend = selectedTemplateName ??
-                                _templateController.text;
-                            print("Template to send: $templateToSend");
-                            templetesendd(templateToSend, []);
-                            Navigator.of(context).pop();
-                          } else {
-                            if (regex.hasMatch(selectedBody.text) ||
-                                selectedHeader.format != null ||
-                                selectedHeader.format != "TEXT") {
-                              Navigator.of(context).pop();
-                              _sendTemplateSheet();
-                            } else {
-                              String templateToSend = selectedTemplateName ??
-                                  _templateController.text;
-                              print("Template to send: $templateToSend");
-                              templetesendd(templateToSend, []);
-                              if (hasWallet) {
-                                WalletController walletController =
-                                    Provider.of(context, listen: false);
-                                walletController.debitWalletBalApiCall();
+                      child: Consumer<WalletController>(
+                          builder: (context, ref, child) {
+                        return ElevatedButton(
+                          style: ButtonStyle(
+                            minimumSize:
+                                WidgetStateProperty.all(const Size(10, 20)),
+                            padding: WidgetStateProperty.all(
+                                const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10)),
+                            backgroundColor: WidgetStateProperty.all(
+                                AppColor.navBarIconColor),
+                          ),
+                          onPressed: () {
+                            print(
+                                "hasBalance::      ::: hasWallet    ::::::   :::::  ${ref.hasBalance}      ${hasWallet}");
+                            if ((hasWallet && ref.hasBalance) ||
+                                hasWallet == false) {
+                              print(
+                                  "selectedTemplateName>>> ${selectedTemplateName}");
+                              if (selectedTemplateName == null ||
+                                  selectedTemplateName ==
+                                      "Select Template Name") {
+                                EasyLoading.showToast("Select Template Name");
+                                return;
                               }
+                              log("all comp info >> >>  ${selectedHeader}  ${selectedBody} ${selectedFooter} ${selectedButtons}}");
+                              log("selectedBody['text']>>> ${selectedBody.text}  ");
+                              final regex = RegExp(r'\{\{\d+\}\}');
 
-                              Navigator.of(context).pop();
+                              if (selectedHeader == null ||
+                                  selectedHeader.format == null) {
+                                String templateToSend = selectedTemplateName ??
+                                    _templateController.text;
+                                print("Template to send: $templateToSend");
+                                templetesendd(templateToSend, []);
+                                Navigator.of(context).pop();
+                              } else {
+                                if (regex.hasMatch(selectedBody.text) ||
+                                    selectedHeader.format != null ||
+                                    selectedHeader.format != "TEXT") {
+                                  Navigator.of(context).pop();
+                                  _sendTemplateSheet();
+                                } else {
+                                  String templateToSend =
+                                      selectedTemplateName ??
+                                          _templateController.text;
+                                  print("Template to send: $templateToSend");
+                                  templetesendd(templateToSend, []);
+                                  if (hasWallet) {
+                                    WalletController walletController =
+                                        Provider.of(context, listen: false);
+                                    walletController.debitWalletBalApiCall();
+                                  }
+                                  Navigator.of(context).pop();
+                                }
+                              }
+                            } else {
+                              EasyLoading.showToast("Insufficient Balance");
                             }
-                          }
-                        },
-                        child: const Text(
-                          "Send",
-                          style: TextStyle(fontSize: 13, color: Colors.white),
-                        ),
-                      ),
+                          },
+                          child: const Text(
+                            "Send",
+                            style: TextStyle(fontSize: 13, color: Colors.white),
+                          ),
+                        );
+                      }),
                     )
                   ],
                 ),
@@ -3461,7 +3479,7 @@ class _ChatScreenState extends State<ChatScreen> {
       // print("Token: $token");
 
       socket = IO.io(
-        'https://sandbox.watconnect.com',
+        'https://admin.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .setPath('/ibs/socket.io')

@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
+import 'package:mime/mime.dart';
+import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:whatsapp/salesforce/api/api_helper.dart';
@@ -90,7 +93,7 @@ class ChatMessageController extends ChangeNotifier {
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
 
     final Map<String, dynamic> body = {
-      "businessNumber": "${busNum}",
+      "businessnumber": busNum,
       "userWhatsAppNumber": fullNum,
       "messageBody": msg,
     };
@@ -235,6 +238,75 @@ class ChatMessageController extends ChangeNotifier {
     } catch (e) {
       print("Error in chat msg delete api: $e");
     }
+    notifyListeners();
+  }
+
+  // bool get chatHistoryLoader => _chatHistoryLoader;
+
+  bool createFileLoader = false;
+
+  void setCreateFileLoader(bool val) {
+    createFileLoader = val;
+    notifyListeners();
+  }
+
+  File? selectedFile;
+  setSelectedFile(File? fil) {
+    selectedFile = fil;
+    notify();
+  }
+
+  Future<void> sfCreateFileApiCall(String whatsappNum) async {
+    try {
+      final bytes = selectedFile!.readAsBytesSync();
+      var base64String = base64Encode(bytes);
+
+      setCreateFileLoader(true);
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+      final busNum =
+          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+      String apiUrl = "${AppConstants.sfCreateFile}";
+      final mimeType = lookupMimeType(selectedFile!.path);
+      String extension = path.extension(selectedFile!.path);
+      String fileName = path.basename(selectedFile!.path);
+      Map body = {
+        "whatsappNumber": whatsappNum,
+        "businessNumber": busNum,
+        "fileName": fileName,
+        "fileBase64Body": base64String,
+        "fileType": mimeType,
+        "fileExtension": extension
+      };
+
+      final response = await http.post(Uri.parse(apiUrl),
+          headers: {
+            'Authorization': 'Bearer $token',
+            "Content-Type": "application/json"
+          },
+          body: jsonEncode(body));
+      log("headers:::: ${"Bearer $token"}    ${AppConstants.sfCreateFile}        ${body}");
+      print(
+          " create File response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+
+      if (response.statusCode == 200) {
+        setCreateFileLoader(false);
+        setSelectedFile(null);
+        await messageHistoryApiCall(
+            userNumber: whatsappNum, isFirstTime: false);
+      } else {
+        EasyLoading.showToast("Something went wrong.Pick Again");
+        setCreateFileLoader(false);
+        setSelectedFile(null);
+        log("SF create File failed [${response.statusCode}]: ${response.body}");
+      }
+
+      notify();
+    } catch (e) {
+      setCreateFileLoader(false);
+      print("Error in create File : $e");
+    }
+
     notifyListeners();
   }
 }

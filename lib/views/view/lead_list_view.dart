@@ -518,6 +518,52 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Container(
+          height: 55,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            shrinkWrap: true,
+            itemCount: tags.length,
+            itemBuilder: (context, index) {
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    selectedTagId = index;
+                  });
+                  if (index == 1) {
+                    unreadChatFilter();
+                  } else {
+                    setState(() {
+                      allLeads = tempLeadModelList;
+                    });
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0, vertical: 4.0),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 179, 238, 243),
+                      border: Border.all(
+                          color: selectedTagId == index
+                              ? Colors.black
+                              : Colors.transparent,
+                          width: 1.5),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Center(
+                        child: Text(
+                      tags[index],
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    )),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
         allLeads.isEmpty
             ? const SizedBox()
             : Padding(
@@ -552,56 +598,6 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              height: 55,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                shrinkWrap: true,
-                                itemCount: tags.length,
-                                itemBuilder: (context, index) {
-                                  return InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        selectedTagId = index;
-                                      });
-                                      if (index == 1) {
-                                        unreadChatFilter();
-                                      } else {
-                                        setState(() {
-                                          allLeads = tempLeadModelList;
-                                        });
-                                      }
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8.0),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12.0, vertical: 4.0),
-                                        decoration: BoxDecoration(
-                                          color: const Color.fromARGB(
-                                              255, 179, 238, 243),
-                                          border: Border.all(
-                                              color: selectedTagId == index
-                                                  ? Colors.black
-                                                  : Colors.transparent,
-                                              width: 1.5),
-                                          borderRadius:
-                                              BorderRadius.circular(18),
-                                        ),
-                                        child: Center(
-                                            child: Text(
-                                          tags[index],
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold),
-                                        )),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
                             Expanded(
                               child: ListView.builder(
                                 itemCount: allLeads.length,
@@ -884,7 +880,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       // print("Token: $token");
 
       socket = IO.io(
-        'https://sandbox.watconnect.com',
+        'https://admin.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .setPath('/swp/socket.io')

@@ -78,11 +78,11 @@ abstract class AppConstants {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  static const String baseUrl = "https://sandbox.watconnect.com/swp";
-  // static const String baseUrl = "https://admin.watconnect.com/ibs";
+  // static const String baseUrl = "https://sandbox.watconnect.com/swp";
+  static const String baseUrl = "https://admin.watconnect.com/ibs";
 
-  static const String baseImgUrl = "https://sandbox.watconnect.com/";
-  // static const String baseImgUrl = "https://admin.watconnect.com/";
+  // static const String baseImgUrl = "https://sandbox.watconnect.com/";
+  static const String baseImgUrl = "https://admin.watconnect.com/";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -263,4 +263,6 @@ abstract class AppConstants {
   static const String sfDashBoardReport = "${baseApi}watconnect/report?";
 
   static const String sfDeviceToken = "${baseApi}watconnect/usermobiledevice";
+
+  static const String sfCreateFile = "${baseApi}watconnect/createfile";
 }

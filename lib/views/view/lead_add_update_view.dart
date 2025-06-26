@@ -267,7 +267,7 @@ class _Forms extends State<LeadAddView> {
   String? selectedCountry;
   TextEditingController dobController = new TextEditingController();
   String? selectedDate;
-  bool hasWallet = false;
+  bool hasTags = false;
   String? leadStatus;
 // ---country code -----
   void fillCountryCodeMap() {
@@ -726,11 +726,11 @@ class _Forms extends State<LeadAddView> {
               ),
               const SizedBox(height: 10),
 
-              hasWallet ? const Text('Tags') : SizedBox(),
+              hasTags ? const Text('Tags') : SizedBox(),
 
-              hasWallet ? const SizedBox(height: 5) : SizedBox(),
+              hasTags ? const SizedBox(height: 5) : SizedBox(),
 
-              hasWallet
+              hasTags
                   ? MultiSelectDialogField<TagRecord>(
                       dialogWidth: MediaQuery.of(context).size.width * .45,
                       dialogHeight: MediaQuery.of(context).size.height * .35,
@@ -767,7 +767,7 @@ class _Forms extends State<LeadAddView> {
                     )
                   : SizedBox(),
 
-              hasWallet
+              hasTags
                   ? Wrap(
                       spacing: 8.0,
                       children: selectedTagList.map((tagMap) {
@@ -1093,7 +1093,7 @@ class _Forms extends State<LeadAddView> {
         "whatsapp_number": _whatsapnumber?.trim(),
         "email": _email?.trim(),
         "dob": selectedDate,
-        "tag_names": hasWallet ? selectedTagList : SizedBox(),
+        "tag_names": hasTags ? selectedTagList : [],
         "leadsource": _leadsource,
         "leadstatus": _leadstatus,
         "ownername": _asignStaff,
@@ -1225,7 +1225,7 @@ class _Forms extends State<LeadAddView> {
         "whatsapp_number": _whatsapnumber?.trim(),
         "email": _email?.trim(),
         "dob": selectedDate,
-        "tag_names": hasWallet ? selectedTagList : [],
+        "tag_names": hasTags ? selectedTagList : [],
         "leadsource": _leadsource,
         "leadstatus": _leadstatus,
         "ownername": _asignStaff,
@@ -1318,10 +1318,17 @@ class _Forms extends State<LeadAddView> {
     });
   }
 
+  List<String> modules = [];
   Future<void> getWalletStatus() async {
     final prefs = await SharedPreferences.getInstance();
 
-    hasWallet = await prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
+    modules = await prefs
+            .getStringList(SharedPrefsConstants.userAvailableMoulesKey) ??
+        [];
+
+    hasTags =
+        modules.contains("Tag") || modules.contains("Tags") ? true : false;
+    print("hasWallet::::::::::::::::::::::::    ${hasTags}");
     setState(() {});
   }
 }
