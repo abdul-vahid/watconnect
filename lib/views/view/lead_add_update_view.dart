@@ -472,7 +472,9 @@ class _Forms extends State<LeadAddView> {
 
   Widget _pageBody() {
     return GestureDetector(
-      onTap: (){FocusScope.of(context).unfocus();},
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
       child: SingleChildScrollView(
         child: Form(
           key: _addleadFormKey,
@@ -514,7 +516,7 @@ class _Forms extends State<LeadAddView> {
                         ],
                       ),
                       const SizedBox(height: 15),
-      
+
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -537,7 +539,7 @@ class _Forms extends State<LeadAddView> {
                       ),
                       const SizedBox(width: 10),
                       const SizedBox(height: 10),
-      
+
                       const Text('Last Name'),
                       const SizedBox(height: 5),
                       AppUtils.getTextFormField(
@@ -553,9 +555,9 @@ class _Forms extends State<LeadAddView> {
                           return null;
                         },
                       ),
-      
+
                       const SizedBox(height: 10),
-      
+
                       const Text('Date of Birth'),
                       const SizedBox(height: 5),
                       AppUtils.getTextFormField(
@@ -575,11 +577,11 @@ class _Forms extends State<LeadAddView> {
                           if (pickedDate != null) {
                             String formattedDate =
                                 "${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.year}";
-      
+
                             dobController.text = formattedDate;
                             selectedDate =
                                 "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-      
+
                             print("selectedDate::::::::::: ${selectedDate}");
                           }
                         },
@@ -590,14 +592,14 @@ class _Forms extends State<LeadAddView> {
                           return null;
                         },
                       ),
-      
+
                       const SizedBox(
                         height: 12,
                       ),
-      
+
                       const Text('Country Code'),
                       const SizedBox(height: 5),
-      
+
                       DropdownButtonFormField<String>(
                         isDense: true,
                         decoration: const InputDecoration(
@@ -607,81 +609,6 @@ class _Forms extends State<LeadAddView> {
                             borderRadius: BorderRadius.all(Radius.circular(8)),
                           ),
                         ),
-<<<<<<< HEAD
-                      ],
-                    ),
-                    const SizedBox(width: 10),
-                    const SizedBox(height: 10),
-
-                    const Text('Last Name'),
-                    const SizedBox(height: 5),
-                    AppUtils.getTextFormField(
-                      'Enter your Last Name',
-                      initialValue: widget.model?.lastname,
-                      onSaved: (lName) {
-                        _lastname = lName;
-                      },
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter last name';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    const Text('Date of Birth'),
-                    const SizedBox(height: 5),
-                    AppUtils.getTextFormField(
-                      'Select Date of Birth',
-                      controller: dobController,
-                      // initialValue: widget.model?.dob,
-                      onSaved: (dt) {
-                        selectedDate = dt;
-                      },
-                      onTap: () async {
-                        DateTime? pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(1900),
-                          lastDate: DateTime.now(),
-                        );
-                        if (pickedDate != null) {
-                          String formattedDate =
-                              "${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}";
-
-                          dobController.text = formattedDate;
-
-                          selectedDate =
-                              "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-
-                          print("selectedDate::::::::::: $selectedDate");
-                        }
-                      },
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please select date of birth';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(
-                      height: 12,
-                    ),
-
-                    const Text('Country Code'),
-                    const SizedBox(height: 5),
-
-                    DropdownButtonFormField<String>(
-                      isDense: true,
-                      decoration: const InputDecoration(
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-=======
                         value: selectedCountry,
                         isExpanded: true,
                         onChanged: (String? newValue) {
@@ -689,8 +616,8 @@ class _Forms extends State<LeadAddView> {
                             selectedCountry = newValue!;
                           });
                         },
-                        items:
-                            countryCodeMap.entries.map<DropdownMenuItem<String>>(
+                        items: countryCodeMap.entries
+                            .map<DropdownMenuItem<String>>(
                           (MapEntry<String, String> entry) {
                             return DropdownMenuItem<String>(
                               value: entry.key,
@@ -699,11 +626,11 @@ class _Forms extends State<LeadAddView> {
                           },
                         ).toList(),
                       ),
-      
+
                       const SizedBox(
                         height: 12,
                       ),
-      
+
                       const Text('Phone'),
                       const SizedBox(height: 5),
                       AppUtils.getTextFormField(
@@ -725,7 +652,7 @@ class _Forms extends State<LeadAddView> {
                           return null;
                         },
                       ),
-      
+
                       const SizedBox(height: 10),
                       // Email Field
                       Column(
@@ -777,7 +704,7 @@ class _Forms extends State<LeadAddView> {
                     ],
                   ),
                 ),
-      
+
                 Row(
                   children: [
                     Expanded(
@@ -797,18 +724,17 @@ class _Forms extends State<LeadAddView> {
                                 fontSize: 16,
                                 color: Colors.white),
                           ),
->>>>>>> 8bca76ecd70bf17363893c16516ac5abe242e678
                         ),
                       ),
                     )
                   ],
                 ),
                 const SizedBox(height: 10),
-      
+
                 hasTags ? const Text('Tags') : SizedBox(),
-      
+
                 hasTags ? const SizedBox(height: 5) : SizedBox(),
-      
+
                 hasTags
                     ? MultiSelectDialogField<TagRecord>(
                         dialogWidth: MediaQuery.of(context).size.width * .45,
@@ -820,8 +746,8 @@ class _Forms extends State<LeadAddView> {
                         initialValue: selectedTagList.map((tagMap) {
                           return tagsNameSet.firstWhere(
                             (tag) => tag.id == tagMap['id'],
-                            orElse: () =>
-                                TagRecord(id: tagMap['id'], name: tagMap['name']),
+                            orElse: () => TagRecord(
+                                id: tagMap['id'], name: tagMap['name']),
                           );
                         }).toList(),
                         title: const Text("Select Tags"),
@@ -845,7 +771,7 @@ class _Forms extends State<LeadAddView> {
                         },
                       )
                     : SizedBox(),
-      
+
                 hasTags
                     ? Wrap(
                         spacing: 8.0,
@@ -855,8 +781,8 @@ class _Forms extends State<LeadAddView> {
                             deleteIcon: const Icon(Icons.close),
                             onDeleted: () {
                               setState(() {
-                                selectedTagList
-                                    .removeWhere((t) => t['id'] == tagMap['id']);
+                                selectedTagList.removeWhere(
+                                    (t) => t['id'] == tagMap['id']);
                               });
                             },
                             backgroundColor: Colors.blue.withOpacity(0.2),
@@ -865,7 +791,7 @@ class _Forms extends State<LeadAddView> {
                         }).toList(),
                       )
                     : SizedBox(),
-      
+
                 // Row(
                 //   children: [
                 // First column
@@ -932,9 +858,9 @@ class _Forms extends State<LeadAddView> {
                 //     ],
                 //   ),
                 // ),
-      
+
                 // const SizedBox(width: 10), // Space between the columns
-      
+
                 // Second column
                 // Expanded(
                 //   child: Column(
@@ -1100,11 +1026,11 @@ class _Forms extends State<LeadAddView> {
                 //     ),
                 //   ],
                 // ),
-      
+
                 const SizedBox(
                   height: 10,
                 ),
-      
+
                 const Text('Address'),
                 const SizedBox(
                   height: 5,
@@ -1120,7 +1046,7 @@ class _Forms extends State<LeadAddView> {
                 const SizedBox(
                   height: 10,
                 ),
-      
+
                 // AppUtils.getTextFormField(
                 //   'Enter description',
                 //   initialValue: widget.model?.description,
@@ -1131,9 +1057,9 @@ class _Forms extends State<LeadAddView> {
                 const SizedBox(
                   height: 15,
                 ),
-      
+
                 //----------This Code Use of Cancel and Submit Button Showing Start Here---------------
-      
+
                 //----------End Code of Cancel and Submit Button Showing Start Here---------------
               ],
             ),
