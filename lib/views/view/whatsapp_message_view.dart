@@ -3587,13 +3587,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
     PermissionStatus status = await Permission.microphone.status;
 
-    // Request if not already granted
     if (!status.isGranted) {
       status = await Permission.microphone.request();
     }
 
     if (status.isGranted) {
-      // Proceed with recording
       try {
         final Directory tempDir = await getTemporaryDirectory();
         final String filePath =
@@ -3614,15 +3612,20 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     } else if (status.isPermanentlyDenied) {
       EasyLoading.showToast(
-          "Permission permanently denied. Please enable it in Settings.");
+        Platform.isIOS
+            ? "Microphone access is disabled. Please enable it from Settings > Privacy > Microphone."
+            : "Permission permanently denied. Please enable it in Settings.",
+      );
       openAppSettings();
     } else if (status.isDenied) {
-      // Show custom retry dialog
+      // On iOS, this won't show again after first deny
       final shouldRetry = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text("Microphone Access Needed"),
-          content: const Text("We need your permission to record audio."),
+          content: Platform.isIOS
+              ? const Text("Please enable microphone access in Settings.")
+              : const Text("We need your permission to record audio."),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -3637,8 +3640,11 @@ class _ChatScreenState extends State<ChatScreen> {
       );
 
       if (shouldRetry == true) {
-        _startRecording(
-            setState, context); // Re-attempt permission and recording
+        if (Platform.isIOS) {
+          openAppSettings(); // iOS: user must go to settings manually
+        } else {
+          _startRecording(setState, context); // Re-attempt for Android
+        }
       } else {
         EasyLoading.showToast("Microphone permission denied.");
       }

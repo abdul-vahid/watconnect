@@ -605,56 +605,56 @@ class _CampaignListView extends State<CampaignListView> {
                                                 // ),
                                               ],
                                             ),
-                                            Spacer(),
-                                            allCampaigns[index]
-                                                        .campaignStatus ==
-                                                    'Completed'
-                                                ? const SizedBox()
-                                                : Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
-                                                    children: [
-                                                      GestureDetector(
-                                                        onTap: () {
-                                                          Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  CampaignCloneview(
-                                                                      record: allCampaigns[
-                                                                          index]),
-                                                            ),
-                                                          );
-                                                        },
-                                                        child: Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  horizontal: 7,
-                                                                  vertical: 8),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: Colors.blue,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8),
-                                                          ),
-                                                          child: const Text(
-                                                            'Clone',
-                                                            style: TextStyle(
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize: 12,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  )
+                                            // Spacer(),
+                                            // allCampaigns[index]
+                                            //             .campaignStatus ==
+                                            //         'Completed'
+                                            //     ? const SizedBox()
+                                            //     : Column(
+                                            //         mainAxisAlignment:
+                                            //             MainAxisAlignment.end,
+                                            //         children: [
+                                            //           // GestureDetector(
+                                            //           //   onTap: () {
+                                            //           // Navigator.push(
+                                            //           //   context,
+                                            //           //   MaterialPageRoute(
+                                            //           //     builder: (context) =>
+                                            //           //         CampaignCloneview(
+                                            //           //             record: allCampaigns[
+                                            //           //                 index]),
+                                            //           //   ),
+                                            //           // );
+                                            //           // },
+                                            //           // child: Container(
+                                            //           //   padding:
+                                            //           //       const EdgeInsets
+                                            //           //           .symmetric(
+                                            //           //           horizontal: 7,
+                                            //           //           vertical: 8),
+                                            //           //   decoration:
+                                            //           //       BoxDecoration(
+                                            //           //     color: Colors.blue,
+                                            //           //     borderRadius:
+                                            //           //         BorderRadius
+                                            //           //             .circular(
+                                            //           //                 8),
+                                            //           //   ),
+                                            //           //   child: const Text(
+                                            //           //     'Clone',
+                                            //           //     style: TextStyle(
+                                            //           //       color:
+                                            //           //           Colors.white,
+                                            //           //       fontWeight:
+                                            //           //           FontWeight
+                                            //           //               .bold,
+                                            //           //       fontSize: 12,
+                                            //           //     ),
+                                            //           //   ),
+                                            //           // ),
+                                            //           // ),
+                                            //         ],
+                                            //       )
                                           ],
                                         ),
                                       ),
