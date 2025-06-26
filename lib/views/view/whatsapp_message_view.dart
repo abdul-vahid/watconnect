@@ -1703,7 +1703,7 @@ class _ChatScreenState extends State<ChatScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 4.0),
                 child: Listener(
-                  onPointerDown: (_) => _startRecording(setState),
+                  onPointerDown: (_) => _startRecording(setState, context),
                   onPointerUp: (_) => _stopRecording(setState),
                   child: Container(
                     decoration: const BoxDecoration(
@@ -3581,32 +3581,69 @@ class _ChatScreenState extends State<ChatScreen> {
     return null;
   }
 
-  Future<void> _startRecording(StateSetter setState) async {
+  Future<void> _startRecording(
+      StateSetter setState, BuildContext context) async {
     _audioFile = null;
 
-    final status = await Permission.microphone.request();
+    PermissionStatus status = await Permission.microphone.status;
+
+    // Request if not already granted
     if (!status.isGranted) {
-      EasyLoading.showToast("Microphone permission denied");
-      return;
+      status = await Permission.microphone.request();
     }
 
-    try {
-      final Directory tempDir = await getTemporaryDirectory();
-      final String filePath =
-          '${tempDir.path}/voice_msg_${DateTime.now().millisecondsSinceEpoch}.aac';
-      _audioPath = filePath;
+    if (status.isGranted) {
+      // Proceed with recording
+      try {
+        final Directory tempDir = await getTemporaryDirectory();
+        final String filePath =
+            '${tempDir.path}/voice_msg_${DateTime.now().millisecondsSinceEpoch}.aac';
+        _audioPath = filePath;
 
-      await _recorder.startRecorder(
-        toFile: filePath,
-        codec: fs.Codec.aacADTS,
+        await _recorder.startRecorder(
+          toFile: filePath,
+          codec: fs.Codec.aacADTS,
+        );
+
+        setState(() {
+          _isRecording = true;
+        });
+      } catch (e) {
+        debugPrint("Recording error: $e");
+        EasyLoading.showToast("Failed to start recording");
+      }
+    } else if (status.isPermanentlyDenied) {
+      EasyLoading.showToast(
+          "Permission permanently denied. Please enable it in Settings.");
+      openAppSettings();
+    } else if (status.isDenied) {
+      // Show custom retry dialog
+      final shouldRetry = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text("Microphone Access Needed"),
+          content: const Text("We need your permission to record audio."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text("Retry"),
+            ),
+          ],
+        ),
       );
 
-      setState(() {
-        _isRecording = true;
-      });
-    } catch (e) {
-      debugPrint("Recording error: $e");
-      EasyLoading.showToast("Failed to start recording");
+      if (shouldRetry == true) {
+        _startRecording(
+            setState, context); // Re-attempt permission and recording
+      } else {
+        EasyLoading.showToast("Microphone permission denied.");
+      }
+    } else if (status.isRestricted || status.isLimited) {
+      EasyLoading.showToast("Microphone access is restricted or limited.");
     }
   }
 
