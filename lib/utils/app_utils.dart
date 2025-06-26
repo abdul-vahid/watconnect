@@ -283,12 +283,11 @@ class AppUtils {
 
   static List<String> getErrorMessages(exception) {
     print("exception   ${exception}   ${exception.runtimeType}");
-
     List<String> errorMessages = [];
-
     print("exception is AppException:::: ${exception is AppException}");
     if (exception is AppException) {
       Map<String, dynamic> data = jsonDecode(exception.getMessage());
+      print("data:::::::::::::  ${data}");
       data.forEach((key, value) {
         debug("key == $key == $value");
         errorMessages.add(value);
@@ -297,7 +296,27 @@ class AppUtils {
     } else {
       errorMessages.add(exception.toString());
     }
+    return errorMessages;
+  }
 
+  static List<String> getLeadErrorMessages(exception) {
+    print("exception   ${exception}   ${exception.runtimeType}");
+    List<String> errorMessages = [];
+    print("exception is AppException:::: ${exception is AppException}");
+    if (exception is AppException) {
+      Map<String, dynamic> data = jsonDecode(exception.getMessage());
+      print("data:::::::::::::  ${data}");
+      errorMessages.add(data['errors']);
+      // data.forEach((key, value) {
+      //   debug("key == $key == $value");
+      //   errorMessages.add(value);
+      //   isLoggedout = value.toString().toLowerCase() == "expired token";
+      // });
+    } else {
+      errorMessages.add(exception.toString());
+    }
+
+    print("errorMessages::::::::::  ${errorMessages}");
     return errorMessages;
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
@@ -571,13 +572,14 @@ class _Forms extends State<LeadAddView> {
                         );
                         if (pickedDate != null) {
                           String formattedDate =
-                              "${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.year}";
+                              "${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}";
 
                           dobController.text = formattedDate;
+
                           selectedDate =
                               "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
 
-                          print("selectedDate::::::::::: ${selectedDate}");
+                          print("selectedDate::::::::::: $selectedDate");
                         }
                       },
                       validator: (value) {
@@ -1102,7 +1104,7 @@ class _Forms extends State<LeadAddView> {
         "blocked": false
       };
 
-      AppUtils.onLoading(context, "Saving, please wait...");
+      // AppUtils.onLoading(context, "Saving, please wait...");
 
       print("addleadModel:::::::::::::::::::::::  ${body}");
 
@@ -1125,10 +1127,18 @@ class _Forms extends State<LeadAddView> {
           );
         } else {}
       }).catchError((error, stackTrace) {
-        Navigator.pop(context);
-        List<String> errorMessages = AppUtils.getErrorMessages(error);
-        print("errorMessages:::: ${errorMessages}");
-        AppUtils.getAlert(context, errorMessages, title: "Error Alert");
+        // Navigator.pop(context);
+        // Navigator.pop(context);
+        print(
+            "calling error messagesssssssssssssssssssssssssssss  ${AppUtils.getLeadErrorMessages(error).runtimeType}   ${AppUtils.getLeadErrorMessages(error)}");
+
+        // List<String> errorMessages = AppUtils.getErrorMessages(error);
+        // var err = errorMessages[0];
+        // print(
+        //     "errorMessages of the 0 index:  ${err.runtimeType}::::::::::::::::: ${err}");
+
+        EasyLoading.showToast(AppUtils.getLeadErrorMessages(error)[0]);
+        // AppUtils.getAlert(context, errorMessages, title: "Error Alert");
       });
     }
   }
