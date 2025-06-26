@@ -66,8 +66,6 @@
 	<!-- Camera permission -->
 	<key>NSCameraUsageDescription</key>
 	<string>This app requires access to the camera to take photos and videos.</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>This app needs access to the microphone.</string>
 	<!-- Photo Library permission -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires access to your photo library to upload or select images.</string>

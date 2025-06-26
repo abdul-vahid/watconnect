@@ -471,66 +471,143 @@ class _Forms extends State<LeadAddView> {
   }
 
   Widget _pageBody() {
-    return SingleChildScrollView(
-      child: Form(
-        key: _addleadFormKey,
-        child: Padding(
-          padding:
-              const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 05),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: AppColor.navBarIconColor,
-                                borderRadius: BorderRadius.circular(08)),
-                            height: 40,
-                            width: 350,
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'Personal Information',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Colors.white),
+    return GestureDetector(
+      onTap: (){FocusScope.of(context).unfocus();},
+      child: SingleChildScrollView(
+        child: Form(
+          key: _addleadFormKey,
+          child: Padding(
+            padding:
+                const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 05),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: AppColor.navBarIconColor,
+                                  borderRadius: BorderRadius.circular(08)),
+                              height: 40,
+                              width: 350,
+                              child: const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Personal Information',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: Colors.white),
+                                ),
                               ),
                             ),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 15),
+      
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('First Name'),
+                          const SizedBox(height: 5),
+                          AppUtils.getTextFormField(
+                            'Enter First Name',
+                            initialValue: widget.model?.firstname,
+                            onSaved: (fName) {
+                              _firstname = fName;
+                            },
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please provide first name';
+                              }
+                              return null;
+                            },
                           ),
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('First Name'),
-                        const SizedBox(height: 5),
-                        AppUtils.getTextFormField(
-                          'Enter First Name',
-                          initialValue: widget.model?.firstname,
-                          onSaved: (fName) {
-                            _firstname = fName;
-                          },
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Please provide first name';
-                            }
-                            return null;
-                          },
+                        ],
+                      ),
+                      const SizedBox(width: 10),
+                      const SizedBox(height: 10),
+      
+                      const Text('Last Name'),
+                      const SizedBox(height: 5),
+                      AppUtils.getTextFormField(
+                        'Enter your Last Name',
+                        initialValue: widget.model?.lastname,
+                        onSaved: (lName) {
+                          _lastname = lName;
+                        },
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter last name';
+                          }
+                          return null;
+                        },
+                      ),
+      
+                      const SizedBox(height: 10),
+      
+                      const Text('Date of Birth'),
+                      const SizedBox(height: 5),
+                      AppUtils.getTextFormField(
+                        'Select Date of Birth',
+                        controller: dobController,
+                        // initialValue: widget.model?.dob,
+                        onSaved: (dt) {
+                          selectedDate = dt;
+                        },
+                        onTap: () async {
+                          DateTime? pickedDate = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(1900),
+                            lastDate: DateTime.now(),
+                          );
+                          if (pickedDate != null) {
+                            String formattedDate =
+                                "${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.year}";
+      
+                            dobController.text = formattedDate;
+                            selectedDate =
+                                "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+      
+                            print("selectedDate::::::::::: ${selectedDate}");
+                          }
+                        },
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please select date of birth';
+                          }
+                          return null;
+                        },
+                      ),
+      
+                      const SizedBox(
+                        height: 12,
+                      ),
+      
+                      const Text('Country Code'),
+                      const SizedBox(height: 5),
+      
+                      DropdownButtonFormField<String>(
+                        isDense: true,
+                        decoration: const InputDecoration(
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                          ),
                         ),
+<<<<<<< HEAD
                       ],
                     ),
                     const SizedBox(width: 10),
@@ -604,461 +681,462 @@ class _Forms extends State<LeadAddView> {
                             EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
+=======
+                        value: selectedCountry,
+                        isExpanded: true,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedCountry = newValue!;
+                          });
+                        },
+                        items:
+                            countryCodeMap.entries.map<DropdownMenuItem<String>>(
+                          (MapEntry<String, String> entry) {
+                            return DropdownMenuItem<String>(
+                              value: entry.key,
+                              child: Text(entry.value),
+                            );
+                          },
+                        ).toList(),
+                      ),
+      
+                      const SizedBox(
+                        height: 12,
+                      ),
+      
+                      const Text('Phone'),
+                      const SizedBox(height: 5),
+                      AppUtils.getTextFormField(
+                        'Enter your phone number',
+                        initialValue: widget.model?.whatsappNumber,
+                        onSaved: (wpnumber) {
+                          _whatsapnumber = '${wpnumber}';
+                          print(
+                              "sdfdsfssdfjhsdkfjskdjfskdjsdk4${_whatsapnumber}");
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter phone number';
+                          } else if (value.length != 10) {
+                            return 'Phone number must be 10 digits';
+                          } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                            return 'Phone number must contain only digits';
+                          }
+                          return null;
+                        },
+                      ),
+      
+                      const SizedBox(height: 10),
+                      // Email Field
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Email'),
+                          const SizedBox(height: 5),
+                          AppUtils.getTextFormField(
+                            'Enter your email',
+                            initialValue: widget.model?.email,
+                            onSaved: (email) {
+                              _email = email;
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      const Text('Lead Status'),
+                      const SizedBox(height: 10),
+                      AppUtils.getDropdown(
+                        '--Select--',
+                        onChanged: (value) {
+                          setState(() {
+                            _leadstatus = value;
+                          });
+                        },
+                        validator: (value) =>
+                            value == null ? 'Please Provide Status' : null,
+                        data: _leadsstatus,
+                        value: leadStatus ?? widget.model?.leadstatus,
+                      ),
+                      const SizedBox(height: 10),
+                      const Text('Assigned User'),
+                      const SizedBox(height: 10),
+                      AppUtils.getDropdown(
+                        '--Select--',
+                        onChanged: (value) {
+                          setState(() {
+                            _asignStaff = value;
+                          });
+                        },
+                        validator: (value) =>
+                            value == null ? 'Please Provide User' : null,
+                        data: userData,
+                        value: userData.contains(widget.model?.ownername)
+                            ? widget.model?.ownername
+                            : defaultSel,
+                      ),
+                    ],
+                  ),
+                ),
+      
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: AppColor.navBarIconColor,
+                            // color: AppColor.appBarColor,
+                            borderRadius: BorderRadius.circular(08)),
+                        height: 40,
+                        width: 350,
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            'Important Information',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.white),
+                          ),
+>>>>>>> 8bca76ecd70bf17363893c16516ac5abe242e678
                         ),
                       ),
-                      value: selectedCountry,
-                      isExpanded: true,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedCountry = newValue!;
-                        });
-                      },
-                      items:
-                          countryCodeMap.entries.map<DropdownMenuItem<String>>(
-                        (MapEntry<String, String> entry) {
-                          return DropdownMenuItem<String>(
-                            value: entry.key,
-                            child: Text(entry.value),
-                          );
-                        },
-                      ).toList(),
-                    ),
-
-                    const SizedBox(
-                      height: 12,
-                    ),
-
-                    const Text('Phone'),
-                    const SizedBox(height: 5),
-                    AppUtils.getTextFormField(
-                      'Enter your phone number',
-                      initialValue: widget.model?.whatsappNumber,
-                      onSaved: (wpnumber) {
-                        _whatsapnumber = '${wpnumber}';
-                        print(
-                            "sdfdsfssdfjhsdkfjskdjfskdjsdk4${_whatsapnumber}");
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter phone number';
-                        } else if (value.length != 10) {
-                          return 'Phone number must be 10 digits';
-                        } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-                          return 'Phone number must contain only digits';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 10),
-                    // Email Field
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Email'),
-                        const SizedBox(height: 5),
-                        AppUtils.getTextFormField(
-                          'Enter your email',
-                          initialValue: widget.model?.email,
-                          onSaved: (email) {
-                            _email = email;
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    const Text('Lead Status'),
-                    const SizedBox(height: 10),
-                    AppUtils.getDropdown(
-                      '--Select--',
-                      onChanged: (value) {
-                        setState(() {
-                          _leadstatus = value;
-                        });
-                      },
-                      validator: (value) =>
-                          value == null ? 'Please Provide Status' : null,
-                      data: _leadsstatus,
-                      value: leadStatus ?? widget.model?.leadstatus,
-                    ),
-                    const SizedBox(height: 10),
-                    const Text('Assigned User'),
-                    const SizedBox(height: 10),
-                    AppUtils.getDropdown(
-                      '--Select--',
-                      onChanged: (value) {
-                        setState(() {
-                          _asignStaff = value;
-                        });
-                      },
-                      validator: (value) =>
-                          value == null ? 'Please Provide User' : null,
-                      data: userData,
-                      value: userData.contains(widget.model?.ownername)
-                          ? widget.model?.ownername
-                          : defaultSel,
-                    ),
+                    )
                   ],
                 ),
-              ),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: AppColor.navBarIconColor,
-                          // color: AppColor.appBarColor,
-                          borderRadius: BorderRadius.circular(08)),
-                      height: 40,
-                      width: 350,
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          'Important Information',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.white),
+                const SizedBox(height: 10),
+      
+                hasTags ? const Text('Tags') : SizedBox(),
+      
+                hasTags ? const SizedBox(height: 5) : SizedBox(),
+      
+                hasTags
+                    ? MultiSelectDialogField<TagRecord>(
+                        dialogWidth: MediaQuery.of(context).size.width * .45,
+                        dialogHeight: MediaQuery.of(context).size.height * .35,
+                        items: tagsNameSet.map((tag) {
+                          return MultiSelectItem<TagRecord>(
+                              tag, tag.name ?? "Unnamed");
+                        }).toList(),
+                        initialValue: selectedTagList.map((tagMap) {
+                          return tagsNameSet.firstWhere(
+                            (tag) => tag.id == tagMap['id'],
+                            orElse: () =>
+                                TagRecord(id: tagMap['id'], name: tagMap['name']),
+                          );
+                        }).toList(),
+                        title: const Text("Select Tags"),
+                        selectedColor: Colors.blue,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.blue, width: 1),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        buttonText: const Text("Select Tags"),
+                        chipDisplay: MultiSelectChipDisplay.none(),
+                        onConfirm: (List<TagRecord> selectedTags) {
+                          setState(() {
+                            selectedTagList = selectedTags.map((tag) {
+                              return {
+                                'id': tag.id ?? '',
+                                'name': tag.name ?? '',
+                              };
+                            }).toList();
+                          });
+                          debugPrint("Selected tags: $selectedTagList");
+                        },
+                      )
+                    : SizedBox(),
+      
+                hasTags
+                    ? Wrap(
+                        spacing: 8.0,
+                        children: selectedTagList.map((tagMap) {
+                          return Chip(
+                            label: Text(tagMap['name'] ?? "Tag"),
+                            deleteIcon: const Icon(Icons.close),
+                            onDeleted: () {
+                              setState(() {
+                                selectedTagList
+                                    .removeWhere((t) => t['id'] == tagMap['id']);
+                              });
+                            },
+                            backgroundColor: Colors.blue.withOpacity(0.2),
+                            labelStyle: const TextStyle(color: Colors.blue),
+                          );
+                        }).toList(),
+                      )
+                    : SizedBox(),
+      
+                // Row(
+                //   children: [
+                // First column
+                // Expanded(
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       const Text('Title'),
+                //       const SizedBox(height: 5),
+                //       AppUtils.getDropdown(
+                //         '--Select--',
+                //         onSaved: (newValue) {
+                //           _title = newValue;
+                //         },
+                //         onChanged: (value) {
+                //           setState(() {
+                //             _title = value;
+                //           });
+                //         },
+                //         data: _titles,
+                //         value: widget.model?.title,
+                //       ),
+                const SizedBox(height: 10),
+                const Text('Lead Source'),
+                const SizedBox(height: 5),
+                AppUtils.getDropdown(
+                  '--Select--',
+                  onChanged: (value) {
+                    setState(() {
+                      _leadsource = value;
+                    });
+                  },
+                  data: _leadsources,
+                  value: widget.model?.leadsource,
+                ),
+                //       const SizedBox(height: 10),
+                //       // const Text('Lead Status'),
+                //       // const SizedBox(height: 5),
+                //       // AppUtils.getDropdown(
+                //       //   '--Select--',
+                //       //   onChanged: (value) {
+                //       //     setState(() {
+                //       //       _leadstatus = value;
+                //       //     });
+                //       //   },
+                //       //   validator: (value) =>
+                //       //       value == null ? 'Required' : null,
+                //       //   data: _leadsstatus,
+                //       //   value: widget.model?.leadstatus,
+                //       // ),
+                //       const SizedBox(height: 10),
+                //       const Text('Industry'),
+                //       const SizedBox(height: 5),
+                //       AppUtils.getDropdown(
+                //         '--Select--',
+                //         onChanged: (value) {
+                //           setState(() {
+                //             _industry = value;
+                //           });
+                //         },
+                //         data: _industries,
+                //         value: widget.model?.industry,
+                //       ),
+                //     ],
+                //   ),
+                // ),
+      
+                // const SizedBox(width: 10), // Space between the columns
+      
+                // Second column
+                // Expanded(
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       const Text('Payment Model'),
+                //       const SizedBox(height: 5),
+                //       AppUtils.getDropdown(
+                //         '--Select--',
+                //         onChanged: (value) {
+                //           setState(() {
+                //             _payment = value;
+                //           });
+                //         },
+                //         data: _payments,
+                //         value: widget.model?.paymentmodel,
+                //       ),
+                //       const SizedBox(height: 10),
+                //       const Text('Payment Terms'),
+                //       const SizedBox(height: 5),
+                //       AppUtils.getDropdown(
+                //         '--Select--',
+                //         onChanged: (value) {
+                //           setState(() {
+                //             _paymentterm = value;
+                //           });
+                //         },
+                //         data: _paymentterms,
+                //         value: widget.model?.paymentterms,
+                //       ),
+                //       const SizedBox(height: 10),
+                //       const SizedBox(height: 10),
+                //       const Text('Expected Amount (\u{20B9})'),
+                //       const SizedBox(height: 5),
+                //       AppUtils.getTextFormField(
+                //         'Enter Expected Amount',
+                //         initialValue: widget.model?.amount,
+                //         onSaved: (amount) {
+                //           _amount = amount;
+                //         },
+                //       ),
+                //     ],
+                //   ),
+                // ),
+                //   ],
+                // ),
+                const SizedBox(height: 25),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: AppColor.navBarIconColor,
+                            // color: AppColor.appBarColor,
+                            borderRadius: BorderRadius.circular(08)),
+                        height: 40,
+                        width: 350,
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            'Address Information',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.white),
+                          ),
                         ),
                       ),
-                    ),
-                  )
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              hasTags ? const Text('Tags') : SizedBox(),
-
-              hasTags ? const SizedBox(height: 5) : SizedBox(),
-
-              hasTags
-                  ? MultiSelectDialogField<TagRecord>(
-                      dialogWidth: MediaQuery.of(context).size.width * .45,
-                      dialogHeight: MediaQuery.of(context).size.height * .35,
-                      items: tagsNameSet.map((tag) {
-                        return MultiSelectItem<TagRecord>(
-                            tag, tag.name ?? "Unnamed");
-                      }).toList(),
-                      initialValue: selectedTagList.map((tagMap) {
-                        return tagsNameSet.firstWhere(
-                          (tag) => tag.id == tagMap['id'],
-                          orElse: () =>
-                              TagRecord(id: tagMap['id'], name: tagMap['name']),
-                        );
-                      }).toList(),
-                      title: const Text("Select Tags"),
-                      selectedColor: Colors.blue,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.blue, width: 1),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      buttonText: const Text("Select Tags"),
-                      chipDisplay: MultiSelectChipDisplay.none(),
-                      onConfirm: (List<TagRecord> selectedTags) {
-                        setState(() {
-                          selectedTagList = selectedTags.map((tag) {
-                            return {
-                              'id': tag.id ?? '',
-                              'name': tag.name ?? '',
-                            };
-                          }).toList();
-                        });
-                        debugPrint("Selected tags: $selectedTagList");
-                      },
                     )
-                  : SizedBox(),
-
-              hasTags
-                  ? Wrap(
-                      spacing: 8.0,
-                      children: selectedTagList.map((tagMap) {
-                        return Chip(
-                          label: Text(tagMap['name'] ?? "Tag"),
-                          deleteIcon: const Icon(Icons.close),
-                          onDeleted: () {
-                            setState(() {
-                              selectedTagList
-                                  .removeWhere((t) => t['id'] == tagMap['id']);
-                            });
-                          },
-                          backgroundColor: Colors.blue.withOpacity(0.2),
-                          labelStyle: const TextStyle(color: Colors.blue),
-                        );
-                      }).toList(),
-                    )
-                  : SizedBox(),
-
-              // Row(
-              //   children: [
-              // First column
-              // Expanded(
-              //   child: Column(
-              //     crossAxisAlignment: CrossAxisAlignment.start,
-              //     children: [
-              //       const Text('Title'),
-              //       const SizedBox(height: 5),
-              //       AppUtils.getDropdown(
-              //         '--Select--',
-              //         onSaved: (newValue) {
-              //           _title = newValue;
-              //         },
-              //         onChanged: (value) {
-              //           setState(() {
-              //             _title = value;
-              //           });
-              //         },
-              //         data: _titles,
-              //         value: widget.model?.title,
-              //       ),
-              const SizedBox(height: 10),
-              const Text('Lead Source'),
-              const SizedBox(height: 5),
-              AppUtils.getDropdown(
-                '--Select--',
-                onChanged: (value) {
-                  setState(() {
-                    _leadsource = value;
-                  });
-                },
-                data: _leadsources,
-                value: widget.model?.leadsource,
-              ),
-              //       const SizedBox(height: 10),
-              //       // const Text('Lead Status'),
-              //       // const SizedBox(height: 5),
-              //       // AppUtils.getDropdown(
-              //       //   '--Select--',
-              //       //   onChanged: (value) {
-              //       //     setState(() {
-              //       //       _leadstatus = value;
-              //       //     });
-              //       //   },
-              //       //   validator: (value) =>
-              //       //       value == null ? 'Required' : null,
-              //       //   data: _leadsstatus,
-              //       //   value: widget.model?.leadstatus,
-              //       // ),
-              //       const SizedBox(height: 10),
-              //       const Text('Industry'),
-              //       const SizedBox(height: 5),
-              //       AppUtils.getDropdown(
-              //         '--Select--',
-              //         onChanged: (value) {
-              //           setState(() {
-              //             _industry = value;
-              //           });
-              //         },
-              //         data: _industries,
-              //         value: widget.model?.industry,
-              //       ),
-              //     ],
-              //   ),
-              // ),
-
-              // const SizedBox(width: 10), // Space between the columns
-
-              // Second column
-              // Expanded(
-              //   child: Column(
-              //     crossAxisAlignment: CrossAxisAlignment.start,
-              //     children: [
-              //       const Text('Payment Model'),
-              //       const SizedBox(height: 5),
-              //       AppUtils.getDropdown(
-              //         '--Select--',
-              //         onChanged: (value) {
-              //           setState(() {
-              //             _payment = value;
-              //           });
-              //         },
-              //         data: _payments,
-              //         value: widget.model?.paymentmodel,
-              //       ),
-              //       const SizedBox(height: 10),
-              //       const Text('Payment Terms'),
-              //       const SizedBox(height: 5),
-              //       AppUtils.getDropdown(
-              //         '--Select--',
-              //         onChanged: (value) {
-              //           setState(() {
-              //             _paymentterm = value;
-              //           });
-              //         },
-              //         data: _paymentterms,
-              //         value: widget.model?.paymentterms,
-              //       ),
-              //       const SizedBox(height: 10),
-              //       const SizedBox(height: 10),
-              //       const Text('Expected Amount (\u{20B9})'),
-              //       const SizedBox(height: 5),
-              //       AppUtils.getTextFormField(
-              //         'Enter Expected Amount',
-              //         initialValue: widget.model?.amount,
-              //         onSaved: (amount) {
-              //           _amount = amount;
-              //         },
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              //   ],
-              // ),
-              const SizedBox(height: 25),
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: AppColor.navBarIconColor,
-                          // color: AppColor.appBarColor,
-                          borderRadius: BorderRadius.circular(08)),
-                      height: 40,
-                      width: 350,
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          'Address Information',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.white),
-                        ),
-                      ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     Expanded(
+                //       child: Column(
+                //         crossAxisAlignment: CrossAxisAlignment.start,
+                //         children: [
+                //           const Text('Street'),
+                //           const SizedBox(
+                //             height: 5,
+                //           ),
+                //           AppUtils.getTextFormField(
+                //             'Enter your street',
+                //             initialValue: widget.model?.street,
+                //             onSaved: (street) {
+                //               _street = street;
+                //             },
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //     const SizedBox(
+                //       width: 05,
+                //     ),
+                //     Expanded(
+                //       child: Column(
+                //         crossAxisAlignment: CrossAxisAlignment.start,
+                //         children: [
+                //           const Text('City'),
+                //           const SizedBox(
+                //             height: 5,
+                //           ),
+                //           AppUtils.getTextFormField(
+                //             'Enter your City',
+                //             initialValue: widget.model?.city,
+                //             onSaved: (value) {
+                //               _city = value;
+                //             },
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //   ],
+                // ),
+                const SizedBox(
+                    // height: 10,
                     ),
-                  )
-                ],
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //   children: [
-              //     Expanded(
-              //       child: Column(
-              //         crossAxisAlignment: CrossAxisAlignment.start,
-              //         children: [
-              //           const Text('Street'),
-              //           const SizedBox(
-              //             height: 5,
-              //           ),
-              //           AppUtils.getTextFormField(
-              //             'Enter your street',
-              //             initialValue: widget.model?.street,
-              //             onSaved: (street) {
-              //               _street = street;
-              //             },
-              //           ),
-              //         ],
-              //       ),
-              //     ),
-              //     const SizedBox(
-              //       width: 05,
-              //     ),
-              //     Expanded(
-              //       child: Column(
-              //         crossAxisAlignment: CrossAxisAlignment.start,
-              //         children: [
-              //           const Text('City'),
-              //           const SizedBox(
-              //             height: 5,
-              //           ),
-              //           AppUtils.getTextFormField(
-              //             'Enter your City',
-              //             initialValue: widget.model?.city,
-              //             onSaved: (value) {
-              //               _city = value;
-              //             },
-              //           ),
-              //         ],
-              //       ),
-              //     ),
-              //   ],
-              // ),
-              const SizedBox(
-                  // height: 10,
-                  ),
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //   children: [
-              //     Expanded(
-              //       child: Column(
-              //         crossAxisAlignment: CrossAxisAlignment.start,
-              //         children: [
-              //           const Text('State'),
-              //           const SizedBox(
-              //             height: 5,
-              //           ),
-              //           AppUtils.getTextFormField(
-              //             'Enter your State',
-              //             initialValue: widget.model?.state,
-              //             onSaved: (value) {
-              //               _selectedState = value;
-              //             },
-              //           ),
-              //         ],
-              //       ),
-              //     ),
-              //     const SizedBox(
-              //       width: 05,
-              //     ),
-              //     Expanded(
-              //       child: Column(
-              //         crossAxisAlignment: CrossAxisAlignment.start,
-              //         children: [
-              //           const Text('Zip/Postal code'),
-              //           const SizedBox(
-              //             height: 5,
-              //           ),
-              //           AppUtils.getTextFormField(
-              //             'Enter your zip code',
-              //             initialValue: widget.model?.zipcode,
-              //             onSaved: (value) {
-              //               _zipcode = value;
-              //             },
-              //           ),
-              //         ],
-              //       ),
-              //     ),
-              //   ],
-              // ),
-
-              const SizedBox(
-                height: 10,
-              ),
-
-              const Text('Address'),
-              const SizedBox(
-                height: 5,
-              ),
-              AppUtils.getTextFormField(
-                'Enter Your Address',
-                maxLines: 2,
-                initialValue: widget.model?.address,
-                onSaved: (country) {
-                  _selectedCountry = country;
-                },
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-
-              // AppUtils.getTextFormField(
-              //   'Enter description',
-              //   initialValue: widget.model?.description,
-              //   onSaved: (description) {
-              //     _description = description;
-              //   },
-              // ),
-              const SizedBox(
-                height: 15,
-              ),
-
-              //----------This Code Use of Cancel and Submit Button Showing Start Here---------------
-
-              //----------End Code of Cancel and Submit Button Showing Start Here---------------
-            ],
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     Expanded(
+                //       child: Column(
+                //         crossAxisAlignment: CrossAxisAlignment.start,
+                //         children: [
+                //           const Text('State'),
+                //           const SizedBox(
+                //             height: 5,
+                //           ),
+                //           AppUtils.getTextFormField(
+                //             'Enter your State',
+                //             initialValue: widget.model?.state,
+                //             onSaved: (value) {
+                //               _selectedState = value;
+                //             },
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //     const SizedBox(
+                //       width: 05,
+                //     ),
+                //     Expanded(
+                //       child: Column(
+                //         crossAxisAlignment: CrossAxisAlignment.start,
+                //         children: [
+                //           const Text('Zip/Postal code'),
+                //           const SizedBox(
+                //             height: 5,
+                //           ),
+                //           AppUtils.getTextFormField(
+                //             'Enter your zip code',
+                //             initialValue: widget.model?.zipcode,
+                //             onSaved: (value) {
+                //               _zipcode = value;
+                //             },
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //   ],
+                // ),
+      
+                const SizedBox(
+                  height: 10,
+                ),
+      
+                const Text('Address'),
+                const SizedBox(
+                  height: 5,
+                ),
+                AppUtils.getTextFormField(
+                  'Enter Your Address',
+                  maxLines: 2,
+                  initialValue: widget.model?.address,
+                  onSaved: (country) {
+                    _selectedCountry = country;
+                  },
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+      
+                // AppUtils.getTextFormField(
+                //   'Enter description',
+                //   initialValue: widget.model?.description,
+                //   onSaved: (description) {
+                //     _description = description;
+                //   },
+                // ),
+                const SizedBox(
+                  height: 15,
+                ),
+      
+                //----------This Code Use of Cancel and Submit Button Showing Start Here---------------
+      
+                //----------End Code of Cancel and Submit Button Showing Start Here---------------
+              ],
+            ),
           ),
         ),
       ),
