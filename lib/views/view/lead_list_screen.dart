@@ -14,6 +14,11 @@ class _LeadListScreenState extends State<LeadListScreen> {
   TextEditingController textController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

@@ -19,6 +19,7 @@ import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
 import 'package:whatsapp/view_models/campaign_chart_vm.dart';
 import 'package:whatsapp/view_models/groups_view_model.dart';
+import 'package:whatsapp/view_models/lead_controller.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/message_list_vm.dart'
     show MessageViewModel;
@@ -105,7 +106,8 @@ class MyApp extends StatelessWidget {
           create: (_) => ChatMessageController(),
         ),
         ChangeNotifierProvider(create: (_) => SfcampaignController()),
-        ChangeNotifierProvider(create: (_) => WalletController())
+        ChangeNotifierProvider(create: (_) => WalletController()),
+        ChangeNotifierProvider(create: (_) => LeadController())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
