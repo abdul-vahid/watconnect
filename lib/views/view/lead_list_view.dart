@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:whatsapp/main.dart';
+import 'package:whatsapp/models/tags_list_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_dashboard.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
@@ -63,6 +64,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   @override
   void initState() {
     selectleadList = [];
+    getTags();
     _getUnreadCount();
     getLeadList();
     // connectSocket();
@@ -533,10 +535,12 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                   });
                   if (index == 1) {
                     unreadChatFilter();
-                  } else {
+                  } else if (index == 0) {
                     setState(() {
                       allLeads = tempLeadModelList;
                     });
+                  } else {
+                    getTagBasedList(tags[index]);
                   }
                 },
                 child: Padding(
@@ -976,5 +980,50 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       ...prioritizedLeads,
     ];
     setState(() {});
+  }
+
+  List<TagRecord> tagsNameSet = [];
+  Future<void> getTags() async {
+    await Provider.of<LeadListViewModel>(context, listen: false)
+        .fetchLeadTags()
+        .then((onValue) {
+      tags = [];
+      leadlistvm = Provider.of<LeadListViewModel>(context, listen: false);
+
+      tags.clear(); // Clear if it's reused
+      tags.add("All");
+      tags.add("Unread");
+
+      for (var viewModel in leadlistvm.viewModels) {
+        var leadmodel = viewModel.model;
+        if (leadmodel?.records != null) {
+          for (var record in leadmodel!.records!) {
+            tagsNameSet.add(record);
+
+            if (!tags.contains(record.name)) {
+              print("tags record name::: ${record.name}");
+              tags.add(record.name);
+            }
+          }
+        }
+      }
+
+      //   }
+      setState(() {});
+    });
+  }
+
+  void getTagBasedList(String tg) {
+    if (tg == "All") {
+      allLeads = List.from(tempLeadModelList);
+    } else if (tg == "Unread") {
+      allLeads = tempLeadModelList
+          .where((lead) => lead.isUnread == true)
+          .toList(); // Assuming such a field
+    } else {
+      allLeads = tempLeadModelList.where((lead) {
+        return lead.tagNames.any((tag) => tag.name == tg);
+      }).toList();
+    }
   }
 }

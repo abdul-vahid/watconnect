@@ -258,55 +258,52 @@ class ChatMessageController extends ChangeNotifier {
 
   Future<void> sfCreateFileApiCall(String whatsappNum) async {
     try {
-      final bytes = selectedFile!.readAsBytesSync();
-      var base64String = base64Encode(bytes);
-
       setCreateFileLoader(true);
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      String apiUrl = "${AppConstants.sfCreateFile}";
-      final mimeType = lookupMimeType(selectedFile!.path);
-      String extension = path.extension(selectedFile!.path);
-      String fileName = path.basename(selectedFile!.path);
-      Map body = {
-        "whatsappNumber": whatsappNum,
-        "businessNumber": busNum,
-        "fileName": fileName,
-        "fileBase64Body": base64String,
-        "fileType": mimeType,
-        "fileExtension": extension
-      };
+      final file = selectedFile; // Assume this is a File object
 
-      final response = await http.post(Uri.parse(apiUrl),
-          headers: {
-            'Authorization': 'Bearer $token',
-            "Content-Type": "application/json"
-          },
-          body: jsonEncode(body));
-      log("headers:::: ${"Bearer $token"}    ${AppConstants.sfCreateFile}        ${body}");
-      print(
-          " create File response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+      if (file == null) {
+        print("No file selected");
+        return;
+      }
+
+      final fileName = path.basename(file.path);
+      final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
+      final uri = Uri.parse(AppConstants.sfCreateFile);
+
+      final request = http.MultipartRequest('POST', uri)
+        ..headers['Authorization'] = 'Bearer $token'
+        ..fields['whatsappNumber'] = whatsappNum
+        ..fields['businessNumber'] = busNum
+        ..fields['fileName'] = fileName
+        ..files.add(
+          await http.MultipartFile.fromPath(
+            'file', // key expected by backend
+            file.path,
+            // contentType: MediaType.parse(mimeType),
+          ),
+        );
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print("Blob upload response: ${response.statusCode} ${response.body}");
 
       if (response.statusCode == 200) {
-        setCreateFileLoader(false);
         setSelectedFile(null);
         await messageHistoryApiCall(
             userNumber: whatsappNum, isFirstTime: false);
       } else {
-        EasyLoading.showToast("Something went wrong.Pick Again");
-        setCreateFileLoader(false);
-        setSelectedFile(null);
-        log("SF create File failed [${response.statusCode}]: ${response.body}");
+        EasyLoading.showToast("Upload failed. Try again.");
       }
-
-      notify();
     } catch (e) {
+      print("Blob upload error: $e");
+    } finally {
       setCreateFileLoader(false);
-      print("Error in create File : $e");
+      notifyListeners();
     }
-
-    notifyListeners();
   }
 }

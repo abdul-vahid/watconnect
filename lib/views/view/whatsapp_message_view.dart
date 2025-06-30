@@ -3581,94 +3581,95 @@ class _ChatScreenState extends State<ChatScreen> {
     return null;
   }
 
- Future<void> _startRecording(StateSetter setState, BuildContext context) async {
-  _audioFile = null;
+  Future<void> _startRecording(
+      StateSetter setState, BuildContext context) async {
+    _audioFile = null;
 
-  var status = await Permission.microphone.status;
-
-  if (status.isGranted) {
-    // Start recording immediately
-    await _beginRecording(setState);
-    return;
-  }
-print("status:::::   ${status}");
-PermissionStatus status1 = await Permission.microphone.status;
-print('Microphone permission status: $status1');
-
-  if (status.isDenied) {
-    // Request permission (system dialog may show)
-    status = await Permission.microphone.request();
+    var status = await Permission.microphone.status;
 
     if (status.isGranted) {
+      // Start recording immediately
       await _beginRecording(setState);
       return;
     }
-    // If still denied or permanently denied, show dialog
-    if (status.isPermanentlyDenied || status.isDenied) {
+    print("status:::::   ${status}");
+    PermissionStatus status1 = await Permission.microphone.status;
+    print('Microphone permission status: $status1');
+
+    if (status.isDenied) {
+      // Request permission (system dialog may show)
+      status = await Permission.microphone.request();
+
+      if (status.isGranted) {
+        await _beginRecording(setState);
+        return;
+      }
+      // If still denied or permanently denied, show dialog
+      if (status.isPermanentlyDenied || status.isDenied) {
+        _showPermissionDialog(context);
+        return;
+      }
+    }
+
+    if (status.isPermanentlyDenied) {
+      // User permanently denied permission, must open settings manually
       _showPermissionDialog(context);
+      return;
+    }
+
+    if (status.isRestricted || status.isLimited) {
+      EasyLoading.showToast("Microphone access is restricted or limited.");
       return;
     }
   }
 
-  if (status.isPermanentlyDenied) {
-    // User permanently denied permission, must open settings manually
-    _showPermissionDialog(context);
-    return;
+  Future<void> _beginRecording(StateSetter setState) async {
+    try {
+      final Directory tempDir = await getTemporaryDirectory();
+      final String filePath =
+          '${tempDir.path}/voice_msg_${DateTime.now().millisecondsSinceEpoch}.aac';
+      _audioPath = filePath;
+
+      await _recorder.startRecorder(
+        toFile: filePath,
+        codec: fs.Codec.aacADTS,
+      );
+
+      setState(() {
+        _isRecording = true;
+      });
+    } catch (e) {
+      debugPrint("Recording error: $e");
+      EasyLoading.showToast("Failed to start recording");
+    }
   }
 
-  if (status.isRestricted || status.isLimited) {
-    EasyLoading.showToast("Microphone access is restricted or limited.");
-    return;
-  }
-}
-
-Future<void> _beginRecording(StateSetter setState) async {
-  try {
-    final Directory tempDir = await getTemporaryDirectory();
-    final String filePath =
-        '${tempDir.path}/voice_msg_${DateTime.now().millisecondsSinceEpoch}.aac';
-    _audioPath = filePath;
-
-    await _recorder.startRecorder(
-      toFile: filePath,
-      codec: fs.Codec.aacADTS,
+  void _showPermissionDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Microphone Access Needed"),
+        content: Platform.isIOS
+            ? const Text(
+                "Microphone access is disabled. Please enable it from Settings > Privacy > Microphone.")
+            : const Text(
+                "Permission permanently denied. Please enable it in Settings."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              openAppSettings();
+            },
+            child: const Text("Open Settings"),
+          ),
+        ],
+      ),
     );
-
-    setState(() {
-      _isRecording = true;
-    });
-  } catch (e) {
-    debugPrint("Recording error: $e");
-    EasyLoading.showToast("Failed to start recording");
   }
-}
-
-void _showPermissionDialog(BuildContext context) {
-  showDialog<void>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text("Microphone Access Needed"),
-      content: Platform.isIOS
-          ? const Text(
-              "Microphone access is disabled. Please enable it from Settings > Privacy > Microphone.")
-          : const Text("Permission permanently denied. Please enable it in Settings."),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text("Cancel"),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.pop(ctx);
-            openAppSettings();
-          },
-          child: const Text("Open Settings"),
-        ),
-      ],
-    ),
-  );
-}
-
 
   Future<void> _stopRecording(StateSetter setState) async {
     try {
@@ -3704,8 +3705,30 @@ void _showPermissionDialog(BuildContext context) {
     _showPreviewDialog();
   }
 
-  void _showPreviewDialog() async {
+  Future<void> _showPreviewDialog() async {
     if (_audioPath == null) return;
+
+    // Get duration using just_audio
+    final audioPlayerForDuration = AudioPlayer();
+    Duration? audioDuration;
+
+    try {
+      await audioPlayerForDuration.setFilePath(_audioPath!);
+      audioDuration = audioPlayerForDuration.duration;
+    } catch (e) {
+      print("Error getting audio duration: $e");
+    } finally {
+      await audioPlayerForDuration.dispose();
+    }
+
+    if (audioDuration == null || audioDuration.inSeconds < 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Audio must be at least 3 seconds long."),
+        ),
+      );
+      return;
+    }
 
     await showDialog(
       context: context,
@@ -3719,7 +3742,6 @@ void _showPermissionDialog(BuildContext context) {
                 whenFinished: () {
                   setState(() {
                     _isPlayingPreview = false;
-                    // _currentPosition = Duration.zero;
                   });
                 },
               );
@@ -3730,10 +3752,7 @@ void _showPermissionDialog(BuildContext context) {
 
               _previewPlayerSubscription?.cancel();
               _previewPlayerSubscription = _player.onProgress?.listen((event) {
-                setState(() {
-                  // _currentPosition = event.position;
-                  // _totalDuration = event.duration;
-                });
+                setState(() {});
               });
             }
 
@@ -3742,14 +3761,14 @@ void _showPermissionDialog(BuildContext context) {
               _previewPlayerSubscription?.cancel();
               setState(() {
                 _isPlayingPreview = false;
-                // _currentPosition = Duration.zero;
               });
             }
 
             return AlertDialog(
               title: const Text('Voice Message Preview'),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                borderRadius: BorderRadius.circular(16),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -3765,21 +3784,14 @@ void _showPermissionDialog(BuildContext context) {
                       _isPlayingPreview ? stopPlayer() : startPlayer();
                     },
                   ),
-
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     Text(_formatDuration(_currentPosition)),
-                  //     Text(_formatDuration(_totalDuration)),
-                  //   ],
-                  // ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () {
                     stopPlayer();
+                    EasyLoading.showToast("Sending audio...");
                     sendAudio("audio", "");
-
                     Navigator.pop(context);
                   },
                   child: const Text('Send'),
