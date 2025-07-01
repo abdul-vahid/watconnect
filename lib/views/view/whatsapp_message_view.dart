@@ -246,107 +246,111 @@ class _ChatScreenState extends State<ChatScreen> {
         onFocusLost: () {
           disconnectSocket();
         },
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: GestureDetector(
-              onTap: () async {
-                if (widget.model == null) {
-                  return;
-                }
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LeadDetailView(
-                      model: widget.model,
-                    ),
-                  ),
-                );
-
-                if (result == true) {
-                  print("result on detailesss:::: ");
-                  Navigator.pop(context, true);
-                }
-              },
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    backgroundImage: NetworkImage(
-                      'https://www.w3schools.com/w3images/avatar2.png',
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      widget.leadName ?? "",
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              msgController.msgToDelete.length > 0
-                  ? IconButton(
-                      icon: const Icon(
-                        Icons.delete,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {
-                        _showSimpleDialog("");
-                      },
-                    )
-                  : SizedBox(),
-              PopupMenuButton<String>(
+        child: SafeArea(
+          bottom: true,
+          child: Scaffold(
+            backgroundColor: AppColor.backgroundGrey,
+            appBar: AppBar(
+              leading: IconButton(
                 icon: const Icon(
-                  Icons.more_vert,
+                  Icons.arrow_back,
                   color: Colors.white,
                 ),
-                onSelected: (String value) {
-                  if (value == 'Clear Chat') {
-                    _showDeleteDialog();
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: GestureDetector(
+                onTap: () async {
+                  if (widget.model == null) {
+                    return;
+                  }
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LeadDetailView(
+                        model: widget.model,
+                      ),
+                    ),
+                  );
+
+                  if (result == true) {
+                    print("result on detailesss:::: ");
+                    Navigator.pop(context, true);
                   }
                 },
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(
-                    value: 'Clear Chat',
-                    child: Text('Clear Chat'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          body: Container(
-            child: Stack(
-              children: [
-                RefreshIndicator(
-                  onRefresh: _pullRefresh,
-                  child: _isLoading ? Container() : _pageBody(),
+                child: Row(
+                  children: [
+                    const CircleAvatar(
+                      backgroundImage: NetworkImage(
+                        'https://www.w3schools.com/w3images/avatar2.png',
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        widget.leadName ?? "",
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
-                if (_isLoading)
-                  Positioned.fill(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                      child: Container(
-                        color: Colors.white.withOpacity(0.2),
-                        child: Center(
-                          child: LoadingAnimationWidget.flickr(
-                            leftDotColor: AppColor.cardsColor,
-                            rightDotColor: AppColor.navBarIconColor,
-                            size: 40,
+              ),
+              actions: [
+                msgController.msgToDelete.length > 0
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          _showSimpleDialog("");
+                        },
+                      )
+                    : SizedBox(),
+                PopupMenuButton<String>(
+                  icon: const Icon(
+                    Icons.more_vert,
+                    color: Colors.white,
+                  ),
+                  onSelected: (String value) {
+                    if (value == 'Clear Chat') {
+                      _showDeleteDialog();
+                    }
+                  },
+                  itemBuilder: (BuildContext context) =>
+                      <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: 'Clear Chat',
+                      child: Text('Clear Chat'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            body: Container(
+              child: Stack(
+                children: [
+                  RefreshIndicator(
+                    onRefresh: _pullRefresh,
+                    child: _isLoading ? Container() : _pageBody(),
+                  ),
+                  if (_isLoading)
+                    Positioned.fill(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                        child: Container(
+                          color: Colors.white.withOpacity(0.2),
+                          child: Center(
+                            child: LoadingAnimationWidget.flickr(
+                              leftDotColor: AppColor.cardsColor,
+                              rightDotColor: AppColor.navBarIconColor,
+                              size: 40,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -1722,7 +1726,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 148, 188, 206),
+                    color: const Color(0xff8BBCD0),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: IconButton(
@@ -1738,7 +1742,7 @@ class _ChatScreenState extends State<ChatScreen> {
               if (allMessages.isNotEmpty)
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColor.cardsColor,
+                    color: Color(0xff7DE0FF),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: showLoader
@@ -1752,7 +1756,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         )
                       : IconButton(
-                          icon: const Icon(Icons.send, color: Colors.white),
+                          icon: const Icon(Icons.send_rounded,
+                              color: Colors.white),
                           onPressed: _handleSendMessage,
                         ),
                 ),

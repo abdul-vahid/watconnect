@@ -153,9 +153,57 @@ class _ProfileViewState extends State<ProfileView> {
 
     AppUtils.currentContext = context;
     return Scaffold(
-      appBar: AppUtils.getappbar(
-        automaticallyImplyLeading: false,
-        title: "My Profile",
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        iconTheme:
+            const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
+        centerTitle: true,
+        elevation: 2,
+        backgroundColor: AppColor.navBarIconColor,
+        title: const Text(
+          "Profile",
+          style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
+        ),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
+            onSelected: (value) {
+              if (value == 'edit') {
+                print("phone===>Phone==>Pjp${user!.whatsapp_number}");
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditProfileView(
+                        id: id,
+                        user: user,
+                        firstName: fName,
+                        lastName: lName,
+                        email: email,
+                        phone: user!.whatsapp_number,
+                        countrycode: countrycode),
+                  ),
+                ).then((value) =>
+                    Provider.of<GetUserViewModel>(context, listen: false)
+                        .fetchUser());
+              }
+              // else if (value == 'delete') {
+              //   _showDeleteDialog();
+              // }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                const PopupMenuItem<String>(
+                  value: 'edit',
+                  child: Text('Edit'),
+                ),
+                // const PopupMenuItem<String>(
+                //   value: 'delete',
+                //   child: Text('Delete'),
+                // ),
+              ];
+            },
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _pullRefresh,
@@ -181,198 +229,126 @@ class _ProfileViewState extends State<ProfileView> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              color: AppColor.navBarIconColor,
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(70),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  spreadRadius: 8,
-                  blurRadius: 7,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            height: 250,
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                Center(
-                  child: Stack(
-                    children: [
-                      Consumer<MessageController>(
-                          builder: (context, mssss, child) {
-                        print("ms>>>> ${mssss.userProfile}");
-                        return Container(
-                          height: 120,
-                          width: 120,
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white, width: 2),
-                              borderRadius: BorderRadius.circular(60)),
-                          child: ClipRRect(
-                              borderRadius: BorderRadius.circular(60),
-                              child: Image.network(
-                                '${mssss.userProfile}?timestamp=${DateTime.now().millisecondsSinceEpoch}',
-                                key: ValueKey(mssss.userProfile),
-                                fit: BoxFit.cover,
-                                loadingBuilder: (context, child, progress) {
-                                  return progress == null
-                                      ? child
-                                      : const CircularProgressIndicator();
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Image.asset(
-                                    "assets/images/profile-image.png",
-                                  );
-                                },
-                              )),
-                        );
-                      }),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              width: 4,
-                              color: Theme.of(context).scaffoldBackgroundColor,
-                            ),
-                            color: AppColor.navBarIconColor,
+          ClipPath(
+            clipper: CustomShape(),
+            child: Container(
+              height: 140,
+              width: double.infinity,
+              color: Color(0xffE6F4EA),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 30.0, top: 10),
+                child: Stack(
+                  children: [
+                    Consumer<MessageController>(
+                        builder: (context, mssss, child) {
+                      print("ms>>>> ${mssss.userProfile}");
+                      return Container(
+                        height: 120,
+                        width: 120,
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white, width: 2),
+                            borderRadius: BorderRadius.circular(60)),
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(60),
+                            child: Image.network(
+                              '${mssss.userProfile}?timestamp=${DateTime.now().millisecondsSinceEpoch}',
+                              key: ValueKey(mssss.userProfile),
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, progress) {
+                                return progress == null
+                                    ? child
+                                    : const CircularProgressIndicator();
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  "assets/images/profile-image.png",
+                                );
+                              },
+                            )),
+                      );
+                    }),
+                    Positioned(
+                      // bottom: 0,
+                      left: 0,
+                      child: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            width: 4,
+                            color: Theme.of(context).scaffoldBackgroundColor,
                           ),
-                          child: InkWell(
-                            onTap: () {
-                              uploadImage();
-                            },
-                            child: const Icon(
-                              Icons.edit,
-                              color: Colors.white,
-                            ),
+                          color: AppColor.navBarIconColor,
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            uploadImage();
+                          },
+                          child: const Icon(
+                            Icons.camera_alt_outlined,
+                            color: Colors.white,
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                Center(
-                  child: Text(
-                    // userModel?.username ?? "",
-                    fullname,
-                    style: const TextStyle(
-                        fontSize: 20,
-                        color: Color.fromARGB(255, 255, 255, 255)),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(height: 23),
+          // Container(
+          //   decoration: BoxDecoration(
+          //     color: AppColor.navBarIconColor,
+          //     borderRadius: const BorderRadius.vertical(
+          //       bottom: Radius.circular(70),
+          //     ),
+          //     boxShadow: [
+          //       BoxShadow(
+          //         color: Colors.black.withOpacity(0.1),
+          //         spreadRadius: 8,
+          //         blurRadius: 7,
+          //         offset: const Offset(0, 4),
+          //       ),
+          //     ],
+          //   ),
+          //   height: 250,
+          //   child: Column(
+          //     children: [
+          //       const SizedBox(height: 20),
+          //       const SizedBox(height: 20),
+          //       Center(
+          //         child: Text(
+          //           // userModel?.username ?? "",
+          //           fullname,
+          //           style: const TextStyle(
+          //               fontSize: 20,
+          //               color: Color.fromARGB(255, 255, 255, 255)),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          const SizedBox(height: 43),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 7,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    decoration: const BoxDecoration(
-                      color: AppColor.navBarIconColor,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
-                      ),
-                    ),
-                    width: double.infinity,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(left: 10.0),
-                          child: Text(
-                            'Contact Information',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        PopupMenuButton<String>(
-                          icon: const Icon(Icons.more_vert,
-                              size: 23, color: Colors.white),
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              print(
-                                  "phone===>Phone==>Pjp${user!.whatsapp_number}");
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => EditProfileView(
-                                      id: id,
-                                      user: user,
-                                      firstName: fName,
-                                      lastName: lName,
-                                      email: email,
-                                      phone: user!.whatsapp_number,
-                                      countrycode: countrycode),
-                                ),
-                              ).then((value) => Provider.of<GetUserViewModel>(
-                                      context,
-                                      listen: false)
-                                  .fetchUser());
-                            }
-                            // else if (value == 'delete') {
-                            //   _showDeleteDialog();
-                            // }
-                          },
-                          itemBuilder: (BuildContext context) {
-                            return [
-                              const PopupMenuItem<String>(
-                                value: 'edit',
-                                child: Text('Edit'),
-                              ),
-                              // const PopupMenuItem<String>(
-                              //   value: 'delete',
-                              //   child: Text('Delete'),
-                              // ),
-                            ];
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      getRow("First Name", fName),
-                      const Divider(),
-                      getRow("Last Name", lName),
-                      const Divider(),
-                      getRow("Email", email),
-                      const Divider(),
-                      getRow("Phone", fullPhone),
-                      const Divider(),
-                      getRow("Role", role),
-                    ],
-                  ),
-                ],
-              ),
+            child: Column(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    getRow("First Name", fName),
+                    const Divider(),
+                    getRow("Last Name", lName),
+                    const Divider(),
+                    getRow("Email", email),
+                    const Divider(),
+                    getRow("Phone", fullPhone),
+                    const Divider(),
+                    getRow("Role", role),
+                  ],
+                ),
+              ],
             ),
           )
         ],
@@ -483,17 +459,12 @@ class _ProfileViewState extends State<ProfileView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Label section
-          Expanded(
-            flex: 1,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
+          Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w500),
           ),
-          // Value section (right-aligned)
+          // Spacer(),
           Expanded(
-            flex: 1,
             child: Align(
               alignment: Alignment.centerRight,
               child: Text(
@@ -537,5 +508,31 @@ class _ProfileViewState extends State<ProfileView> {
     } else {
       // Navigator.pop(context);
     }
+  }
+}
+
+class CustomShape extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    double height = size.height;
+    double width = size.width;
+    double yOffset = 30; // 👈 move entire clip down by 30 pixels
+    Path path = Path();
+    path.moveTo(0, yOffset); // Start lower
+    path.quadraticBezierTo(
+      width * 0.02,
+      height * 1.5 + yOffset,
+      width,
+      yOffset,
+    );
+    path.lineTo(width, 0);
+    path.lineTo(0, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
+    return true;
   }
 }

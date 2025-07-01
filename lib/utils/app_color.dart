@@ -8,4 +8,6 @@ abstract class AppColor {
   static const Color containerBoxColor = Color(0xFF009DDC);
   static const TextStyle themeNormal = TextStyle(color: Colors.black);
   static const Color selectedItemColor = Color.fromARGB(255, 247, 255, 6);
+
+  static const Color backgroundGrey = Color(0xFFF5F5F5);
 }

@@ -163,20 +163,16 @@ class UserListViewModel extends BaseListViewModel {
       EasyLoading.showToast("Please enter a valid email address");
       return false;
     }
-
     EasyLoading.show();
     String url = AppUtils.getUrl(AppConstants.loginAPIPath);
-
     final headers = {
       'Content-Type': 'application/json',
     };
-
     final body = jsonEncode({
       'email': username,
       'password': password,
       'tcode': tcode,
     });
-
     try {
       final response = await http.post(
         Uri.parse(url),

@@ -127,7 +127,7 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
           modules.contains("Campaign") || modules.contains("Campaigns")
               ? ListTile(
                   leading: Icon(
-                    FontAwesomeIcons.personHarassing,
+                    FontAwesomeIcons.bandcamp,
                     color: AppColor.navBarIconColor,
                   ),
                   title: Text(
@@ -358,6 +358,10 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
               showAlertDialog();
             },
           ),
+
+          SizedBox(
+            height: 20,
+          )
         ],
       ),
     );

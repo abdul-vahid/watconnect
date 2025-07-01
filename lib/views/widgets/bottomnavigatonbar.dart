@@ -30,12 +30,14 @@ class FooterNavbarPage extends StatefulWidget {
 }
 
 class _FooterNavbarPageState extends State<FooterNavbarPage> {
+  final PageController _pageController = PageController();
   UserModel? userModelData;
   // late StreamSubscription subscription;
   int selectedPage = 0;
   bool isDeviceConnected = false;
   bool isAlertSet = false;
   int _currentPageIndex = 0;
+  int selected = 0;
   // late NotchBottomBarController _controller;
 
   @override
@@ -82,8 +84,6 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
   //   });
   // }
 
-  int selected = 0;
-
   Future<bool> _onWillPop() async {
     return (await showCupertinoDialog(
           context: context,
@@ -107,16 +107,6 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
         false;
   }
 
-  // void getuserrole() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   print(" wowowoow");
-  //   userModelData = await AppUtils.getSessionUser(prefs);
-  //   print("userModelData=>${userModelData?.userrole}");
-  //   setState(() {
-  //     // userModelData.userrole
-  //   });
-  //   print("dsfggggggg=>${userModelData?.userrole}");
-  // }
   void getuserrole() async {
     final prefs = await SharedPreferences.getInstance();
     print("userModelData=>${userModelData?.userrole}");
@@ -157,63 +147,159 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       drProvider.fromSalesForce ? SfHomeScreen() : HomeView(),
       drProvider.fromSalesForce ? SfProfileScreen() : ProfileView(),
       if (userModelData?.userrole == "ADMIN") const UserListView(),
-      // const Whtsapphone(),
       drProvider.fromSalesForce ? SfRecentChatScreen() : RecentChatView(),
     ];
-    // print("dsfffffffffffffffffffffffffff=>${userModelData?.userrole}");
+
+    final List<Map<String, dynamic>> items = [
+      {'icon': Icons.home_filled, 'label': 'Home'},
+      {'icon': Icons.account_circle, 'label': 'Profile'},
+      if (userModelData?.userrole == "ADMIN")
+        {'icon': Icons.settings_accessibility_outlined, 'label': 'Users'},
+      {'icon': Icons.chat, 'label': 'Chats'},
+    ];
     return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
-        body: _pageOptions[selected],
-        bottomNavigationBar: StylishBottomBar(
-          backgroundColor: AppColor.navBarIconColor,
-          option: DotBarOptions(
-            dotStyle: DotStyle.tile,
-            gradient: const LinearGradient(
-              colors: [Colors.white, Colors.white],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        onWillPop: _onWillPop,
+        child: Scaffold(
+          body: PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            onPageChanged: (index) => setState(() => selected = index),
+            children: _pageOptions,
+          ),
+          bottomNavigationBar: buildBottomNavigationBar(
+            selected: selected,
+            items: items,
+            context: context,
+            onItemTap: (index) {
+              setState(() => selected = index);
+              _pageController.jumpToPage(index);
+            },
+          ),
+        )
+
+        // Scaffold(
+        //   body: _pageOptions[selected],
+        //   bottomNavigationBar: StylishBottomBar(
+        //     backgroundColor: AppColor.navBarIconColor,
+        //     option: DotBarOptions(
+        //       dotStyle: DotStyle.tile,
+        //       gradient: const LinearGradient(
+        //         colors: [Colors.white, Colors.white],
+        //         begin: Alignment.topLeft,
+        //         end: Alignment.bottomRight,
+        //       ),
+        //     ),
+
+        //     hasNotch: true,
+        //     currentIndex: selected,
+        //     onTap: (index) {
+        //       setState(() {
+        //         selected = index;
+        //       });
+        //     },
+        //   ),
+        // ),
+        );
+  }
+}
+
+Widget buildBottomNavigationBar({
+  required int selected,
+  required List<Map<String, dynamic>> items,
+  required Function(int) onItemTap,
+  required BuildContext context,
+}) {
+  return SizedBox(
+    height: 60,
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Blue nav bar background
+        Container(
+          height: 60,
+          decoration: const BoxDecoration(
+            color: AppColor.navBarIconColor,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(8),
+              topRight: Radius.circular(8),
             ),
           ),
-          items: [
-            BottomBarItem(
-              showBadge: false,
-              icon: const Icon(Icons.home_filled),
-              title: const Text('Home'),
-              backgroundColor: Colors.white,
-              selectedIcon: const Icon(Icons.home_filled),
-            ),
-            BottomBarItem(
-              icon: const Icon(Icons.account_circle),
-              title: const Text('Profile'),
-              backgroundColor: Colors.white,
-            ),
-            if (userModelData?.userrole == "ADMIN")
-              BottomBarItem(
-                icon: const Icon(Icons.settings_accessibility_outlined),
-                title: const Text('Users'),
-                backgroundColor: Colors.white,
-              ),
-            // BottomBarItem(
-            //   icon: const Icon(Icons.phone),
-            //   title: const Text('Phone'),
-            //   backgroundColor: Colors.white,
-            // ),
-            BottomBarItem(
-              icon: const Icon(Icons.chat),
-              title: const Text('Chats'),
-              backgroundColor: Colors.white,
-            ),
-          ],
-          hasNotch: true,
-          currentIndex: selected,
-          onTap: (index) {
-            setState(() {
-              selected = index;
-            });
-          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(items.length, (index) {
+              final isSelected = selected == index;
+              return GestureDetector(
+                onTap: () => onItemTap(index),
+                child: SizedBox(
+                  width: 60,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: isSelected
+                              ? const SizedBox()
+                              : Icon(
+                                  items[index]['icon'],
+                                  color: Colors.white,
+                                  size: 25,
+                                ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Text(
+                          items[index]['label'] as String,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
         ),
-      ),
-    );
-  }
+
+        // Animated white notch
+        AnimatedPositioned(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          top: -20,
+          left: MediaQuery.of(context).size.width / items.length * selected +
+              (MediaQuery.of(context).size.width / items.length - 50) / 2,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 550),
+            switchInCurve: Curves.easeIn,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, animation) =>
+                ScaleTransition(scale: animation, child: child),
+            child: Container(
+              key: ValueKey<int>(selected),
+              height: 50,
+              width: 50,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                items[selected]['icon'],
+                size: 24,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }

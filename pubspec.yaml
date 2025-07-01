@@ -129,9 +129,26 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/fonts/
     # - assets/images/login.png
     - assets/images/two.jpg
-  #   - images/a_dot_ham.jpeg
+
+  fonts:
+    - family: Bold
+      fonts:
+        - asset: assets/fonts/Poppins-Bold.ttf
+    - family: ExtraBold
+      fonts:
+        - asset: assets/fonts/Poppins-ExtraBold.ttf
+    - family: Medium
+      fonts:
+        - asset: assets/fonts/Poppins-Medium.ttf
+    - family: Regular
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+    - family: SemiBold
+      fonts:
+        - asset: assets/fonts/Poppins-SemiBold.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

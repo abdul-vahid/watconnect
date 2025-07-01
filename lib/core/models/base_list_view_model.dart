@@ -105,32 +105,17 @@ class BaseListViewModel extends ChangeNotifier {
       if (prefs.containsKey(SharedPrefsConstants.refreshTokenKey)) {
         refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!;
       }
-      //if (prefs.containsKey(SharedPrefsConstants.sessionTimeKey)) {
-      // String sessionTime;
-      // int minutes = 0;
-      // if (prefs.containsKey(SharedPrefsConstants.sessionTimeKey)) {
-      //   sessionTime = prefs.getString(SharedPrefsConstants.sessionTimeKey)!;
-      //   var sessionDT = DateFormat('yyyy-MM-dd HH:mm:ss').parse(sessionTime);
-      //   minutes = DateTime.now().difference(sessionDT).inMinutes;
-      // }
-
-      // if (minutes > 119) {
       Map<String, String> body = {"refreshToken": refreshToken};
       debug("rftgyhjuhgtfrderftghyjkjhygttgyhuj${body}");
       final jsonObject = await postForRefreshToken(
           url: refreshTokenUrl, body: jsonEncode(body));
-
       accessToken = jsonObject["authToken"];
       refreshToken = jsonObject["refreshToken"];
-      // debug("Refresh Token == $refreshToken");
-      // debugLog("zauuu Token == $accessToken");
       await prefs.setString(SharedPrefsConstants.accessTokenKey, accessToken);
       await prefs.setString(SharedPrefsConstants.refreshTokenKey, refreshToken);
       await prefs.setString(
           SharedPrefsConstants.sessionTimeKey, DateTime.now().toString());
-      // }
     } on UnauthorisedException {
-      //showAlert and Logout
       AppUtils.getAlert(AppUtils.currentContext!, [
         "You have been logged out!",
       ], onPressed: () {

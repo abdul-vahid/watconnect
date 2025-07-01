@@ -262,47 +262,34 @@ class _UserDetailView extends State<UserDetailView> {
     return Container(
       color: Colors.white38,
       child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      spreadRadius: 2,
-                      blurRadius: 7,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 15),
+                      getRow('Email', widget.model?.email ?? ''),
+                      const Divider(),
+                      getRow('Username', widget.model?.username ?? ''),
+                      const Divider(),
+                      getRow('Phone',
+                          "${widget.model?.country_code ?? ''} ${widget.model?.whatsappNumber ?? ''}"),
+                      const Divider(),
+                      getRow('First Name', widget.model?.firstname ?? ''),
+                      const Divider(),
+                      getRow('Last Name', widget.model?.lastname ?? ''),
+                      const Divider(),
+                      getRow('Manager', widget.model?.managername ?? ''),
+                      const Divider(),
+                      getRow('User Role', widget.model?.userrole ?? ''),
+                      const Divider(),
+                      Row(
                         children: [
-                          const SizedBox(height: 15),
-                          getRow('Email', widget.model?.email ?? ''),
-                          const Divider(),
-                          getRow('Username', widget.model?.username ?? ''),
-                          const Divider(),
-                          getRow('Phone',
-                              "${widget.model?.country_code ?? ''} ${widget.model?.whatsappNumber ?? ''}"),
-                          const Divider(),
-                          getRow('First Name', widget.model?.firstname ?? ''),
-                          const Divider(),
-                          getRow('Last Name', widget.model?.lastname ?? ''),
-                          const Divider(),
-                          getRow('Manager', widget.model?.managername ?? ''),
-                          const Divider(),
-                          getRow('User Role', widget.model?.userrole ?? ''),
-                          const Divider(),
                           const Text("Active"),
                           Checkbox(
                             activeColor: widget.model!.isactive == true
@@ -315,42 +302,45 @@ class _UserDetailView extends State<UserDetailView> {
                               });
                             },
                           ),
-                          Align(
-                            alignment: Alignment.center,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ChangePasswordScreen(
-                                        widget.model?.username ?? "",
-                                        widget.model?.whatsappNumber ?? "",
-                                        userId ?? ""
-
-                                        // '', // Ensure it's not null
-                                        // _obscurePassword1,
-                                        // _passwordController,
-                                        ),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColor.cardsColor,
-                              ),
-                              child: const Text(
-                                "Change Password",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          )
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Align(
+                        alignment: Alignment.center,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChangePasswordScreen(
+                                    widget.model?.username ?? "",
+                                    widget.model?.whatsappNumber ?? "",
+                                    userId ?? ""
+
+                                    // '', // Ensure it's not null
+                                    // _obscurePassword1,
+                                    // _passwordController,
+                                    ),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.cardsColor,
+                          ),
+                          child: const Text(
+                            "Change Password",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -362,14 +352,10 @@ class _UserDetailView extends State<UserDetailView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 1,
-            child: Text(
-              lable,
-            ),
+          Text(
+            lable,
           ),
           Expanded(
-            flex: 1,
             child: Align(
               alignment: Alignment.centerRight,
               child: Text(

@@ -10,6 +10,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
 import 'package:whatsapp/salesforce/controller/sfCampaign_controller.dart';
 import 'package:whatsapp/salesforce/controller/template_controller.dart';
 import 'package:whatsapp/services/notifications/local_notification_service.dart';
@@ -107,7 +108,8 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => SfcampaignController()),
         ChangeNotifierProvider(create: (_) => WalletController()),
-        ChangeNotifierProvider(create: (_) => LeadController())
+        ChangeNotifierProvider(create: (_) => LeadController()),
+        ChangeNotifierProvider(create: (_) => SfFileUploadController())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

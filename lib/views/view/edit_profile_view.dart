@@ -30,7 +30,7 @@ class EditProfileView extends StatefulWidget {
 
 class _EditProfileView extends State<EditProfileView> {
   String? selectedCountry;
-  List<Map<String, String>> _countrycode = [
+  final List<Map<String, String>> _countrycode = [
     {"country": "India", "country_code": "+91"},
     {"country": "United Arab Emirates", "country_code": "+971"},
     {"country": "Afghanistan", "country_code": "+93"},
@@ -347,7 +347,7 @@ class _EditProfileView extends State<EditProfileView> {
 
                 DropdownButtonFormField<String>(
                   isDense: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     contentPadding:
                         EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     border: OutlineInputBorder(

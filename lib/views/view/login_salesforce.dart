@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
 import 'package:whatsapp/views/widgets/bottomnavigatonbar.dart';
 // import 'package:whatsapp/salesforce/screens/sf_dashboard.dart';
 
@@ -60,6 +61,14 @@ class _WebViewPageState extends State<WebViewPage> {
               if (success) {
                 DashBoardController dashBoardController =
                     Provider.of(context, listen: false);
+
+                SfFileUploadController sfFileUploadController =
+                    Provider.of(context, listen: false);
+
+                sfFileUploadController.sfNodeLoginRequest(
+                    "shivani.m+s@ibirdsservices.com",
+                    "Admin@123",
+                    "salesforce");
                 dashBoardController.setLoginType(true);
                 Navigator.pushAndRemoveUntil(
                   context,

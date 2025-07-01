@@ -139,15 +139,12 @@ class MessageViewModel extends BaseListViewModel {
       debug("Missing token!");
       return null;
     }
-
     final url = Uri.parse(
       "${AppConstants.baseUrl}/api/webhook_template/documentId?whatsapp_setting_number=$number",
     );
-
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
     final fileStream = http.ByteStream(file.openRead());
     final length = await file.length();
-
     final multipartFile = http.MultipartFile(
       'file',
       fileStream,
@@ -155,7 +152,6 @@ class MessageViewModel extends BaseListViewModel {
       filename: file.path.split('/').last,
       contentType: MediaType.parse(mimeType),
     );
-
     final request = http.MultipartRequest("POST", url)
       ..files.add(multipartFile)
       ..headers.addAll({

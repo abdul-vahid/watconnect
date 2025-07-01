@@ -17,6 +17,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
 import 'package:whatsapp/salesforce/controller/template_controller.dart';
 import 'package:whatsapp/salesforce/model/chat_history_model.dart';
 import 'package:whatsapp/salesforce/widget/chat_bubble.dart';
@@ -473,15 +474,21 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                 sendMsg(msgController.text.trim());
               }
               if (chatMsgCtrl.selectedFile != null) {
-                DashBoardController dbController =
+                SfFileUploadController sfFileController =
                     Provider.of(context, listen: false);
 
+                DashBoardController dbController =
+                    Provider.of(context, listen: false);
                 var usrNumber =
                     dbController.selectedContactInfo?.whatsappNumber ?? "";
                 var code =
                     dbController.selectedContactInfo?.countryCode ?? "91";
-                String userNumer = "${code}${usrNumber}";
-                chatMsgCtrl.sfCreateFileApiCall(userNumer);
+
+                sfFileController.uploadFiledb(chatMsgCtrl.selectedFile!, code,
+                    msgController.text.trim(), usrNumber);
+
+                // String userNumer = "${code}${usrNumber}";
+                // chatMsgCtrl.sfCreateFileApiCall(userNumer);
               }
             },
             child: Container(

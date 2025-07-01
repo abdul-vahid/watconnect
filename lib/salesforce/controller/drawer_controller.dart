@@ -205,9 +205,7 @@ class DashBoardController extends ChangeNotifier {
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
       String apiUrl = "${AppConstants.sfRecentChat}";
-
       Map body = {"Business Number": busNum, "Customer Number": custNum};
-
       final response = await http.post(Uri.parse(apiUrl),
           headers: {
             'Authorization': 'Bearer $token',
@@ -217,7 +215,6 @@ class DashBoardController extends ChangeNotifier {
       log("headers:::: ${"Bearer $token"}    ${AppConstants.sfRecentChat}");
       print(
           " reset Un read response :: ${response.runtimeType}  ${response.statusCode} ${response}");
-
       if (response.statusCode == 200) {
         if (isFromChat) {
           recentChatListApiCall();
@@ -227,13 +224,11 @@ class DashBoardController extends ChangeNotifier {
       } else {
         log("SF reset Un read failed [${response.statusCode}]: ${response.body}");
       }
-
       notify();
     } catch (e) {
       setRecentChatListLoader(false);
       print("Error in Recent Chat: $e");
     }
-
     notifyListeners();
   }
 
