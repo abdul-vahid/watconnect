@@ -391,6 +391,7 @@ class _Forms extends State<LeadAddView> {
     }
 
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -480,317 +481,332 @@ class _Forms extends State<LeadAddView> {
           key: _addleadFormKey,
           child: Padding(
             padding:
-                const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 05),
+                const EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 05),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
                   decoration: BoxDecoration(
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 3,
+                        offset: const Offset(2, 4),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  color: AppColor.navBarIconColor,
-                                  borderRadius: BorderRadius.circular(08)),
-                              height: 40,
-                              width: 350,
-                              child: const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Personal Information',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: Colors.white),
+                      detailsHeading(
+                        title: "Personal Information",
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('First Name'),
+                            const SizedBox(height: 5),
+                            AppUtils.getTextFormField(
+                              'Enter First Name',
+                              initialValue: widget.model?.firstname,
+                              onSaved: (fName) {
+                                _firstname = fName;
+                              },
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'Please provide first name';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const Text('Last Name'),
+                            const SizedBox(height: 5),
+                            AppUtils.getTextFormField(
+                              'Enter your Last Name',
+                              initialValue: widget.model?.lastname,
+                              onSaved: (lName) {
+                                _lastname = lName;
+                              },
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'Please enter last name';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            const Text('Date of Birth'),
+                            const SizedBox(height: 5),
+                            AppUtils.getTextFormField(
+                              'Select Date of Birth',
+                              controller: dobController,
+                              // initialValue: widget.model?.dob,
+                              onSaved: (dt) {
+                                selectedDate = dt;
+                              },
+                              onTap: () async {
+                                DateTime? pickedDate = await showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime(1900),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (pickedDate != null) {
+                                  String formattedDate =
+                                      "${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.year}";
+
+                                  dobController.text = formattedDate;
+                                  selectedDate =
+                                      "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+
+                                  print(
+                                      "selectedDate::::::::::: ${selectedDate}");
+                                }
+                              },
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'Please select date of birth';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(
+                              height: 12,
+                            ),
+
+                            const Text('Country Code'),
+                            const SizedBox(height: 5),
+
+                            DropdownButtonFormField<String>(
+                              isDense: true,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8)),
                                 ),
                               ),
+                              value: selectedCountry,
+                              isExpanded: true,
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  selectedCountry = newValue!;
+                                });
+                              },
+                              items: countryCodeMap.entries
+                                  .map<DropdownMenuItem<String>>(
+                                (MapEntry<String, String> entry) {
+                                  return DropdownMenuItem<String>(
+                                    value: entry.key,
+                                    child: Text(entry.value),
+                                  );
+                                },
+                              ).toList(),
                             ),
-                          )
-                        ],
-                      ),
-                      const SizedBox(height: 15),
 
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('First Name'),
-                          const SizedBox(height: 5),
-                          AppUtils.getTextFormField(
-                            'Enter First Name',
-                            initialValue: widget.model?.firstname,
-                            onSaved: (fName) {
-                              _firstname = fName;
-                            },
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return 'Please provide first name';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 10),
-                      const SizedBox(height: 10),
+                            const SizedBox(
+                              height: 12,
+                            ),
 
-                      const Text('Last Name'),
-                      const SizedBox(height: 5),
-                      AppUtils.getTextFormField(
-                        'Enter your Last Name',
-                        initialValue: widget.model?.lastname,
-                        onSaved: (lName) {
-                          _lastname = lName;
-                        },
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter last name';
-                          }
-                          return null;
-                        },
-                      ),
+                            const Text('Phone'),
+                            const SizedBox(height: 5),
 
-                      const SizedBox(height: 10),
+                            AppUtils.getTextFormField(
+                              'Enter your phone number',
+                              initialValue: widget.model?.whatsappNumber,
+                              onSaved: (wpnumber) {
+                                _whatsapnumber = '${wpnumber}';
+                                print(
+                                    "sdfdsfssdfjhsdkfjskdjfskdjsdk4${_whatsapnumber}");
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter phone number';
+                                } else if (value.length != 10) {
+                                  return 'Phone number must be 10 digits';
+                                } else if (!RegExp(r'^[0-9]+$')
+                                    .hasMatch(value)) {
+                                  return 'Phone number must contain only digits';
+                                }
+                                return null;
+                              },
+                            ),
 
-                      const Text('Date of Birth'),
-                      const SizedBox(height: 5),
-                      AppUtils.getTextFormField(
-                        'Select Date of Birth',
-                        controller: dobController,
-                        // initialValue: widget.model?.dob,
-                        onSaved: (dt) {
-                          selectedDate = dt;
-                        },
-                        onTap: () async {
-                          DateTime? pickedDate = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(1900),
-                            lastDate: DateTime.now(),
-                          );
-                          if (pickedDate != null) {
-                            String formattedDate =
-                                "${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.year}";
+                            const SizedBox(height: 10),
+                            // Email Field
+                            const Text('Email'),
+                            const SizedBox(height: 5),
+                            AppUtils.getTextFormField(
+                              'Enter your email',
+                              initialValue: widget.model?.email,
+                              onSaved: (email) {
+                                _email = email;
+                              },
+                            ),
 
-                            dobController.text = formattedDate;
-                            selectedDate =
-                                "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-
-                            print("selectedDate::::::::::: ${selectedDate}");
-                          }
-                        },
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please select date of birth';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(
-                        height: 12,
-                      ),
-
-                      const Text('Country Code'),
-                      const SizedBox(height: 5),
-
-                      DropdownButtonFormField<String>(
-                        isDense: true,
-                        decoration: const InputDecoration(
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8)),
-                          ),
+                            const SizedBox(height: 10),
+                            const Text('Lead Status'),
+                            const SizedBox(height: 10),
+                            AppUtils.getDropdown(
+                              '--Select--',
+                              onChanged: (value) {
+                                setState(() {
+                                  _leadstatus = value;
+                                });
+                              },
+                              validator: (value) => value == null
+                                  ? 'Please Provide Status'
+                                  : null,
+                              data: _leadsstatus,
+                              value: leadStatus ?? widget.model?.leadstatus,
+                            ),
+                            const SizedBox(height: 10),
+                            const Text('Assigned User'),
+                            const SizedBox(height: 10),
+                            AppUtils.getDropdown(
+                              '--Select--',
+                              onChanged: (value) {
+                                setState(() {
+                                  _asignStaff = value;
+                                });
+                              },
+                              validator: (value) =>
+                                  value == null ? 'Please Provide User' : null,
+                              data: userData,
+                              value: userData.contains(widget.model?.ownername)
+                                  ? widget.model?.ownername
+                                  : defaultSel,
+                            ),
+                          ],
                         ),
-                        value: selectedCountry,
-                        isExpanded: true,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectedCountry = newValue!;
-                          });
-                        },
-                        items: countryCodeMap.entries
-                            .map<DropdownMenuItem<String>>(
-                          (MapEntry<String, String> entry) {
-                            return DropdownMenuItem<String>(
-                              value: entry.key,
-                              child: Text(entry.value),
-                            );
-                          },
-                        ).toList(),
-                      ),
-
-                      const SizedBox(
-                        height: 12,
-                      ),
-
-                      const Text('Phone'),
-                      const SizedBox(height: 5),
-                      AppUtils.getTextFormField(
-                        'Enter your phone number',
-                        initialValue: widget.model?.whatsappNumber,
-                        onSaved: (wpnumber) {
-                          _whatsapnumber = '${wpnumber}';
-                          print(
-                              "sdfdsfssdfjhsdkfjskdjfskdjsdk4${_whatsapnumber}");
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter phone number';
-                          } else if (value.length != 10) {
-                            return 'Phone number must be 10 digits';
-                          } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-                            return 'Phone number must contain only digits';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 10),
-                      // Email Field
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Email'),
-                          const SizedBox(height: 5),
-                          AppUtils.getTextFormField(
-                            'Enter your email',
-                            initialValue: widget.model?.email,
-                            onSaved: (email) {
-                              _email = email;
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      const Text('Lead Status'),
-                      const SizedBox(height: 10),
-                      AppUtils.getDropdown(
-                        '--Select--',
-                        onChanged: (value) {
-                          setState(() {
-                            _leadstatus = value;
-                          });
-                        },
-                        validator: (value) =>
-                            value == null ? 'Please Provide Status' : null,
-                        data: _leadsstatus,
-                        value: leadStatus ?? widget.model?.leadstatus,
-                      ),
-                      const SizedBox(height: 10),
-                      const Text('Assigned User'),
-                      const SizedBox(height: 10),
-                      AppUtils.getDropdown(
-                        '--Select--',
-                        onChanged: (value) {
-                          setState(() {
-                            _asignStaff = value;
-                          });
-                        },
-                        validator: (value) =>
-                            value == null ? 'Please Provide User' : null,
-                        data: userData,
-                        value: userData.contains(widget.model?.ownername)
-                            ? widget.model?.ownername
-                            : defaultSel,
-                      ),
+                      )
                     ],
                   ),
                 ),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: AppColor.navBarIconColor,
-                            // color: AppColor.appBarColor,
-                            borderRadius: BorderRadius.circular(08)),
-                        height: 40,
-                        width: 350,
-                        child: const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            'Important Information',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
+                const SizedBox(
+                  height: 15,
                 ),
-                const SizedBox(height: 10),
 
-                hasTags ? const Text('Tags') : SizedBox(),
-
-                hasTags ? const SizedBox(height: 5) : SizedBox(),
-
-                hasTags
-                    ? MultiSelectDialogField<TagRecord>(
-                        dialogWidth: MediaQuery.of(context).size.width * .45,
-                        dialogHeight: MediaQuery.of(context).size.height * .35,
-                        items: tagsNameSet.map((tag) {
-                          return MultiSelectItem<TagRecord>(
-                              tag, tag.name ?? "Unnamed");
-                        }).toList(),
-                        initialValue: selectedTagList.map((tagMap) {
-                          return tagsNameSet.firstWhere(
-                            (tag) => tag.id == tagMap['id'],
-                            orElse: () => TagRecord(
-                                id: tagMap['id'], name: tagMap['name']),
-                          );
-                        }).toList(),
-                        title: const Text("Select Tags"),
-                        selectedColor: Colors.blue,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.blue, width: 1),
-                          borderRadius: BorderRadius.circular(5),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 3,
+                        offset: const Offset(2, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      detailsHeading(
+                        title: "Important Information",
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            hasTags ? const Text('Tags') : SizedBox(),
+                            hasTags ? const SizedBox(height: 5) : SizedBox(),
+                            hasTags
+                                ? MultiSelectDialogField<TagRecord>(
+                                    dialogWidth:
+                                        MediaQuery.of(context).size.width * .45,
+                                    dialogHeight:
+                                        MediaQuery.of(context).size.height *
+                                            .35,
+                                    items: tagsNameSet.map((tag) {
+                                      return MultiSelectItem<TagRecord>(
+                                          tag, tag.name ?? "Unnamed");
+                                    }).toList(),
+                                    initialValue: selectedTagList.map((tagMap) {
+                                      return tagsNameSet.firstWhere(
+                                        (tag) => tag.id == tagMap['id'],
+                                        orElse: () => TagRecord(
+                                            id: tagMap['id'],
+                                            name: tagMap['name']),
+                                      );
+                                    }).toList(),
+                                    title: const Text("Select Tags"),
+                                    selectedColor: Colors.blue,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.blue, width: 1),
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    buttonText: const Text("Select Tags"),
+                                    chipDisplay: MultiSelectChipDisplay.none(),
+                                    onConfirm: (List<TagRecord> selectedTags) {
+                                      setState(() {
+                                        selectedTagList =
+                                            selectedTags.map((tag) {
+                                          return {
+                                            'id': tag.id ?? '',
+                                            'name': tag.name ?? '',
+                                          };
+                                        }).toList();
+                                      });
+                                      debugPrint(
+                                          "Selected tags: $selectedTagList");
+                                    },
+                                  )
+                                : SizedBox(),
+                            hasTags
+                                ? Wrap(
+                                    spacing: 8.0,
+                                    children: selectedTagList.map((tagMap) {
+                                      return Chip(
+                                        label: Text(tagMap['name'] ?? "Tag"),
+                                        deleteIcon: const Icon(Icons.close),
+                                        onDeleted: () {
+                                          setState(() {
+                                            selectedTagList.removeWhere(
+                                                (t) => t['id'] == tagMap['id']);
+                                          });
+                                        },
+                                        backgroundColor:
+                                            Colors.blue.withOpacity(0.2),
+                                        labelStyle:
+                                            const TextStyle(color: Colors.blue),
+                                      );
+                                    }).toList(),
+                                  )
+                                : SizedBox(),
+                            const Text('Lead Source'),
+                            const SizedBox(height: 5),
+                            AppUtils.getDropdown(
+                              '--Select--',
+                              onChanged: (value) {
+                                setState(() {
+                                  _leadsource = value;
+                                });
+                              },
+                              data: _leadsources,
+                              value: widget.model?.leadsource,
+                            ),
+                          ],
                         ),
-                        buttonText: const Text("Select Tags"),
-                        chipDisplay: MultiSelectChipDisplay.none(),
-                        onConfirm: (List<TagRecord> selectedTags) {
-                          setState(() {
-                            selectedTagList = selectedTags.map((tag) {
-                              return {
-                                'id': tag.id ?? '',
-                                'name': tag.name ?? '',
-                              };
-                            }).toList();
-                          });
-                          debugPrint("Selected tags: $selectedTagList");
-                        },
                       )
-                    : SizedBox(),
-
-                hasTags
-                    ? Wrap(
-                        spacing: 8.0,
-                        children: selectedTagList.map((tagMap) {
-                          return Chip(
-                            label: Text(tagMap['name'] ?? "Tag"),
-                            deleteIcon: const Icon(Icons.close),
-                            onDeleted: () {
-                              setState(() {
-                                selectedTagList.removeWhere(
-                                    (t) => t['id'] == tagMap['id']);
-                              });
-                            },
-                            backgroundColor: Colors.blue.withOpacity(0.2),
-                            labelStyle: const TextStyle(color: Colors.blue),
-                          );
-                        }).toList(),
-                      )
-                    : SizedBox(),
+                    ],
+                  ),
+                ),
 
                 // Row(
                 //   children: [
@@ -815,18 +831,7 @@ class _Forms extends State<LeadAddView> {
                 //         value: widget.model?.title,
                 //       ),
                 const SizedBox(height: 10),
-                const Text('Lead Source'),
-                const SizedBox(height: 5),
-                AppUtils.getDropdown(
-                  '--Select--',
-                  onChanged: (value) {
-                    setState(() {
-                      _leadsource = value;
-                    });
-                  },
-                  data: _leadsources,
-                  value: widget.model?.leadsource,
-                ),
+
                 //       const SizedBox(height: 10),
                 //       // const Text('Lead Status'),
                 //       // const SizedBox(height: 5),
@@ -907,34 +912,51 @@ class _Forms extends State<LeadAddView> {
                 // ),
                 //   ],
                 // ),
-                const SizedBox(height: 25),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            color: AppColor.navBarIconColor,
-                            // color: AppColor.appBarColor,
-                            borderRadius: BorderRadius.circular(08)),
-                        height: 40,
-                        width: 350,
-                        child: const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            'Address Information',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.white),
-                          ),
+                const SizedBox(height: 15),
+
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 3,
+                        offset: const Offset(2, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      detailsHeading(
+                        title: "Address Information",
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Address'),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            AppUtils.getTextFormField(
+                              'Enter Your Address',
+                              maxLines: 2,
+                              initialValue: widget.model?.address,
+                              onSaved: (country) {
+                                _selectedCountry = country;
+                              },
+                            ),
+                          ],
                         ),
                       ),
-                    )
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+
                 // Row(
                 //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 //   children: [
@@ -1026,26 +1048,6 @@ class _Forms extends State<LeadAddView> {
                 //     ),
                 //   ],
                 // ),
-
-                const SizedBox(
-                  height: 10,
-                ),
-
-                const Text('Address'),
-                const SizedBox(
-                  height: 5,
-                ),
-                AppUtils.getTextFormField(
-                  'Enter Your Address',
-                  maxLines: 2,
-                  initialValue: widget.model?.address,
-                  onSaved: (country) {
-                    _selectedCountry = country;
-                  },
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
 
                 // AppUtils.getTextFormField(
                 //   'Enter description',
@@ -1344,5 +1346,34 @@ class _Forms extends State<LeadAddView> {
         modules.contains("Tag") || modules.contains("Tags") ? true : false;
     print("hasWallet::::::::::::::::::::::::    ${hasTags}");
     setState(() {});
+  }
+}
+
+class detailsHeading extends StatelessWidget {
+  String title;
+  detailsHeading({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColor.navBarIconColor,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+        ),
+      ),
+      height: 40,
+      width: double.infinity,
+      child: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+        ),
+      ),
+    );
   }
 }

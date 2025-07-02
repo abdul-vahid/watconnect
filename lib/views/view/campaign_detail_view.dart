@@ -9,6 +9,7 @@ import 'package:whatsapp/view_models/campaign_vm.dart';
 import 'package:whatsapp/views/view/campaign_add_update_view.dart'
     show CampaignAddUpdateView;
 import 'package:whatsapp/views/view/campaign_list_view.dart';
+import 'package:whatsapp/views/view/lead_add_update_view.dart';
 
 import '../../utils/app_color.dart';
 import '../../view_models/user_data_list_vm.dart' show UserDataListViewModel;
@@ -186,7 +187,7 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -417,51 +418,51 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
       formattedDate = 'N/A';
     }
 
-    return Container(
-      color: Colors.white38,
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      spreadRadius: 2,
-                      blurRadius: 7,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 15),
-                    _buildRow("Campaign Name", widget.record?.campaignName),
-                    const Divider(),
-                    _buildRow("Campaign Status", widget.record?.campaignStatus),
-                    const Divider(),
-                    _buildRow("Campaign Type", widget.record?.campaignType),
-                    const Divider(),
-                    _buildRow("Template Name", widget.record?.templateName),
-                    const Divider(),
-                    _buildRow("Group Name", widget.record?.groups),
-                    const Divider(),
-                    _buildRow("Time", formattedDate),
-
-                    // const Divider(),
-                    const SizedBox(height: 15),
-                    _messageHistoryRow(),
-                  ],
-                ),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 5,
+                    spreadRadius: 3,
+                    offset: const Offset(2, 4),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
+              child: Column(
+                children: [
+                  detailsHeading(
+                    title: "Campaign Information",
+                  ),
+                  const SizedBox(height: 15),
+                  _buildRow("Campaign Name", widget.record?.campaignName),
+                  const Divider(),
+                  _buildRow("Campaign Status", widget.record?.campaignStatus),
+                  const Divider(),
+                  _buildRow("Campaign Type", widget.record?.campaignType),
+                  const Divider(),
+                  _buildRow("Template Name", widget.record?.templateName),
+                  const Divider(),
+                  _buildRow("Group Name", widget.record?.groups),
+                  const Divider(),
+                  _buildRow("Time", formattedDate),
+
+                  // const Divider(),
+                  const SizedBox(height: 15),
+                  _messageHistoryRow(),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
         ),
       ),
     );

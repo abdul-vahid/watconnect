@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/views/view/changepassword_view.dart';
+import 'package:whatsapp/views/view/lead_add_update_view.dart';
 import 'package:whatsapp/views/view/user_add_update_view.dart';
 import 'package:whatsapp/views/view/user_list_view.dart';
 
@@ -222,7 +223,7 @@ class _UserDetailView extends State<UserDetailView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,
@@ -259,88 +260,98 @@ class _UserDetailView extends State<UserDetailView> {
   }
 
   Widget _pageBody(model) {
-    return Container(
-      color: Colors.white38,
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 15),
-                      getRow('Email', widget.model?.email ?? ''),
-                      const Divider(),
-                      getRow('Username', widget.model?.username ?? ''),
-                      const Divider(),
-                      getRow('Phone',
-                          "${widget.model?.country_code ?? ''} ${widget.model?.whatsappNumber ?? ''}"),
-                      const Divider(),
-                      getRow('First Name', widget.model?.firstname ?? ''),
-                      const Divider(),
-                      getRow('Last Name', widget.model?.lastname ?? ''),
-                      const Divider(),
-                      getRow('Manager', widget.model?.managername ?? ''),
-                      const Divider(),
-                      getRow('User Role', widget.model?.userrole ?? ''),
-                      const Divider(),
-                      Row(
-                        children: [
-                          const Text("Active"),
-                          Checkbox(
-                            activeColor: widget.model!.isactive == true
-                                ? AppColor.navBarIconColor
-                                : Colors.white,
-                            value: widget.model!.isactive,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                widget.model!.isactive = newValue!;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Align(
-                        alignment: Alignment.center,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChangePasswordScreen(
-                                    widget.model?.username ?? "",
-                                    widget.model?.whatsappNumber ?? "",
-                                    userId ?? ""
-
-                                    // '', // Ensure it's not null
-                                    // _obscurePassword1,
-                                    // _passwordController,
-                                    ),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.cardsColor,
-                          ),
-                          child: const Text(
-                            "Change Password",
-                            style: TextStyle(color: Colors.white),
-                          ),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.5),
+                blurRadius: 5,
+                spreadRadius: 3,
+                offset: const Offset(2, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              detailsHeading(
+                title: "User Details",
+              ),
+              const SizedBox(height: 15),
+              getRow('Email', widget.model?.email ?? ''),
+              const Divider(),
+              getRow('Username', widget.model?.username ?? ''),
+              const Divider(),
+              getRow('Phone',
+                  "${widget.model?.country_code ?? ''} ${widget.model?.whatsappNumber ?? ''}"),
+              const Divider(),
+              getRow('First Name', widget.model?.firstname ?? ''),
+              const Divider(),
+              getRow('Last Name', widget.model?.lastname ?? ''),
+              const Divider(),
+              getRow('Manager', widget.model?.managername ?? ''),
+              const Divider(),
+              getRow('User Role', widget.model?.userrole ?? ''),
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
+                  children: [
+                    const Text("Active"),
+                    Checkbox(
+                      activeColor: widget.model!.isactive == true
+                          ? AppColor.navBarIconColor
+                          : Colors.white,
+                      value: widget.model!.isactive,
+                      onChanged: (bool? newValue) {
+                        setState(() {
+                          widget.model!.isactive = newValue!;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChangePasswordScreen(
+                          widget.model?.username ?? "",
+                          widget.model?.whatsappNumber ?? "",
+                          userId ?? "",
                         ),
-                      )
-                    ],
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.navBarIconColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: const Text(
+                    "Change Password",
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(
+                height: 10,
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -348,7 +359,7 @@ class _UserDetailView extends State<UserDetailView> {
 
   Padding getRow(String lable, String name) {
     return Padding(
-      padding: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

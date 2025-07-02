@@ -272,8 +272,8 @@ class _ProfileViewState extends State<ProfileView> {
                       // bottom: 0,
                       left: 0,
                       child: Container(
-                        height: 40,
-                        width: 40,
+                        height: 35,
+                        width: 35,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(

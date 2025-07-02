@@ -60,7 +60,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
     // amount = widget.model?. ?? "";
     dateformat = DateFormat('dd-MM-yyyy').format(parsedDate);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,
@@ -114,58 +114,37 @@ class _LeadDetailViewState extends State<LeadDetailView> {
     // print("widget.model?.createdbyname${widget.model?.ownername}");
 
     print("model$model");
-    return Container(
-      color: Colors.white38,
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      spreadRadius: 2,
-                      blurRadius: 7,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 15),
+
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 3,
+                        offset: const Offset(2, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      detailsHeading(
+                        title: "Personal Information",
+                      ),
+                      Column(
                         children: [
-                          const SizedBox(height: 15),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: AppColor.navBarIconColor,
-                                      borderRadius: BorderRadius.circular(08)),
-                                  height: 40,
-                                  width: 350,
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(
-                                      'Personal Information',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
                           const SizedBox(height: 10),
                           recordRow("First Name", widget.model?.firstname),
                           const Divider(),
@@ -178,63 +157,75 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                           recordRow("Phone",
                               "${widget.model?.countryCode} ${widget.model?.whatsappNumber}"),
                           const Divider(),
-                          // recordRow("Expected Amount", widget.model?.amount),
-                          // const Divider(),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: AppColor.navBarIconColor,
-                                      borderRadius: BorderRadius.circular(08)),
-                                  height: 40,
-                                  width: 350,
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(
-                                      'Lead Information',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+
+                const SizedBox(
+                  height: 18,
+                ),
+
+                // recordRow("Expected Amount", widget.model?.amount),
+                // const Divider(),
+
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 3,
+                        offset: const Offset(2, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      detailsHeading(
+                        title: "Lead Information",
+                      ),
+                      Column(
+                        children: [
                           const SizedBox(height: 10),
-                          // recordRow(
-                          //     "Payment Terms", widget.model?.p),
-                          const Divider(),
+                          // const Divider(),
                           recordRow("Assigned User", widget.model?.ownername),
                           const Divider(),
-                          // recordRow("Company", widget.model?.company),
-                          // const Divider(),
                           recordRow("Lead Source", widget.model?.leadsource),
                           const Divider(),
-                          // recordRow(
-                          //     "Payment Model", widget.model?.paymentmodel),
-                          // const Divider(),
                           recordRow("Status", widget.model?.leadstatus),
                           const Divider(),
-                          Container(
-                            decoration: BoxDecoration(
-                                color: AppColor.navBarIconColor,
-                                borderRadius: BorderRadius.circular(08)),
-                            height: 40,
-                            width: double.infinity,
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'Address Information',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Colors.white),
-                              ),
-                            ),
-                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 18,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 3,
+                        offset: const Offset(2, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      detailsHeading(
+                        title: "Address Information",
+                      ),
+                      Column(
+                        children: [
                           const SizedBox(height: 10),
                           recordRow("Address", widget.model?.address),
                           // const Divider(),
@@ -247,71 +238,87 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                           // recordRow("street", widget.model?.street),
                           const Divider(),
                           const SizedBox(height: 15),
-
-                          Container(
-                            decoration: BoxDecoration(
-                                color: AppColor.navBarIconColor,
-                                borderRadius: BorderRadius.circular(08)),
-                            height: 40,
-                            width: double.infinity,
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'Tags Information',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Colors.white),
-                              ),
-                            ),
-                          ),
-
-                          Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children:
-                                  (widget.model?.tagNames ?? []).map((tag) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xffE6E6E6),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(tag.name ?? ""),
-                                );
-                              }).toList(),
-                            ),
-                          )
-
-                          //  Wrap(
-                          //     spacing: 10,
-                          //   children: widget.model.tagNames.map(tag){
-                          //     return Container(
-                          //       child: Text(tag.name),
-                          //     );
-                          //   },
-                          //  )
                         ],
-                      ),
-                    ),
-                  ],
+                      )
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              // Optional Edit and Delete Options Menu
-            ],
+
+                const SizedBox(
+                  height: 18,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 3,
+                        offset: const Offset(2, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      detailsHeading(
+                        title: "Tags Information",
+                      ),
+                      widget.model!.tagNames!.isEmpty
+                          ? Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 18.0),
+                              child: Center(
+                                  child: Text(
+                                "No Tags Available...",
+                                style: TextStyle(color: Colors.black54),
+                              )),
+                            )
+                          : Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 8),
+                              child: Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children:
+                                    (widget.model?.tagNames ?? []).map((tag) {
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xffE6E6E6),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(tag.name ?? ""),
+                                  );
+                                }).toList(),
+                              ),
+                            )
+                    ],
+                  ),
+                )
+
+                //  Wrap(
+                //     spacing: 10,
+                //   children: widget.model.tagNames.map(tag){
+                //     return Container(
+                //       child: Text(tag.name),
+                //     );
+                //   },
+                //  )
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget recordRow(String label, String? value) {
     return Padding(
-      padding: const EdgeInsets.all(2.0),
+      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

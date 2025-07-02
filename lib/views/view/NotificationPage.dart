@@ -18,27 +18,42 @@ class _NotificationPageState extends State<NotificationPage> {
   UnreadCountVm? unreadcountvm;
   List<Record> data = [];
 
+  bool isLoading = false;
+
   void fetchcount() async {
-    unreadcountvm = Provider.of<UnreadCountVm>(context, listen: false);
-    final prefs = await SharedPreferences.getInstance();
-    String? number = prefs.getString('phoneNumber');
-    await unreadcountvm!.fetchunreadcount(number: number).then((_) {
-      unreadcountvm!.viewModels.length;
-      print("djjdjdjdjdjj${unreadcountvm!.viewModels.length}");
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      unreadcountvm = Provider.of<UnreadCountVm>(context, listen: false);
+      final prefs = await SharedPreferences.getInstance();
+      String? number = prefs.getString('phoneNumber');
+      await unreadcountvm!.fetchunreadcount(number: number).then((_) {
+        unreadcountvm!.viewModels.length;
+        print("djjdjdjdjdjj${unreadcountvm!.viewModels.length}");
 
-      for (var i in unreadcountvm!.viewModels) {
-        UnreadMsgModel datanread = i.model;
+        for (var i in unreadcountvm!.viewModels) {
+          UnreadMsgModel datanread = i.model;
 
-        if (datanread.records != null) {
-          for (var record in datanread.records!) {
-            if (!data.any((r) => r.whatsappNumber == record.whatsappNumber)) {
-              data.add(record);
+          if (datanread.records != null) {
+            for (var record in datanread.records!) {
+              if (!data.any((r) => r.whatsappNumber == record.whatsappNumber)) {
+                data.add(record);
+              }
             }
           }
         }
-      }
-      print("dattaaa=>${data}");
-    });
+        print("dattaaa=>${data}");
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -74,139 +89,144 @@ class _NotificationPageState extends State<NotificationPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: data.isEmpty
+      body: isLoading
           ? const Center(
-              child: Text(
-                "No Data Found",
-                style: TextStyle(fontSize: 18),
-              ),
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 12.0, horizontal: 12),
+              child: CircularProgressIndicator(
+              color: AppColor.navBarIconColor,
+            ))
+          : data.isEmpty
+              ? const Center(
                   child: Text(
-                    " ${data.length} Notifications Available",
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+                    "No Data Found",
+                    style: TextStyle(fontSize: 18),
                   ),
-                ),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
-                          blurRadius: 5,
-                          spreadRadius: 3,
-                          offset: const Offset(2, 4),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12.0, horizontal: 12),
+                      child: Text(
+                        " ${data.length} Notifications Available",
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
-                      ],
-                      color: Colors.white,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
                       ),
                     ),
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.only(left: 12.0, right: 12, top: 20),
-                      child: ListView.builder(
-                        itemCount: data.length,
-                        itemBuilder: (context, index) {
-                          final record = data[index];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 2,
-                                  spreadRadius: 2,
-                                  offset: const Offset(2, 4),
-                                ),
-                              ],
-                              border: const Border(
-                                left: BorderSide(
-                                  color: AppColor.navBarIconColor,
-                                  width: 5,
-                                ),
-                              ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.5),
+                              blurRadius: 5,
+                              spreadRadius: 3,
+                              offset: const Offset(2, 4),
                             ),
-                            child: ListTile(
-                              leading: Container(
-                                width: 40,
-                                height: 40,
+                          ],
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                              left: 12.0, right: 12, top: 20),
+                          child: ListView.builder(
+                            itemCount: data.length,
+                            itemBuilder: (context, index) {
+                              final record = data[index];
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 10.0),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(100),
-                                  border: Border.all(
-                                    color: AppColor.navBarIconColor,
-                                    width: 3,
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.notifications,
-                                    color: Color.fromARGB(255, 0, 0, 0),
-                                    size: 20,
-                                  ),
-                                ),
-                              ),
-                              title: Text(
-                                record.name ?? record.whatsappNumber ?? "",
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              subtitle: Text(
-                                record.whatsappNumber ??
-                                    record.whatsappNumber ??
-                                    "",
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.black.withOpacity(0.5),
-                                ),
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const SizedBox(width: 10),
-                                  Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.green,
-                                      shape: BoxShape.circle,
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 2,
+                                      spreadRadius: 2,
+                                      offset: const Offset(2, 4),
                                     ),
-                                    child: Text(
-                                      record.unreadMsgCount ?? "0",
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
+                                  ],
+                                  border: const Border(
+                                    left: BorderSide(
+                                      color: AppColor.navBarIconColor,
+                                      width: 5,
+                                    ),
+                                  ),
+                                ),
+                                child: ListTile(
+                                  leading: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(100),
+                                      border: Border.all(
+                                        color: AppColor.navBarIconColor,
+                                        width: 3,
+                                      ),
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.notifications,
+                                        color: Color.fromARGB(255, 0, 0, 0),
+                                        size: 20,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
+                                  title: Text(
+                                    record.name ?? record.whatsappNumber ?? "",
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    record.whatsappNumber ??
+                                        record.whatsappNumber ??
+                                        "",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black.withOpacity(0.5),
+                                    ),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const SizedBox(width: 10),
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.green,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Text(
+                                          record.unreadMsgCount ?? "0",
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
     );
   }
 }
