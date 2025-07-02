@@ -68,6 +68,7 @@ class _TempleteListView extends State<TempleteListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,
@@ -81,61 +82,6 @@ class _TempleteListView extends State<TempleteListView> {
         centerTitle: true,
         elevation: 0,
         automaticallyImplyLeading: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50.0),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-            child: TextField(
-              onChanged: searchLeads,
-              controller: textController,
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                hintStyle: TextStyle(
-                  color: AppColor.textoriconColor.withOpacity(0.6),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.all(10),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Stack(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.filter_list,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          _showFilterBottomSheet(context);
-                        },
-                      ),
-                      selectTempList.isEmpty
-                          ? SizedBox()
-                          : Container(
-                              decoration: BoxDecoration(
-                                  color: AppColor.navBarIconColor,
-                                  shape: BoxShape.circle),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "${selectTempList.length}",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            )
-                    ],
-                  ),
-                ),
-                prefixIconConstraints: const BoxConstraints(minWidth: 40),
-              ),
-            ),
-          ),
-        ),
       ),
       body: RefreshIndicator(
         onRefresh: _pullRefresh,
@@ -369,6 +315,95 @@ class _TempleteListView extends State<TempleteListView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10),
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: Expanded(
+                  flex: 2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 2,
+                            spreadRadius: 2,
+                            offset: const Offset(1, 1),
+                          ),
+                        ],
+                        color: Colors.white,
+                        border: Border.all(color: AppColor.backgroundGrey),
+                        borderRadius: BorderRadius.circular(12)),
+                    child: Stack(
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.filter_list,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            _showFilterBottomSheet(context);
+                          },
+                        ),
+                        selectTempList.isEmpty
+                            ? SizedBox()
+                            : Container(
+                                decoration: const BoxDecoration(
+                                    color: AppColor.navBarIconColor,
+                                    shape: BoxShape.circle),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "${selectTempList.length}",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 8,
+                child: TextField(
+                  onChanged: searchLeads,
+                  controller: textController,
+                  decoration: InputDecoration(
+                    hintText: 'Search...',
+                    hintStyle: TextStyle(
+                      color: AppColor.textoriconColor.withOpacity(0.6),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppColor.navBarIconColor,
+                        width: 1.5,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.all(10),
+                    disabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.backgroundGrey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColor.backgroundGrey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    prefixIcon: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Icon(Icons.search)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         allTemplates.isEmpty || noMatchedLeads
             ? SizedBox()
             : Padding(
@@ -380,128 +415,161 @@ class _TempleteListView extends State<TempleteListView> {
               ),
         Expanded(
           child: allTemplates.isEmpty || noMatchedLeads
-              ? Center(
+              ? const Center(
                   child: Text(
                     "No Templates Available..",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 )
-              : ListView.builder(
-                  itemCount: allTemplates.length,
-                  itemBuilder: (context, index) {
-                    Color statusColor = Colors.red;
-                    String statusText = "";
+              : Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 3,
+                        offset: const Offset(2, 4),
+                      ),
+                    ],
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 18.0),
+                    child: ListView.builder(
+                        itemCount: allTemplates.length,
+                        itemBuilder: (context, index) {
+                          Color statusColor = Colors.red;
+                          String statusText = "";
 
-                    if (allTemplates[index].status == "APPROVED") {
-                      print("shshhsshshh");
-                      statusColor = AppColor.navBarIconColor;
-                      statusText = "Approved";
-                    } else if (allTemplates[index].status == 'REJECTED') {
-                      print("kisisisiisiisi");
-                      statusColor = Colors.red;
-                      statusText = "Rejected";
-                    } else {
-                      statusColor = Colors.grey;
-                      statusText = "Unknown";
-                    }
+                          if (allTemplates[index].status == "APPROVED") {
+                            print("shshhsshshh");
+                            statusColor = AppColor.navBarIconColor;
+                            statusText = "Approved";
+                          } else if (allTemplates[index].status == 'REJECTED') {
+                            print("kisisisiisiisi");
+                            statusColor = Colors.red;
+                            statusText = "Rejected";
+                          } else {
+                            statusColor = Colors.grey;
+                            statusText = "Unknown";
+                          }
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 7.0, horizontal: 10.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: const Border(
-                            left: BorderSide(
-                              color: AppColor.navBarIconColor,
-                              width: 5,
-                            ),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 2,
-                              spreadRadius: 2,
-                              offset: const Offset(2, 4),
-                            ),
-                          ],
-                        ),
-                        child: InkWell(
-                          onTap: () {},
-                          child: Padding(
+                          return Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 10),
-                            child: Column(
-                              children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
+                                vertical: 7.0, horizontal: 10.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: const Border(
+                                  left: BorderSide(
+                                    color: AppColor.navBarIconColor,
+                                    width: 5,
+                                  ),
+                                  right: BorderSide(
+                                    color: AppColor.navBarIconColor,
+                                    width: 5,
+                                  ),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 2,
+                                    spreadRadius: 2,
+                                    offset: const Offset(2, 4),
+                                  ),
+                                ],
+                              ),
+                              child: InkWell(
+                                onTap: () {},
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 10),
+                                  child: Column(
+                                    children: [
+                                      Row(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            allTemplates[index].name ?? "",
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  allTemplates[index].name ??
+                                                      "",
+                                                  style: const TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  allTemplates[index]
+                                                          .category ??
+                                                      "",
+                                                  style: const TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      color: AppColor
+                                                          .containerBoxColor),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  allTemplates[index]
+                                                          .language ??
+                                                      "",
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.black
+                                                        .withOpacity(0.7),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            allTemplates[index].category ?? "",
-                                            style: const TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w800,
-                                                color:
-                                                    AppColor.containerBoxColor),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            allTemplates[index].language ?? "",
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color:
-                                                  Colors.black.withOpacity(0.7),
-                                            ),
+                                          const SizedBox(width: 10),
+                                          Column(
+                                            children: [
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 6),
+                                                decoration: BoxDecoration(
+                                                  color: statusColor,
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  statusText,
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: statusColor,
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            statusText,
-                                            style: const TextStyle(
-                                              fontSize: 11,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
+                          );
+                        }),
+                  ),
+                ),
           // child: ListView(
           //   children: getContactWidgets(),
           // ),
@@ -663,7 +731,9 @@ class _TempleteListView extends State<TempleteListView> {
       }
 
       setState(() {
-        allTemplates = [...matched, ...others];
+        allTemplates = [
+          ...matched,
+        ];
         noMatchedLeads = matched.isEmpty;
       });
     }

@@ -96,6 +96,7 @@ class _UserListView extends State<UserListView> {
     setState(() {});
     print("all users:: ${allUsers.length}");
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         actions: [
           Padding(
@@ -127,54 +128,6 @@ class _UserListView extends State<UserListView> {
         centerTitle: true,
         elevation: 0,
         automaticallyImplyLeading: false,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50.0),
-          child: Container(
-            height: 70,
-            width: MediaQuery.of(context).size.width,
-            padding:
-                const EdgeInsets.only(top: 12, bottom: 12, left: 10, right: 10),
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      onChanged: _filterLeads,
-                      controller: textController,
-                      decoration: InputDecoration(
-                        hintText: 'Search...',
-                        hintStyle: TextStyle(
-                          color: AppColor.textoriconColor.withOpacity(0.6),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.all(10),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide.none,
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.filter_list,
-                              color: Color.fromARGB(255, 0, 0, 0),
-                              size: 20,
-                            ),
-                            onPressed: () {
-                              _showFilterBottomSheet(context);
-                            },
-                          ),
-                        ),
-                        prefixIconConstraints:
-                            const BoxConstraints(minWidth: 40),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                ]),
-          ),
-        ),
       ),
       body: RefreshIndicator(
           onRefresh: _pullRefresh,
@@ -381,82 +334,192 @@ class _UserListView extends State<UserListView> {
   }
 
   Widget _pageBody() {
-    return Column(
-      children: [
-        Expanded(
-          child: allUsers.isEmpty
-              ? const Center(
-                  child: Text(
-                    "No Users Available",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: allUsers.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(6.0),
+    return allUsers.isEmpty
+        ? const Center(
+            child: Text(
+              "No Users Available",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
+                child: Row(children: [
+                  Expanded(
+                      flex: 2,
                       child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 0.1, horizontal: 7),
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: const Border(
-                            left: BorderSide(
-                              color: AppColor.navBarIconColor,
-                              width: 5,
-                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 2,
+                                spreadRadius: 2,
+                                offset: const Offset(1, 1),
+                              ),
+                            ],
+                            color: Colors.white,
+                            border: Border.all(color: AppColor.backgroundGrey),
+                            borderRadius: BorderRadius.circular(12)),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.filter_list,
+                            color: Color.fromARGB(255, 0, 0, 0),
+                            size: 20,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 2,
-                              spreadRadius: 2,
-                              offset: const Offset(2, 4),
-                            ),
-                          ],
+                          onPressed: () {
+                            _showFilterBottomSheet(context);
+                          },
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 10, bottom: 8),
+                      )),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  Expanded(
+                    flex: 9,
+                    child: TextField(
+                      onChanged: _filterLeads,
+                      cursorColor: AppColor.navBarIconColor,
+                      controller: textController,
+                      decoration: InputDecoration(
+                        hintText: 'Search...',
+                        hintStyle: TextStyle(
+                          color: AppColor.textoriconColor.withOpacity(0.6),
+                        ),
+                        filled: true,
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: AppColor.navBarIconColor,
+                            width: 1.5,
+                          ),
+                        ),
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.all(10),
+                        disabledBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(color: AppColor.backgroundGrey),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(color: AppColor.backgroundGrey),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        prefixIcon: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            child: Icon(Icons.search)),
+                      ),
+                    ),
+                  ),
+                ]),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Text(
+                  "${allUsers.length} Users",
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.only(top: 22.0, bottom: 5),
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 3,
+                        offset: const Offset(2, 4),
+                      ),
+                    ],
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Expanded(
+                    child: ListView.builder(
+                      itemCount: allUsers.length,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      itemBuilder: (context, index) {
+                        final user = allUsers[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                           child: InkWell(
                             onTap: () {
                               Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => UserDetailView(
-                                            model: allUsers[index],
-                                          )));
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      UserDetailView(model: user),
+                                ),
+                              );
                             },
-                            child: ListTile(
-                              title: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "${allUsers[index].firstname} ${allUsers[index].lastname}",
-                                    style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: const Border(
+                                  left: BorderSide(
+                                    color: AppColor.navBarIconColor,
+                                    width: 5,
                                   ),
-                                  Text(
-                                    allUsers[index].userrole ?? "",
-                                    style: const TextStyle(
-                                        fontSize: 14, height: 1.5),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 2,
+                                    spreadRadius: 2,
+                                    offset: const Offset(2, 4),
                                   ),
                                 ],
                               ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 12, horizontal: 12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "${user.firstname} ${user.lastname}",
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      user.userrole ?? "",
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        height: 1.5,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    );
-                  }),
-          //     child: ListView(
-          //   children: getLeadWidgets(),
-          // )
-        ),
-      ],
-    );
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              )
+            ],
+          );
   }
 
   List<Widget> getLeadWidgets() {

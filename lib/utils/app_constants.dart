@@ -222,55 +222,35 @@ abstract class AppConstants {
 
   static const String baseApi =
       "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/";
-
   static const String getDrawerItemsApi = '${baseApi}watconnect/objectconfig';
   static const String sfGetDrawerList =
       '${baseApi}watconnect/objectconfig?sobjectname=';
-
   static const String sfSendMessageApi =
       '${baseApi}watconnect/messages?type=text';
-
   static const String sfSendFileApi =
       '${baseApi}watconnect/messages?type=document';
-
   static const String sfMessageHistoryApi = '${baseApi}watconnect/messages?';
-
   static const String getToken =
       "https://test.salesforce.com/services/oauth2/token";
-
   static const String sfGetTemplates = "${baseApi}watconnect/templates?";
-
   static const String sfDeleteChatHistory =
       "${baseApi}watconnect/messages/delete?";
-
   static const String sfDeleteChatMsg =
       "${baseApi}watconnect/messages/selectdMessageDelete?";
-
   static const String sfSendTemplate =
       "${baseApi}watconnect/messages?type=Template";
-
   static const String sfGetBusinessNumbs = "${baseApi}watconnect/setting";
-
   static const String sfSetBusinessNumb =
       "${baseApi}watconnect/setting?phoneNumber=";
-
   static const String sfGetCampaign = "${baseApi}watconnect/campaign?";
-
   static const String sfGetCampaignHistory =
       "${baseApi}watconnect/campaign/history?";
-
   static const String sfAddCampaign = "${baseApi}watconnect/campaign";
-
   static const String sfGetProfile = "${baseApi}watconnect/Profile";
-
   static const String sfRecentChat = "${baseApi}watconnect/Recentchat";
-
   static const String sfNotificationHistory =
       "${baseApi}watconnect/whatsappNotification";
-
   static const String sfDashBoardReport = "${baseApi}watconnect/report?";
-
   static const String sfDeviceToken = "${baseApi}watconnect/usermobiledevice";
-
   static const String sfCreateFile = "${baseApi}watconnect/createfile";
 }

@@ -72,12 +72,13 @@ class MessageViewModel extends BaseListViewModel {
     return result;
   }
 
-  Future<dynamic> sendtemplete({
-    String? number,
-    required Map<String, dynamic> msgmobilbody,
-  }) async {
+  Future<dynamic> sendtemplete(
+      {String? number,
+      required Map<String, dynamic> msgmobilbody,
+      String? tempCate}) async {
     print("c=templeate snd callled");
-    String url = AppUtils.getUrl('${AppConstants.templetesend}=$number');
+    String url = AppUtils.getUrl(
+        '${AppConstants.templetesend}=$number&category=${tempCate}');
     print("url==mobile templete send >$url");
     String body = jsonEncode(msgmobilbody);
     var result = await post(url: url, body: body);

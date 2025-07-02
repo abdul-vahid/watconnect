@@ -1,21 +1,17 @@
 // // -----------------End Code of Record List Method-------------------------
 // import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 
-import 'package:flutter_file_downloader/flutter_file_downloader.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/utils/app_constants.dart';
-import 'package:whatsapp/views/view/clone_campaign_view.dart';
 import '../../models/campaign_model/campaign_model.dart';
 import '../../models/user_model/user_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import '../../view_models/campaign_vm.dart';
-import 'campaign_add_update_view.dart';
 import 'campaign_detail_view.dart';
 
 class CampaignListView extends StatefulWidget {
@@ -79,6 +75,7 @@ class _CampaignListView extends State<CampaignListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         // actions: [
         //   modules.contains("Campaign") || modules.contains("Campaigns")
@@ -116,86 +113,6 @@ class _CampaignListView extends State<CampaignListView> {
         ),
         centerTitle: true,
         elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50.0),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: TextField(
-              controller: textController,
-              onChanged: _searchLeads,
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                hintStyle: TextStyle(
-                  color: AppColor.textoriconColor.withOpacity(0.6),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.all(10),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Stack(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.filter_list,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          _showFilterBottomSheet(context);
-                        },
-                      ),
-                      selectCampList.isEmpty
-                          ? SizedBox()
-                          : Container(
-                              decoration: const BoxDecoration(
-                                  color: AppColor.navBarIconColor,
-                                  shape: BoxShape.circle),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "${selectCampList.length}",
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            )
-                    ],
-                  ),
-                ),
-
-                // suffixIcon: Padding(
-                //   padding: const EdgeInsets.all(5.0),
-                //   child: Align(
-                //     alignment: Alignment.topLeft,
-                //     child: Container(
-                //       height: 40,
-                //       width: 40,
-                //       child: FloatingActionButton(
-                //         elevation: 0.5,
-                //         backgroundColor: AppColor.navBarIconColor,
-                //         shape: const CircleBorder(),
-                //         tooltip: 'Filter',
-                //         onPressed: () {
-                //           _showFilterBottomSheet(context);
-                //         },
-                //         child: const Icon(
-                //           Icons.filter_list_rounded,
-                //           color: Colors.white,
-                //           size: 23,
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                // ),
-                prefixIconConstraints: const BoxConstraints(minWidth: 40),
-              ),
-            ),
-          ),
-        ),
       ),
       body: RefreshIndicator(
         onRefresh: _pullRefresh,
@@ -484,22 +401,116 @@ class _CampaignListView extends State<CampaignListView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                  flex: 2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 2,
+                            spreadRadius: 2,
+                            offset: const Offset(1, 1),
+                          ),
+                        ],
+                        color: Colors.white,
+                        border: Border.all(color: AppColor.backgroundGrey),
+                        borderRadius: BorderRadius.circular(12)),
+                    child: Center(
+                      child: Stack(
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.filter_list,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              _showFilterBottomSheet(context);
+                            },
+                          ),
+                          selectCampList.isEmpty
+                              ? SizedBox()
+                              : Container(
+                                  decoration: const BoxDecoration(
+                                      color: AppColor.navBarIconColor,
+                                      shape: BoxShape.circle),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      "${selectCampList.length}",
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                )
+                        ],
+                      ),
+                    ),
+                  )),
+              const SizedBox(
+                width: 10,
+              ),
+              Expanded(
+                flex: 9,
+                child: TextField(
+                  controller: textController,
+                  onChanged: _searchLeads,
+                  decoration: InputDecoration(
+                    hintText: 'Search...',
+                    hintStyle: TextStyle(
+                      color: AppColor.textoriconColor.withOpacity(0.6),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.all(10),
+                    disabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: AppColor.backgroundGrey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: AppColor.backgroundGrey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppColor.navBarIconColor,
+                        width: 1.5,
+                      ),
+                    ),
+                    prefixIcon: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Icon(Icons.search)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         allCampaigns.isEmpty
             ? const SizedBox()
             : Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  "${allCampaigns.length} Records Found",
+                  "${allCampaigns.length} Campaigns Available",
+                  style: TextStyle(fontWeight: FontWeight.w600),
                   textAlign: TextAlign.left,
                 ),
               ),
         Expanded(
           child: isLoading
-              ? Center(
+              ? const Center(
                   child: SizedBox(
                       height: 50,
                       width: 50,
-                      child: const CircularProgressIndicator()))
+                      child: CircularProgressIndicator()))
               : allCampaigns.isEmpty
                   ? const Center(
                       child: Text(
@@ -507,221 +518,248 @@ class _CampaignListView extends State<CampaignListView> {
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ))
-                  : ListView.builder(
-                      itemCount: allCampaigns.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 4, horizontal: 1),
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 1, horizontal: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              border: const Border(
-                                left: BorderSide(
-                                    color: AppColor.navBarIconColor, width: 5),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 2,
-                                  spreadRadius: 2,
-                                  offset: const Offset(2, 4),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 1, bottom: 2),
-                              child: InkWell(
-                                onTap: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => CampaignDetailView(
-                                          record: allCampaigns[index]),
+                  : Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 5,
+                            spreadRadius: 3,
+                            offset: const Offset(2, 4),
+                          ),
+                        ],
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 22.0, bottom: 5),
+                        child: ListView.builder(
+                          itemCount: allCampaigns.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 4, horizontal: 1),
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 1, horizontal: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: const Border(
+                                    left: BorderSide(
+                                        color: AppColor.navBarIconColor,
+                                        width: 5),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 2,
+                                      spreadRadius: 2,
+                                      offset: const Offset(2, 4),
                                     ),
-                                  );
-                                  if (result == true) {
-                                    print("is result getting true.........?");
-                                    saveNumberData();
-                                    getCampignList();
-                                  }
-                                },
-                                child: ListTile(
-                                  title: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                        child: Row(
-                                          children: [
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                  ],
+                                ),
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.only(top: 1, bottom: 2),
+                                  child: InkWell(
+                                    onTap: () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              CampaignDetailView(
+                                                  record: allCampaigns[index]),
+                                        ),
+                                      );
+                                      if (result == true) {
+                                        print(
+                                            "is result getting true.........?");
+                                        saveNumberData();
+                                        getCampignList();
+                                      }
+                                    },
+                                    child: ListTile(
+                                      title: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: Row(
                                               children: [
-                                                Text(
-                                                  allCampaigns[index]
-                                                          .campaignName ??
-                                                      "",
-                                                  style: const TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      allCampaigns[index]
+                                                              .campaignName ??
+                                                          "",
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      allCampaigns[index]
+                                                              .campaignType ??
+                                                          "",
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.lightBlue
+                                                            .withOpacity(0.7),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      allCampaigns[index]
+                                                              .campaignStatus ??
+                                                          "",
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                    // Text(
+                                                    //   getCampaignStatus(
+                                                    //       allCampaigns[index].startDate,
+                                                    //       allCampaigns[index].endDate),
+                                                    //   style: const TextStyle(
+                                                    //     fontSize: 14,
+                                                    //     fontWeight: FontWeight.bold,
+                                                    //     color: Colors.black,
+                                                    //   ),
+                                                    // ),
+                                                  ],
                                                 ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  allCampaigns[index]
-                                                          .campaignType ??
-                                                      "",
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.lightBlue
-                                                        .withOpacity(0.7),
-                                                  ),
-                                                ),
-                                                Text(
-                                                  allCampaigns[index]
-                                                          .campaignStatus ??
-                                                      "",
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                                // Text(
-                                                //   getCampaignStatus(
-                                                //       allCampaigns[index].startDate,
-                                                //       allCampaigns[index].endDate),
-                                                //   style: const TextStyle(
-                                                //     fontSize: 14,
-                                                //     fontWeight: FontWeight.bold,
-                                                //     color: Colors.black,
-                                                //   ),
-                                                // ),
+                                                // Spacer(),
+                                                // allCampaigns[index]
+                                                //             .campaignStatus ==
+                                                //         'Completed'
+                                                //     ? const SizedBox()
+                                                //     : Column(
+                                                //         mainAxisAlignment:
+                                                //             MainAxisAlignment.end,
+                                                //         children: [
+                                                //           // GestureDetector(
+                                                //           //   onTap: () {
+                                                //           // Navigator.push(
+                                                //           //   context,
+                                                //           //   MaterialPageRoute(
+                                                //           //     builder: (context) =>
+                                                //           //         CampaignCloneview(
+                                                //           //             record: allCampaigns[
+                                                //           //                 index]),
+                                                //           //   ),
+                                                //           // );
+                                                //           // },
+                                                //           // child: Container(
+                                                //           //   padding:
+                                                //           //       const EdgeInsets
+                                                //           //           .symmetric(
+                                                //           //           horizontal: 7,
+                                                //           //           vertical: 8),
+                                                //           //   decoration:
+                                                //           //       BoxDecoration(
+                                                //           //     color: Colors.blue,
+                                                //           //     borderRadius:
+                                                //           //         BorderRadius
+                                                //           //             .circular(
+                                                //           //                 8),
+                                                //           //   ),
+                                                //           //   child: const Text(
+                                                //           //     'Clone',
+                                                //           //     style: TextStyle(
+                                                //           //       color:
+                                                //           //           Colors.white,
+                                                //           //       fontWeight:
+                                                //           //           FontWeight
+                                                //           //               .bold,
+                                                //           //       fontSize: 12,
+                                                //           //     ),
+                                                //           //   ),
+                                                //           // ),
+                                                //           // ),
+                                                //         ],
+                                                //       )
                                               ],
                                             ),
-                                            // Spacer(),
-                                            // allCampaigns[index]
-                                            //             .campaignStatus ==
-                                            //         'Completed'
-                                            //     ? const SizedBox()
-                                            //     : Column(
-                                            //         mainAxisAlignment:
-                                            //             MainAxisAlignment.end,
-                                            //         children: [
-                                            //           // GestureDetector(
-                                            //           //   onTap: () {
-                                            //           // Navigator.push(
-                                            //           //   context,
-                                            //           //   MaterialPageRoute(
-                                            //           //     builder: (context) =>
-                                            //           //         CampaignCloneview(
-                                            //           //             record: allCampaigns[
-                                            //           //                 index]),
-                                            //           //   ),
-                                            //           // );
-                                            //           // },
-                                            //           // child: Container(
-                                            //           //   padding:
-                                            //           //       const EdgeInsets
-                                            //           //           .symmetric(
-                                            //           //           horizontal: 7,
-                                            //           //           vertical: 8),
-                                            //           //   decoration:
-                                            //           //       BoxDecoration(
-                                            //           //     color: Colors.blue,
-                                            //           //     borderRadius:
-                                            //           //         BorderRadius
-                                            //           //             .circular(
-                                            //           //                 8),
-                                            //           //   ),
-                                            //           //   child: const Text(
-                                            //           //     'Clone',
-                                            //           //     style: TextStyle(
-                                            //           //       color:
-                                            //           //           Colors.white,
-                                            //           //       fontWeight:
-                                            //           //           FontWeight
-                                            //           //               .bold,
-                                            //           //       fontSize: 12,
-                                            //           //     ),
-                                            //           //   ),
-                                            //           // ),
-                                            //           // ),
-                                            //         ],
-                                            //       )
-                                          ],
-                                        ),
-                                      ),
-                                      // const SizedBox(width: 10),
-                                      // allCampaigns[index].fileTitle == null
-                                      //     ? const SizedBox()
-                                      //     : GestureDetector(
-                                      //         onTap: () async {
-                                      //           var token =
-                                      //               await AppUtils.getToken();
+                                          ),
+                                          // const SizedBox(width: 10),
+                                          // allCampaigns[index].fileTitle == null
+                                          //     ? const SizedBox()
+                                          //     : GestureDetector(
+                                          //         onTap: () async {
+                                          //           var token =
+                                          //               await AppUtils.getToken();
 
-                                      //           FileDownloader.downloadFile(
-                                      //             url:
-                                      //                 "${AppConstants.baseUrl}/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}",
-                                      //             name: allCampaigns[index]
-                                      //                 .fileTitle,
-                                      //             headers: {
-                                      //               'Authorization': token ?? ""
-                                      //             },
-                                      //             downloadDestination:
-                                      //                 DownloadDestinations
-                                      //                     .publicDownloads,
-                                      //             notificationType:
-                                      //                 NotificationType.all,
-                                      //             onDownloadCompleted: (path) {
-                                      //               ScaffoldMessenger.of(
-                                      //                       context)
-                                      //                   .showSnackBar(
-                                      //                 const SnackBar(
-                                      //                   content: Text(
-                                      //                       'Download Complete'),
-                                      //                   backgroundColor:
-                                      //                       Colors.green,
-                                      //                 ),
-                                      //               );
-                                      //             },
-                                      //             onProgress:
-                                      //                 (fileName, progress) {
-                                      //               ScaffoldMessenger.of(
-                                      //                       context)
-                                      //                   .showSnackBar(
-                                      //                 const SnackBar(
-                                      //                   content: Text(
-                                      //                       'Downloading..'),
-                                      //                   backgroundColor:
-                                      //                       Colors.green,
-                                      //                 ),
-                                      //               );
-                                      //             },
-                                      //           );
-                                      //         },
-                                      //         child: Container(
-                                      //           child: Image.asset(
-                                      //             'assets/images/download.png',
-                                      //             height: 30,
-                                      //             width: 30,
-                                      //           ),
-                                      //         ),
-                                      //       ),
-                                    ],
+                                          //           FileDownloader.downloadFile(
+                                          //             url:
+                                          //                 "${AppConstants.baseUrl}/api/whatsapp/campaign/download/${allCampaigns[index].fileTitle}",
+                                          //             name: allCampaigns[index]
+                                          //                 .fileTitle,
+                                          //             headers: {
+                                          //               'Authorization': token ?? ""
+                                          //             },
+                                          //             downloadDestination:
+                                          //                 DownloadDestinations
+                                          //                     .publicDownloads,
+                                          //             notificationType:
+                                          //                 NotificationType.all,
+                                          //             onDownloadCompleted: (path) {
+                                          //               ScaffoldMessenger.of(
+                                          //                       context)
+                                          //                   .showSnackBar(
+                                          //                 const SnackBar(
+                                          //                   content: Text(
+                                          //                       'Download Complete'),
+                                          //                   backgroundColor:
+                                          //                       Colors.green,
+                                          //                 ),
+                                          //               );
+                                          //             },
+                                          //             onProgress:
+                                          //                 (fileName, progress) {
+                                          //               ScaffoldMessenger.of(
+                                          //                       context)
+                                          //                   .showSnackBar(
+                                          //                 const SnackBar(
+                                          //                   content: Text(
+                                          //                       'Downloading..'),
+                                          //                   backgroundColor:
+                                          //                       Colors.green,
+                                          //                 ),
+                                          //               );
+                                          //             },
+                                          //           );
+                                          //         },
+                                          //         child: Container(
+                                          //           child: Image.asset(
+                                          //             'assets/images/download.png',
+                                          //             height: 30,
+                                          //             width: 30,
+                                          //           ),
+                                          //         ),
+                                          //       ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
-                        );
-                      },
+                            );
+                          },
+                        ),
+                      ),
                     ),
           // child: ListView(
           //   children: getContactWidgets(),

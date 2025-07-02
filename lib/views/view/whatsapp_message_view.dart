@@ -248,6 +248,7 @@ class _ChatScreenState extends State<ChatScreen> {
         },
         child: SafeArea(
           bottom: true,
+          top: false,
           child: Scaffold(
             backgroundColor: AppColor.backgroundGrey,
             appBar: AppBar(
@@ -655,7 +656,10 @@ class _ChatScreenState extends State<ChatScreen> {
           print("temmplet msg id==========>$templeteidmessage"),
           print("ccretae objetctt resposne= > $value"),
           mstemp
-              .sendtemplete(number: number, msgmobilbody: templateBody)
+              .sendtemplete(
+                  number: number,
+                  msgmobilbody: templateBody,
+                  tempCate: SelectedTemplateCategory)
               .then((value) {
             print("value=== templete>$value");
             print("value=== template>${value['messages'][0]['id']}");
@@ -2686,8 +2690,10 @@ class _ChatScreenState extends State<ChatScreen> {
     print("template body=>$templateBody");
 
     // Await template sending
-    var sendTemplateResponse =
-        await mstemp.sendtemplete(number: number, msgmobilbody: templateBody);
+    var sendTemplateResponse = await mstemp.sendtemplete(
+        number: number,
+        msgmobilbody: templateBody,
+        tempCate: SelectedTemplateCategory);
     print("sendTemplateResponse>>>>>>> ${sendTemplateResponse}");
     String messageid = sendTemplateResponse['messages'][0]["id"] ?? "";
 
@@ -2903,8 +2909,10 @@ class _ChatScreenState extends State<ChatScreen> {
       }
       ;
 
-      var templateSendResponse =
-          await mstemp.sendtemplete(number: number, msgmobilbody: templateBody);
+      var templateSendResponse = await mstemp.sendtemplete(
+          number: number,
+          msgmobilbody: templateBody,
+          tempCate: SelectedTemplateCategory);
       print("Template send response: $templateSendResponse");
 
       messageid = templateSendResponse['messages'][0]['id'];
@@ -3024,7 +3032,10 @@ class _ChatScreenState extends State<ChatScreen> {
               }),
             },
           mstemp
-              .sendtemplete(number: number, msgmobilbody: templateBody)
+              .sendtemplete(
+                  number: number,
+                  msgmobilbody: templateBody,
+                  tempCate: SelectedTemplateCategory)
               .then((value) {
             print("value=== templete>$value");
             // print("value=== template>${value['messages'][0]['id']}");

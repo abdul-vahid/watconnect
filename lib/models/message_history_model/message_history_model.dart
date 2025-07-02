@@ -5,7 +5,7 @@ import 'record.dart';
 
 class MessageHistoryModel extends BaseModel {
   bool? success;
-  List<Record>? records;
+  List<HistRecord>? records;
 
   MessageHistoryModel({this.success, this.records});
 
@@ -13,7 +13,7 @@ class MessageHistoryModel extends BaseModel {
     return MessageHistoryModel(
       success: data['success'] as bool?,
       records: (data['records'] as List<dynamic>?)
-          ?.map((e) => Record.fromMap(e as Map<String, dynamic>))
+          ?.map((e) => HistRecord.fromMap(e as Map<String, dynamic>))
           .toList(),
     );
   }

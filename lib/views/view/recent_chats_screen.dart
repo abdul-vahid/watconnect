@@ -130,7 +130,9 @@ class _RecentChatViewState extends State<RecentChatView> {
 
       if (mounted) {
         setState(() {
-          allRecentChats = [...matched, ...others];
+          allRecentChats = [
+            ...matched,
+          ];
           noMatchedLeads = matched.isEmpty;
         });
       }
@@ -143,6 +145,7 @@ class _RecentChatViewState extends State<RecentChatView> {
     leadlistvm = Provider.of<LeadListViewModel>(context);
 
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const Text(
@@ -151,39 +154,6 @@ class _RecentChatViewState extends State<RecentChatView> {
         ),
         centerTitle: true,
         elevation: 5,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50.0),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: TextField(
-              controller: textController,
-              onChanged: _filterLeads,
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: 'Search...',
-                hintStyle: TextStyle(
-                  color: AppColor.textoriconColor.withOpacity(0.6),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.all(10),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: IconButton(
-                    icon:
-                        const Icon(Icons.search, color: Colors.black, size: 20),
-                    onPressed: () {},
-                  ),
-                ),
-                prefixIconConstraints: const BoxConstraints(minWidth: 40),
-              ),
-            ),
-          ),
-        ),
       ),
       body: RefreshIndicator(
         onRefresh: _pullRefresh,
@@ -223,6 +193,47 @@ class _RecentChatViewState extends State<RecentChatView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: TextField(
+            controller: textController,
+            onChanged: _filterLeads,
+            cursorColor: AppColor.navBarIconColor,
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: 'Search...',
+              hintStyle: TextStyle(
+                color: AppColor.textoriconColor.withOpacity(0.6),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.all(10),
+              disabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: AppColor.backgroundGrey),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: AppColor.backgroundGrey),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppColor.navBarIconColor,
+                  width: 1.5,
+                ),
+              ),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: IconButton(
+                  icon: const Icon(Icons.search, color: Colors.black, size: 20),
+                  onPressed: () {},
+                ),
+              ),
+              prefixIconConstraints: const BoxConstraints(minWidth: 40),
+            ),
+          ),
+        ),
         Container(
           height: 55,
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -297,23 +308,44 @@ class _RecentChatViewState extends State<RecentChatView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: ListView.builder(
-                            itemCount: allRecentChats.length,
-                            itemBuilder: (context, index) {
-                              var unreadCount = "0";
-                              var lead = allRecentChats[index];
+                          child: Container(
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.5),
+                                  blurRadius: 5,
+                                  spreadRadius: 3,
+                                  offset: const Offset(2, 4),
+                                ),
+                              ],
+                              color: Colors.white,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(30),
+                                topRight: Radius.circular(30),
+                              ),
+                            ),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 22.0, bottom: 5),
+                              child: ListView.builder(
+                                itemCount: allRecentChats.length,
+                                itemBuilder: (context, index) {
+                                  var unreadCount = "0";
+                                  var lead = allRecentChats[index];
 
-                              for (var p in unreadList) {
-                                if (lead.full_number
-                                    .toString()
-                                    .contains(p.whatsappNumber)) {
-                                  unreadCount = p.unreadMsgCount;
-                                  break;
-                                }
-                              }
+                                  for (var p in unreadList) {
+                                    if (lead.full_number
+                                        .toString()
+                                        .contains(p.whatsappNumber)) {
+                                      unreadCount = p.unreadMsgCount;
+                                      break;
+                                    }
+                                  }
 
-                              return leadRecordList(lead, unreadCount);
-                            },
+                                  return leadRecordList(lead, unreadCount);
+                                },
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -362,7 +394,7 @@ class _RecentChatViewState extends State<RecentChatView> {
 
   Widget leadRecordList(Records model, String unreadMsgCount) {
     Color statusColor;
-    statusColor = Colors.lightBlue.withOpacity(0.7);
+    statusColor = AppColor.navBarIconColor;
 
     return Container(
       decoration: BoxDecoration(

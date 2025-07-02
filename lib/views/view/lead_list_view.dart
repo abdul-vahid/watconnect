@@ -161,6 +161,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
         disconnectSocket();
       },
       child: Scaffold(
+        backgroundColor: AppColor.pageBgGrey,
         appBar: AppBar(
           actions: [
             Padding(
@@ -203,62 +204,6 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           ),
           centerTitle: true,
           elevation: 5,
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(50.0),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              child: TextField(
-                controller: textController,
-                onChanged: _filterLeads,
-                decoration: InputDecoration(
-                  isDense: true,
-                  hintText: 'Search...',
-                  hintStyle: TextStyle(
-                    color: AppColor.textoriconColor.withOpacity(0.6),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.all(10),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Stack(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.filter_list,
-                            color: Color.fromARGB(255, 0, 0, 0),
-                            size: 20,
-                          ),
-                          onPressed: () {
-                            _showFilterBottomSheet(context);
-                          },
-                        ),
-                        selectleadList.isEmpty
-                            ? const SizedBox()
-                            : Container(
-                                decoration: const BoxDecoration(
-                                    color: AppColor.navBarIconColor,
-                                    shape: BoxShape.circle),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "${selectleadList.length}",
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              )
-                      ],
-                    ),
-                  ),
-                  prefixIconConstraints: const BoxConstraints(minWidth: 40),
-                ),
-              ),
-            ),
-          ),
         ),
         body: RefreshIndicator(onRefresh: _pullRefresh, child: _pageBody()
             //  AppUtils.getAppBody(leadlistvm!, _pageBody),
@@ -520,6 +465,100 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                  flex: 2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 2,
+                            spreadRadius: 2,
+                            offset: const Offset(1, 1),
+                          ),
+                        ],
+                        color: Colors.white,
+                        border: Border.all(color: AppColor.backgroundGrey),
+                        borderRadius: BorderRadius.circular(12)),
+                    child: Center(
+                      child: Stack(
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.filter_list,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              _showFilterBottomSheet(context);
+                            },
+                          ),
+                          selectleadList.isEmpty
+                              ? const SizedBox()
+                              : Container(
+                                  decoration: const BoxDecoration(
+                                      color: AppColor.navBarIconColor,
+                                      shape: BoxShape.circle),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      "${selectleadList.length}",
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                )
+                        ],
+                      ),
+                    ),
+                  )),
+              const SizedBox(
+                width: 10,
+              ),
+              Expanded(
+                flex: 9,
+                child: TextField(
+                  controller: textController,
+                  onChanged: _filterLeads,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    hintText: 'Search...',
+                    hintStyle: TextStyle(
+                      color: AppColor.textoriconColor.withOpacity(0.6),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppColor.navBarIconColor,
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.all(10),
+                    disabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: AppColor.backgroundGrey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: AppColor.backgroundGrey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    prefixIcon: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Icon(Icons.search)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         Container(
           height: 55,
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -573,7 +612,8 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
             : Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  "${allLeads.length} Records Found",
+                  "${allLeads.length} Leads Available",
+                  style: TextStyle(fontWeight: FontWeight.w600),
                   textAlign: TextAlign.left,
                 ),
               ),
@@ -603,23 +643,43 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: ListView.builder(
-                                itemCount: allLeads.length,
-                                itemBuilder: (context, index) {
-                                  var unreadCount = "0";
-                                  var lead = allLeads[index];
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.5),
+                                      blurRadius: 5,
+                                      spreadRadius: 3,
+                                      offset: const Offset(2, 4),
+                                    ),
+                                  ],
+                                  color: Colors.white,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(30),
+                                    topRight: Radius.circular(30),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 22.0),
+                                  child: ListView.builder(
+                                    itemCount: allLeads.length,
+                                    itemBuilder: (context, index) {
+                                      var unreadCount = "0";
+                                      var lead = allLeads[index];
 
-                                  for (var p in unreadList) {
-                                    if (p.whatsappNumber
-                                        .toString()
-                                        .contains(lead.whatsappNumber)) {
-                                      unreadCount = p.unreadMsgCount;
-                                      break;
-                                    }
-                                  }
+                                      for (var p in unreadList) {
+                                        if (p.whatsappNumber
+                                            .toString()
+                                            .contains(lead.whatsappNumber)) {
+                                          unreadCount = p.unreadMsgCount;
+                                          break;
+                                        }
+                                      }
 
-                                  return leadRecordList(lead, unreadCount);
-                                },
+                                      return leadRecordList(lead, unreadCount);
+                                    },
+                                  ),
+                                ),
                               ),
                             ),
                           ],

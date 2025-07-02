@@ -367,6 +367,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
           disconnectSocket();
         },
         child: Scaffold(
+          backgroundColor: Colors.white,
           drawer: AppDrawerWidget(),
           appBar: AppBar(
             iconTheme:

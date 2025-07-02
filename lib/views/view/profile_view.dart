@@ -98,7 +98,7 @@ class _ProfileViewState extends State<ProfileView> {
       String tenatCode =
           prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
       msgController.setUsrProfile(
-          "https://admin.watconnect.com/public/$tenatCode/users/${tempModel.id}");
+          "${AppConstants.baseImgUrl}public/$tenatCode/users/${tempModel.id}");
       print("logourl::: ${tempModel.logourl ?? ""}");
     } else {
       debugPrint("No user session found in getProfileData.");
@@ -234,7 +234,7 @@ class _ProfileViewState extends State<ProfileView> {
             child: Container(
               height: 140,
               width: double.infinity,
-              color: Color(0xffE6F4EA),
+              color: AppColor.pageBgGrey,
               child: Padding(
                 padding: const EdgeInsets.only(left: 30.0, top: 10),
                 child: Stack(
@@ -246,7 +246,8 @@ class _ProfileViewState extends State<ProfileView> {
                         height: 120,
                         width: 120,
                         decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 2),
+                            border: Border.all(
+                                color: AppColor.navBarIconColor, width: 3),
                             borderRadius: BorderRadius.circular(60)),
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(60),
@@ -276,7 +277,7 @@ class _ProfileViewState extends State<ProfileView> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            width: 4,
+                            // width: 4,
                             color: Theme.of(context).scaffoldBackgroundColor,
                           ),
                           color: AppColor.navBarIconColor,
@@ -501,7 +502,7 @@ class _ProfileViewState extends State<ProfileView> {
         String tenatCode =
             prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
         msgController.setUsrProfile(
-            "https://admin.watconnect.com/public/$tenatCode/users/${userModel?.id}");
+            "${AppConstants.baseImgUrl}public/$tenatCode/users/${userModel?.id}");
       }).catchError((error) {
         print("Error uploading file: $error");
       });
@@ -516,7 +517,7 @@ class CustomShape extends CustomClipper<Path> {
   Path getClip(Size size) {
     double height = size.height;
     double width = size.width;
-    double yOffset = 30; // 👈 move entire clip down by 30 pixels
+    double yOffset = 30;
     Path path = Path();
     path.moveTo(0, yOffset); // Start lower
     path.quadraticBezierTo(

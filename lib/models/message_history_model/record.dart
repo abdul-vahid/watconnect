@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-class Record {
+class HistRecord {
   String? id;
   String? name;
   String? number;
@@ -13,7 +13,7 @@ class Record {
   String? deliveryStatus;
   String? errormsg;
 
-  Record({
+  HistRecord({
     this.id,
     this.name,
     this.number,
@@ -27,7 +27,7 @@ class Record {
     this.errormsg,
   });
 
-  factory Record.fromMap(Map<String, dynamic> data) => Record(
+  factory HistRecord.fromMap(Map<String, dynamic> data) => HistRecord(
         id: data['id'] as String?,
         name: data['name'] as String?,
         number: data['number'] as String?,
@@ -58,8 +58,8 @@ class Record {
   /// `dart:convert`
   ///
   /// Parses the string and returns the resulting Json object as [Record].
-  factory Record.fromJson(String data) {
-    return Record.fromMap(json.decode(data) as Map<String, dynamic>);
+  factory HistRecord.fromJson(String data) {
+    return HistRecord.fromMap(json.decode(data) as Map<String, dynamic>);
   }
 
   /// `dart:convert`
