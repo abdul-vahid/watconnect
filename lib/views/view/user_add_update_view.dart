@@ -56,6 +56,13 @@ class _Forms extends State<UserAddView> {
           widget.model?.managername != '' && widget.model?.managername != null
               ? widget.model?.managername
               : null;
+
+      _firstname = widget.model?.firstname ?? "";
+      _email = widget.model?.email ?? "";
+      print("edit password::: ${widget.model?.password}");
+      _password = widget.model?.password ?? "";
+      _whatsappPhone = widget.model?.whatsappNumber;
+      _lastname = widget.model?.lastname ?? "";
     } else {
       selectWhNumsList = [];
       _role = "USER";
@@ -700,18 +707,18 @@ class _Forms extends State<UserAddView> {
 
         if (value.isNotEmpty) {
           Navigator.pop(context);
-          Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => MultiProvider(
-                      providers: [
-                        ChangeNotifierProvider(
-                            create: (_) => UserDataListViewModel(context))
-                      ],
-                      child: const UserListView(),
-                    )),
-          );
+          // Navigator.pop(context);
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //       builder: (context) => MultiProvider(
+          //             providers: [
+          //               ChangeNotifierProvider(
+          //                   create: (_) => UserDataListViewModel(context))
+          //             ],
+          //             child: const UserListView(),
+          //           )),
+          // );
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Record has been created.'),
@@ -731,6 +738,7 @@ class _Forms extends State<UserAddView> {
   Future<void> updateData() async {
     print("country_code:::: ${selectedCountry}");
     var accountId;
+    print("_firstname:  ${_firstname}");
     if (_addleadFormKey.currentState!.validate()) {
       if (_firstname!.trim().length < 2) {
         EasyLoading.showToast(
@@ -743,16 +751,12 @@ class _Forms extends State<UserAddView> {
             "The last name should contain a minimum of 2 characters.");
         return;
       }
-      if (_password!.trim().length < 6) {
-        EasyLoading.showToast(
-            "The password should contain a minimum of 6 characters.");
-        return;
-      }
-      if (_password!.trim().length < 6) {
-        EasyLoading.showToast(
-            "The password should contain a minimum of 6 characters.");
-        return;
-      }
+      // if (_password!.trim().length < 6) {
+      //   EasyLoading.showToast(
+      //       "The password should contain a minimum of 6 characters.");
+      //   return;
+      // }
+
       if (!isValidPhone(_whatsappPhone!.trim())) {
         EasyLoading.showToast("Please enter valid whatsapp number");
         return;
@@ -789,17 +793,18 @@ class _Forms extends State<UserAddView> {
         debug('userUpdate==$value');
         Navigator.pop(context);
         Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => MultiProvider(
-                    providers: [
-                      ChangeNotifierProvider(
-                          create: (_) => UserDataListViewModel(context))
-                    ],
-                    child: const UserListView(),
-                  )),
-        );
+        Navigator.pop(context);
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //       builder: (context) => MultiProvider(
+        //             providers: [
+        //               ChangeNotifierProvider(
+        //                   create: (_) => UserDataListViewModel(context))
+        //             ],
+        //             child: const UserListView(),
+        //           )),
+        // );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Your record has been updated.'),

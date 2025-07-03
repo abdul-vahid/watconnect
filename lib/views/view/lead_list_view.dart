@@ -868,25 +868,25 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
-                    badges.Badge(
-                      badgeStyle: const badges.BadgeStyle(
-                        badgeColor: Colors.green,
-                      ),
-                      badgeContent: Text(
-                        unreadMsgCount,
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    )
-                  else
-                    const SizedBox.shrink(),
-                  // Icon(
-                  //   Icons.wechat_sharp,
-                  //   color: Colors.lightBlue.withOpacity(0.7),
-                  //   size: 30,
-                  // ),
+                  Column(
+                    children: [
+                      if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
+                        badges.Badge(
+                          badgeStyle: const badges.BadgeStyle(
+                            badgeColor: Colors.green,
+                          ),
+                          badgeContent: Text(
+                            unreadMsgCount,
+                            style: const TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        )
+                      else
+                        const SizedBox.shrink(),
+                      Icon(Icons.arrow_circle_right_outlined)
+                    ],
+                  )
                 ],
               ),
             ],

@@ -32,11 +32,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         title: const Text(
           "Change Password",
           style: TextStyle(color: Colors.white),
         ),
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back,
@@ -45,97 +47,115 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         flexibleSpace: Container(
-          decoration: BoxDecoration(color: AppColor.navBarIconColor
-              // gradient: LinearGradient(
-              //   colors: [AppColor.navBarIconColor],
-              //   begin: Alignment.topLeft,
-              //   end: Alignment.bottomRight,
-              // ),
-              ),
+          decoration: BoxDecoration(color: AppColor.navBarIconColor),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.grey[300],
-                child: Icon(Icons.person, size: 60, color: Colors.black54),
-              ),
-              SizedBox(height: 10),
-              Text(widget.username,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              Text(widget.phone, style: TextStyle(color: Colors.grey)),
-              SizedBox(height: 20),
-              _buildPasswordField(
-                  "New Password", _newPasswordController, _isObscured2, () {
-                setState(() => _isObscured2 = !_isObscured2);
-              }),
-              SizedBox(height: 20),
-              _buildPasswordField(
-                  "Confirm Password", _confirmPasswordController, _isObscured3,
-                  () {
-                setState(() => _isObscured3 = !_isObscured3);
-              }),
-              SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_confirmPasswordController.text.trim().isEmpty ||
-                        _newPasswordController.text.trim().isEmpty) {
-                      EasyLoading.showToast(
-                          "Please enter password and confirm password",
-                          toastPosition: EasyLoadingToastPosition.bottom);
-                    } else if (_confirmPasswordController.text.trim() !=
-                        _newPasswordController.text.trim()) {
-                      EasyLoading.showToast(
-                          "Password and confirm password must match.",
-                          toastPosition: EasyLoadingToastPosition.bottom);
-                    } else if (_newPasswordController.text.trim().length != 6) {
-                      EasyLoading.showToast(
-                          "Your password should have 6 characters.",
-                          toastPosition: EasyLoadingToastPosition.bottom);
-                    } else {
-                      var id = widget.userId;
-                      Map<String, dynamic> data = {
-                        'id': id,
-                        'password': _confirmPasswordController.text,
-                      };
-                      AppUtils.onLoading(context, "Updating, please wait...");
-                      Provider.of<UserDataListViewModel>(context, listen: false)
-                          .updatePassword(id, data)
-                          .then((dynamic onValue) {
-                        print('userpass==>$onValue    ${onValue.runtimeType} ');
-                        if (onValue['success']) {
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                          EasyLoading.showToast(onValue['message'],
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 5,
+                  spreadRadius: 3,
+                  offset: const Offset(2, 4),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.grey[300],
+                    child: Icon(Icons.person, size: 60, color: Colors.black54),
+                  ),
+                  SizedBox(height: 10),
+                  Text(widget.username,
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text(widget.phone, style: TextStyle(color: Colors.grey)),
+                  SizedBox(height: 20),
+                  _buildPasswordField(
+                      "New Password", _newPasswordController, _isObscured2, () {
+                    setState(() => _isObscured2 = !_isObscured2);
+                  }),
+                  SizedBox(height: 20),
+                  _buildPasswordField("Confirm Password",
+                      _confirmPasswordController, _isObscured3, () {
+                    setState(() => _isObscured3 = !_isObscured3);
+                  }),
+                  SizedBox(height: 40),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_confirmPasswordController.text.trim().isEmpty ||
+                            _newPasswordController.text.trim().isEmpty) {
+                          EasyLoading.showToast(
+                              "Please enter password and confirm password",
+                              toastPosition: EasyLoadingToastPosition.bottom);
+                        } else if (_confirmPasswordController.text.trim() !=
+                            _newPasswordController.text.trim()) {
+                          EasyLoading.showToast(
+                              "Password and confirm password must match.",
+                              toastPosition: EasyLoadingToastPosition.bottom);
+                        } else if (_newPasswordController.text.trim().length !=
+                            6) {
+                          EasyLoading.showToast(
+                              "Your password should have 6 characters.",
                               toastPosition: EasyLoadingToastPosition.bottom);
                         } else {
-                          EasyLoading.showToast(onValue['message'],
-                              toastPosition: EasyLoadingToastPosition.bottom);
+                          var id = widget.userId;
+                          Map<String, dynamic> data = {
+                            'id': id,
+                            'password': _confirmPasswordController.text,
+                          };
+                          AppUtils.onLoading(
+                              context, "Updating, please wait...");
+                          Provider.of<UserDataListViewModel>(context,
+                                  listen: false)
+                              .updatePassword(id, data)
+                              .then((dynamic onValue) {
+                            print(
+                                'userpass==>$onValue    ${onValue.runtimeType} ');
+                            if (onValue['success']) {
+                              Navigator.pop(context);
+                              Navigator.pop(context);
+                              EasyLoading.showToast(onValue['message'],
+                                  toastPosition:
+                                      EasyLoadingToastPosition.bottom);
+                            } else {
+                              EasyLoading.showToast(onValue['message'],
+                                  toastPosition:
+                                      EasyLoadingToastPosition.bottom);
+                            }
+                          });
                         }
-                      });
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    backgroundColor: AppColor.navBarIconColor,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 15),
+                        backgroundColor: AppColor.navBarIconColor,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Text("Save & Continue",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                          )),
+                    ),
                   ),
-                  child: Text("Save & Continue",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                      )),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

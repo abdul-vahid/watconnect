@@ -332,23 +332,26 @@ class _ProfileViewState extends State<ProfileView> {
           // ),
           const SizedBox(height: 43),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.only(left: 16.0, right: 16, bottom: 16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    getRow("First Name", fName),
-                    const Divider(),
-                    getRow("Last Name", lName),
-                    const Divider(),
-                    getRow("Email", email),
-                    const Divider(),
-                    getRow("Phone", fullPhone),
-                    const Divider(),
-                    getRow("Role", role),
-                  ],
+                const Text(
+                  "Contact Information",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
                 ),
+                const SizedBox(
+                  height: 15,
+                ),
+                getRow("First Name", fName),
+                const Divider(),
+                getRow("Last Name", lName),
+                const Divider(),
+                getRow("Email", email),
+                const Divider(),
+                getRow("Phone", fullPhone),
+                const Divider(),
+                getRow("Role", role),
               ],
             ),
           )
@@ -456,13 +459,13 @@ class _ProfileViewState extends State<ProfileView> {
 
   Padding getRow(String label, String? value) {
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(fontWeight: FontWeight.w500),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
           // Spacer(),
           Expanded(

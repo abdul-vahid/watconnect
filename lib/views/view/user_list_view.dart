@@ -1,3 +1,4 @@
+import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:flutter/material.dart';
@@ -99,43 +100,48 @@ class _UserListView extends State<UserListView> {
     }
     setState(() {});
     print("all users:: ${allUsers.length}");
-    return Scaffold(
-      backgroundColor: AppColor.pageBgGrey,
-      appBar: AppBar(
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: CircleAvatar(
-              backgroundColor: AppColor.navBarIconColor,
-              child: IconButton(
-                icon: const Icon(
-                  FontAwesomeIcons.add,
-                  size: 25,
-                  color: Colors.white,
+    return FocusDetector(
+      onFocusGained: () {
+        Provider.of<UserDataListViewModel>(context, listen: false).fetchUser();
+      },
+      child: Scaffold(
+        backgroundColor: AppColor.pageBgGrey,
+        appBar: AppBar(
+          actions: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: CircleAvatar(
+                backgroundColor: AppColor.navBarIconColor,
+                child: IconButton(
+                  icon: const Icon(
+                    FontAwesomeIcons.add,
+                    size: 25,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserAddView(),
+                      ),
+                    );
+                  },
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => UserAddView(),
-                    ),
-                  );
-                },
               ),
             ),
+          ],
+          title: const Text(
+            'Users',
+            style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
           ),
-        ],
-        title: const Text(
-          'Users',
-          style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
+          centerTitle: true,
+          elevation: 0,
+          automaticallyImplyLeading: false,
         ),
-        centerTitle: true,
-        elevation: 0,
-        automaticallyImplyLeading: false,
+        body: RefreshIndicator(
+            onRefresh: _pullRefresh,
+            child: AppUtils.getAppBody(userlistvm!, _pageBody)),
       ),
-      body: RefreshIndicator(
-          onRefresh: _pullRefresh,
-          child: AppUtils.getAppBody(userlistvm!, _pageBody)),
     );
   }
 
@@ -469,62 +475,91 @@ class _UserListView extends State<UserListView> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 6),
                               child: InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          UserDetailView(model: user),
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: const Border(
-                                      left: BorderSide(
-                                        color: AppColor.navBarIconColor,
-                                        width: 5,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            UserDetailView(model: user),
                                       ),
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 2,
-                                        spreadRadius: 2,
-                                        offset: const Offset(2, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12, horizontal: 12),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "${user.firstname} ${user.lastname}",
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                    );
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: const Border(
+                                        left: BorderSide(
+                                          color: AppColor.navBarIconColor,
+                                          width: 5,
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          user.userrole ?? "",
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            height: 1.5,
-                                            color: Colors.black54,
-                                          ),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 2,
+                                          spreadRadius: 2,
+                                          offset: const Offset(2, 4),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                ),
-                              ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12, horizontal: 10),
+                                      child: Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 20,
+                                            backgroundColor:
+                                                AppColor.navBarIconColor,
+                                            child: Text(
+                                              user.firstname != null &&
+                                                      user.firstname!.isNotEmpty
+                                                  ? user.firstname![0]
+                                                      .toUpperCase()
+                                                  : '?',
+                                              style: const TextStyle(
+                                                fontSize: 20,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "${user.firstname ?? ''} ${user.lastname ?? ''}",
+                                                  style: const TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  user.userrole ?? "",
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    height: 1.5,
+                                                    color: Colors.black54,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const Icon(
+                                              Icons.arrow_circle_right_outlined)
+                                        ],
+                                      ),
+                                    ),
+                                  )),
                             );
                           },
                         ),

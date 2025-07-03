@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:whatsapp/views/view/lead_add_update_view.dart';
 import '../../models/get_user.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
@@ -230,7 +231,7 @@ class _EditProfileView extends State<EditProfileView> {
     print("phone==widget>${widget.phone}");
     _getUserData = GetUserViewModel(context);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,
@@ -251,207 +252,235 @@ class _EditProfileView extends State<EditProfileView> {
         child: SingleChildScrollView(
           child: Form(
             key: _profileFormKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const Text(
-                  'First Name',
-                ),
-                const SizedBox(
-                  height: 05,
-                ),
-                TextFormField(
-                  onSaved: (newValue) {
-                    firstName = newValue;
-                  },
-                  initialValue: widget.firstName,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(08)),
-                    // hintText: 'Enter title',
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 5,
+                    spreadRadius: 3,
+                    offset: const Offset(2, 4),
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const Text(
-                  'Last Name',
-                ),
-                const SizedBox(
-                  height: 05,
-                ),
-                TextFormField(
-                  onSaved: (newValue) {
-                    lastName = newValue;
-                  },
-                  initialValue: widget.lastName,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(08)),
-                    // hintText: 'Enter title',
+                ],
+              ),
+              child: Column(
+                children: [
+                  detailsHeading(
+                    title: "Profile Details",
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const Text(
-                  'Email',
-                ),
-                const SizedBox(
-                  height: 05,
-                ),
-                TextFormField(
-                  onSaved: (newValue) {
-                    email = newValue;
-                  },
-                  initialValue: widget.email,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(08)),
-                  ),
-                ),
-                const SizedBox(
-                  height: 05,
-                ),
-                const Text(
-                  'County Code',
-                ),
-                const SizedBox(
-                  height: 05,
-                ),
-                // DropdownButtonFormField<String>(
-                //   isDense: true,
-                //   decoration: InputDecoration(
-                //     contentPadding:
-                //         EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                //     border: OutlineInputBorder(
-                //       borderRadius: BorderRadius.all(Radius.circular(8)),
-                //     ),
-                //   ),
-                //   value: selectedCountry,
-                //   isExpanded: true,
-                //   onChanged: (String? newValue) {
-                //     setState(() {
-                //       selectedCountry = newValue!;
-                //     });
-                //   },
-                //   items: countryCodeMap.entries.map<DropdownMenuItem<String>>(
-                //     (MapEntry<String, String> entry) {
-                //       return DropdownMenuItem<String>(
-                //         value: entry.key,
-                //         child: Text(entry.value),
-                //       );
-                //     },
-                //   ).toList(),
-                // ),
-
-                DropdownButtonFormField<String>(
-                  isDense: true,
-                  decoration: const InputDecoration(
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(8)),
-                    ),
-                  ),
-                  value: selectedCountry,
-                  isExpanded: true,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedCountry = newValue!;
-                    });
-                  },
-                  items: countryCodeMap.entries.map<DropdownMenuItem<String>>(
-                    (MapEntry<String, String> entry) {
-                      return DropdownMenuItem<String>(
-                        value: entry.key,
-                        child: Text(entry.value),
-                      );
-                    },
-                  ).toList(),
-                ),
-                const Text(
-                  'Phone',
-                ),
-                const SizedBox(
-                  height: 05,
-                ),
-                TextFormField(
-                  onSaved: (newValue) {
-                    phone = newValue;
-                  },
-                  initialValue: widget.phone,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(08)),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-
-                // Text(
-                //   'Phone',
-                // ),
-                // const SizedBox(
-                //   height: 05,
-                // ),
-                // TextFormField(
-                //   onSaved: (newValue) {
-                //     phone = newValue;
-                //   },
-                //   initialValue: widget.phone,
-                //   decoration: InputDecoration(
-                //     border: OutlineInputBorder(
-                //         borderRadius: BorderRadius.circular(08)),
-                //     // hintText: 'Enter title',
-                //   ),
-                // ),
-                const SizedBox(
-                  height: 15,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.only(left: 10, right: 10),
-                        side: const BorderSide(
-                          width: 1.0,
-                          color: AppColor.navBarIconColor,
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const Text(
+                          'First Name',
                         ),
-                      ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Color.fromARGB(255, 8, 8, 8)),
-                      ),
+                        const SizedBox(
+                          height: 05,
+                        ),
+                        TextFormField(
+                          onSaved: (newValue) {
+                            firstName = newValue;
+                          },
+                          initialValue: widget.firstName,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(08)),
+                            // hintText: 'Enter title',
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const Text(
+                          'Last Name',
+                        ),
+                        const SizedBox(
+                          height: 05,
+                        ),
+                        TextFormField(
+                          onSaved: (newValue) {
+                            lastName = newValue;
+                          },
+                          initialValue: widget.lastName,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(08)),
+                            // hintText: 'Enter title',
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const Text(
+                          'Email',
+                        ),
+                        const SizedBox(
+                          height: 05,
+                        ),
+                        TextFormField(
+                          onSaved: (newValue) {
+                            email = newValue;
+                          },
+                          initialValue: widget.email,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(08)),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 05,
+                        ),
+                        const Text(
+                          'County Code',
+                        ),
+                        const SizedBox(
+                          height: 05,
+                        ),
+                        // DropdownButtonFormField<String>(
+                        //   isDense: true,
+                        //   decoration: InputDecoration(
+                        //     contentPadding:
+                        //         EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        //     border: OutlineInputBorder(
+                        //       borderRadius: BorderRadius.all(Radius.circular(8)),
+                        //     ),
+                        //   ),
+                        //   value: selectedCountry,
+                        //   isExpanded: true,
+                        //   onChanged: (String? newValue) {
+                        //     setState(() {
+                        //       selectedCountry = newValue!;
+                        //     });
+                        //   },
+                        //   items: countryCodeMap.entries.map<DropdownMenuItem<String>>(
+                        //     (MapEntry<String, String> entry) {
+                        //       return DropdownMenuItem<String>(
+                        //         value: entry.key,
+                        //         child: Text(entry.value),
+                        //       );
+                        //     },
+                        //   ).toList(),
+                        // ),
+
+                        DropdownButtonFormField<String>(
+                          isDense: true,
+                          decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                            ),
+                          ),
+                          value: selectedCountry,
+                          isExpanded: true,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedCountry = newValue!;
+                            });
+                          },
+                          items: countryCodeMap.entries
+                              .map<DropdownMenuItem<String>>(
+                            (MapEntry<String, String> entry) {
+                              return DropdownMenuItem<String>(
+                                value: entry.key,
+                                child: Text(entry.value),
+                              );
+                            },
+                          ).toList(),
+                        ),
+                        const Text(
+                          'Phone',
+                        ),
+                        const SizedBox(
+                          height: 05,
+                        ),
+                        TextFormField(
+                          onSaved: (newValue) {
+                            phone = newValue;
+                          },
+                          initialValue: widget.phone,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(08)),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+
+                        // Text(
+                        //   'Phone',
+                        // ),
+                        // const SizedBox(
+                        //   height: 05,
+                        // ),
+                        // TextFormField(
+                        //   onSaved: (newValue) {
+                        //     phone = newValue;
+                        //   },
+                        //   initialValue: widget.phone,
+                        //   decoration: InputDecoration(
+                        //     border: OutlineInputBorder(
+                        //         borderRadius: BorderRadius.circular(08)),
+                        //     // hintText: 'Enter title',
+                        //   ),
+                        // ),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            OutlinedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              style: OutlinedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.only(left: 10, right: 10),
+                                side: const BorderSide(
+                                  width: 1.0,
+                                  color: AppColor.navBarIconColor,
+                                ),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color.fromARGB(255, 8, 8, 8)),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColor.navBarIconColor,
+                                padding:
+                                    const EdgeInsets.only(left: 10, right: 10),
+                              ),
+                              onPressed: updateData,
+                              child: const Text(
+                                "Update",
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.navBarIconColor,
-                        padding: const EdgeInsets.only(left: 10, right: 10),
-                      ),
-                      onPressed: updateData,
-                      child: const Text(
-                        "Update",
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

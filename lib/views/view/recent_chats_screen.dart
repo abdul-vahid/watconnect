@@ -417,7 +417,7 @@ class _RecentChatViewState extends State<RecentChatView> {
       ),
       margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
         child: InkWell(
           onTap: () {
             if (model.full_number != null) {
@@ -475,10 +475,10 @@ class _RecentChatViewState extends State<RecentChatView> {
                   ),
                 ],
               ),
-              const SizedBox(width: 12),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

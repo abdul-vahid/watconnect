@@ -279,9 +279,9 @@ class _UserDetailView extends State<UserDetailView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              detailsHeading(
-                title: "User Details",
-              ),
+              // detailsHeading(
+              //   title: "User Details",
+              // ),
               const SizedBox(height: 15),
               getRow('Email', widget.model?.email ?? ''),
               const Divider(),
