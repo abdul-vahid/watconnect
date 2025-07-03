@@ -884,7 +884,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                         )
                       else
                         const SizedBox.shrink(),
-                      Icon(Icons.arrow_circle_right_outlined)
+                      const Icon(Icons.arrow_circle_right_outlined)
                     ],
                   )
                 ],
