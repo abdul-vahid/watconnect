@@ -897,22 +897,26 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   }
 
   bool noRecordFound = false;
-  bool filterLeads(List filter) {
+  filterLeads(List filter) {
     print("filter::: ${filter}");
+    print("empty :::  ${tempLeadModelList.length}");
     leadModelList = tempLeadModelList;
     if (filter.isEmpty) {
       leadModelList = tempLeadModelList;
-
+      allLeads = tempLeadModelList;
       setState(() {
         allLeads = tempLeadModelList;
+        noRecordFound = false;
       });
-      return false;
     }
 
     if (filter.contains('All')) {
-      allLeads = tempLeadModelList;
-      setState(() {});
-      return false;
+      print("it was here in all ");
+
+      setState(() {
+        allLeads = tempLeadModelList;
+        noRecordFound = false;
+      });
     } else {
       List<dynamic> matchleads = leadModelList.where((lead) {
         return filter
@@ -924,8 +928,9 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
         allLeads = matchleads;
         noRecordFound = matchleads.isEmpty;
       });
+
+      print("tempLeadModelList:::::::::::::  ${tempLeadModelList.length}");
       print("matchleadsmatchleads${matchleads}");
-      return matchleads.isEmpty;
     }
   }
 
@@ -963,7 +968,6 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       socket!.on("receivedwhatsappmessage", (data) {
         print(" New WhatsApp message: $data");
         _getUnreadCount();
-        // getLeadList();
       });
 
       socket!.onDisconnect((_) {

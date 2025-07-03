@@ -768,7 +768,6 @@ class _ChatScreenState extends State<ChatScreen> {
         "png",
         "gif",
         "pdf",
-        "html",
         "txt",
         "doc",
         "docx",
@@ -777,14 +776,7 @@ class _ChatScreenState extends State<ChatScreen> {
         "xls",
         "xlsx",
         "mp4",
-        "mov",
-        "avi",
-        "mkv",
         "csv",
-        "rtf",
-        "odt",
-        "zip",
-        "rar",
       ],
     );
     if (pickedFile != null) {

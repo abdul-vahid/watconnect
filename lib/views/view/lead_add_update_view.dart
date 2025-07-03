@@ -10,6 +10,7 @@ import 'package:whatsapp/models/get_user.dart';
 import 'package:whatsapp/models/tags_list_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/get_user_vm.dart';
+import 'package:whatsapp/views/view/user_add_update_view.dart';
 import '../../models/lead_model.dart';
 import '../../models/user_data_model/user_data_model.dart';
 import '../../utils/app_color.dart';
@@ -305,8 +306,11 @@ class _Forms extends State<LeadAddView> {
       isEdit = true;
     }
 
+    print("leadsource::::::::::::    ${_leadsource}");
+
     if (isEdit) {
-      print("widget.model?.countryCode:::: ${widget.model?.tagNames}");
+      print(
+          "widget.model?.countryCode:::: ${widget.model?.tagNames}  ${widget.model?.leadsource}");
 
       selectedCountry = widget.model?.countryCode;
       dobController.text = widget.model?.dob ?? "";
@@ -318,8 +322,10 @@ class _Forms extends State<LeadAddView> {
               })
           .toList();
       _leadstatus = widget.model?.leadstatus ?? "";
-      _leadsource = widget.model?.leadsource ?? "";
-      print("widget.model?.address ::::::::::: ${widget.model?.address}");
+      _leadsource =
+          widget.model!.leadsource!.isEmpty ? null : widget.model!.leadsource;
+      print(
+          "widget.model?.address ::::::::::: ${widget.model?.address}  ${_leadsource}");
       _selectedCountry = widget.model?.address ?? "";
       _asignStaff = widget.model?.ownername ?? "";
       // userId = widget.model?.ownername??"";
@@ -572,12 +578,12 @@ class _Forms extends State<LeadAddView> {
                                       "selectedDate::::::::::: ${selectedDate}");
                                 }
                               },
-                              validator: (value) {
-                                if (value!.isEmpty) {
-                                  return 'Please select date of birth';
-                                }
-                                return null;
-                              },
+                              // validator: (value) {
+                              //   if (value!.isEmpty) {
+                              //     return 'Please select date of birth';
+                              //   }
+                              //   return null;
+                              // },
                             ),
 
                             const SizedBox(
@@ -799,7 +805,7 @@ class _Forms extends State<LeadAddView> {
                                 });
                               },
                               data: _leadsources,
-                              value: widget.model?.leadsource,
+                              value: _leadsource,
                             ),
                           ],
                         ),
@@ -808,110 +814,8 @@ class _Forms extends State<LeadAddView> {
                   ),
                 ),
 
-                // Row(
-                //   children: [
-                // First column
-                // Expanded(
-                //   child: Column(
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //       const Text('Title'),
-                //       const SizedBox(height: 5),
-                //       AppUtils.getDropdown(
-                //         '--Select--',
-                //         onSaved: (newValue) {
-                //           _title = newValue;
-                //         },
-                //         onChanged: (value) {
-                //           setState(() {
-                //             _title = value;
-                //           });
-                //         },
-                //         data: _titles,
-                //         value: widget.model?.title,
-                //       ),
                 const SizedBox(height: 10),
 
-                //       const SizedBox(height: 10),
-                //       // const Text('Lead Status'),
-                //       // const SizedBox(height: 5),
-                //       // AppUtils.getDropdown(
-                //       //   '--Select--',
-                //       //   onChanged: (value) {
-                //       //     setState(() {
-                //       //       _leadstatus = value;
-                //       //     });
-                //       //   },
-                //       //   validator: (value) =>
-                //       //       value == null ? 'Required' : null,
-                //       //   data: _leadsstatus,
-                //       //   value: widget.model?.leadstatus,
-                //       // ),
-                //       const SizedBox(height: 10),
-                //       const Text('Industry'),
-                //       const SizedBox(height: 5),
-                //       AppUtils.getDropdown(
-                //         '--Select--',
-                //         onChanged: (value) {
-                //           setState(() {
-                //             _industry = value;
-                //           });
-                //         },
-                //         data: _industries,
-                //         value: widget.model?.industry,
-                //       ),
-                //     ],
-                //   ),
-                // ),
-
-                // const SizedBox(width: 10), // Space between the columns
-
-                // Second column
-                // Expanded(
-                //   child: Column(
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //       const Text('Payment Model'),
-                //       const SizedBox(height: 5),
-                //       AppUtils.getDropdown(
-                //         '--Select--',
-                //         onChanged: (value) {
-                //           setState(() {
-                //             _payment = value;
-                //           });
-                //         },
-                //         data: _payments,
-                //         value: widget.model?.paymentmodel,
-                //       ),
-                //       const SizedBox(height: 10),
-                //       const Text('Payment Terms'),
-                //       const SizedBox(height: 5),
-                //       AppUtils.getDropdown(
-                //         '--Select--',
-                //         onChanged: (value) {
-                //           setState(() {
-                //             _paymentterm = value;
-                //           });
-                //         },
-                //         data: _paymentterms,
-                //         value: widget.model?.paymentterms,
-                //       ),
-                //       const SizedBox(height: 10),
-                //       const SizedBox(height: 10),
-                //       const Text('Expected Amount (\u{20B9})'),
-                //       const SizedBox(height: 5),
-                //       AppUtils.getTextFormField(
-                //         'Enter Expected Amount',
-                //         initialValue: widget.model?.amount,
-                //         onSaved: (amount) {
-                //           _amount = amount;
-                //         },
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                //   ],
-                // ),
                 const SizedBox(height: 15),
 
                 Container(
@@ -1082,6 +986,11 @@ class _Forms extends State<LeadAddView> {
       _addleadFormKey.currentState!.save();
       userId = userMap.keys
           .firstWhere((k) => userMap[k] == _asignStaff, orElse: () => null);
+      if (!isValidPhone(_whatsapnumber!.trim())) {
+        EasyLoading.showToast("Please enter valid whatsapp number");
+        return;
+      }
+
       // LeadModel addleadModel = LeadModel(
       //     firstname: _firstname?.trim(),
       //     lastname: _lastname?.trim(),

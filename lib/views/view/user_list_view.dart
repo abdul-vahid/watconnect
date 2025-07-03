@@ -71,6 +71,7 @@ class _UserListView extends State<UserListView> {
   Widget build(BuildContext context) {
     userlistvm = Provider.of<UserDataListViewModel>(context);
     allUsers.clear();
+    print("selectedRole:::::::::::  ${selectedRole}");
     for (var viewModel in userlistvm.viewModels) {
       UserDataModel productmodel = viewModel.model;
       _paymentterms.add(productmodel.userrole ?? "");
@@ -87,9 +88,12 @@ class _UserListView extends State<UserListView> {
         allUsers = [];
         allUsers = tempUsers.where((user) {
           var firstName = user.firstname?.toLowerCase() ?? '';
+          var lastName = user.lastname?.toLowerCase() ?? '';
+
           // print(
           //     "Checking user: ${user.firstname}, Result: ${firstName.contains(selectedUser)}");
-          return firstName.contains(selectedUser);
+          return firstName.contains(selectedUser) ||
+              lastName.contains(selectedUser);
         }).toList();
       }
     }
@@ -151,13 +155,19 @@ class _UserListView extends State<UserListView> {
         allUsers = [];
         allUsers = tempUsers.where((user) {
           var firstName = user.firstname?.toLowerCase() ?? '';
-          // print(
-          //     "Checking user: ${user.firstname}, Result: ${firstName.contains(searchLead)}");
-          return firstName.contains(searchLead);
+          var lastName = user.lastname?.toLowerCase() ?? '';
+
+          print(
+              "Checking user first name : ${user.firstname}, Result first name: ${firstName.contains(searchLead)}");
+
+          print(
+              "Checking user last name : ${user.lastname}, Result last name: ${lastName.contains(searchLead)}");
+          return firstName.contains(searchLead) ||
+              lastName.contains(searchLead);
         }).toList();
       }
 
-      print("Filtered User List: $userlistvm");
+      print("Filtered User List: $userlistvm     ${allUsers.length}");
     });
   }
 
@@ -334,192 +344,197 @@ class _UserListView extends State<UserListView> {
   }
 
   Widget _pageBody() {
-    return allUsers.isEmpty
-        ? const Center(
-            child: Text(
-              "No Users Available",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          )
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
+          child: Row(
             children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
-                child: Row(children: [
-                  Expanded(
-                      flex: 2,
-                      child: Container(
-                        decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 2,
-                                spreadRadius: 2,
-                                offset: const Offset(1, 1),
-                              ),
-                            ],
-                            color: Colors.white,
-                            border: Border.all(color: AppColor.backgroundGrey),
-                            borderRadius: BorderRadius.circular(12)),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.filter_list,
-                            color: Color.fromARGB(255, 0, 0, 0),
-                            size: 20,
-                          ),
-                          onPressed: () {
-                            _showFilterBottomSheet(context);
-                          },
-                        ),
-                      )),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Expanded(
-                    flex: 9,
-                    child: TextField(
-                      onChanged: _filterLeads,
-                      cursorColor: AppColor.navBarIconColor,
-                      controller: textController,
-                      decoration: InputDecoration(
-                        hintText: 'Search...',
-                        hintStyle: TextStyle(
-                          color: AppColor.textoriconColor.withOpacity(0.6),
-                        ),
-                        filled: true,
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(
-                            color: AppColor.navBarIconColor,
-                            width: 1.5,
-                          ),
-                        ),
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.all(10),
-                        disabledBorder: OutlineInputBorder(
-                          borderSide:
-                              const BorderSide(color: AppColor.backgroundGrey),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide:
-                              const BorderSide(color: AppColor.backgroundGrey),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        prefixIcon: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 10),
-                            child: Icon(Icons.search)),
-                      ),
-                    ),
-                  ),
-                ]),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Text(
-                  "${allUsers.length} Users",
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
               Expanded(
+                flex: 2,
                 child: Container(
-                  padding: const EdgeInsets.only(top: 22.0, bottom: 5),
                   decoration: BoxDecoration(
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 5,
-                        spreadRadius: 3,
-                        offset: const Offset(2, 4),
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 2,
+                        spreadRadius: 2,
+                        offset: const Offset(1, 1),
                       ),
                     ],
                     color: Colors.white,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
+                    border: Border.all(color: AppColor.backgroundGrey),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Expanded(
-                    child: ListView.builder(
-                      itemCount: allUsers.length,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      itemBuilder: (context, index) {
-                        final user = allUsers[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      UserDetailView(model: user),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                border: const Border(
-                                  left: BorderSide(
-                                    color: AppColor.navBarIconColor,
-                                    width: 5,
-                                  ),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 2,
-                                    spreadRadius: 2,
-                                    offset: const Offset(2, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 12, horizontal: 12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "${user.firstname} ${user.lastname}",
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      user.userrole ?? "",
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        height: 1.5,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.filter_list,
+                      color: Color.fromARGB(255, 0, 0, 0),
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      _showFilterBottomSheet(context);
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                flex: 9,
+                child: TextField(
+                  onChanged: _filterLeads,
+                  cursorColor: AppColor.navBarIconColor,
+                  controller: textController,
+                  decoration: InputDecoration(
+                    hintText: 'Search...',
+                    hintStyle: TextStyle(
+                      color: AppColor.textoriconColor.withOpacity(0.6),
+                    ),
+                    filled: true,
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: AppColor.navBarIconColor,
+                        width: 1.5,
+                      ),
+                    ),
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.all(10),
+                    disabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: AppColor.backgroundGrey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: AppColor.backgroundGrey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    prefixIcon: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Icon(Icons.search),
                     ),
                   ),
                 ),
-              )
+              ),
             ],
-          );
+          ),
+        ),
+        allUsers.isEmpty
+            ? const Center(
+                child: Text(
+                  "No Users Available",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              )
+            : Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      child: Text(
+                        "${allUsers.length} Users",
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.only(top: 22.0, bottom: 5),
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.5),
+                              blurRadius: 5,
+                              spreadRadius: 3,
+                              offset: const Offset(2, 4),
+                            ),
+                          ],
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30),
+                          ),
+                        ),
+                        child: ListView.builder(
+                          itemCount: allUsers.length,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          itemBuilder: (context, index) {
+                            final user = allUsers[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          UserDetailView(model: user),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: const Border(
+                                      left: BorderSide(
+                                        color: AppColor.navBarIconColor,
+                                        width: 5,
+                                      ),
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 2,
+                                        spreadRadius: 2,
+                                        offset: const Offset(2, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12, horizontal: 12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "${user.firstname} ${user.lastname}",
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          user.userrole ?? "",
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            height: 1.5,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+      ],
+    );
   }
 
   List<Widget> getLeadWidgets() {

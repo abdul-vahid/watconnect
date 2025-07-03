@@ -149,7 +149,7 @@ class _UserDetailView extends State<UserDetailView> {
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
-                              child: Text("cancel",
+                              child: const Text("cancel",
                                   style: TextStyle(fontSize: 13)),
                             ),
                           ],

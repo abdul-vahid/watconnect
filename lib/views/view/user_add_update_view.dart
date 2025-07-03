@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 
 import 'package:provider/provider.dart';
 import 'package:whatsapp/view_models/whatsapp_setting_vm.dart';
+import 'package:whatsapp/views/view/lead_add_update_view.dart';
 import 'package:whatsapp/views/view/user_list_view.dart';
 
 import '../../models/user_data_model/user_data_model.dart';
@@ -40,25 +42,27 @@ class _Forms extends State<UserAddView> {
     if (isEdit) {
       print("model courntry::: ${widget.model?.country_code}");
       selectedCountry = widget.model?.country_code;
-      // selectWhNumsList = widget.model?.whatsapp_settings ?? [];
+      selectWhNumsList = widget.model?.whatsapp_settings ?? [];
+      isactive = widget.model?.isactive ?? false;
+      _role = widget.model?.userrole != '' && widget.model?.userrole != null
+          ? widget.model?.userrole
+          : null;
+
+      _phone = widget.model?.phone != '' && widget.model?.phone != null
+          ? widget.model?.phone
+          : null;
+
+      _selectedaccountname =
+          widget.model?.managername != '' && widget.model?.managername != null
+              ? widget.model?.managername
+              : null;
     } else {
       selectWhNumsList = [];
+      _role = "USER";
+      isactive = false;
     }
     fillCountryCodeMap();
     Provider.of<UserDataListViewModel>(context, listen: false).fetchUser();
-    isactive = widget.model?.isactive ?? false;
-    _role = widget.model?.userrole != '' && widget.model?.userrole != null
-        ? widget.model?.userrole
-        : null;
-
-    _phone = widget.model?.phone != '' && widget.model?.phone != null
-        ? widget.model?.phone
-        : null;
-
-    _selectedaccountname =
-        widget.model?.managername != '' && widget.model?.managername != null
-            ? widget.model?.managername
-            : null;
 
     super.initState();
     if (widget.model != null) {
@@ -75,7 +79,7 @@ class _Forms extends State<UserAddView> {
 
   final List<String> whatsAppNums = [];
 
-  List<Map<String, String>> _countrycode = [
+  final List<Map<String, String>> _countrycode = [
     {"country": "India", "country_code": "+91"},
     {"country": "United Arab Emirates", "country_code": "+971"},
     {"country": "Afghanistan", "country_code": "+93"},
@@ -276,6 +280,7 @@ class _Forms extends State<UserAddView> {
     }
     accounts = accountsMap.values.toList();
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,
@@ -354,277 +359,279 @@ class _Forms extends State<UserAddView> {
         key: _addleadFormKey,
         child: Padding(
           padding:
-              const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 05),
+              const EdgeInsets.only(left: 12, right: 12, top: 10, bottom: 05),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: AppColor.navBarIconColor,
-                          borderRadius: BorderRadius.circular(08)),
-                      height: 40,
-                      width: 350,
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          'Personal Information',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-              const SizedBox(height: 10),
-              const Text('First Name'),
-              const SizedBox(height: 5),
-              AppUtils.getTextFormField(
-                'Enter First Name',
-                onSaved: (p0) {
-                  _firstname = p0;
-                },
-                initialValue: widget.model?.firstname ?? "",
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter first name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 10),
-              const Text('Last Name'),
-              const SizedBox(height: 5),
-              AppUtils.getTextFormField(
-                'Enter Last Name',
-                onSaved: (p0) {
-                  _lastname = p0;
-                },
-                initialValue: widget.model?.lastname ?? "",
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter last name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 10),
-              const Text('Email'),
-              const SizedBox(height: 5),
-              AppUtils.getTextFormField(
-                'Enter Email',
-                onSaved: (p0) {
-                  _email = p0;
-                },
-                initialValue: widget.model?.email ?? "",
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter email';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 10), const Text('Country Code'),
-              DropdownButtonFormField<String>(
-                isDense: true,
-                decoration: InputDecoration(
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8)),
-                  ),
-                ),
-                value: selectedCountry,
-                isExpanded: true,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedCountry = newValue!;
-                  });
-                },
-                items: countryCodeMap.entries.map<DropdownMenuItem<String>>(
-                  (MapEntry<String, String> entry) {
-                    return DropdownMenuItem<String>(
-                      value: entry.key,
-                      child: Text(entry.value),
-                    );
-                  },
-                ).toList(),
-              ),
-              const SizedBox(height: 10),
-              const Text('WhatsApp No'),
-              const SizedBox(height: 10),
-              AppUtils.getTextFormField(
-                'Enter no',
-                onSaved: (p0) {
-                  _whatsappPhone = p0;
-                },
-                initialValue: widget.model?.whatsappNumber ?? "",
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter phone number';
-                  } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-                    return 'Phone number must contain only digits';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-
-              // Privacy Information Section
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: AppColor.navBarIconColor,
-                          borderRadius: BorderRadius.circular(08)),
-                      height: 40,
-                      width: 350,
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          ' Information',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-
-              const SizedBox(height: 5),
-              if (isEdit == false) Text('Password'),
-              if (isEdit == false)
-                AppUtils.getTextFormField(
-                  'Enter Password',
-                  onSaved: (p0) {
-                    _password = p0;
-                  },
-                  initialValue: widget.model?.password ?? "",
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter password';
-                    }
-                    return null;
-                  },
-                ),
-              const SizedBox(height: 10),
-              const Text('Role'),
-              const SizedBox(height: 5),
-              AppUtils.getDropdown(
-                'Select',
-                data: _roles,
-                onChanged: (p0) {
-                  setState(() {
-                    _role = p0;
-                    _userType = null;
-                  });
-                },
-                value: _role,
-                validator: (value) => value == null ? 'Role is required' : null,
-              ),
-
-              const SizedBox(height: 10),
-              const Text('Select Wh Number'),
-              const SizedBox(height: 5),
-
-              MultiSelectDialogField<String>(
-                items: whatsAppNums
-                    .map((e) => MultiSelectItem<String>(e, e))
-                    .toList(),
-                title: Flexible(
-                  child: const Text(
-                    "Select Campaign Status",
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
-                buttonText: const Text("Select Campaign Status"),
-                searchable: true,
-                dialogWidth: 300,
-                dialogHeight: 250,
+              Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.grey,
-                  ),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 5,
+                      spreadRadius: 3,
+                      offset: const Offset(2, 4),
+                    ),
+                  ],
                 ),
-                onConfirm: (List<String> selected) {
-                  setState(() {
-                    // Update selectleadList with the confirmed selections
-                    selectWhNumsList = selected;
-                  });
-                },
-                initialValue: [],
+                child: Column(
+                  children: [
+                    detailsHeading(
+                      title: "Personal Information",
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 10),
+                          const Text('First Name'),
+                          const SizedBox(height: 5),
+                          AppUtils.getTextFormField(
+                            'Enter First Name',
+                            onSaved: (p0) {
+                              _firstname = p0;
+                            },
+                            initialValue: widget.model?.firstname ?? "",
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter first name';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          const Text('Last Name'),
+                          const SizedBox(height: 5),
+                          AppUtils.getTextFormField(
+                            'Enter Last Name',
+                            onSaved: (p0) {
+                              _lastname = p0;
+                            },
+                            initialValue: widget.model?.lastname ?? "",
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter last name';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          const Text('Email'),
+                          const SizedBox(height: 5),
+                          AppUtils.getTextFormField(
+                            'Enter Email',
+                            onSaved: (p0) {
+                              _email = p0;
+                            },
+                            initialValue: widget.model?.email ?? "",
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter email';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          const Text('Country Code'),
+                          DropdownButtonFormField<String>(
+                            isDense: true,
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8)),
+                              ),
+                            ),
+                            value: selectedCountry,
+                            isExpanded: true,
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                selectedCountry = newValue!;
+                              });
+                            },
+                            items: countryCodeMap.entries
+                                .map<DropdownMenuItem<String>>(
+                              (MapEntry<String, String> entry) {
+                                return DropdownMenuItem<String>(
+                                  value: entry.key,
+                                  child: Text(entry.value),
+                                );
+                              },
+                            ).toList(),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text('WhatsApp No'),
+                          const SizedBox(height: 10),
+                          AppUtils.getTextFormField(
+                            'Enter no',
+                            onSaved: (p0) {
+                              _whatsappPhone = p0;
+                            },
+                            keyboardType: TextInputType.phone,
+                            initialValue: widget.model?.whatsappNumber ?? "",
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter phone number';
+                              } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                                return 'Phone number must contain only digits';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
-              SizedBox(height: 16),
-
-              Wrap(
-                spacing: 8.0,
-                children: selectWhNumsList.map((selectedItem) {
-                  return Chip(
-                    label: Text(selectedItem),
-                    deleteIcon: Icon(Icons.close),
-                    onDeleted: () {
-                      setState(() {
-                        selectWhNumsList.remove(selectedItem);
-                      });
-                    },
-                    backgroundColor: Colors.blue.withOpacity(0.2),
-                    labelStyle: TextStyle(color: Colors.blue),
-                  );
-                }).toList(),
+              const SizedBox(
+                height: 20,
               ),
-
-              // AppUtils.getDropdown(
-              //   'Select',
-              //   data: whatsAppNums,
-              //   onChanged: (p0) {
-              //     setState(() {
-              //       _phone = p0;
-              //       // _userType = null;
-              //     });
-              //   },
-              //   value: _phone,
-              //   validator: (value) => value == null ? 'Role is required' : null,
-              // ),
-
-              const SizedBox(height: 10),
-              const Text('Manager'),
-              const SizedBox(height: 5),
-              AppUtils.getDropdown(
-                '--Select--',
-                data: accounts,
-                onChanged: (p0) {
-                  _selectedaccountname = p0;
-                },
-                value: _selectedaccountname,
-                validator: (value) =>
-                    value == null ? 'Manager is required' : null,
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 5,
+                      spreadRadius: 3,
+                      offset: const Offset(2, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    detailsHeading(
+                      title: "Other Information",
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 5),
+                          if (isEdit == false) Text('Password'),
+                          if (isEdit == false)
+                            AppUtils.getTextFormField(
+                              'Enter Password',
+                              onSaved: (p0) {
+                                _password = p0;
+                              },
+                              initialValue: widget.model?.password ?? "",
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'Please enter password';
+                                }
+                                return null;
+                              },
+                            ),
+                          const SizedBox(height: 10),
+                          const Text('Role'),
+                          const SizedBox(height: 5),
+                          AppUtils.getDropdown(
+                            'Select',
+                            data: _roles,
+                            onChanged: (p0) {
+                              setState(() {
+                                _role = p0;
+                                _userType = null;
+                              });
+                            },
+                            value: _role,
+                            // validator: (value) => value == null ? 'Role is required' : null,
+                          ),
+                          const SizedBox(height: 10),
+                          const Text('Select Wh Number'),
+                          const SizedBox(height: 5),
+                          MultiSelectDialogField<String>(
+                            items: whatsAppNums
+                                .map((e) => MultiSelectItem<String>(e, e))
+                                .toList(),
+                            title: const Flexible(
+                              child: Text(
+                                "Select Whatsapp Number",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ),
+                            buttonText: const Text("Select Whatsapp Number"),
+                            searchable: true,
+                            dialogWidth: 300,
+                            dialogHeight: 250,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.grey,
+                              ),
+                            ),
+                            onConfirm: (List<String> selected) {
+                              setState(() {
+                                // Update selectleadList with the confirmed selections
+                                selectWhNumsList = selected;
+                              });
+                            },
+                            initialValue: [],
+                          ),
+                          SizedBox(height: 16),
+                          Wrap(
+                            spacing: 8.0,
+                            children: selectWhNumsList.map((selectedItem) {
+                              return Chip(
+                                label: Text(selectedItem),
+                                deleteIcon: Icon(Icons.close),
+                                onDeleted: () {
+                                  setState(() {
+                                    selectWhNumsList.remove(selectedItem);
+                                  });
+                                },
+                                backgroundColor: Colors.blue.withOpacity(0.2),
+                                labelStyle: TextStyle(color: Colors.blue),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text('Manager'),
+                          const SizedBox(height: 5),
+                          AppUtils.getDropdown(
+                            '--Select--',
+                            data: accounts,
+                            onChanged: (p0) {
+                              _selectedaccountname = p0;
+                            },
+                            value: _selectedaccountname,
+                            validator: (value) =>
+                                value == null ? 'Manager is required' : null,
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              const Text('Active'),
+                              const SizedBox(width: 5),
+                              Checkbox(
+                                checkColor: Colors.white,
+                                activeColor: AppColor.navBarIconColor,
+                                value: isactive,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    isactive = value!;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          const SizedBox(height: 15),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
-              const SizedBox(height: 10),
-              const Text('Active'),
-              const SizedBox(height: 5),
-              Checkbox(
-                checkColor: Colors.white,
-                activeColor: AppColor.navBarIconColor,
-                value: isactive,
-                onChanged: (bool? value) {
-                  setState(() {
-                    isactive = value!;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 10),
-              const SizedBox(height: 15),
             ],
           ),
         ),
@@ -637,6 +644,36 @@ class _Forms extends State<UserAddView> {
     if (_addleadFormKey.currentState!.validate()) {
       _addleadFormKey.currentState!.save();
 
+      if (_firstname!.trim().length < 2) {
+        EasyLoading.showToast(
+            "The first name should contain a minimum of 2 characters.");
+        return;
+      }
+
+      if (_lastname!.trim().length < 2) {
+        EasyLoading.showToast(
+            "The last name should contain a minimum of 2 characters.");
+        return;
+      }
+      if (_password!.trim().length < 6) {
+        EasyLoading.showToast(
+            "The password should contain a minimum of 6 characters.");
+        return;
+      }
+      if (_password!.trim().length < 6) {
+        EasyLoading.showToast(
+            "The password should contain a minimum of 6 characters.");
+        return;
+      }
+      if (!isValidPhone(_whatsappPhone!.trim())) {
+        EasyLoading.showToast("Please enter valid whatsapp number");
+        return;
+      }
+      if (!isValidEmail(_email!.trim())) {
+        EasyLoading.showToast("Please enter valid email address");
+        return;
+      }
+
       accountId = accountsMap.keys.firstWhere(
           (k) => accountsMap[k] == _selectedaccountname,
           orElse: () => null);
@@ -646,16 +683,19 @@ class _Forms extends State<UserAddView> {
           email: _email?.trim(),
           password: _password?.trim(),
           whatsappNumber: _whatsappPhone?.trim(),
-          userrole: _role,
+          userrole: _role ?? 'USER',
           isactive: isactive,
           managername: _selectedaccountname,
           country_code: selectedCountry,
           phone: _phone?.trim(),
-          // whatsapp_settings: selectWhNumsList,
+          whatsapp_settings: selectWhNumsList,
           managerid: accountId);
+
+      print("adduserModel::::::::: ${adduserModel.toJson()}");
       AppUtils.onLoading(context, "Saving, please wait...");
       _getcontactData?.addUser(adduserModel).then((value) {
         debug('message my data $value');
+
         Navigator.pop(context);
 
         if (value.isNotEmpty) {
@@ -692,6 +732,36 @@ class _Forms extends State<UserAddView> {
     print("country_code:::: ${selectedCountry}");
     var accountId;
     if (_addleadFormKey.currentState!.validate()) {
+      if (_firstname!.trim().length < 2) {
+        EasyLoading.showToast(
+            "The first name should contain a minimum of 2 characters.");
+        return;
+      }
+
+      if (_lastname!.trim().length < 2) {
+        EasyLoading.showToast(
+            "The last name should contain a minimum of 2 characters.");
+        return;
+      }
+      if (_password!.trim().length < 6) {
+        EasyLoading.showToast(
+            "The password should contain a minimum of 6 characters.");
+        return;
+      }
+      if (_password!.trim().length < 6) {
+        EasyLoading.showToast(
+            "The password should contain a minimum of 6 characters.");
+        return;
+      }
+      if (!isValidPhone(_whatsappPhone!.trim())) {
+        EasyLoading.showToast("Please enter valid whatsapp number");
+        return;
+      }
+      if (!isValidEmail(_email!.trim())) {
+        EasyLoading.showToast("Please enter valid email address");
+        return;
+      }
+
       _addleadFormKey.currentState!.save();
       accountId = accountsMap.keys.firstWhere(
           (k) => accountsMap[k] == _selectedaccountname,
@@ -709,7 +779,7 @@ class _Forms extends State<UserAddView> {
           managername: _selectedaccountname,
           isactive: isactive,
           whatsappNumber: _whatsappPhone?.trim(),
-          // whatsapp_settings: selectWhNumsList,
+          whatsapp_settings: selectWhNumsList,
           country_code: selectedCountry);
 
       AppUtils.onLoading(context, "Updating, please wait...");
@@ -753,4 +823,14 @@ class _Forms extends State<UserAddView> {
     }
     setState(() {});
   }
+}
+
+bool isValidPhone(String phoneNumber) {
+  final RegExp phoneRegex = RegExp(r'^\+?[0-9]{8,15}$');
+  return phoneRegex.hasMatch(phoneNumber);
+}
+
+bool isValidEmail(String email) {
+  final RegExp emailRegex = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
+  return emailRegex.hasMatch(email);
 }
