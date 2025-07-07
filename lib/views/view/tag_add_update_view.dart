@@ -4,6 +4,7 @@ import 'package:whatsapp/models/tags_list_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/view_models/tags_list_vm.dart';
+import 'package:whatsapp/views/view/lead_add_update_view.dart';
 import 'package:whatsapp/views/view/tags_list_view.dart';
 
 class TagAddUpdateView extends StatefulWidget {
@@ -166,33 +167,51 @@ class _TagAddUpdateViewState extends State<TagAddUpdateView> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                      color: AppColor.navBarIconColor,
-                      borderRadius: BorderRadius.circular(08)),
-                  height: 40,
-                  width: double.infinity,
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      'Tag Information',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Colors.white),
-                    ),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 3,
+                        offset: const Offset(2, 4),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 10),
-                const Text('Tag Name'),
-                const SizedBox(height: 5),
-                AppUtils.getTextFormField(
-                  'Enter Tag Name',
-                  controller: tagNameController,
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please provide tag name';
-                    }
-                    return null;
-                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      detailsHeading(
+                        title: "Tag Information",
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 10),
+                            const Text('Tag Name',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
+                            const SizedBox(height: 5),
+                            AppUtils.getTextFormField(
+                              'Enter Tag Name',
+                              controller: tagNameController,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'Please provide tag name';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(
                   height: 15,

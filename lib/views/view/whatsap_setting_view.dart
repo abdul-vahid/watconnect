@@ -34,7 +34,7 @@ class _WhatsapSettingViewState extends State<WhatsapSettingView> {
     wapmodel = Provider.of<WhatsappSettingViewModel>(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,
@@ -90,18 +90,11 @@ class _WhatsapSettingViewState extends State<WhatsapSettingView> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          border: const Border(
-            left: BorderSide(
-              // color: AppColor.navBarIconColor,
-              color: AppColor.navBarIconColor,
-              width: 5,
-            ),
-          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 2,
-              spreadRadius: 2,
+              color: Colors.black.withOpacity(0.5),
+              blurRadius: 5,
+              spreadRadius: 3,
               offset: const Offset(2, 4),
             ),
           ],
@@ -193,7 +186,16 @@ class _AnotherScreenState extends State<AnotherScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(flex: 1, child: Text(lable)),
+          Expanded(
+              flex: 1,
+              child: Text(
+                lable,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              )),
           Expanded(
             flex: 1,
             child: Align(
@@ -211,6 +213,7 @@ class _AnotherScreenState extends State<AnotherScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,
@@ -225,14 +228,11 @@ class _AnotherScreenState extends State<AnotherScreen> {
         elevation: 0,
         automaticallyImplyLeading: true,
       ),
-      body: Material(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [_pageBody(widget.contact)],
-            ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [_pageBody(widget.contact)],
           ),
         ),
       ),
@@ -240,64 +240,51 @@ class _AnotherScreenState extends State<AnotherScreen> {
   }
 
   Widget _pageBody(contact) {
-    return Container(
-      color: Colors.white38,
-      child: Padding(
-        padding: const EdgeInsets.all(2.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 7,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    decoration: const BoxDecoration(
-                      color: AppColor.navBarIconColor,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
-                      ),
-                    ),
-                    width: double.infinity,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 15),
-                        getRow(" Name", contact.name),
-                        const Divider(),
-                        getRow("Bussiness Number", contact?.businessNumberId),
-                        const Divider(),
-                        getRow("Bussiness Account Id",
-                            contact?.whatsappBusinessAccountId),
-                        const Divider(),
-                        getRow("Phone", contact?.phone),
-                        const Divider(),
-                        getRow("App Id", contact?.appId),
-                        const Divider(),
-                        getRow("End Point Url", contact?.endPointUrl),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  spreadRadius: 2,
+                  blurRadius: 7,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-          ],
-        ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 15),
+                      getRow(" Name", contact.name),
+                      const Divider(),
+                      getRow("Bussiness Number", contact?.businessNumberId),
+                      const Divider(),
+                      getRow("Bussiness Account Id",
+                          contact?.whatsappBusinessAccountId),
+                      const Divider(),
+                      getRow("Phone", contact?.phone),
+                      const Divider(),
+                      getRow("App Id", contact?.appId),
+                      const Divider(),
+                      getRow("End Point Url", contact?.endPointUrl),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }

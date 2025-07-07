@@ -21,6 +21,7 @@ import 'package:whatsapp/salesforce/screens/sf_campaign_listing_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_darwer.dart';
 import 'package:whatsapp/salesforce/widget/sf_dashboard_card.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
@@ -945,7 +946,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                               : SizedBox()
                           : SizedBox(),
 
-                      SizedBox(
+                      const SizedBox(
                         height: 20,
                       ),
                       // Container(
@@ -989,7 +990,8 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                               'Template',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontWeight: FontWeight.bold,
+                                // fontWeight: FontWeight.bold,
+                                fontFamily: AppFonts.semiBold,
                                 fontSize: 18,
                               ),
                             ),

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -14,6 +15,7 @@ import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/tags_list_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_dashboard.dart';
+import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
 import '../../models/lead_model.dart';
@@ -56,16 +58,19 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   List allLeads = [];
   List unreadList = [];
   List<String> selectleadList = [];
+  List<String> selectTagFilterList = [];
+
   String? number;
 
-  int selectedTagId = 0;
-  List<String> tags = ["All", "Unread"];
-
+  int selectedFilterId = 0;
+  List<String> filters = ["All", "Unread", "Filter"];
+  List<String> tags = [];
   @override
   void initState() {
     selectleadList = [];
     getTags();
     _getUnreadCount();
+    selectTagFilterList = [];
     getLeadList();
     // connectSocket();
     super.initState();
@@ -262,7 +267,6 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                       ],
                     ),
                     const SizedBox(height: 16),
-
                     Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
@@ -305,70 +309,27 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                               },
                               initialValue: [],
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Wrap(
                               spacing: 8.0,
                               children: selectleadList.map((selectedItem) {
                                 return Chip(
                                   label: Text(selectedItem),
-                                  deleteIcon: Icon(Icons.close),
+                                  deleteIcon: const Icon(Icons.close),
                                   onDeleted: () {
                                     setState(() {
                                       selectleadList.remove(selectedItem);
                                     });
                                   },
                                   backgroundColor: Colors.blue.withOpacity(0.2),
-                                  labelStyle: TextStyle(color: Colors.blue),
+                                  labelStyle:
+                                      const TextStyle(color: Colors.blue),
                                 );
                               }).toList(),
                             ),
                           ],
                         )),
-
-                    // Payment Term Dropdown
-                    // Container(
-                    //   decoration: BoxDecoration(
-                    //     borderRadius: BorderRadius.circular(8),
-                    //   ),
-                    //   child: DropdownButtonFormField<String>(
-                    //     hint: const Text('Select Leads Status'),
-                    //     items: [
-                    //       DropdownMenuItem(
-                    //         value: 'Working - Contacted',
-                    //         child: Text('Working - Contacted'),
-                    //       ),
-                    //       DropdownMenuItem(
-                    //         value: 'Open - Not Contacted',
-                    //         child: Text('Open - Not Contacted'),
-                    //       ),
-                    //       DropdownMenuItem(
-                    //         value: 'Closed - Converted',
-                    //         child: Text('Closed - Converted'),
-                    //       ),
-                    //       DropdownMenuItem(
-                    //         value: 'Closed - Not Converted',
-                    //         child: Text('Closed - Not Converted'),
-                    //       ),
-                    //       DropdownMenuItem(
-                    //         value: 'Proposal Stage',
-                    //         child: Text('Proposal Stage'),
-                    //       ),
-                    //       DropdownMenuItem(
-                    //         value: 'All',
-                    //         child: Text('All'),
-                    //       ),
-                    //     ],
-                    //     onChanged: (String? newValue) {
-                    //       setState(() {
-                    //         selectlead = newValue;
-                    //       });
-                    //     },
-                    //     value: selectlead,
-                    //   ),
-                    // ),
-
                     const SizedBox(height: 24),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -471,48 +432,51 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
             children: [
               Expanded(
                   flex: 2,
-                  child: Container(
-                    decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 2,
-                            spreadRadius: 2,
-                            offset: const Offset(1, 1),
-                          ),
-                        ],
-                        color: Colors.white,
-                        border: Border.all(color: AppColor.backgroundGrey),
-                        borderRadius: BorderRadius.circular(12)),
-                    child: Center(
-                      child: Stack(
-                        children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.filter_list,
-                              color: Color.fromARGB(255, 0, 0, 0),
-                              size: 20,
+                  child: InkWell(
+                    onTap: () {
+                      _showFilterBottomSheet(context);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 2,
+                              spreadRadius: 2,
+                              offset: const Offset(1, 1),
                             ),
-                            onPressed: () {
-                              _showFilterBottomSheet(context);
-                            },
-                          ),
-                          selectleadList.isEmpty
-                              ? const SizedBox()
-                              : Container(
-                                  decoration: const BoxDecoration(
-                                      color: AppColor.navBarIconColor,
-                                      shape: BoxShape.circle),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "${selectleadList.length}",
-                                      style:
-                                          const TextStyle(color: Colors.white),
+                          ],
+                          color: Colors.white,
+                          border: Border.all(color: AppColor.backgroundGrey),
+                          borderRadius: BorderRadius.circular(12)),
+                      child: Center(
+                        child: Stack(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.all(10.0),
+                              child: Icon(
+                                Icons.filter_list,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                                size: 20,
+                              ),
+                            ),
+                            selectleadList.isEmpty
+                                ? const SizedBox()
+                                : Container(
+                                    decoration: const BoxDecoration(
+                                        color: AppColor.navBarIconColor,
+                                        shape: BoxShape.circle),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "${selectleadList.length}",
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
                                     ),
-                                  ),
-                                )
-                        ],
+                                  )
+                          ],
+                        ),
                       ),
                     ),
                   )),
@@ -565,12 +529,12 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             shrinkWrap: true,
-            itemCount: tags.length,
+            itemCount: filters.length,
             itemBuilder: (context, index) {
               return InkWell(
                 onTap: () {
                   setState(() {
-                    selectedTagId = index;
+                    selectedFilterId = index;
                   });
                   if (index == 1) {
                     unreadChatFilter();
@@ -579,7 +543,181 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                       allLeads = tempLeadModelList;
                     });
                   } else {
-                    getTagBasedList(tags[index]);
+                    showModalBottomSheet(
+                        context: context,
+                        useSafeArea: true,
+                        isScrollControlled: true,
+                        enableDrag: false,
+                        builder: (context) {
+                          String _selectedOption = 'AND';
+                          return StatefulBuilder(builder:
+                              (BuildContext context, StateSetter setState) {
+                            return Container(
+                              height: MediaQuery.of(context).size.height * .45,
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(15.0),
+                                    child: Row(
+                                      children: [
+                                        const Text(
+                                          "Filter Tags",
+                                          style: TextStyle(
+                                              fontFamily: AppFonts.bold,
+                                              fontSize: 17),
+                                        ),
+                                        Spacer(),
+                                        IconButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            icon:
+                                                const Icon(Icons.close_rounded))
+                                      ],
+                                    ),
+                                  ),
+                                  Divider(),
+                                  Row(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Radio<String>(
+                                            value: 'AND',
+                                            groupValue: _selectedOption,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _selectedOption = value!;
+                                              });
+                                            },
+                                          ),
+                                          const Text('AND'),
+                                        ],
+                                      ),
+                                      const SizedBox(width: 20),
+                                      Row(
+                                        children: [
+                                          Radio<String>(
+                                            value: 'OR',
+                                            groupValue: _selectedOption,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _selectedOption = value!;
+                                              });
+                                            },
+                                          ),
+                                          const Text('OR'),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  Wrap(
+                                    spacing: 8.0,
+                                    children: tags.map((tag) {
+                                      return InkWell(
+                                        onTap: () {
+                                          if (selectTagFilterList
+                                              .contains(tag)) {
+                                            selectTagFilterList.remove(tag);
+                                          } else {
+                                            selectTagFilterList.add(tag);
+                                          }
+                                          setState(() {});
+                                        },
+                                        child: Chip(
+                                          label: Text(tag),
+                                          backgroundColor:
+                                              Colors.blue.withOpacity(0.2),
+                                          labelStyle: const TextStyle(
+                                              color: Colors.blue),
+                                          side: BorderSide(
+                                              color: selectTagFilterList
+                                                      .contains(tag)
+                                                  ? Colors.black
+                                                  : Colors.transparent,
+                                              width: selectTagFilterList
+                                                      .contains(tag)
+                                                  ? 2
+                                                  : 0),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                  Spacer(),
+                                  Padding(
+                                    padding: const EdgeInsets.all(15.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              allLeads = tempLeadModelList;
+                                              selectTagFilterList.clear();
+                                            });
+
+                                            Navigator.pop(context);
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                color:
+                                                    AppColor.navBarIconColor),
+                                            child: const Center(
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 10.0,
+                                                    horizontal: 20),
+                                                child: Text(
+                                                  "Clear",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 20,
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            // 1. Perform filtering (synchronously)
+
+                                            tagBasedFilter(_selectedOption);
+                                            Navigator.pop(context);
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                color:
+                                                    AppColor.navBarIconColor),
+                                            child: const Center(
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 10.0,
+                                                    horizontal: 20),
+                                                child: Text(
+                                                  "Apply",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                            );
+                          });
+                        });
+                    // getTagBasedList(tags[index]);
                   }
                 },
                 child: Padding(
@@ -590,7 +728,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(255, 179, 238, 243),
                       border: Border.all(
-                          color: selectedTagId == index
+                          color: selectedFilterId == index
                               ? Colors.black
                               : Colors.transparent,
                           width: 1.5),
@@ -598,7 +736,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                     ),
                     child: Center(
                         child: Text(
-                      tags[index],
+                      filters[index],
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     )),
                   ),
@@ -660,7 +798,8 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.only(top: 22.0),
+                                  padding: const EdgeInsets.only(
+                                      top: 22.0, left: 6, right: 6),
                                   child: ListView.builder(
                                     itemCount: allLeads.length,
                                     itemBuilder: (context, index) {
@@ -897,6 +1036,34 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   }
 
   bool noRecordFound = false;
+
+  tagBasedFilter(String selOption) {
+    List filteredLeads = [];
+
+    if (selectTagFilterList.isEmpty) {
+      filteredLeads = tempLeadModelList;
+    } else if (selOption == "AND") {
+      filteredLeads = tempLeadModelList.where((lead) {
+        final leadTagNames = lead.tagNames.map((tag) => tag.name).toSet();
+        return leadTagNames.every(
+          (tagName) => selectTagFilterList.contains(tagName),
+        );
+      }).toList();
+    } else if (selOption == "OR") {
+      filteredLeads = tempLeadModelList.where((lead) {
+        final leadTagNames = lead.tagNames.map((tag) => tag.name).toSet();
+        return leadTagNames.any(
+          (tagName) => selectTagFilterList.contains(tagName),
+        );
+      }).toList();
+    }
+
+    setState(() {
+      allLeads.clear();
+      allLeads = filteredLeads;
+    });
+  }
+
   filterLeads(List filter) {
     print("filter::: ${filter}");
     print("empty :::  ${tempLeadModelList.length}");
@@ -1055,8 +1222,6 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       leadlistvm = Provider.of<LeadListViewModel>(context, listen: false);
 
       tags.clear(); // Clear if it's reused
-      tags.add("All");
-      tags.add("Unread");
 
       for (var viewModel in leadlistvm.viewModels) {
         var leadmodel = viewModel.model;
@@ -1077,17 +1242,17 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     });
   }
 
-  void getTagBasedList(String tg) {
-    if (tg == "All") {
-      allLeads = List.from(tempLeadModelList);
-    } else if (tg == "Unread") {
-      allLeads = tempLeadModelList
-          .where((lead) => lead.isUnread == true)
-          .toList(); // Assuming such a field
-    } else {
-      allLeads = tempLeadModelList.where((lead) {
-        return lead.tagNames.any((tag) => tag.name == tg);
-      }).toList();
-    }
-  }
+  // void getTagBasedList(String tg) {
+  //   if (tg == "All") {
+  //     allLeads = List.from(tempLeadModelList);
+  //   } else if (tg == "Unread") {
+  //     allLeads = tempLeadModelList
+  //         .where((lead) => lead.isUnread == true)
+  //         .toList(); // Assuming such a field
+  //   } else {
+  //     allLeads = tempLeadModelList.where((lead) {
+  //       return lead.tagNames.any((tag) => tag.name == tg);
+  //     }).toList();
+  //   }
+  // }
 }

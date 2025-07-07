@@ -1941,8 +1941,9 @@ class _ChatScreenState extends State<ChatScreen> {
     // print("selectedHeader.format>>>> ${selectedHeader.format}");
 
     final regex = RegExp(r'\{\{\d+\}\}');
-
-    int count = regex.allMatches(text).length;
+    final matches = regex.allMatches(text).map((e) => e.group(0)).toSet();
+    int count = matches.length;
+    // int count = regex.allMatches(text).length;
     file = null;
     fileid = null;
     controllers = List.generate(count, (index) => TextEditingController());
@@ -2543,7 +2544,10 @@ class _ChatScreenState extends State<ChatScreen> {
                               log("selectedBody['text']>>> ${selectedBody.text}  ");
                               final regex = RegExp(r'\{\{\d+\}\}');
 
-                              if (selectedHeader == null ||
+                              if (regex.hasMatch(selectedBody.text)) {
+                                Navigator.of(context).pop();
+                                _sendTemplateSheet();
+                              } else if (selectedHeader == null ||
                                   selectedHeader.format == null) {
                                 String templateToSend = selectedTemplateName ??
                                     _templateController.text;

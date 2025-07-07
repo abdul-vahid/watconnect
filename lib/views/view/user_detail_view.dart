@@ -302,7 +302,9 @@ class _UserDetailView extends State<UserDetailView> {
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Row(
                   children: [
-                    const Text("Active"),
+                    const Text("Active",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 15)),
                     Checkbox(
                       activeColor: widget.model!.isactive == true
                           ? AppColor.navBarIconColor
@@ -365,6 +367,7 @@ class _UserDetailView extends State<UserDetailView> {
         children: [
           Text(
             lable,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
           Expanded(
             child: Align(

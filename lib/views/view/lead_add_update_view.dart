@@ -340,6 +340,7 @@ class _Forms extends State<LeadAddView> {
   LeadListViewModel? _getleadData;
   String? _firstname;
   String? _lastname;
+  String? description;
   String? _email;
   String? _phone;
   String? _company;
@@ -516,7 +517,11 @@ class _Forms extends State<LeadAddView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('First Name'),
+                            const Text(
+                              'First Name',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
                             const SizedBox(height: 5),
                             AppUtils.getTextFormField(
                               'Enter First Name',
@@ -531,11 +536,15 @@ class _Forms extends State<LeadAddView> {
                                 return null;
                               },
                             ),
-
-                            const Text('Last Name'),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Text('Last Name',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
                             AppUtils.getTextFormField(
-                              'Enter your Last Name',
+                              'Enter  Last Name',
                               initialValue: widget.model?.lastname,
                               onSaved: (lName) {
                                 _lastname = lName;
@@ -550,7 +559,9 @@ class _Forms extends State<LeadAddView> {
 
                             const SizedBox(height: 10),
 
-                            const Text('Date of Birth'),
+                            const Text('Date of Birth',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
                             AppUtils.getTextFormField(
                               'Select Date of Birth',
@@ -590,7 +601,9 @@ class _Forms extends State<LeadAddView> {
                               height: 12,
                             ),
 
-                            const Text('Country Code'),
+                            const Text('Country Code',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
 
                             DropdownButtonFormField<String>(
@@ -625,11 +638,13 @@ class _Forms extends State<LeadAddView> {
                               height: 12,
                             ),
 
-                            const Text('Phone'),
+                            const Text('Phone',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
 
                             AppUtils.getTextFormField(
-                              'Enter your phone number',
+                              'Enter phone number',
                               initialValue: widget.model?.whatsappNumber,
                               onSaved: (wpnumber) {
                                 _whatsapnumber = '${wpnumber}';
@@ -639,11 +654,6 @@ class _Forms extends State<LeadAddView> {
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter phone number';
-                                } else if (value.length != 10) {
-                                  return 'Phone number must be 10 digits';
-                                } else if (!RegExp(r'^[0-9]+$')
-                                    .hasMatch(value)) {
-                                  return 'Phone number must contain only digits';
                                 }
                                 return null;
                               },
@@ -651,10 +661,12 @@ class _Forms extends State<LeadAddView> {
 
                             const SizedBox(height: 10),
                             // Email Field
-                            const Text('Email'),
+                            const Text('Email',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
                             AppUtils.getTextFormField(
-                              'Enter your email',
+                              'Enter email',
                               initialValue: widget.model?.email,
                               onSaved: (email) {
                                 _email = email;
@@ -662,7 +674,24 @@ class _Forms extends State<LeadAddView> {
                             ),
 
                             const SizedBox(height: 10),
-                            const Text('Lead Status'),
+                            // Email Field
+                            const Text('Lead Description',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
+                            const SizedBox(height: 5),
+                            AppUtils.getTextFormField(
+                              maxLines: 2,
+                              'Enter description',
+                              initialValue: widget.model?.description,
+                              onSaved: (desc) {
+                                _description = desc;
+                              },
+                            ),
+
+                            const SizedBox(height: 10),
+                            const Text('Lead Status',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 10),
                             AppUtils.getDropdown(
                               '--Select--',
@@ -678,7 +707,9 @@ class _Forms extends State<LeadAddView> {
                               value: leadStatus ?? widget.model?.leadstatus,
                             ),
                             const SizedBox(height: 10),
-                            const Text('Assigned User'),
+                            const Text('Assigned User',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 10),
                             AppUtils.getDropdown(
                               '--Select--',
@@ -729,7 +760,12 @@ class _Forms extends State<LeadAddView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            hasTags ? const Text('Tags') : SizedBox(),
+                            hasTags
+                                ? const Text('Tags',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14))
+                                : SizedBox(),
                             hasTags ? const SizedBox(height: 5) : SizedBox(),
                             hasTags
                                 ? MultiSelectDialogField<TagRecord>(
@@ -795,7 +831,9 @@ class _Forms extends State<LeadAddView> {
                                     }).toList(),
                                   )
                                 : SizedBox(),
-                            const Text('Lead Source'),
+                            const Text('Lead Source',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
                             AppUtils.getDropdown(
                               '--Select--',
@@ -842,12 +880,14 @@ class _Forms extends State<LeadAddView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Address'),
+                            const Text('Address',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(
                               height: 5,
                             ),
                             AppUtils.getTextFormField(
-                              'Enter Your Address',
+                              'Enter Address',
                               maxLines: 2,
                               initialValue: widget.model?.address,
                               onSaved: (country) {
@@ -1015,6 +1055,7 @@ class _Forms extends State<LeadAddView> {
         "leadstatus": _leadstatus,
         "ownername": _asignStaff,
         "ownerid": userId,
+        "description": _description?.trim(),
         "address": _selectedCountry?.trim(),
         "blocked": false
       };
@@ -1155,6 +1196,7 @@ class _Forms extends State<LeadAddView> {
         "leadstatus": _leadstatus,
         "ownername": _asignStaff,
         "ownerid": userId,
+        "description": _description?.trim(),
         "address": _selectedCountry?.trim(),
         "blocked": false
       };

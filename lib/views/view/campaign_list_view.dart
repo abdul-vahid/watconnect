@@ -407,48 +407,51 @@ class _CampaignListView extends State<CampaignListView> {
             children: [
               Expanded(
                   flex: 2,
-                  child: Container(
-                    decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 2,
-                            spreadRadius: 2,
-                            offset: const Offset(1, 1),
-                          ),
-                        ],
-                        color: Colors.white,
-                        border: Border.all(color: AppColor.backgroundGrey),
-                        borderRadius: BorderRadius.circular(12)),
-                    child: Center(
-                      child: Stack(
-                        children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.filter_list,
-                              color: Color.fromARGB(255, 0, 0, 0),
-                              size: 20,
+                  child: InkWell(
+                    onTap: () {
+                      _showFilterBottomSheet(context);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 2,
+                              spreadRadius: 2,
+                              offset: const Offset(1, 1),
                             ),
-                            onPressed: () {
-                              _showFilterBottomSheet(context);
-                            },
-                          ),
-                          selectCampList.isEmpty
-                              ? SizedBox()
-                              : Container(
-                                  decoration: const BoxDecoration(
-                                      color: AppColor.navBarIconColor,
-                                      shape: BoxShape.circle),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "${selectCampList.length}",
-                                      style:
-                                          const TextStyle(color: Colors.white),
+                          ],
+                          color: Colors.white,
+                          border: Border.all(color: AppColor.backgroundGrey),
+                          borderRadius: BorderRadius.circular(12)),
+                      child: Center(
+                        child: Stack(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.all(10.0),
+                              child: Icon(
+                                Icons.filter_list,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                                size: 20,
+                              ),
+                            ),
+                            selectCampList.isEmpty
+                                ? SizedBox()
+                                : Container(
+                                    decoration: const BoxDecoration(
+                                        color: AppColor.navBarIconColor,
+                                        shape: BoxShape.circle),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "${selectCampList.length}",
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
                                     ),
-                                  ),
-                                )
-                        ],
+                                  )
+                          ],
+                        ),
                       ),
                     ),
                   )),

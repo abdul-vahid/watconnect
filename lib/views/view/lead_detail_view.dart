@@ -195,6 +195,10 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                           recordRow("Assigned User", widget.model?.ownername),
                           const Divider(),
                           recordRow("Lead Source", widget.model?.leadsource),
+
+                          const Divider(),
+                          recordRow(
+                              "Lead Description", widget.model?.description),
                           const Divider(),
                           recordRow("Status", widget.model?.leadstatus),
                           const Divider(),
@@ -331,7 +335,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
             ),
           ),
           Text(
-            value ?? "",
+            value!.isEmpty ? "-" : value ?? "-",
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,

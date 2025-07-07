@@ -319,10 +319,12 @@ class _TempleteListView extends State<TempleteListView> {
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10),
           child: Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0),
-                child: Expanded(
-                  flex: 2,
+              Expanded(
+                flex: 2,
+                child: InkWell(
+                  onTap: () {
+                    _showFilterBottomSheet(context);
+                  },
                   child: Container(
                     decoration: BoxDecoration(
                         boxShadow: [
@@ -336,39 +338,42 @@ class _TempleteListView extends State<TempleteListView> {
                         color: Colors.white,
                         border: Border.all(color: AppColor.backgroundGrey),
                         borderRadius: BorderRadius.circular(12)),
-                    child: Stack(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.filter_list,
-                            color: Color.fromARGB(255, 0, 0, 0),
-                            size: 20,
+                    child: Center(
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Icon(
+                              Icons.filter_list,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              size: 20,
+                            ),
                           ),
-                          onPressed: () {
-                            _showFilterBottomSheet(context);
-                          },
-                        ),
-                        selectTempList.isEmpty
-                            ? SizedBox()
-                            : Container(
-                                decoration: const BoxDecoration(
-                                    color: AppColor.navBarIconColor,
-                                    shape: BoxShape.circle),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "${selectTempList.length}",
-                                    style: TextStyle(color: Colors.white),
+                          selectTempList.isEmpty
+                              ? SizedBox()
+                              : Container(
+                                  decoration: const BoxDecoration(
+                                      color: AppColor.navBarIconColor,
+                                      shape: BoxShape.circle),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      "${selectTempList.length}",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                                   ),
-                                ),
-                              )
-                      ],
+                                )
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
+              const SizedBox(
+                width: 10,
+              ),
               Expanded(
-                flex: 8,
+                flex: 9,
                 child: TextField(
                   onChanged: searchLeads,
                   controller: textController,

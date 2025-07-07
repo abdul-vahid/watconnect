@@ -394,7 +394,9 @@ class _Forms extends State<UserAddView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 10),
-                          const Text('First Name'),
+                          const Text('First Name',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           AppUtils.getTextFormField(
                             'Enter First Name',
@@ -410,7 +412,9 @@ class _Forms extends State<UserAddView> {
                             },
                           ),
                           const SizedBox(height: 10),
-                          const Text('Last Name'),
+                          const Text('Last Name',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           AppUtils.getTextFormField(
                             'Enter Last Name',
@@ -426,7 +430,9 @@ class _Forms extends State<UserAddView> {
                             },
                           ),
                           const SizedBox(height: 10),
-                          const Text('Email'),
+                          const Text('Email',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           AppUtils.getTextFormField(
                             'Enter Email',
@@ -442,7 +448,9 @@ class _Forms extends State<UserAddView> {
                             },
                           ),
                           const SizedBox(height: 10),
-                          const Text('Country Code'),
+                          const Text('Country Code',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
                           DropdownButtonFormField<String>(
                             isDense: true,
                             decoration: const InputDecoration(
@@ -471,7 +479,9 @@ class _Forms extends State<UserAddView> {
                             ).toList(),
                           ),
                           const SizedBox(height: 10),
-                          const Text('WhatsApp No'),
+                          const Text('WhatsApp No',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 10),
                           AppUtils.getTextFormField(
                             'Enter no',
@@ -523,7 +533,10 @@ class _Forms extends State<UserAddView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 5),
-                          if (isEdit == false) Text('Password'),
+                          if (isEdit == false)
+                            const Text('Password',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
                           if (isEdit == false)
                             AppUtils.getTextFormField(
                               'Enter Password',
@@ -539,7 +552,9 @@ class _Forms extends State<UserAddView> {
                               },
                             ),
                           const SizedBox(height: 10),
-                          const Text('Role'),
+                          const Text('Role',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           AppUtils.getDropdown(
                             'Select',
@@ -554,7 +569,9 @@ class _Forms extends State<UserAddView> {
                             // validator: (value) => value == null ? 'Role is required' : null,
                           ),
                           const SizedBox(height: 10),
-                          const Text('Select Wh Number'),
+                          const Text('Select Wh Number',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           MultiSelectDialogField<String>(
                             items: whatsAppNums
@@ -602,7 +619,9 @@ class _Forms extends State<UserAddView> {
                             }).toList(),
                           ),
                           const SizedBox(height: 10),
-                          const Text('Manager'),
+                          const Text('Manager',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           AppUtils.getDropdown(
                             '--Select--',
@@ -617,7 +636,10 @@ class _Forms extends State<UserAddView> {
                           const SizedBox(height: 10),
                           Row(
                             children: [
-                              const Text('Active'),
+                              const Text('Active',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14)),
                               const SizedBox(width: 5),
                               Checkbox(
                                 checkColor: Colors.white,

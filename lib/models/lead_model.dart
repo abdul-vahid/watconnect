@@ -51,6 +51,8 @@ class LeadModel {
   bool? blocked;
   String? countryCode;
   String? dob;
+  String? description;
+
   String? address;
   List<TagName>? tagNames;
   String? leadname;
@@ -70,6 +72,7 @@ class LeadModel {
     this.lastmodifieddate,
     this.email,
     this.ownerid,
+    this.description,
     this.whatsappNumber,
     this.blocked,
     this.countryCode,
@@ -89,6 +92,7 @@ class LeadModel {
       lastname: json['lastname'] ?? '',
       leadsource: json['leadsource'] ?? '',
       leadstatus: json['leadstatus'] ?? '',
+      description: json['description'] ?? "",
       createdbyid: json['createdbyid'] ?? '',
       lastmodifiedbyid: json['lastmodifiedbyid'] ?? '',
       createddate: json['createddate'] ?? '',
@@ -123,6 +127,7 @@ class LeadModel {
       'lastmodifieddate': lastmodifieddate ?? '',
       'email': email ?? '',
       'ownerid': ownerid ?? '',
+      'description': description ?? "",
       'whatsapp_number': whatsappNumber ?? '',
       'blocked': blocked ?? false,
       'country_code': countryCode ?? '',
