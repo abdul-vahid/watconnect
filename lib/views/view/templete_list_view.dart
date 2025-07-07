@@ -329,6 +329,7 @@ class _TempleteListView extends State<TempleteListView> {
                     decoration: BoxDecoration(
                         boxShadow: [
                           BoxShadow(
+                            // ignore: deprecated_member_use
                             color: Colors.black.withOpacity(0.1),
                             blurRadius: 2,
                             spreadRadius: 2,
@@ -341,8 +342,8 @@ class _TempleteListView extends State<TempleteListView> {
                     child: Center(
                       child: Stack(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
+                          const Padding(
+                            padding: EdgeInsets.all(10.0),
                             child: Icon(
                               Icons.filter_list,
                               color: Color.fromARGB(255, 0, 0, 0),
@@ -359,7 +360,8 @@ class _TempleteListView extends State<TempleteListView> {
                                     padding: const EdgeInsets.all(8.0),
                                     child: Text(
                                       "${selectTempList.length}",
-                                      style: TextStyle(color: Colors.white),
+                                      style:
+                                          const TextStyle(color: Colors.white),
                                     ),
                                   ),
                                 )
@@ -393,11 +395,13 @@ class _TempleteListView extends State<TempleteListView> {
                     fillColor: Colors.white,
                     contentPadding: const EdgeInsets.all(10),
                     disabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.backgroundGrey),
+                      borderSide:
+                          const BorderSide(color: AppColor.backgroundGrey),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     border: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppColor.backgroundGrey),
+                      borderSide:
+                          const BorderSide(color: AppColor.backgroundGrey),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     prefixIcon: const Padding(
@@ -455,7 +459,6 @@ class _TempleteListView extends State<TempleteListView> {
                             statusColor = AppColor.navBarIconColor;
                             statusText = "Approved";
                           } else if (allTemplates[index].status == 'REJECTED') {
-                            print("kisisisiisiisi");
                             statusColor = Colors.red;
                             statusText = "Rejected";
                           } else {
@@ -506,8 +509,8 @@ class _TempleteListView extends State<TempleteListView> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  allTemplates[index].name ??
-                                                      "",
+                                                  formatTemplateName(
+                                                      allTemplates[index].name),
                                                   style: const TextStyle(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.bold,
@@ -793,5 +796,16 @@ class _TempleteListView extends State<TempleteListView> {
         setState(() {});
       }
     }
+  }
+
+  String formatTemplateName(String? name) {
+    if (name == null) return "";
+    return name
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((word) => word.isNotEmpty
+            ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+            : '')
+        .join(' ');
   }
 }
