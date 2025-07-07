@@ -195,12 +195,13 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
               icon: const Icon(Icons.arrow_back,
                   color: Color.fromARGB(255, 255, 255, 255)),
               onPressed: () {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const FooterNavbarPage()),
-                  (route) => false, // remove all previous routes
-                );
+                Navigator.pop(context);
+                // Navigator.pushAndRemoveUntil(
+                //   context,
+                //   MaterialPageRoute(
+                //       builder: (context) => const FooterNavbarPage()),
+                //   (route) => false, // remove all previous routes
+                // );
               }),
           automaticallyImplyLeading: false,
           title: const Text(
@@ -978,23 +979,28 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                           : '',
                       style: const TextStyle(fontSize: 12),
                     ),
-                    Text(
-                      "${model.email?.isNotEmpty == true ? model.email : ''}",
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(100),
-                        color: Colors.lightBlue.withOpacity(0.7),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 4.0, horizontal: 8),
-                        child: Text(
-                          "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Colors.white,
+                    model.email!.isEmpty
+                        ? SizedBox()
+                        : Text(
+                            "${model.email?.isNotEmpty == true ? model.email : ''}",
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Colors.lightBlue.withOpacity(0.7),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 4.0, horizontal: 8),
+                          child: Text(
+                            "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -1116,7 +1122,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       // print("Token: $token");
 
       socket = IO.io(
-        'https://admin.watconnect.com',
+        'https://sandbox.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .setPath('/swp/socket.io')

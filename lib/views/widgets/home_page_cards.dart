@@ -77,14 +77,14 @@ class HomePageCard extends StatelessWidget {
                                   color: Colors.black87,
                                 ),
                               ),
-                              TextSpan(
-                                text:
-                                    ' / ${subtitle.split(' / ').last}', // e.g., "Total"
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
-                                ),
-                              ),
+                              // TextSpan(
+                              //   text:
+                              //       ' / ${subtitle.split(' / ').last}', // "Total"
+                              //   style: const TextStyle(
+                              //     fontSize: 14,
+                              //     color: Colors.black54,
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),

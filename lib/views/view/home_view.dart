@@ -321,7 +321,16 @@ class _HomeViewState extends State<HomeView> with RouteAware {
 
     for (var viewModel in campaignVM!.viewModels) {
       CampaignCountModel campmodel = viewModel.model;
-      campaignCount = campmodel.result?.pending;
+
+      var pend = campmodel.result?.pending;
+      var comp = campmodel.result?.completed;
+      var abort = campmodel.result?.aborted;
+      var prog = campmodel.result?.inProgress;
+      var allCamp = int.parse(pend!) +
+          int.parse(comp!) +
+          int.parse(abort!) +
+          int.parse(prog!);
+      campaignCount = allCamp.toString();
     }
     // print("cammma=>${campaignCount}");
 
@@ -800,7 +809,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                         width: 10,
                       ),
                       HomePageCard(
-                        title: "Pending Campa..",
+                        title: "All Campaigns",
                         subtitle: "${(campaignCount ?? 0).toString()} / Total",
                         icon: Icons.leaderboard_rounded,
                         polygonAsset: "assets/images/home_polygon.png",
@@ -1125,10 +1134,10 @@ class _HomeViewState extends State<HomeView> with RouteAware {
       // print("Token: $token");
 
       socket = IO.io(
-        'https://admin.watconnect.com',
+        'https://sandbox.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
-            .setPath('/ibs/socket.io')
+            .setPath('/swp/socket.io')
             .setExtraHeaders({'Authorization': 'Bearer $token'})
             .build(),
       );

@@ -43,6 +43,7 @@ class Records {
   String? contactname;
   String? country_code;
   String? message;
+  String? countrycode;
   String? whatsapp_number;
   String? full_number;
   DateTime? createddate;
@@ -53,6 +54,7 @@ class Records {
       this.contactname,
       this.country_code,
       this.full_number,
+      this.countrycode,
       this.whatsapp_number,
       this.createddate,
       this.message});
@@ -62,6 +64,7 @@ class Records {
       id: data['id']?.toString(),
       parent_id: data['parent_id']?.toString(),
       country_code: data['country_code'].toString(),
+      countrycode: data['countrycode'].toString(),
       message: data['message'] ?? "",
       contactname: data['contactname']?.toString(),
       full_number: data['full_number']?.toString(),
@@ -77,6 +80,7 @@ class Records {
         'parent_id': parent_id,
         'contactname': contactname,
         'full_number': full_number,
+        'countrycode': countrycode,
         'whatsapp_number': whatsapp_number,
         'createddate': createddate,
       };

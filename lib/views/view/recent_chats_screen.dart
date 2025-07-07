@@ -430,6 +430,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                     leadName: model.contactname ?? "",
                     wpnumber: model.full_number,
                     id: model.id,
+                    contryCode: model.countrycode,
                   ),
                 ),
               ).then((_) {
