@@ -82,7 +82,6 @@ dependencies:
   flutter_html: ^3.0.0
   syncfusion_flutter_pdfviewer: ^28.2.3
   video_player: ^2.9.3
-  open_file: ^3.5.10
   path_provider: ^2.1.5
   flutter_local_notifications: ^19.0.0
   cached_network_image: ^3.4.1
@@ -101,6 +100,7 @@ dependencies:
   flutter_sound: ^9.28.0
   just_audio: ^0.10.4
   focus_detector: ^2.0.1
+  open_filex: ^4.7.0
 
 
 

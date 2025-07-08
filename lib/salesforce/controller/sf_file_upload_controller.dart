@@ -35,6 +35,30 @@ class SfFileUploadController extends ChangeNotifier {
     notify();
   }
 
+  String fileMimeType = "";
+  setFileMimeType(String mimeType) {
+    fileMimeType = mimeType;
+    log("file fileMimeType::::::   ${fileMimeType}");
+    notify();
+  }
+
+  bool fileUploadLoader = false;
+
+  setFileUploadLoader(bool val) {
+    fileUploadLoader = val;
+    notify();
+  }
+
+  resetFileUpload() {
+    setPublicUrlId("");
+    setFileUploadLoader(false);
+    setFileMimeType("");
+    setFileDocId("");
+    print(
+        "reseting all:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+    notify();
+  }
+
   String filePubUrl = "";
   setPublicUrlId(String title) async {
     final prefs = await SharedPreferences.getInstance();
@@ -176,7 +200,10 @@ class SfFileUploadController extends ChangeNotifier {
   }
 
   Future<dynamic> uploadFiledb(
-      File file, String cntryCode, String txtMsg, String ursNo) async {
+      File file, String cntryCode, String txtMsg, String ursNo,
+      {bool isFromTemplate = false}) async {
+    //
+    setFileUploadLoader(true);
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
     log("token::::::: node sf  ${file}  ${token}");
@@ -190,6 +217,7 @@ class SfFileUploadController extends ChangeNotifier {
 
     // Detect MIME type
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
+    setFileMimeType(mimeType);
     final fileStream = http.ByteStream(file.openRead());
     final length = await file.length();
 
@@ -218,29 +246,35 @@ class SfFileUploadController extends ChangeNotifier {
       debug("response.statusCode${response.statusCode}   ");
       var responseBody = await response.stream.bytesToString();
       if (response.statusCode == 200) {
+        setFileUploadLoader(false);
         print("File uploaded successfully");
         debug("File uploaded successfully $responseBody");
         var map = jsonDecode(responseBody);
         setPublicUrlId(map['records'][0]['title']);
-        uploadFile(file, cntryCode, txtMsg, ursNo);
+        await uploadFile(file, cntryCode, txtMsg, ursNo,
+            isTemplate: isFromTemplate);
         return responseBody;
       } else {
+        setFileUploadLoader(false);
         print("Failed to upload file: ${response.reasonPhrase}");
         return null;
       }
     } on UnauthorisedException {
+      setFileUploadLoader(false);
       String url = Uri.https(AppConstants.baseUrl, "/api/whatsapp/files/null")
           .toString();
 
       await _refreshToken(url);
     } catch (e) {
+      setFileUploadLoader(false);
       print("Error occurred during file upload   uploadFiledb: $e");
       return null;
     }
   }
 
-  Future<dynamic> uploadFile(
-      File file, String code, String mesg, String numbr) async {
+  Future<dynamic> uploadFile(File file, String code, String mesg, String numbr,
+      {required bool isTemplate}) async {
+    setFileUploadLoader(true);
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
 
@@ -276,23 +310,23 @@ class SfFileUploadController extends ChangeNotifier {
     final responseBody = await response.stream.bytesToString();
 
     if (response.statusCode == 200) {
+      setFileUploadLoader(false);
       debug("File uploaded successfully: webhook_template $responseBody");
       var mp = jsonDecode(responseBody);
       setFileDocId(mp['id']);
 
-      sendFileApiCall(code: code, fil: file, msg: mesg, usrNumber: numbr);
+      if (isTemplate) {
+      } else {
+        sendFileApiCall(code: code, fil: file, msg: mesg, usrNumber: numbr);
+      }
+
       return responseBody;
     } else {
+      setFileUploadLoader(false);
       debug(
           "File upload failed: ${response.statusCode} - ${response.reasonPhrase}");
       return null;
     }
-  }
-
-  bool _sendFileLoader = false;
-  void _setSendFileLoader(bool val) {
-    _sendFileLoader = val;
-    notifyListeners();
   }
 
   Future<void> sendFileApiCall({
@@ -301,6 +335,7 @@ class SfFileUploadController extends ChangeNotifier {
     required String code,
     required File fil,
   }) async {
+    setFileUploadLoader(true);
     final fullNum = "$code$usrNumber";
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
@@ -329,8 +364,6 @@ class SfFileUploadController extends ChangeNotifier {
       "document_type": type
     };
 
-    _setSendFileLoader(true);
-
     try {
       final response = await AppApi().commonPostMethod(
         AppConstants.sfSendFileApi,
@@ -339,17 +372,20 @@ class SfFileUploadController extends ChangeNotifier {
       );
 
       if (response?.statusCode == 200) {
+        setFileUploadLoader(false);
         ChatMessageController chatMessageController =
             Provider.of(navigatorKey.currentContext!, listen: false);
         await chatMessageController.messageHistoryApiCall(
             userNumber: fullNum, isFirstTime: false);
       } else {
+        setFileUploadLoader(false);
         log("Send message failed [${response?.statusCode}]: ${response?.body}");
       }
     } catch (e) {
+      setFileUploadLoader(false);
       log("Error in sendMessageApiCall: $e");
     } finally {
-      _setSendFileLoader(false);
+      setFileUploadLoader(false);
     }
   }
 }

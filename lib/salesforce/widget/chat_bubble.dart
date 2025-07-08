@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/model/chat_history_model.dart';
+import 'package:whatsapp/salesforce/widget/attachment_preview_widget.dart';
 import 'package:whatsapp/salesforce/widget/chat_buttons.dart';
 import 'package:whatsapp/salesforce/widget/chat_sender_lable.dart';
 
@@ -83,43 +84,44 @@ class ChatBubble extends StatelessWidget {
                   ),
                   child: Column(
                     crossAxisAlignment: item.messageType == "Outgoing"
-                        ? CrossAxisAlignment.end
+                        ? CrossAxisAlignment.start
                         : CrossAxisAlignment.start,
                     children: [
-                      item.contentType == "image/jpeg"
-                          ? Image.network(item.publicUrl ?? "")
-                          : item.contentType == "video/mp4"
-                              ? Stack(
-                                  children: [
-                                    Container(
-                                      height: 150,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 150,
-                                      child: Center(
-                                        child: Icon(
-                                          Icons.play_arrow,
-                                          color: Colors.white,
-                                          size: 40,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : SizedBox(),
+                      AttachmentPreviewWidget(
+                        contentType: item.contentType,
+                        attachmentUrl: item.attachmentUrl,
+                      ),
                       if (tempBody.isNotEmpty)
-                        Text(
-                          tempBody,
-                          style: const TextStyle(fontSize: 16),
+                        RichText(
+                          text: TextSpan(
+                            style: DefaultTextStyle.of(context)
+                                .style
+                                .copyWith(fontSize: 16, height: 1.4),
+                            children: [
+                              TextSpan(
+                                text: tempBody,
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       if (item.message?.isNotEmpty ?? false)
-                        Text(
-                          item.message!,
-                          style: const TextStyle(fontSize: 16),
+                        RichText(
+                          text: TextSpan(
+                            style: DefaultTextStyle.of(context)
+                                .style
+                                .copyWith(fontSize: 16, height: 1.4),
+                            children: [
+                              TextSpan(
+                                text: item.message!,
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       if (buttons.isNotEmpty) ChatButtons(buttons: buttons),
                     ],

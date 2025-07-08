@@ -7,9 +7,12 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/main.dart';
 
 import 'package:whatsapp/salesforce/api/api_helper.dart';
+import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
 import 'package:whatsapp/salesforce/model/chat_history_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 
@@ -73,6 +76,11 @@ class ChatMessageController extends ChangeNotifier {
       notify();
     } catch (e) {
       log("Error in messageHistoryApiCall: $e");
+    } finally {
+      SfFileUploadController dfFileController =
+          Provider.of(navigatorKey.currentContext!, listen: false);
+      dfFileController.resetFileUpload();
+      setSelectedFile(null);
     }
 
     if (isFirstTime) _setChatHistoryLoader(false);
@@ -250,9 +258,37 @@ class ChatMessageController extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool isImage = false;
+  bool isVideo = false;
+  bool isDoc = false;
+
   File? selectedFile;
   setSelectedFile(File? fil) {
     selectedFile = fil;
+    if (fil == null) {
+      isImage = false;
+      isVideo = false;
+      isDoc = false;
+    } else {
+      final extension = path.extension(fil.path).toLowerCase();
+
+      if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+          .contains(extension)) {
+        isImage = true;
+        isVideo = false;
+        isDoc = false;
+      } else if (['.mp4', '.mov', '.avi', '.mkv', '.webm']
+          .contains(extension)) {
+        isImage = false;
+        isVideo = true;
+        isDoc = false;
+      } else {
+        isImage = false;
+        isVideo = false;
+        isDoc = true;
+      }
+    }
+
     notify();
   }
 

@@ -18,7 +18,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:open_file/open_file.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -3649,7 +3649,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     Navigator.pop(context);
-    OpenFile.open(file.path);
+    OpenFilex.open(file.path);
   }
 
   Future<String?> _marksread(String whatsappNumber) async {

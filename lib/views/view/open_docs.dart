@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
+// import 'package:open_file/open_file.dart';
 
 class OpenAllDocs extends StatefulWidget {
   final String url;
@@ -54,7 +55,7 @@ class _OpenAllDocsState extends State<OpenAllDocs> {
 
   void _openFile() {
     if (_filePath != null) {
-      OpenFile.open(_filePath!);
+      OpenFilex.open(_filePath!);
     }
   }
 

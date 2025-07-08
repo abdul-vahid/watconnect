@@ -11,10 +11,10 @@ class ChatButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 10,
+      // spacing: 10,
       children: buttons.map((button) {
         return Padding(
-          padding: const EdgeInsets.only(top: 8.0),
+          padding: const EdgeInsets.only(top: 5.0),
           child: ElevatedButton(
             onPressed: () async {
               if (button.action == "phone") {
@@ -34,11 +34,11 @@ class ChatButtons extends StatelessWidget {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[200],
+              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
-                side: const BorderSide(
-                    color: AppColor.navBarIconColor, width: 1.5),
+                // side: const BorderSide(
+                //     color: AppColor.navBarIconColor, width: 1.5),
               ),
             ),
             child: Text(

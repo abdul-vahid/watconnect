@@ -143,11 +143,13 @@ class TemplateController extends ChangeNotifier {
     notify();
   }
 
-  Future<void> sendTemplateApiCall({
-    required String tempId,
-    required String usrNumber,
-    required List<String> params,
-  }) async {
+  Future<void> sendTemplateApiCall(
+      {required String tempId,
+      required String usrNumber,
+      required List<String> params,
+      String? docId,
+      String? url,
+      String? mimetyp}) async {
     try {
       setSentTempLoader(true);
       String apiUrl = "${AppConstants.sfSendTemplate}";
@@ -162,13 +164,6 @@ class TemplateController extends ChangeNotifier {
           "businessnumber": busNum,
           "userWhatsAppNumber": usrNumber,
           "metaTemplateId": tempId
-          // "businessnumber": busNum,
-          // "userWhatsAppNumber": usrNumber,
-          // "messageData": {
-          //   "category": selectedTemplate?.category ?? "",
-          //   "templateId": tempId,
-          // },
-          // "metaTemplateId": tempId, // templateId__c
         };
       } else {
         body = {
@@ -187,6 +182,14 @@ class TemplateController extends ChangeNotifier {
           // "params": paramToSend,
           // "messageBody": paramToSend
         };
+      }
+
+      print("docId::: ${docId}  url::: ${url}  mimetyp::: ${mimetyp}");
+
+      if (docId != null) {
+        body["document_id"] = docId;
+        body["url"] = url;
+        body["content_type"] = mimetyp;
       }
 
       final response = await http.post(
@@ -234,5 +237,18 @@ class TemplateController extends ChangeNotifier {
     // String escapedString = jsonEncode(jsonString);
 
     return jsonString;
+  }
+
+  List<TextEditingController> textControllers = [];
+
+  void setupControllers(int count) {
+    textControllers = List.generate(count, (_) => TextEditingController());
+  }
+
+  void disposeControllers() {
+    for (var controller in textControllers) {
+      controller.dispose();
+    }
+    textControllers.clear();
   }
 }

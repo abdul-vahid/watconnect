@@ -62,6 +62,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     super.initState();
     ChatMessageController chatMsgController =
         Provider.of(context, listen: false);
+
     chatMsgController.setSelectedFile(null);
     _initializeAudio();
     getUserNumer();
@@ -325,7 +326,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                             (item.message?.isNotEmpty ?? false) ||
                                 (item.templateName?.isNotEmpty ?? false) ||
                                 (tempBody.isNotEmpty) ||
-                                (item.publicUrl?.isNotEmpty ?? false);
+                                (item.attachmentUrl?.isNotEmpty ?? false);
 
                         if (!hasContent) return const SizedBox();
 
@@ -337,7 +338,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                               child: Container(
                                 color: ref.msgDeleteList
                                         .contains(item.messageId ?? "")
-                                    ? Color(0xffE6E6E6)
+                                    ? const Color(0xffE6E6E6)
                                     : Colors.transparent,
                                 child: ChatBubble(
                                   tempBody: tempBody,
@@ -378,9 +379,10 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   }
 
   sendMsgRow() {
-    ChatMessageController chatMsgController =
-        Provider.of(context, listen: false);
-    return Consumer<TemplateController>(builder: (context, tempCtrl, child) {
+    return Consumer3<TemplateController, SfFileUploadController,
+            ChatMessageController>(
+        builder: (context, tempCtrl, fileUploadController, chatMsgController,
+            child) {
       return Row(
         children: [
           Expanded(
@@ -390,10 +392,14 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                     icon: const Icon(Icons.attach_file),
                     onPressed: () {
                       showPicker(context);
-                    }
-
-                    //  showPicker(context),
-                    ),
+                    }),
+                chatMsgController.isDoc
+                    ? Icon(Icons.edit_document)
+                    : chatMsgController.isImage
+                        ? Icon(Icons.image)
+                        : chatMsgController.isVideo
+                            ? Icon(Icons.videocam_rounded)
+                            : SizedBox(),
                 Expanded(
                   child: TextField(
                     controller: msgController,
@@ -423,7 +429,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: Color(0xffE6E6E6)),
+                        fillColor: const Color(0xffE6E6E6)),
                   ),
                 ),
               ],
@@ -438,7 +444,6 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                   tempCtrl.setSelectedTemp(null);
                   tempCtrl.setSelectedTempName("Select");
 
-                  // selectedCategory = "ALL";
                   tempCtrl.setSeletcedTempCate("ALL");
                   await tempCtrl.getTemplateApiCall(
                       category: tempCtrl.selectedTempCategory);
@@ -452,16 +457,16 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                 ),
                 child: Center(
                     child: Padding(
-                  padding: EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: tempCtrl.getTempLoader
-                      ? Container(
+                      ? const SizedBox(
                           height: 25,
                           width: 25,
-                          child: const CircularProgressIndicator(
+                          child: CircularProgressIndicator(
                             color: Colors.white,
                           ),
                         )
-                      : Icon(Icons.code, color: Colors.white),
+                      : const Icon(Icons.code, color: Colors.white),
                 )),
               ),
             ),
@@ -484,8 +489,10 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                 var code =
                     dbController.selectedContactInfo?.countryCode ?? "91";
 
-                sfFileController.uploadFiledb(chatMsgCtrl.selectedFile!, code,
-                    msgController.text.trim(), usrNumber);
+                if (chatMsgCtrl.selectedFile != null) {
+                  sfFileController.uploadFiledb(chatMsgCtrl.selectedFile!, code,
+                      msgController.text.trim(), usrNumber);
+                }
 
                 // String userNumer = "${code}${usrNumber}";
                 // chatMsgCtrl.sfCreateFileApiCall(userNumer);
@@ -500,7 +507,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                   child: Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: chatMsgController.sendMsgLoader == true ||
-                        chatMsgController.createFileLoader
+                        fileUploadController.fileUploadLoader == true
                     ? Container(
                         height: 25,
                         width: 25,
@@ -542,11 +549,14 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   }
 
   getUserNumer() {
+    SfFileUploadController sfFileUploadController =
+        Provider.of(context, listen: false);
+
+    sfFileUploadController.resetFileUpload();
     ChatMessageController chatMsgController =
         Provider.of(context, listen: false);
 
     chatMsgController.resetMsgDeleteList();
-    DashBoardController dbController = Provider.of(context, listen: false);
   }
 }
 
@@ -578,7 +588,7 @@ void showPicker(BuildContext context) async {
     builder: (context) => Wrap(
       children: <Widget>[
         ListTile(
-          leading: Icon(Icons.photo_library, color: Colors.white),
+          leading: const Icon(Icons.photo_library, color: Colors.white),
           title: const Text(
             'Choose from Gallery',
             style: TextStyle(color: Colors.white),
@@ -640,7 +650,7 @@ Future<void> pickImageFromGallery(context) async {
     File image = File(file.path!);
     chatMsgController.setSelectedFile(image);
   }
-  // Navigator.of(context).pop();
+  Navigator.pop(context);
 }
 
 Future<void> pickImageFromCamera(context) async {
@@ -655,29 +665,7 @@ Future<void> pickImageFromCamera(context) async {
     File image = File(pickedFile.path);
     chatMsgController.setSelectedFile(image);
   }
-  // Navigator.of(context).pop();
-}
-
-Future<File?> pickImaFromGallery() async {
-  final pickedFile = await FilePicker.platform.pickFiles(
-    allowMultiple: false,
-    type: FileType.custom,
-    allowedExtensions: [
-      "jpg",
-      'png',
-    ],
-  );
-  if (pickedFile != null) {
-    // setState(() {
-    //   file = pickedFile.files.first;
-    //   image = File(file!.path!);
-    //   print("image::: ${image}");
-    //   fileNameController.text = file!.name;
-    // });
-    // return image;
-  } else {
-    return null;
-  }
+  Navigator.pop(context);
 }
 
 void TemplatebottomSheetShow(context, {bool isFromCamp = false}) {
@@ -732,6 +720,10 @@ void TemplatebottomSheetShow(context, {bool isFromCamp = false}) {
                   EasyLoading.showToast("Select Template to continue");
                 } else {
                   Navigator.pop(context);
+                  SfFileUploadController sfFileUploadController =
+                      Provider.of(context, listen: false);
+
+                  sfFileUploadController.resetFileUpload();
                   reviewBottomSheetShow(context, fromCamp: isFromCamp);
                 }
               },
@@ -762,181 +754,239 @@ void TemplatebottomSheetShow(context, {bool isFromCamp = false}) {
       }));
 }
 
-void reviewBottomSheetShow(context, {bool fromCamp = false}) {
-  return showCommonBottomSheet(
-    context: context,
-    title: "Review Template",
-    col: Consumer<TemplateController>(
-      builder: (context, tempc, child) {
-        var templateData = tempc.selectedTemplate;
+void reviewBottomSheetShow(BuildContext context, {bool fromCamp = false}) {
+  final tempc = Provider.of<TemplateController>(context, listen: false);
+  final chatMsgController =
+      Provider.of<ChatMessageController>(context, listen: false);
 
-        // Fresh list of controllers every time
-        List<TextEditingController> controllers = List.generate(
-          templateData?.storedParameterValues?.length ?? 0,
-          (_) => TextEditingController(),
-        );
+  final templateData = tempc.selectedTemplate;
+  final fieldCount = templateData?.storedParameterValues?.length ?? 0;
 
-        List<ButtonItem> buttons = (templateData?.button?.isNotEmpty ?? false)
-            ? templateData!.getParsedButtons()
-            : [];
+  tempc.setupControllers(fieldCount);
+  chatMsgController.setSelectedFile(null);
 
-        String headerType = templateData?.headerType ?? "";
+  showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        final maxHeight = MediaQuery.of(context).size.height * 0.8;
 
-        return Center(
-          child: Form(
-            key: _addTemplateFormKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                /// Template name
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: Text(
-                    templateData?.name ?? "",
-                    textAlign: TextAlign.left,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 12,
+                right: 12,
+                top: 20,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: maxHeight,
                 ),
+                child: Material(
+                  // ensure proper styling
+                  color: Colors.white,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(20)),
+                  child: Consumer2<TemplateController, ChatMessageController>(
+                    builder: (context, tempc, chatMsgController, child) {
+                      final templateData = tempc.selectedTemplate;
+                      final headerType = templateData?.headerType ?? "";
+                      List<ButtonItem> buttons =
+                          (templateData?.button?.isNotEmpty ?? false)
+                              ? templateData!.getParsedButtons()
+                              : [];
 
-                /// Dynamic TextFields
-                Column(
-                  children: List.generate(
-                    controllers.length,
-                    (index) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: TextFormField(
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please provide Placeholder value';
-                          }
-                          return null;
-                        },
-                        controller: controllers[index],
-                        decoration: InputDecoration(
-                          labelText: 'Placeholder ${index + 1}',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                      return SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Form(
+                          key: _addTemplateFormKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              /// Title Row
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    "Review Template",
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    icon: const Icon(Icons.cancel_outlined),
+                                  )
+                                ],
+                              ),
+                              const Divider(),
 
-                /// Template preview box
-                if ((templateData?.headerText?.isNotEmpty ?? false) ||
-                    (templateData?.body?.isNotEmpty ?? false) ||
-                    (templateData?.footer?.isNotEmpty ?? false) ||
-                    (templateData?.messageBody?.isNotEmpty ?? false) ||
-                    buttons.isNotEmpty)
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: const Color(0xffE3FFC9),
-                    ),
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (headerType == "VIDEO" ||
-                            headerType == "IMAGE" ||
-                            headerType == "DOCUMENT")
-                          HeaderTypePreview(
-                            headerType: headerType,
-                          ),
-                        if (templateData?.headerText?.isNotEmpty ?? false)
-                          Text(templateData!.headerText!),
-                        const SizedBox(height: 5),
-                        if (templateData?.body?.isNotEmpty ?? false)
-                          Text(templateData!.body!),
-                        const SizedBox(height: 5),
-                        if (templateData?.messageBody?.isNotEmpty ?? false)
-                          Text(templateData!.messageBody!),
-                        const SizedBox(height: 5),
-                        if (templateData?.footer?.isNotEmpty ?? false)
-                          Text(templateData!.footer!),
-                        if (buttons.isNotEmpty) ChatButtons(buttons: buttons),
-                        if (headerType == "IMAGE")
-                          PickMediaButton(
-                            label: "Pick Image",
-                            onTap: () {},
-                          )
-                        else if (headerType == "VIDEO")
-                          PickMediaButton(
-                            label: "Pick Video",
-                            onTap: () {},
-                          )
-                        else if (headerType == "DOCUMENT")
-                          PickMediaButton(
-                            label: "Pick Document",
-                            onTap: () {},
-                          )
-                      ],
-                    ),
-                  ),
+                              if (templateData?.name != null)
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  child: Text(
+                                    templateData!.name!,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18),
+                                  ),
+                                ),
 
-                /// Send Button
-                Padding(
-                  padding: const EdgeInsets.only(top: 10.0),
-                  child: InkWell(
-                    onTap: () {
-                      if (_addTemplateFormKey.currentState!.validate()) {
-                        if (tempc.sendTempLoader) {
-                        } else {
-                          if (fromCamp) {
-                            tempc.resetTempParamList();
-                            sendCampTemp(context, controllers);
-                          } else {
-                            sendChatTemp(context, controllers);
-                          }
-                        }
-                      }
-                    },
-                    child: IntrinsicWidth(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColor.navBarIconColor,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 12),
-                        child: Center(
-                          child: SizedBox(
-                            height: 20,
-                            width: 120,
-                            child: Center(
-                              child: tempc.sendTempLoader
-                                  ? const SizedBox(
-                                      height: 16,
-                                      width: 16,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text(
-                                      "Send Template",
-                                      style: TextStyle(color: Colors.white),
+                              /// Dynamic Text Fields
+                              ...List.generate(tempc.textControllers.length,
+                                  (index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 12.0),
+                                  child: TextFormField(
+                                    controller: tempc.textControllers[index],
+                                    cursorColor: AppColor.navBarIconColor,
+                                    keyboardType: TextInputType.text,
+                                    textInputAction: TextInputAction.next,
+                                    decoration: InputDecoration(
+                                      labelText: 'Placeholder ${index + 1}',
+                                      border: const OutlineInputBorder(),
                                     ),
-                            ),
+                                    validator: (value) {
+                                      if (value!.isEmpty) {
+                                        return 'All fields are required';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                );
+                              }),
+
+                              /// Template Preview
+                              if ((templateData?.headerText?.isNotEmpty ??
+                                      false) ||
+                                  (templateData?.body?.isNotEmpty ?? false) ||
+                                  (templateData?.footer?.isNotEmpty ?? false) ||
+                                  (templateData?.messageBody?.isNotEmpty ??
+                                      false) ||
+                                  buttons.isNotEmpty)
+                                Container(
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xffE3FFC9),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (["IMAGE", "VIDEO", "DOCUMENT"]
+                                          .contains(headerType))
+                                        chatMsgController.selectedFile == null
+                                            ? HeaderTypePreview(
+                                                headerType: headerType)
+                                            : buildHeaderPreviewWidget(
+                                                file: chatMsgController
+                                                    .selectedFile!,
+                                                type: headerType,
+                                              ),
+                                      if (templateData
+                                              ?.headerText?.isNotEmpty ??
+                                          false)
+                                        Text(templateData!.headerText!),
+                                      if (templateData?.body?.isNotEmpty ??
+                                          false)
+                                        Text(templateData!.body!),
+                                      if (templateData
+                                              ?.messageBody?.isNotEmpty ??
+                                          false)
+                                        Text(templateData!.messageBody!),
+                                      if (templateData?.footer?.isNotEmpty ??
+                                          false)
+                                        Text(templateData!.footer!),
+                                      if (buttons.isNotEmpty)
+                                        ChatButtons(buttons: buttons),
+                                      PickMediaButton(
+                                        label: "Pick $headerType",
+                                        onTap: () =>
+                                            pickMedia(context, headerType),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                              /// Send Button
+                              Align(
+                                alignment: Alignment.center,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColor.navBarIconColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    if (_addTemplateFormKey.currentState!
+                                        .validate()) {
+                                      if (tempc.sendTempLoader) return;
+                                      if (["IMAGE", "VIDEO", "DOCUMENT"]
+                                              .contains(headerType) &&
+                                          chatMsgController.selectedFile ==
+                                              null) {
+                                        EasyLoading.showToast(
+                                            "Select $headerType to continue");
+                                        return;
+                                      }
+
+                                      if (fromCamp) {
+                                        tempc.resetTempParamList();
+                                        sendCampTemp(
+                                            context, tempc.textControllers);
+                                      } else {
+                                        sendChatTemp(
+                                            context, tempc.textControllers);
+                                      }
+                                    }
+                                  },
+                                  child: tempc.sendTempLoader
+                                      ? const SizedBox(
+                                          height: 18,
+                                          width: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Text(
+                                          "Send Template",
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
-
-                const SizedBox(height: 40),
-              ],
+              ),
             ),
           ),
         );
-      },
-    ),
-  );
+      });
 }
 
-void sendChatTemp(context, List<TextEditingController> controllers) {
+Future<void> sendChatTemp(
+    context, List<TextEditingController> controllers) async {
   TemplateController tempc = Provider.of(context, listen: false);
   var templateData = tempc.selectedTemplate;
   print("templateData:::::::::     ${templateData?.templateId ?? ""}");
@@ -947,15 +997,41 @@ void sendChatTemp(context, List<TextEditingController> controllers) {
   String userNumer = "${code}${usrNumber}";
   List<String> userInputs = controllers.map((e) => e.text.trim()).toList();
   print("User Inputs: $userInputs");
+  ChatMessageController chatMsgController = Provider.of(context, listen: false);
+  SfFileUploadController sfFileUploadController =
+      Provider.of(context, listen: false);
+  if (chatMsgController.selectedFile != null) {
+    await sfFileUploadController
+        .uploadFiledb(chatMsgController.selectedFile!, code, "", usrNumber,
+            isFromTemplate: true)
+        .then(
+      (value) {
+        print(
+            "sfFileUploadController.fileDocId::::: ${sfFileUploadController.fileDocId}");
 
-  tempc
-      .sendTemplateApiCall(
-          tempId: templateData?.templateId ?? "",
-          usrNumber: userNumer,
-          params: userInputs)
-      .then((onValue) {
-    Navigator.pop(context);
-  });
+        tempc
+            .sendTemplateApiCall(
+                tempId: templateData?.templateId ?? "",
+                usrNumber: userNumer,
+                params: userInputs,
+                docId: sfFileUploadController.fileDocId,
+                url: sfFileUploadController.filePubUrl,
+                mimetyp: sfFileUploadController.fileMimeType)
+            .then((onValue) {
+          Navigator.pop(context);
+        });
+      },
+    );
+  } else {
+    tempc
+        .sendTemplateApiCall(
+            tempId: templateData?.templateId ?? "",
+            usrNumber: userNumer,
+            params: userInputs)
+        .then((onValue) {
+      Navigator.pop(context);
+    });
+  }
 }
 
 void sendCampTemp(context, List<TextEditingController> controllers) {
@@ -974,4 +1050,55 @@ void sendCampTemp(context, List<TextEditingController> controllers) {
   // String userNumer = "${code}${usrNumber}";
   // List<String> userInputs = controllers.map((e) => e.text.trim()).toList();
   // print("User Inputs: $userInputs");
+}
+
+Future<void> pickMedia(BuildContext context, String type) async {
+  final chatMsgController =
+      Provider.of<ChatMessageController>(context, listen: false);
+
+  if (type == "IMAGE") {
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+    if (pickedFile != null) {
+      EasyLoading.showToast("Image Picked Successfully");
+      chatMsgController.setSelectedFile(File(pickedFile.path));
+    }
+  } else {
+    final extensions = type == "VIDEO"
+        ? ["mp4", "mov", "avi", "mkv", "webm"]
+        : ["pdf", "txt", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "csv"];
+
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: extensions,
+    );
+
+    if (result != null) {
+      EasyLoading.showToast("${type} Picked Successfully");
+      chatMsgController.setSelectedFile(File(result.files.first.path!));
+    }
+  }
+}
+
+Widget buildHeaderPreviewWidget({required File file, required String type}) {
+  switch (type) {
+    case 'IMAGE':
+      return Image.file(file, height: 80);
+    case 'VIDEO':
+      return Container(
+        height: 80,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.black,
+        ),
+        child: const Center(
+          child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
+        ),
+      );
+    case 'DOCUMENT':
+    default:
+      return Image.asset("assets/images/file.png", height: 80, width: 80);
+  }
 }

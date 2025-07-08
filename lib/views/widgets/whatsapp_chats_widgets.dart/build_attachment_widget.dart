@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:open_file/open_file.dart';
-import 'package:path/path.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
@@ -31,12 +30,6 @@ Widget buildAttachmentWidget(String url, BuildContext context) {
       return InkWell(
           onTap: () {
             openDocument(context, url);
-            // Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //         builder: (context) => OpenAllDocs(
-            //               url: url,
-            //             )));
           },
           child: Image.asset("assets/images/doc.png",
               height: 120, width: MediaQuery.of(context).size.width * 0.65));
@@ -46,12 +39,6 @@ Widget buildAttachmentWidget(String url, BuildContext context) {
       return InkWell(
           onTap: () {
             openDocument(context, url);
-            // Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //         builder: (context) => OpenAllDocs(
-            //               url: url,
-            //             )));
           },
           child: Image.asset("assets/images/powerpoint.png",
               height: 120, width: MediaQuery.of(context).size.width * 0.65));
@@ -106,7 +93,7 @@ void openDocument(BuildContext context, String url) async {
   final filename = url.split('/').last;
   final dir = await getApplicationDocumentsDirectory();
   final file = File('${dir.path}/$filename');
-
+  print("filename:::: ${filename}   ${dir}");
   // Show loading dialog (optional)
   showDialog(
     context: context,
@@ -129,7 +116,7 @@ void openDocument(BuildContext context, String url) async {
   }
 
   Navigator.pop(context); // remove loader
-  OpenFile.open(file.path); // open the file
+  OpenFilex.open(file.path); // open the file
 }
 
 Widget buildVideoPlaceholder(context) {

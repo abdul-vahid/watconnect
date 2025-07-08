@@ -1,14 +1,14 @@
 import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:whatsapp/utils/app_color.dart';
 
 class ViewVideo extends StatefulWidget {
   final String videoUrl;
-  ViewVideo({super.key, required this.videoUrl});
+  const ViewVideo({super.key, required this.videoUrl});
 
   @override
   State<ViewVideo> createState() => _ViewVideoState();
@@ -16,14 +16,14 @@ class ViewVideo extends StatefulWidget {
 
 class _ViewVideoState extends State<ViewVideo> {
   late VideoPlayerController _controller;
-  bool _isPlaying = false; // Track play/pause state
+  bool _isPlaying = false;
 
   @override
   void initState() {
     super.initState();
     _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
       ..initialize().then((_) {
-        setState(() {}); // Update UI when video is ready
+        setState(() {}); // triggers UI refresh
       });
   }
 
@@ -37,17 +37,17 @@ class _ViewVideoState extends State<ViewVideo> {
     setState(() {
       if (_controller.value.isPlaying) {
         _controller.pause();
+        _isPlaying = false;
       } else {
         _controller.play();
+        _isPlaying = true;
       }
-      _isPlaying = _controller.value.isPlaying;
     });
   }
 
   Future<void> downloadFile(String url, String fileName) async {
     try {
-      EasyLoading.showToast("Downloading...");
-
+      EasyLoading.show(status: "Downloading...");
       Directory directory;
 
       if (Platform.isAndroid) {
@@ -65,72 +65,84 @@ class _ViewVideoState extends State<ViewVideo> {
       String filePath = '${directory.path}/$fileName';
 
       Dio dio = Dio();
-      await dio.download(url, filePath, onReceiveProgress: (received, total) {
-        if (total != -1) {
-          print(
-              'Download progress: ${(received / total * 100).toStringAsFixed(0)}%');
-        }
-      });
-      EasyLoading.showToast("File downloaded to: $filePath");
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //     // SnackBar(content: Text("File downloaded to: $filePath")),
-      //     );
+      await dio.download(url, filePath);
+      EasyLoading.showSuccess("Saved to:\n$filePath");
     } catch (e) {
-      EasyLoading.showToast("Download Failed");
+      EasyLoading.showError("Download Failed");
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final fileName = widget.videoUrl.split('/').last;
+
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        backgroundColor: AppColor.navBarIconColor,
+        elevation: 0.5,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Video", style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "Video Preview",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         actions: [
           IconButton(
-            tooltip: "Download PDF",
-            onPressed: () {
-              final filename = widget.videoUrl.split('/').last;
-              downloadFile(widget.videoUrl, filename);
-            },
+            tooltip: "Download",
             icon: const Icon(Icons.download, color: Colors.white),
+            onPressed: () => downloadFile(widget.videoUrl, fileName),
           ),
         ],
       ),
-      body: Center(
-        child: _controller.value.isInitialized
-            ? Stack(
-                alignment: Alignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: _togglePlayPause,
-                    child: AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
-                    ),
-                  ),
-                  if (!_controller.value.isPlaying)
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black45,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(2.0),
-                        child: IconButton(
-                          icon: const Icon(Icons.play_arrow,
-                              size: 30, color: Colors.white),
-                          onPressed: _togglePlayPause,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Center(
+          child: _controller.value.isInitialized
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: _togglePlayPause,
+                        child: AspectRatio(
+                          aspectRatio: _controller.value.aspectRatio,
+                          child: VideoPlayer(_controller),
                         ),
                       ),
-                    ),
-                ],
-              )
-            : const CircularProgressIndicator(),
+                      Positioned(
+                        bottom: 16,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black54,
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              _isPlaying
+                                  ? Icons.pause_circle_filled
+                                  : Icons.play_circle_filled,
+                              size: 48,
+                              color: Colors.white,
+                            ),
+                            onPressed: _togglePlayPause,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                ),
+        ),
       ),
     );
   }

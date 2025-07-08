@@ -11,7 +11,8 @@ import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
-import 'package:open_file/open_file.dart';
+// import 'package:open_file/open_file.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -1954,7 +1955,7 @@ class _Forms extends State<CampaignCloneview> {
         }
       }
 
-      final result = await OpenFile.open(filePath);
+      final result = await OpenFilex.open(filePath);
       print(' Open result: ${result.message}');
     } else if (await Permission.manageExternalStorage.isPermanentlyDenied ||
         await Permission.storage.isPermanentlyDenied) {

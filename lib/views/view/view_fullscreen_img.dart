@@ -77,10 +77,15 @@ class _PreviewImageState extends State<PreviewImage> {
           ),
         ],
       ),
-      body: Center(
-        child: Image.network(
-          widget.imgUrl,
-          fit: BoxFit.contain,
+      body: InteractiveViewer(
+        panEnabled: true,
+        minScale: 1.0,
+        maxScale: 4.0,
+        child: Center(
+          child: Image.network(
+            widget.imgUrl,
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );
