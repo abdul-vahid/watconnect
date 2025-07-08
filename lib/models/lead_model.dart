@@ -59,59 +59,60 @@ class LeadModel {
   String? ownername;
   String? createdbyname;
   String? lastmodifiedbyname;
+  bool? pinned;
 
-  LeadModel({
-    this.id,
-    this.firstname,
-    this.lastname,
-    this.leadsource,
-    this.leadstatus,
-    this.createdbyid,
-    this.lastmodifiedbyid,
-    this.createddate,
-    this.lastmodifieddate,
-    this.email,
-    this.ownerid,
-    this.description,
-    this.whatsappNumber,
-    this.blocked,
-    this.countryCode,
-    this.dob,
-    this.address,
-    this.tagNames,
-    this.leadname,
-    this.ownername,
-    this.createdbyname,
-    this.lastmodifiedbyname,
-  });
+  LeadModel(
+      {this.id,
+      this.firstname,
+      this.lastname,
+      this.leadsource,
+      this.leadstatus,
+      this.createdbyid,
+      this.lastmodifiedbyid,
+      this.createddate,
+      this.lastmodifieddate,
+      this.email,
+      this.ownerid,
+      this.description,
+      this.whatsappNumber,
+      this.blocked,
+      this.countryCode,
+      this.dob,
+      this.address,
+      this.tagNames,
+      this.leadname,
+      this.ownername,
+      this.createdbyname,
+      this.lastmodifiedbyname,
+      this.pinned});
 
   factory LeadModel.fromJson(Map<String, dynamic> json) {
     return LeadModel(
-      id: json['id'] ?? '',
-      firstname: json['firstname'] ?? '',
-      lastname: json['lastname'] ?? '',
-      leadsource: json['leadsource'] ?? '',
-      leadstatus: json['leadstatus'] ?? '',
-      description: json['description'] ?? "",
-      createdbyid: json['createdbyid'] ?? '',
-      lastmodifiedbyid: json['lastmodifiedbyid'] ?? '',
-      createddate: json['createddate'] ?? '',
-      lastmodifieddate: json['lastmodifieddate'] ?? '',
-      email: json['email'] ?? '',
-      ownerid: json['ownerid'] ?? '',
-      whatsappNumber: json['whatsapp_number'] ?? '',
-      blocked: json['blocked'] ?? false,
-      countryCode: json['country_code'] ?? '',
-      dob: json['dob'] ?? '',
-      address: json['address'] ?? '',
-      tagNames: (json['tag_names'] as List<dynamic>? ?? [])
-          .map((v) => TagName.fromJson(v))
-          .toList(),
-      leadname: json['leadname'] ?? '',
-      ownername: json['ownername'] ?? '',
-      createdbyname: json['createdbyname'] ?? '',
-      lastmodifiedbyname: json['lastmodifiedbyname'] ?? '',
-    );
+        id: json['id'] ?? '',
+        firstname: json['firstname'] ?? '',
+        lastname: json['lastname'] ?? '',
+        leadsource: json['leadsource'] ?? '',
+        leadstatus: json['leadstatus'] ?? '',
+        description: json['description'] ?? "",
+        createdbyid: json['createdbyid'] ?? '',
+        lastmodifiedbyid: json['lastmodifiedbyid'] ?? '',
+        createddate: json['createddate'] ?? '',
+        lastmodifieddate: json['lastmodifieddate'] ?? '',
+        email: json['email'] ?? '',
+        ownerid: json['ownerid'] ?? '',
+        whatsappNumber: json['whatsapp_number'] ?? '',
+        blocked: json['blocked'] ?? false,
+        countryCode: json['country_code'] ?? '',
+        dob: json['dob'] ?? '',
+        address: json['address'] ?? '',
+        tagNames: (json['tag_names'] as List<dynamic>? ?? [])
+            .map((v) => TagName.fromJson(v))
+            .toList(),
+        leadname: json['leadname'] ?? '',
+        ownername: json['ownername'] ?? '',
+        createdbyname: json['createdbyname'] ?? '',
+        lastmodifiedbyname: json['lastmodifiedbyname'] ?? '',
+        pinned: json['pinned'] ?? false);
   }
 
   Map<String, dynamic> toJson() {
@@ -138,6 +139,7 @@ class LeadModel {
       'ownername': ownername ?? '',
       'createdbyname': createdbyname ?? '',
       'lastmodifiedbyname': lastmodifiedbyname ?? '',
+      'pinned': pinned ?? false
     };
   }
 }

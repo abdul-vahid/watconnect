@@ -154,10 +154,30 @@ class _RecentChatViewState extends State<RecentChatView> {
         ),
         centerTitle: true,
         elevation: 5,
+        actions: [
+          showPin
+              ? const Padding(
+                  padding: EdgeInsets.only(right: 12.0),
+                  child: Icon(
+                    Icons.push_pin,
+                    color: Colors.white,
+                  ),
+                )
+              : SizedBox()
+        ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _pullRefresh,
-        child: AppUtils.getAppBody(leadlistvm, _pageBody),
+      body: GestureDetector(
+        onTap: () {
+          setState(() {
+            pinLeadId = "";
+            showPin = false;
+          });
+          FocusScope.of(context).unfocus();
+        },
+        child: RefreshIndicator(
+          onRefresh: _pullRefresh,
+          child: (_pageBody()),
+        ),
       ),
     );
   }
@@ -234,149 +254,169 @@ class _RecentChatViewState extends State<RecentChatView> {
             ),
           ),
         ),
-        Container(
-          height: 55,
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            shrinkWrap: true,
-            itemCount: tags.length,
-            itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  if (mounted) {
-                    setState(() {
-                      selectedTagId = index;
-                    });
-                  }
-
-                  if (index == 1) {
-                    unreadChatFilter();
-                  } else {
-                    if (mounted) {
-                      setState(() {
-                        allRecentChats = tempLeadModelList;
-                      });
-                    }
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12.0, vertical: 4.0),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 179, 238, 243),
-                      border: Border.all(
-                        color: selectedTagId == index
-                            ? Colors.black
-                            : Colors.transparent,
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Center(
-                      child: Text(
-                        tags[index],
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
         Expanded(
-          child: chatLoader
-              ? const Center(
-                  child: SizedBox(
-                    height: 50,
-                    width: 50,
-                    child: CircularProgressIndicator(),
-                  ),
-                )
-              : allRecentChats.isEmpty || noMatchedLeads
-                  ? const Center(
-                      child: Text(
-                        "No Chat Found..",
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.5),
-                                  blurRadius: 5,
-                                  spreadRadius: 3,
-                                  offset: const Offset(2, 4),
-                                ),
-                              ],
-                              color: Colors.white,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(30),
-                                topRight: Radius.circular(30),
+            child: chatLoader
+                ? const Center(
+                    child: SizedBox(
+                      height: 50,
+                      width: 50,
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.5),
+                                blurRadius: 5,
+                                spreadRadius: 3,
+                                offset: const Offset(2, 4),
                               ),
+                            ],
+                            color: Colors.white,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30),
                             ),
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 22.0, bottom: 5),
-                              child: ListView.builder(
-                                itemCount: allRecentChats.length,
-                                itemBuilder: (context, index) {
-                                  var unreadCount = "0";
-                                  var lead = allRecentChats[index];
+                          ),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.only(top: 12.0, bottom: 5),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: 40,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: tags.length,
+                                    itemBuilder: (context, index) {
+                                      final isSelected = selectedTagId == index;
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        child: InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              selectedTagId = index;
+                                              if (index == 1) {
+                                                unreadChatFilter();
+                                              } else {
+                                                allRecentChats =
+                                                    tempLeadModelList;
+                                              }
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12.0,
+                                                vertical: 4.0),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: isSelected
+                                                    ? Colors.black
+                                                    : Colors.transparent,
+                                                width: 1.5,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                tags[index],
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
 
-                                  for (var p in unreadList) {
-                                    if (lead.full_number
-                                        .toString()
-                                        .contains(p.whatsappNumber)) {
-                                      unreadCount = p.unreadMsgCount;
-                                      break;
-                                    }
-                                  }
+                                Divider(),
+                                // Lead Chat List
+                                const SizedBox(height: 10),
+                                allRecentChats.isEmpty || noMatchedLeads
+                                    ? const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.only(top: 38.0),
+                                          child: Text(
+                                            "No Chat Found..",
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                        ),
+                                      )
+                                    : Expanded(
+                                        child: ListView.builder(
+                                          itemCount: allRecentChats.length,
+                                          physics:
+                                              const BouncingScrollPhysics(),
+                                          itemBuilder: (context, index) {
+                                            final lead = allRecentChats[index];
+                                            String unreadCount = "0";
 
-                                  return leadRecordList(lead, unreadCount);
-                                },
-                              ),
+                                            for (var p in unreadList) {
+                                              if (lead.full_number
+                                                  .toString()
+                                                  .contains(p.whatsappNumber)) {
+                                                unreadCount = p.unreadMsgCount;
+                                                break;
+                                              }
+                                            }
+
+                                            return leadRecordList(
+                                                lead, unreadCount);
+                                          },
+                                        ),
+                                      ),
+                              ],
                             ),
                           ),
                         ),
-                      ],
-                    ),
-        ),
+                      ),
+                    ],
+                  )),
       ],
     );
   }
 
   bool chatLoader = false;
-  Future<void> getLeadList() async {
+  Future<void> getLeadList({bool showLoading = true}) async {
     if (mounted) {
-      setState(() {
-        chatLoader = true;
-      });
+      if (showLoading == false) {
+        setState(() {
+          chatLoader = true;
+        });
+      }
     }
 
     await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
             listen: false)
         .fetchRecentChat()
         .then((onValue) {
-      allRecentChats = [];
-      tempLeadModelList = [];
+      // allRecentChats = [];
+      // tempLeadModelList = [];
 
       try {
         for (var viewModel in leadlistvm.viewModels) {
           var recentMsgmodel = viewModel.model;
           if (recentMsgmodel?.records != null) {
             for (var record in recentMsgmodel!.records!) {
-              allRecentChats.add(record);
-              tempLeadModelList.add(record);
+              allRecentChats
+                ..clear()
+                ..add(record);
+              tempLeadModelList
+                ..clear()
+                ..add(record);
             }
           }
         }
@@ -392,149 +432,162 @@ class _RecentChatViewState extends State<RecentChatView> {
     }
   }
 
+  bool showPin = false;
+  String pinLeadId = "";
+  bool isPinned = false;
+
   Widget leadRecordList(Records model, String unreadMsgCount) {
     Color statusColor;
     statusColor = AppColor.navBarIconColor;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border(
-          left: BorderSide(
-            color: statusColor,
-            width: 5,
+    return GestureDetector(
+      onLongPress: () {
+        setState(() {
+          pinLeadId = model.id ?? "";
+          showPin = true;
+        });
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border(
+            left: BorderSide(
+              color: statusColor,
+              width: 5,
+            ),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 5,
+              spreadRadius: 3,
+              offset: const Offset(2, 4),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 5,
-            spreadRadius: 3,
-            offset: const Offset(2, 4),
-          ),
-        ],
-      ),
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
-        child: InkWell(
-          onTap: () {
-            if (model.full_number != null) {
-              _marksread(model.full_number ?? "");
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
+          child: InkWell(
+            onTap: () {
+              if (model.full_number != null) {
+                _marksread(model.full_number ?? "");
 
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChatScreen(
-                    leadName: model.contactname ?? "",
-                    wpnumber: model.full_number,
-                    id: model.id,
-                    contryCode: model.countrycode,
-                  ),
-                ),
-              ).then((_) {
-                _getUnreadCount();
-
-                setState(() {
-                  unreadMsgCount = "0";
-                  unreadMsgCount = "";
-                });
-                print("unreadMsgCount====${unreadMsgCount}  ");
-              });
-              leads?.viewModels.clear();
-              Provider.of<LeadListViewModel>(context, listen: false)
-                  .fetchRecentChat();
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('No Phone Number '),
-                  duration: Duration(seconds: 3),
-                  backgroundColor: AppColor.motivationCar1Color,
-                ),
-              );
-            }
-          },
-          child: Row(
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: AppColor.navBarIconColor,
-                    child: Text(
-                      model.contactname?.isNotEmpty == true
-                          ? model.contactname![0].toUpperCase()
-                          : '?',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatScreen(
+                      leadName: model.contactname ?? "",
+                      wpnumber: model.full_number,
+                      id: model.id,
+                      contryCode: model.countrycode,
                     ),
                   ),
-                ],
-              ),
-              Expanded(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 5),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${model.contactname}",
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              "${model.full_number}",
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                            Text(
-                              "${model.message}",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.black54),
-                            ),
-                          ],
+                ).then((_) {
+                  _getUnreadCount();
+
+                  setState(() {
+                    unreadMsgCount = "0";
+                    unreadMsgCount = "";
+                  });
+                  print("unreadMsgCount====${unreadMsgCount}  ");
+                });
+                leads?.viewModels.clear();
+                Provider.of<LeadListViewModel>(context, listen: false)
+                    .fetchRecentChat();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('No Phone Number '),
+                    duration: Duration(seconds: 3),
+                    backgroundColor: AppColor.motivationCar1Color,
+                  ),
+                );
+              }
+            },
+            child: Row(
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: AppColor.navBarIconColor,
+                      child: Text(
+                        model.contactname?.isNotEmpty == true
+                            ? model.contactname![0].toUpperCase()
+                            : '?',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 5),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${model.contactname}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                "${model.full_number}",
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              Text(
+                                "${model.message}",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.black54),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
-                    badges.Badge(
-                      badgeStyle: const badges.BadgeStyle(
-                        badgeColor: Colors.green,
-                      ),
-                      badgeContent: Text(
-                        unreadMsgCount,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    )
-                  else
-                    const SizedBox.shrink(),
-                  Text(
-                    formatDateTime(model.createddate.toString()),
-                    style: const TextStyle(fontSize: 10, color: Colors.black54),
-                  ),
-                ],
-              )
-            ],
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
+                      badges.Badge(
+                        badgeStyle: const badges.BadgeStyle(
+                          badgeColor: Colors.green,
+                        ),
+                        badgeContent: Text(
+                          unreadMsgCount,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      )
+                    else
+                      const SizedBox.shrink(),
+                    Text(
+                      formatDateTime(model.createddate.toString()),
+                      style:
+                          const TextStyle(fontSize: 10, color: Colors.black54),
+                    ),
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),

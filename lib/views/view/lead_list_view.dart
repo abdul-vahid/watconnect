@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -11,10 +10,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
-import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/tags_list_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
-import 'package:whatsapp/salesforce/screens/sf_dashboard.dart';
 import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
@@ -56,6 +53,8 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   bool isRefresh = false;
   int countunread = 0;
   List allLeads = [];
+  List pinnedLeads = [];
+
   List unreadList = [];
   List<String> selectleadList = [];
   List<String> selectTagFilterList = [];
@@ -149,6 +148,10 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     }
   }
 
+  bool showPin = false;
+  bool isPinned = false;
+  String pinnedLeadId = "";
+
   @override
   Widget build(BuildContext context) {
     unreadCountVm = Provider.of<UnreadCountVm>(context);
@@ -169,26 +172,68 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
         backgroundColor: AppColor.pageBgGrey,
         appBar: AppBar(
           actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: CircleAvatar(
-                backgroundColor: AppColor.navBarIconColor,
-                child: IconButton(
-                  icon: const Icon(
-                    FontAwesomeIcons.add,
-                    size: 25,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LeadAddView(),
-                      ),
-                    );
-                  },
+            Row(
+              children: [
+                showPin
+                    ? InkWell(
+                        onTap: () {
+                          if (isPinned) {
+                            Provider.of<LeadListViewModel>(context,
+                                    listen: false)
+                                .unpinChat(pinnedLeadId)
+                                .then((onValue) {
+                              getLeadList(showLoading: false);
+                            });
+                          } else {
+                            Provider.of<LeadListViewModel>(context,
+                                    listen: false)
+                                .pinChat(pinnedLeadId)
+                                .then((onValue) {
+                              getLeadList(showLoading: false);
+                            });
+                          }
+                          setState(() {
+                            showPin = false;
+                            pinnedLeadId = "";
+                          });
+                        },
+                        child: isPinned == false
+                            ? const Icon(
+                                Icons.push_pin_outlined,
+                                color: Colors.white,
+                              )
+                            : Image.asset(
+                                "assets/images/unpin_icon.png",
+                                color: Colors.white,
+                                height: 20,
+                              ),
+                      )
+                    : const SizedBox(),
+                const SizedBox(
+                  width: 10,
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: CircleAvatar(
+                    backgroundColor: AppColor.navBarIconColor,
+                    child: IconButton(
+                      icon: const Icon(
+                        FontAwesomeIcons.add,
+                        size: 25,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LeadAddView(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
           leading: IconButton(
@@ -211,9 +256,18 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           centerTitle: true,
           elevation: 5,
         ),
-        body: RefreshIndicator(onRefresh: _pullRefresh, child: _pageBody()
-            //  AppUtils.getAppBody(leadlistvm!, _pageBody),
-            ),
+        body: GestureDetector(
+          onTap: () {
+            setState(() {
+              pinnedLeadId = "";
+              showPin = false;
+              isPinned = false;
+            });
+          },
+          child: RefreshIndicator(onRefresh: _pullRefresh, child: _pageBody()
+              //  AppUtils.getAppBody(leadlistvm!, _pageBody),
+              ),
+        ),
       ),
     );
   }
@@ -435,6 +489,11 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                   flex: 2,
                   child: InkWell(
                     onTap: () {
+                      setState(() {
+                        pinnedLeadId = "";
+                        showPin = false;
+                        isPinned = false;
+                      });
                       _showFilterBottomSheet(context);
                     },
                     child: Container(
@@ -524,228 +583,108 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
             ],
           ),
         ),
-        Container(
-          height: 55,
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            shrinkWrap: true,
-            itemCount: filters.length,
-            itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  setState(() {
-                    selectedFilterId = index;
-                  });
-                  if (index == 1) {
-                    unreadChatFilter();
-                  } else if (index == 0) {
-                    setState(() {
-                      allLeads = tempLeadModelList;
-                    });
-                  } else {
-                    showModalBottomSheet(
-                        context: context,
-                        useSafeArea: true,
-                        isScrollControlled: true,
-                        enableDrag: false,
-                        builder: (context) {
-                          String _selectedOption = 'AND';
-                          return StatefulBuilder(builder:
-                              (BuildContext context, StateSetter setState) {
-                            return Container(
-                              height: MediaQuery.of(context).size.height * .45,
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: Row(
-                                      children: [
-                                        const Text(
-                                          "Filter Tags",
-                                          style: TextStyle(
-                                              fontFamily: AppFonts.bold,
-                                              fontSize: 17),
-                                        ),
-                                        Spacer(),
-                                        IconButton(
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            },
-                                            icon:
-                                                const Icon(Icons.close_rounded))
-                                      ],
-                                    ),
-                                  ),
-                                  Divider(),
-                                  Row(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Radio<String>(
-                                            value: 'AND',
-                                            groupValue: _selectedOption,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                _selectedOption = value!;
-                                              });
-                                            },
-                                          ),
-                                          const Text('AND'),
-                                        ],
-                                      ),
-                                      const SizedBox(width: 20),
-                                      Row(
-                                        children: [
-                                          Radio<String>(
-                                            value: 'OR',
-                                            groupValue: _selectedOption,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                _selectedOption = value!;
-                                              });
-                                            },
-                                          ),
-                                          const Text('OR'),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  Wrap(
-                                    spacing: 8.0,
-                                    children: tags.map((tag) {
-                                      return InkWell(
-                                        onTap: () {
-                                          if (selectTagFilterList
-                                              .contains(tag)) {
-                                            selectTagFilterList.remove(tag);
-                                          } else {
-                                            selectTagFilterList.add(tag);
-                                          }
-                                          setState(() {});
-                                        },
-                                        child: Chip(
-                                          label: Text(tag),
-                                          backgroundColor:
-                                              Colors.blue.withOpacity(0.2),
-                                          labelStyle: const TextStyle(
-                                              color: Colors.blue),
-                                          side: BorderSide(
-                                              color: selectTagFilterList
-                                                      .contains(tag)
-                                                  ? Colors.black
-                                                  : Colors.transparent,
-                                              width: selectTagFilterList
-                                                      .contains(tag)
-                                                  ? 2
-                                                  : 0),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                  Spacer(),
-                                  Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        InkWell(
-                                          onTap: () {
-                                            setState(() {
-                                              allLeads = tempLeadModelList;
-                                              selectTagFilterList.clear();
-                                            });
 
-                                            Navigator.pop(context);
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                color:
-                                                    AppColor.navBarIconColor),
-                                            child: const Center(
-                                              child: Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                    vertical: 10.0,
-                                                    horizontal: 20),
-                                                child: Text(
-                                                  "Clear",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          width: 20,
-                                        ),
-                                        InkWell(
-                                          onTap: () {
-                                            // 1. Perform filtering (synchronously)
-
-                                            tagBasedFilter(_selectedOption);
-                                            Navigator.pop(context);
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                color:
-                                                    AppColor.navBarIconColor),
-                                            child: const Center(
-                                              child: Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                    vertical: 10.0,
-                                                    horizontal: 20),
-                                                child: Text(
-                                                  "Apply",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              ),
-                            );
-                          });
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: Container(
+            height: 70,
+            child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: pinnedLeads.length,
+                itemBuilder: (context, index) {
+                  var model = pinnedLeads[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: InkWell(
+                      onTap: () async {
+                        setState(() {
+                          pinnedLeadId = "";
+                          showPin = false;
+                          isPinned = false;
                         });
-                    // getTagBasedList(tags[index]);
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12.0, vertical: 4.0),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 179, 238, 243),
-                      border: Border.all(
-                          color: selectedFilterId == index
-                              ? Colors.black
-                              : Colors.transparent,
-                          width: 1.5),
-                      borderRadius: BorderRadius.circular(18),
+                        var num = "";
+                        if (model.whatsappNumber!.contains("+")) {
+                          num = model.whatsappNumber ?? "";
+                        } else {
+                          num = "${model.countryCode}${model.whatsappNumber}";
+                        }
+                        print("model  finalResult=>${model.whatsappNumber}");
+                        if (model.whatsappNumber != null) {
+                          _marksread(num);
+
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatScreen(
+                                leadName: (model.firstname != null &&
+                                        model.firstname!.isNotEmpty)
+                                    ? '${model.firstname} ${model.lastname ?? ""}'
+                                    : (model.lastname != null &&
+                                            model.lastname!.isNotEmpty)
+                                        ? model.lastname!
+                                        : "No Name Available",
+                                wpnumber: model.whatsappNumber!.contains("+")
+                                    ? model.whatsappNumber ?? ""
+                                    : "${model.countryCode}${model.whatsappNumber ?? ""}",
+                                id: model.id,
+                                model: model,
+                              ),
+                            ),
+                          ).then((onValue) {
+                            _marksread(num);
+                            _getUnreadCount();
+                          });
+                          if (result == true) {
+                            print("is result getting true.........?");
+                            _getUnreadCount();
+                            getLeadList();
+                          }
+
+                          _getUnreadCount();
+                          Provider.of<UnreadCountVm>(context, listen: false)
+                              .fetchunreadcount(number: number ?? "");
+                          setState(() {
+                            // unreadMsgCount = "0";
+                            // unreadMsgCount = "";
+                          });
+                          // print("unreadMsgCount====${unreadMsgCount}  ");
+
+                          leads?.viewModels.clear();
+                          Provider.of<LeadListViewModel>(context, listen: false)
+                              .fetch();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('No Phone Number '),
+                              duration: Duration(seconds: 3),
+                              backgroundColor: AppColor.motivationCar1Color,
+                            ),
+                          );
+                        }
+                      },
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: AppColor.navBarIconColor,
+                            child: Text(
+                              "${pinnedLeads[index].firstname?.isNotEmpty == true ? pinnedLeads[index].firstname![0].toUpperCase() : '?'}",
+                              style: const TextStyle(
+                                fontSize: 20,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Text(pinnedLeads[index].firstname),
+                        ],
+                      ),
                     ),
-                    child: Center(
-                        child: Text(
-                      filters[index],
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    )),
-                  ),
-                ),
-              );
-            },
+                  );
+                }),
           ),
         ),
+        ///////////////////////////////////////////////////////////////////
         allLeads.isEmpty
             ? const SizedBox()
             : Padding(
@@ -798,27 +737,336 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                     topRight: Radius.circular(30),
                                   ),
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 22.0, left: 6, right: 6),
-                                  child: ListView.builder(
-                                    itemCount: allLeads.length,
-                                    itemBuilder: (context, index) {
-                                      var unreadCount = "0";
-                                      var lead = allLeads[index];
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      height: 55,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10),
+                                      child: ListView.builder(
+                                        scrollDirection: Axis.horizontal,
+                                        shrinkWrap: true,
+                                        itemCount: filters.length,
+                                        itemBuilder: (context, index) {
+                                          return InkWell(
+                                            onTap: () {
+                                              setState(() {
+                                                selectedFilterId = index;
+                                                pinnedLeadId = "";
+                                                showPin = false;
+                                                isPinned = false;
+                                              });
+                                              if (index == 1) {
+                                                unreadChatFilter();
+                                              } else if (index == 0) {
+                                                setState(() {
+                                                  allLeads = tempLeadModelList;
+                                                });
+                                              } else {
+                                                showModalBottomSheet(
+                                                    context: context,
+                                                    useSafeArea: true,
+                                                    isScrollControlled: true,
+                                                    enableDrag: false,
+                                                    builder: (context) {
+                                                      String _selectedOption =
+                                                          'AND';
+                                                      return StatefulBuilder(
+                                                          builder: (BuildContext
+                                                                  context,
+                                                              StateSetter
+                                                                  setState) {
+                                                        return Container(
+                                                          height: MediaQuery.of(
+                                                                      context)
+                                                                  .size
+                                                                  .height *
+                                                              .45,
+                                                          child: Column(
+                                                            children: [
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        15.0),
+                                                                child: Row(
+                                                                  children: [
+                                                                    const Text(
+                                                                      "Filter Tags",
+                                                                      style: TextStyle(
+                                                                          fontFamily: AppFonts
+                                                                              .bold,
+                                                                          fontSize:
+                                                                              17),
+                                                                    ),
+                                                                    Spacer(),
+                                                                    IconButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          Navigator.pop(
+                                                                              context);
+                                                                        },
+                                                                        icon: const Icon(
+                                                                            Icons.close_rounded))
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              Divider(),
+                                                              Row(
+                                                                children: [
+                                                                  Row(
+                                                                    children: [
+                                                                      Radio<
+                                                                          String>(
+                                                                        value:
+                                                                            'AND',
+                                                                        groupValue:
+                                                                            _selectedOption,
+                                                                        onChanged:
+                                                                            (value) {
+                                                                          setState(
+                                                                              () {
+                                                                            _selectedOption =
+                                                                                value!;
+                                                                          });
+                                                                        },
+                                                                      ),
+                                                                      const Text(
+                                                                          'AND'),
+                                                                    ],
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      width:
+                                                                          20),
+                                                                  Row(
+                                                                    children: [
+                                                                      Radio<
+                                                                          String>(
+                                                                        value:
+                                                                            'OR',
+                                                                        groupValue:
+                                                                            _selectedOption,
+                                                                        onChanged:
+                                                                            (value) {
+                                                                          setState(
+                                                                              () {
+                                                                            _selectedOption =
+                                                                                value!;
+                                                                          });
+                                                                        },
+                                                                      ),
+                                                                      const Text(
+                                                                          'OR'),
+                                                                    ],
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              Wrap(
+                                                                spacing: 8.0,
+                                                                children: tags
+                                                                    .map((tag) {
+                                                                  return InkWell(
+                                                                    onTap: () {
+                                                                      if (selectTagFilterList
+                                                                          .contains(
+                                                                              tag)) {
+                                                                        selectTagFilterList
+                                                                            .remove(tag);
+                                                                      } else {
+                                                                        selectTagFilterList
+                                                                            .add(tag);
+                                                                      }
+                                                                      setState(
+                                                                          () {
+                                                                        pinnedLeadId =
+                                                                            "";
+                                                                        showPin =
+                                                                            false;
+                                                                        isPinned =
+                                                                            false;
+                                                                      });
+                                                                    },
+                                                                    child: Chip(
+                                                                      label: Text(
+                                                                          tag),
+                                                                      backgroundColor: Colors
+                                                                          .blue
+                                                                          .withOpacity(
+                                                                              0.2),
+                                                                      labelStyle:
+                                                                          const TextStyle(
+                                                                              color: Colors.blue),
+                                                                      side: BorderSide(
+                                                                          color: selectTagFilterList.contains(tag)
+                                                                              ? Colors
+                                                                                  .black
+                                                                              : Colors
+                                                                                  .transparent,
+                                                                          width: selectTagFilterList.contains(tag)
+                                                                              ? 2
+                                                                              : 0),
+                                                                    ),
+                                                                  );
+                                                                }).toList(),
+                                                              ),
+                                                              Spacer(),
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        15.0),
+                                                                child: Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .end,
+                                                                  children: [
+                                                                    InkWell(
+                                                                      onTap:
+                                                                          () {
+                                                                        setState(
+                                                                            () {
+                                                                          allLeads =
+                                                                              tempLeadModelList;
+                                                                          selectTagFilterList
+                                                                              .clear();
+                                                                        });
 
-                                      for (var p in unreadList) {
-                                        if (p.whatsappNumber
-                                            .toString()
-                                            .contains(lead.whatsappNumber)) {
-                                          unreadCount = p.unreadMsgCount;
-                                          break;
-                                        }
-                                      }
+                                                                        Navigator.pop(
+                                                                            context);
+                                                                      },
+                                                                      child:
+                                                                          Container(
+                                                                        decoration: BoxDecoration(
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(8),
+                                                                            color: AppColor.navBarIconColor),
+                                                                        child:
+                                                                            const Center(
+                                                                          child:
+                                                                              Padding(
+                                                                            padding:
+                                                                                EdgeInsets.symmetric(vertical: 10.0, horizontal: 20),
+                                                                            child:
+                                                                                Text(
+                                                                              "Clear",
+                                                                              style: TextStyle(
+                                                                                color: Colors.white,
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      width: 20,
+                                                                    ),
+                                                                    InkWell(
+                                                                      onTap:
+                                                                          () {
+                                                                        // 1. Perform filtering (synchronously)
 
-                                      return leadRecordList(lead, unreadCount);
-                                    },
-                                  ),
+                                                                        tagBasedFilter(
+                                                                            _selectedOption);
+                                                                        Navigator.pop(
+                                                                            context);
+                                                                      },
+                                                                      child:
+                                                                          Container(
+                                                                        decoration: BoxDecoration(
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(8),
+                                                                            color: AppColor.navBarIconColor),
+                                                                        child:
+                                                                            const Center(
+                                                                          child:
+                                                                              Padding(
+                                                                            padding:
+                                                                                EdgeInsets.symmetric(vertical: 10.0, horizontal: 20),
+                                                                            child:
+                                                                                Text(
+                                                                              "Apply",
+                                                                              style: TextStyle(
+                                                                                color: Colors.white,
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    )
+                                                                  ],
+                                                                ),
+                                                              )
+                                                            ],
+                                                          ),
+                                                        );
+                                                      });
+                                                    });
+                                                // getTagBasedList(tags[index]);
+                                              }
+                                            },
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8.0),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 12.0,
+                                                        vertical: 4.0),
+                                                decoration: BoxDecoration(
+                                                  // color: const Color.fromARGB(
+                                                  //     255, 179, 238, 243),
+                                                  border: Border.all(
+                                                      color: selectedFilterId ==
+                                                              index
+                                                          ? Colors.black
+                                                          : Colors.transparent,
+                                                      width: 1.5),
+                                                  borderRadius:
+                                                      BorderRadius.circular(18),
+                                                ),
+                                                child: Center(
+                                                    child: Text(
+                                                  filters[index],
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    Divider(),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 2.0, left: 6, right: 6),
+                                        child: ListView.builder(
+                                          itemCount: allLeads.length,
+                                          itemBuilder: (context, index) {
+                                            var unreadCount = "0";
+                                            var lead = allLeads[index];
+
+                                            for (var p in unreadList) {
+                                              if (p.whatsappNumber
+                                                  .toString()
+                                                  .contains(
+                                                      lead.whatsappNumber)) {
+                                                unreadCount = p.unreadMsgCount;
+                                                break;
+                                              }
+                                            }
+
+                                            return leadRecordList(
+                                                lead, unreadCount);
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -848,193 +1096,212 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
         break;
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border(
-          left: BorderSide(
-            color: statusColor,
-            width: 5,
+    return GestureDetector(
+      onLongPress: () {
+        setState(() {
+          showPin = true;
+          pinnedLeadId = model.id ?? "";
+          isPinned = model.pinned ?? false;
+        });
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: showPin && pinnedLeadId == model.id
+              ? AppColor.pageBgGrey
+              : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border(
+            left: BorderSide(
+              color: statusColor,
+              width: 5,
+            ),
           ),
+          boxShadow: [
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 5,
+              spreadRadius: 3,
+              offset: const Offset(2, 4),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            // ignore: deprecated_member_use
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 5,
-            spreadRadius: 3,
-            offset: const Offset(2, 4),
-          ),
-        ],
-      ),
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
-        child: InkWell(
-          onTap: () async {
-            // print("model=>${model.toMap()}");
-            var num = "";
-            if (model.whatsappNumber!.contains("+")) {
-              num = model.whatsappNumber ?? "";
-            } else {
-              num = "${model.countryCode}${model.whatsappNumber}";
-            }
-            print("model  finalResult=>${model.whatsappNumber}");
-            if (model.whatsappNumber != null) {
-              _marksread(num);
-
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChatScreen(
-                    leadName: (model.firstname != null &&
-                            model.firstname!.isNotEmpty)
-                        ? '${model.firstname} ${model.lastname ?? ""}'
-                        : (model.lastname != null && model.lastname!.isNotEmpty)
-                            ? model.lastname!
-                            : "No Name Available",
-                    wpnumber: model.whatsappNumber!.contains("+")
-                        ? model.whatsappNumber ?? ""
-                        : "${model.countryCode}${model.whatsappNumber ?? ""}",
-                    id: model.id,
-                    model: model,
-                  ),
-                ),
-              ).then((onValue) {
-                _marksread(num);
-                _getUnreadCount();
-              });
-              if (result == true) {
-                print("is result getting true.........?");
-                _getUnreadCount();
-                getLeadList();
-              }
-
-              _getUnreadCount();
-              Provider.of<UnreadCountVm>(context, listen: false)
-                  .fetchunreadcount(number: number ?? "");
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
+          child: InkWell(
+            onTap: () async {
               setState(() {
-                unreadMsgCount = "0";
-                unreadMsgCount = "";
+                pinnedLeadId = "";
+                showPin = false;
+                isPinned = false;
               });
-              print("unreadMsgCount====${unreadMsgCount}  ");
+              var num = "";
+              if (model.whatsappNumber!.contains("+")) {
+                num = model.whatsappNumber ?? "";
+              } else {
+                num = "${model.countryCode}${model.whatsappNumber}";
+              }
+              print("model  finalResult=>${model.whatsappNumber}");
+              if (model.whatsappNumber != null) {
+                _marksread(num);
 
-              leads?.viewModels.clear();
-              Provider.of<LeadListViewModel>(context, listen: false).fetch();
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('No Phone Number '),
-                  duration: Duration(seconds: 3),
-                  backgroundColor: AppColor.motivationCar1Color,
-                ),
-              );
-            }
-          },
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (context) => LeadDetailView(
-                  //       model: model,
-                  //     ),
-                  //   ),
-                  // );
-                },
-                child: CircleAvatar(
-                  radius: 20,
-                  backgroundColor: AppColor.navBarIconColor,
-                  child: Text(
-                    "${model.firstname?.isNotEmpty == true ? model.firstname![0].toUpperCase() : '?'}",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatScreen(
+                      leadName: (model.firstname != null &&
+                              model.firstname!.isNotEmpty)
+                          ? '${model.firstname} ${model.lastname ?? ""}'
+                          : (model.lastname != null &&
+                                  model.lastname!.isNotEmpty)
+                              ? model.lastname!
+                              : "No Name Available",
+                      wpnumber: model.whatsappNumber!.contains("+")
+                          ? model.whatsappNumber ?? ""
+                          : "${model.countryCode}${model.whatsappNumber ?? ""}",
+                      id: model.id,
+                      model: model,
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
+                ).then((onValue) {
+                  _marksread(num);
+                  _getUnreadCount();
+                });
+                if (result == true) {
+                  print("is result getting true.........?");
+                  _getUnreadCount();
+                  getLeadList();
+                }
 
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
+                _getUnreadCount();
+                Provider.of<UnreadCountVm>(context, listen: false)
+                    .fetchunreadcount(number: number ?? "");
+                setState(() {
+                  unreadMsgCount = "0";
+                  unreadMsgCount = "";
+                });
+                print("unreadMsgCount====${unreadMsgCount}  ");
+
+                leads?.viewModels.clear();
+                Provider.of<LeadListViewModel>(context, listen: false).fetch();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('No Phone Number '),
+                    duration: Duration(seconds: 3),
+                    backgroundColor: AppColor.motivationCar1Color,
+                  ),
+                );
+              }
+            },
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => LeadDetailView(
+                    //       model: model,
+                    //     ),
+                    //   ),
+                    // );
+                  },
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColor.navBarIconColor,
+                    child: Text(
+                      "${model.firstname?.isNotEmpty == true ? model.firstname![0].toUpperCase() : '?'}",
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 20,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      model.whatsappNumber?.isNotEmpty == true
-                          ? model.whatsappNumber!.contains("+")
-                              ? model.whatsappNumber ?? ""
-                              : "${model.countryCode}${model.whatsappNumber ?? ""}"
-                          : '',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    model.email!.isEmpty
-                        ? SizedBox()
-                        : Text(
-                            "${model.email?.isNotEmpty == true ? model.email : ''}",
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          color: Colors.lightBlue.withOpacity(0.7),
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 4.0, horizontal: 8),
-                          child: Text(
-                            "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Colors.white,
+                      ),
+                      Text(
+                        model.whatsappNumber?.isNotEmpty == true
+                            ? model.whatsappNumber!.contains("+")
+                                ? model.whatsappNumber ?? ""
+                                : "${model.countryCode}${model.whatsappNumber ?? ""}"
+                            : '',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      model.email!.isEmpty
+                          ? SizedBox()
+                          : Text(
+                              "${model.email?.isNotEmpty == true ? model.email : ''}",
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(6),
+                            color: Colors.lightBlue.withOpacity(0.7),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 4.0, horizontal: 8),
+                            child: Text(
+                              "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
+                      const SizedBox(height: 4),
+                    ],
+                  ),
+                ),
+                // Arrow and Badge
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Column(
+                      children: [
+                        if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
+                          badges.Badge(
+                            badgeStyle: const badges.BadgeStyle(
+                              badgeColor: Colors.green,
+                            ),
+                            badgeContent: Text(
+                              unreadMsgCount,
+                              style: const TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                        else
+                          const SizedBox.shrink(),
+                        const Icon(Icons.arrow_circle_right_outlined),
+                        model.pinned ?? false
+                            ? const Icon(Icons.push_pin)
+                            : SizedBox()
+                      ],
+                    )
                   ],
                 ),
-              ),
-              // Arrow and Badge
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Column(
-                    children: [
-                      if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
-                        badges.Badge(
-                          badgeStyle: const badges.BadgeStyle(
-                            badgeColor: Colors.green,
-                          ),
-                          badgeContent: Text(
-                            unreadMsgCount,
-                            style: const TextStyle(
-                              color: Colors.white,
-                            ),
-                          ),
-                        )
-                      else
-                        const SizedBox.shrink(),
-                      const Icon(Icons.arrow_circle_right_outlined)
-                    ],
-                  )
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -1163,14 +1430,17 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   }
 
   bool updateLoader = false;
-  Future<void> getLeadList() async {
-    setState(() {
-      updateLoader = true;
-    });
+  Future<void> getLeadList({bool showLoading = true}) async {
+    if (showLoading) {
+      setState(() {
+        updateLoader = true;
+      });
+    }
     await Provider.of<LeadListViewModel>(context, listen: false)
         .fetch()
         .then((onValue) {
       allLeads = [];
+      pinnedLeads = [];
       print(
           " leadlistvm.viewModels:::::::::::::::::: ${leadlistvm.viewModels}");
       for (var viewModel in leadlistvm.viewModels) {
@@ -1179,6 +1449,9 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           for (var record in leadmodel!.records!) {
             tempLeadModelList.add(record);
             allLeads.add(record);
+            if (record.pinned) {
+              pinnedLeads.add(record);
+            }
           }
         }
       }

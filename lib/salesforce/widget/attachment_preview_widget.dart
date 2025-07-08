@@ -119,7 +119,7 @@ class AttachmentPreviewWidget extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: Colors.white,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.headphones,
                     size: 20,
                     color: Colors.black,

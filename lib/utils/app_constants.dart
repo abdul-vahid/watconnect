@@ -208,14 +208,14 @@ abstract class AppConstants {
 
   static const String checkWalletBalance =
       '${baseUrl}/api/whatsapp/wallet/check_balance';
-
   static const String debitWalletBalance = '${baseUrl}/api/whatsapp/wallet';
-
   static const String templateRates = '${baseUrl}/api/whatsapp/template_rates';
+  static const String pinLead = "/api/leads/{leadId}/pin";
+  static const String unpinLead = "/api/leads/{leadId}/unpin";
 
   // /whatsapp/
 
-//================================================================================================================================================================================
+//=========================================================================================================================================================================================
 //=========================================================================================================================================================================================
   ///  Sales force api
   ///
