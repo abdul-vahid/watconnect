@@ -9,6 +9,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_sound/public/flutter_sound_player.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_sound/flutter_sound.dart' as fs;
 import 'package:flutter_sound/flutter_sound.dart';
@@ -42,17 +43,17 @@ class SfMessageChatScreen extends StatefulWidget {
 class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   TextEditingController msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  File? _audioFile;
+  // File? _audioFile;
 
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
 
   StreamSubscription? _previewPlayerSubscription;
 
-  Duration _totalDuration = Duration.zero;
-  Duration _currentPosition = Duration.zero;
-  bool _isPlayingPreview = false;
-  bool _isRecording = false;
+  // Duration _totalDuration = Duration.zero;
+  // Duration _currentPosition = Duration.zero;
+
+  // bool _isRecording = false;
   String? _audioPath;
 
   String userNumer = "";
@@ -82,31 +83,77 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     super.dispose();
   }
 
-  Future<void> _startRecording() async {
-    var status = await Permission.microphone.request();
-    if (!status.isGranted) return;
+  Future<void> _stopRecording() async {
+    try {
+      String? recordedPath = await _recorder.stopRecorder();
+      if (recordedPath != null) {
+        File _audioFile = File(recordedPath);
 
-    Directory tempDir = await getTemporaryDirectory();
-    _audioPath = '${tempDir.path}/voice_msg.aac';
+        ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
+        chatMsgCtrl.setSelectedFile(_audioFile);
 
-    await _recorder.startRecorder(
-      toFile: _audioPath,
-      codec: fs.Codec.aacADTS,
-    );
+        chatMsgCtrl.setRecordingStatus(false);
 
-    setState(() {
-      _isRecording = true;
-    });
+        await Future.delayed(const Duration(milliseconds: 300));
+        _showPreviewDialog();
+      }
+    } catch (e) {
+      debugPrint("Stop recording error: $e");
+      EasyLoading.showToast("Failed to stop recording");
+    }
+  }
+
+  Future<void> _startRecording(BuildContext context) async {
+    ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
+    chatMsgCtrl.setSelectedFile(null);
+
+    var status = await Permission.microphone.status;
+
+    if (status.isGranted) {
+      // Start recording immediately
+      await _beginRecording();
+      return;
+    }
+    print("status:::::   ${status}");
+    PermissionStatus status1 = await Permission.microphone.status;
+    print('Microphone permission status: $status1');
+
+    if (status.isDenied) {
+      // Request permission (system dialog may show)
+      status = await Permission.microphone.request();
+
+      if (status.isGranted) {
+        await _beginRecording();
+        return;
+      }
+      // If still denied or permanently denied, show dialog
+      if (status.isPermanentlyDenied || status.isDenied) {
+        _showPermissionDialog(context);
+        return;
+      }
+    }
+
+    if (status.isPermanentlyDenied) {
+      // User permanently denied permission, must open settings manually
+      _showPermissionDialog(context);
+      return;
+    }
+
+    if (status.isRestricted || status.isLimited) {
+      EasyLoading.showToast("Microphone access is restricted or limited.");
+      return;
+    }
   }
 
   Future<void> _stopRecordingAndPreview() async {
     // await _recorder.stopRecorder();
     String? recordedPath = await _recorder.stopRecorder();
 
-    setState(() {
-      _audioFile = File(recordedPath!);
-      _isRecording = false;
-    });
+    File _audioFile = File(recordedPath!);
+
+    ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
+    chatMsgCtrl.setSelectedFile(_audioFile);
+    chatMsgCtrl.setRecordingStatus(false);
 
     print("_audioFile::::::::::::::    ${_audioFile}");
 
@@ -114,93 +161,136 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     _showPreviewDialog();
   }
 
-  void _showPreviewDialog() async {
-    if (_audioPath == null) return;
+  Future<void> _beginRecording() async {
+    try {
+      final Directory tempDir = await getTemporaryDirectory();
+      final String filePath =
+          '${tempDir.path}/voice_msg_${DateTime.now().millisecondsSinceEpoch}.aac';
+      _audioPath = filePath;
 
+      await _recorder.startRecorder(
+        toFile: filePath,
+        codec: fs.Codec.aacADTS,
+      );
+      ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
+      chatMsgCtrl.setRecordingStatus(true);
+    } catch (e) {
+      debugPrint("Recording error: $e");
+      EasyLoading.showToast("Failed to start recording");
+    }
+  }
+
+  void _showPermissionDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Microphone Access Needed"),
+        content: Platform.isIOS
+            ? const Text(
+                "Microphone access is disabled. Please enable it from Settings > Privacy > Microphone.")
+            : const Text(
+                "Permission permanently denied. Please enable it in Settings."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              openAppSettings();
+            },
+            child: const Text("Open Settings"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showPreviewDialog() async {
+    if (_audioPath == null) return;
+    // Get duration using just_audio
+    final audioPlayerForDuration = AudioPlayer();
+    Duration? audioDuration;
+
+    try {
+      await audioPlayerForDuration.setFilePath(_audioPath!);
+      audioDuration = audioPlayerForDuration.duration;
+    } catch (e) {
+      print("Error getting audio duration: $e");
+    } finally {
+      await audioPlayerForDuration.dispose();
+    }
+    if (audioDuration == null || audioDuration.inSeconds < 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Audio must be at least 3 seconds long."),
+        ),
+      );
+      return;
+    }
     await showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
+        return Consumer<ChatMessageController>(
+          builder: (context, chatController, child) {
             Future<void> startPlayer() async {
               await _player.startPlayer(
                 fromURI: _audioPath!,
                 codec: fs.Codec.aacADTS,
                 whenFinished: () {
-                  setState(() {
-                    _isPlayingPreview = false;
-                    _currentPosition = Duration.zero;
-                  });
+                  chatController.setPlayPreviewStatus(false);
                 },
               );
 
-              setState(() {
-                _isPlayingPreview = true;
-              });
+              chatController.setPlayPreviewStatus(true);
 
               _previewPlayerSubscription?.cancel();
-              _previewPlayerSubscription = _player.onProgress?.listen((event) {
-                setState(() {
-                  _currentPosition = event.position;
-                  _totalDuration = event.duration;
-                });
-              });
+              _previewPlayerSubscription =
+                  _player.onProgress?.listen((event) {});
             }
 
             Future<void> stopPlayer() async {
               await _player.stopPlayer();
               _previewPlayerSubscription?.cancel();
-              setState(() {
-                _isPlayingPreview = false;
-                _currentPosition = Duration.zero;
-              });
+
+              chatController.setPlayPreviewStatus(false);
             }
 
             return AlertDialog(
               title: const Text('Voice Message Preview'),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                borderRadius: BorderRadius.circular(16),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
                     icon: Icon(
-                      _isPlayingPreview
+                      chatController.isPlayingPreview
                           ? Icons.pause_circle_filled
                           : Icons.play_circle_fill,
                       size: 48,
                       color: AppColor.navBarIconColor,
                     ),
                     onPressed: () {
-                      _isPlayingPreview ? stopPlayer() : startPlayer();
+                      chatController.isPlayingPreview
+                          ? stopPlayer()
+                          : startPlayer();
                     },
                   ),
-                  // Slider(
-                  //   value: _currentPosition.inMilliseconds.toDouble(),
-                  //   max: _totalDuration.inMilliseconds.toDouble() > 0
-                  //       ? _totalDuration.inMilliseconds.toDouble()
-                  //       : 1,
-                  //   onChanged: (value) async {
-                  //     final seekTo = Duration(milliseconds: value.toInt());
-                  //     await _player.seekToPlayer(seekTo);
-                  //     setState(() {
-                  //       _currentPosition = seekTo;
-                  //     });
-                  //   },
-                  // ),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     Text(_formatDuration(_currentPosition)),
-                  //     Text(_formatDuration(_totalDuration)),
-                  //   ],
-                  // ),
                 ],
               ),
               actions: [
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
                     stopPlayer();
+
+                    if (chatController.selectedFile != null) {
+                      await sendFile();
+                    }
+                    EasyLoading.showToast("Sending audio...");
+
                     Navigator.pop(context);
                   },
                   child: const Text('Send'),
@@ -208,6 +298,9 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                 TextButton(
                   onPressed: () {
                     stopPlayer();
+                    chatController.setPlayPreviewStatus(false);
+                    chatController.setSelectedFile(null);
+                    chatController.setRecordingStatus(false);
                     Navigator.pop(context);
                   },
                   child: const Text('Cancel'),
@@ -361,20 +454,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   _buildMessageInputArea() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_isRecording)
-            const Row(
-              children: [
-                Icon(Icons.fiber_manual_record, color: Colors.red),
-                SizedBox(width: 6),
-                Text("Recording..."),
-              ],
-            ),
-          sendMsgRow(),
-        ],
-      ),
+      child: sendMsgRow(),
     );
   }
 
@@ -383,141 +463,142 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
             ChatMessageController>(
         builder: (context, tempCtrl, fileUploadController, chatMsgController,
             child) {
-      return Row(
+      return Column(
         children: [
-          Expanded(
-            child: Row(
+          if (chatMsgController.isRecording)
+            const Row(
               children: [
-                IconButton(
-                    icon: const Icon(Icons.attach_file),
-                    onPressed: () {
-                      showPicker(context);
-                    }),
-                chatMsgController.isDoc
-                    ? Icon(Icons.edit_document)
-                    : chatMsgController.isImage
-                        ? Icon(Icons.image)
-                        : chatMsgController.isVideo
-                            ? Icon(Icons.videocam_rounded)
-                            : SizedBox(),
-                Expanded(
-                  child: TextField(
-                    controller: msgController,
-                    decoration: InputDecoration(
-                        suffixIcon: Padding(
-                          padding: const EdgeInsets.only(right: 4.0),
-                          child: GestureDetector(
-                            onLongPress: _startRecording,
-                            onLongPressUp: _stopRecordingAndPreview,
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                  color: Color.fromARGB(255, 168, 205, 235),
-                                  shape: BoxShape.circle),
-                              padding: const EdgeInsets.all(10),
-                              child: Icon(
-                                _isRecording
-                                    ? Icons.stop
-                                    : Icons.mic_none_sharp,
-                                color: _isRecording ? Colors.red : Colors.black,
-                              ),
-                            ),
-                          ),
-                        ),
-                        hintText: 'Type a message...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xffE6E6E6)),
-                  ),
-                ),
+                Icon(Icons.fiber_manual_record, color: Colors.red),
+                SizedBox(width: 6),
+                Text("Recording..."),
               ],
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: InkWell(
-              onTap: () async {
-                if (tempCtrl.getTempLoader) {
-                } else {
-                  tempCtrl.setSelectedTemp(null);
-                  tempCtrl.setSelectedTempName("Select");
-
-                  tempCtrl.setSeletcedTempCate("ALL");
-                  await tempCtrl.getTemplateApiCall(
-                      category: tempCtrl.selectedTempCategory);
-                  TemplatebottomSheetShow(context);
-                }
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColor.navBarIconColor,
-                  borderRadius: BorderRadius.circular(12),
+          Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    IconButton(
+                        icon: const Icon(Icons.attach_file),
+                        onPressed: () {
+                          showPicker(context);
+                        }),
+                    chatMsgController.isDoc
+                        ? const Icon(Icons.edit_document)
+                        : chatMsgController.isImage
+                            ? const Icon(Icons.image)
+                            : chatMsgController.isVideo
+                                ? const Icon(Icons.videocam_rounded)
+                                : chatMsgController.isAudio
+                                    ? const Icon(Icons.mic)
+                                    : const SizedBox(),
+                    Expanded(
+                      child: TextField(
+                        controller: msgController,
+                        decoration: InputDecoration(
+                            hintText: 'Type a message...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xffE6E6E6)),
+                      ),
+                    ),
+                  ],
                 ),
-                child: Center(
-                    child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: tempCtrl.getTempLoader
-                      ? const SizedBox(
-                          height: 25,
-                          width: 25,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.code, color: Colors.white),
-                )),
               ),
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              ChatMessageController chatMsgCtrl =
-                  Provider.of(context, listen: false);
-              if (msgController.text.isNotEmpty) {
-                sendMsg(msgController.text.trim());
-              }
-              if (chatMsgCtrl.selectedFile != null) {
-                SfFileUploadController sfFileController =
-                    Provider.of(context, listen: false);
-
-                DashBoardController dbController =
-                    Provider.of(context, listen: false);
-                var usrNumber =
-                    dbController.selectedContactInfo?.whatsappNumber ?? "";
-                var code =
-                    dbController.selectedContactInfo?.countryCode ?? "91";
-
-                if (chatMsgCtrl.selectedFile != null) {
-                  sfFileController.uploadFiledb(chatMsgCtrl.selectedFile!, code,
-                      msgController.text.trim(), usrNumber);
-                }
-
-                // String userNumer = "${code}${usrNumber}";
-                // chatMsgCtrl.sfCreateFileApiCall(userNumer);
-              }
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColor.navBarIconColor,
-                borderRadius: BorderRadius.circular(12),
+              Padding(
+                padding: const EdgeInsets.only(left: 4.0),
+                child: Listener(
+                  onPointerDown: (_) => _startRecording(context),
+                  onPointerUp: (_) => _stopRecording(),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 168, 205, 235),
+                      shape: BoxShape.circle,
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Icon(
+                      chatMsgController.isRecording
+                          ? Icons.stop
+                          : Icons.mic_none_sharp,
+                      color: chatMsgController.isRecording
+                          ? Colors.red
+                          : Colors.black,
+                    ),
+                  ),
+                ),
               ),
-              child: Center(
-                  child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: chatMsgController.sendMsgLoader == true ||
-                        fileUploadController.fileUploadLoader == true
-                    ? Container(
-                        height: 25,
-                        width: 25,
-                        child: const CircularProgressIndicator(
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.send, color: Colors.white),
-              )),
-            ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: InkWell(
+                  onTap: () async {
+                    if (tempCtrl.getTempLoader) {
+                    } else {
+                      tempCtrl.setSelectedTemp(null);
+                      tempCtrl.setSelectedTempName("Select");
+
+                      tempCtrl.setSeletcedTempCate("ALL");
+                      await tempCtrl.getTemplateApiCall(
+                          category: tempCtrl.selectedTempCategory);
+                      TemplatebottomSheetShow(context);
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColor.navBarIconColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                        child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: tempCtrl.getTempLoader
+                          ? const SizedBox(
+                              height: 25,
+                              width: 25,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.code, color: Colors.white),
+                    )),
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  ChatMessageController chatMsgCtrl =
+                      Provider.of(context, listen: false);
+                  if (msgController.text.isNotEmpty) {
+                    sendMsg(msgController.text.trim());
+                  }
+                  if (chatMsgCtrl.selectedFile != null) {
+                    sendFile();
+                  }
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColor.navBarIconColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                      child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: chatMsgController.sendMsgLoader == true ||
+                            fileUploadController.fileUploadLoader == true
+                        ? Container(
+                            height: 25,
+                            width: 25,
+                            child: const CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.send, color: Colors.white),
+                  )),
+                ),
+              ),
+            ],
           ),
         ],
       );
@@ -557,6 +638,20 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
         Provider.of(context, listen: false);
 
     chatMsgController.resetMsgDeleteList();
+  }
+
+  Future<void> sendFile({bool isAudio = false}) async {
+    SfFileUploadController sfFileController =
+        Provider.of(context, listen: false);
+    ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
+    DashBoardController dbController = Provider.of(context, listen: false);
+    var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
+    var code = dbController.selectedContactInfo?.countryCode ?? "91";
+
+    if (chatMsgCtrl.selectedFile != null) {
+      await sfFileController.uploadFiledb(chatMsgCtrl.selectedFile!, code,
+          msgController.text.trim(), usrNumber);
+    }
   }
 }
 

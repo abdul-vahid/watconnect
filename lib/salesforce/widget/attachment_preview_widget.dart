@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:whatsapp/views/view/show_audio.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
 import 'package:whatsapp/views/view/view_fullscreen_img.dart';
@@ -89,6 +90,44 @@ class AttachmentPreviewWidget extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: Image.asset("assets/images/pdf.png", height: 150),
+        ),
+      );
+    } else if (type.contains("audio")) {
+      return InkWell(
+        onTap: () async {
+          showDialog(
+            context: context,
+            builder: (context) => AudioDialog(audioUrl: attachmentUrl ?? ""),
+          );
+        },
+        child: Container(
+          height: 60,
+          width: MediaQuery.of(context).size.width * 0.5,
+          decoration: BoxDecoration(
+            color: Colors.deepOrangeAccent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: Container(
+                  height: 30,
+                  width: 30,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                  child: Icon(
+                    Icons.headphones,
+                    size: 20,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     } else if (type.contains("ms-excel") || type.contains("spreadsheetml")) {

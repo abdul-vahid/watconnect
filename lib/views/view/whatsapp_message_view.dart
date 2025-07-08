@@ -3247,44 +3247,6 @@ class _ChatScreenState extends State<ChatScreen> {
               context: context,
               builder: (context) => AudioDialog(audioUrl: url),
             );
-            // Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //         builder: (context) => ShowAudioScreen(
-            //               audioUrl: url,
-            //             )));
-
-            // if (_isPlaying) {
-            //   await audioPlayer.stop();
-            //   setState(() {
-            //     _isPlaying = false;
-            //   });
-            //   return;
-            // }
-
-            // try {
-            // await audioPlayer.setUrl(url);
-            // await audioPlayer.play();
-
-            // // update UI to show "playing"
-            // setState(() {
-            //   _isPlaying = true;
-            // });
-
-            // Listen for playback completion (once)
-            // audioPlayer.playerStateStream.listen((state) {
-            //   if (state.processingState == ProcessingState.completed ||
-            //       state.playing == false) {
-            //     if (mounted) {
-            //       setState(() {
-            //         _isPlaying = false;
-            //       });
-            //     }
-            //   }
-            // });
-            // } catch (e) {
-            //   print("Error playing audio: $e");
-            // }
           },
           child: Container(
             height: 60,
@@ -3780,26 +3742,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<void> _stopRecordingAndPreview() async {
-    print("print  is stop func caliinggggG:::::::   ");
-
-    // await _recorder.stopRecorder();
-    String? recordedPath = await _recorder.stopRecorder();
-
-    setState(() {
-      _audioFile = File(recordedPath!);
-      _isRecording = false;
-    });
-
-    print("_audioFile::::::::::::::    ${_audioFile}");
-
-    await Future.delayed(Duration(milliseconds: 300));
-    _showPreviewDialog();
-  }
-
   Future<void> _showPreviewDialog() async {
     if (_audioPath == null) return;
-
     // Get duration using just_audio
     final audioPlayerForDuration = AudioPlayer();
     Duration? audioDuration;
@@ -3812,7 +3756,6 @@ class _ChatScreenState extends State<ChatScreen> {
     } finally {
       await audioPlayerForDuration.dispose();
     }
-
     if (audioDuration == null || audioDuration.inSeconds < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -3821,7 +3764,6 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       return;
     }
-
     await showDialog(
       context: context,
       builder: (context) {

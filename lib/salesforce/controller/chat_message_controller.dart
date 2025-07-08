@@ -80,6 +80,8 @@ class ChatMessageController extends ChangeNotifier {
       SfFileUploadController dfFileController =
           Provider.of(navigatorKey.currentContext!, listen: false);
       dfFileController.resetFileUpload();
+      setPlayPreviewStatus(false);
+      setRecordingStatus(false);
       setSelectedFile(null);
     }
 
@@ -258,9 +260,23 @@ class ChatMessageController extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool isRecording = false;
+  bool isPlayingPreview = false;
+
+  setRecordingStatus(bool val) {
+    isRecording = val;
+    notify();
+  }
+
+  setPlayPreviewStatus(bool val) {
+    isPlayingPreview = val;
+    notify();
+  }
+
   bool isImage = false;
   bool isVideo = false;
   bool isDoc = false;
+  bool isAudio = false;
 
   File? selectedFile;
   setSelectedFile(File? fil) {
@@ -269,6 +285,7 @@ class ChatMessageController extends ChangeNotifier {
       isImage = false;
       isVideo = false;
       isDoc = false;
+      isAudio = false;
     } else {
       final extension = path.extension(fil.path).toLowerCase();
 
@@ -277,13 +294,23 @@ class ChatMessageController extends ChangeNotifier {
         isImage = true;
         isVideo = false;
         isDoc = false;
+        isAudio = false;
       } else if (['.mp4', '.mov', '.avi', '.mkv', '.webm']
           .contains(extension)) {
         isImage = false;
         isVideo = true;
         isDoc = false;
+        isAudio = false;
+      } else if ([
+        '.aac',
+      ].contains(extension)) {
+        isImage = false;
+        isVideo = true;
+        isDoc = false;
+        isAudio = true;
       } else {
         isImage = false;
+        isAudio = false;
         isVideo = false;
         isDoc = true;
       }
