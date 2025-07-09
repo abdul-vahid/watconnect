@@ -37,10 +37,13 @@ class LeadResponseModel extends BaseModel {
 
 class LeadModel {
   String? id;
+  String? full_number;
+  String? lead_id;
   String? firstname;
   String? lastname;
   String? leadsource;
   String? leadstatus;
+  String? contactname;
   String? createdbyid;
   String? lastmodifiedbyid;
   String? createddate;
@@ -66,12 +69,15 @@ class LeadModel {
       this.firstname,
       this.lastname,
       this.leadsource,
+      this.lead_id,
       this.leadstatus,
       this.createdbyid,
       this.lastmodifiedbyid,
       this.createddate,
       this.lastmodifieddate,
+      this.full_number,
       this.email,
+      this.contactname,
       this.ownerid,
       this.description,
       this.whatsappNumber,
@@ -90,16 +96,19 @@ class LeadModel {
     return LeadModel(
         id: json['id'] ?? '',
         firstname: json['firstname'] ?? '',
+        lead_id: json['lead_id'] ?? "",
         lastname: json['lastname'] ?? '',
         leadsource: json['leadsource'] ?? '',
         leadstatus: json['leadstatus'] ?? '',
         description: json['description'] ?? "",
         createdbyid: json['createdbyid'] ?? '',
+        contactname: json['contactname'] ?? "",
         lastmodifiedbyid: json['lastmodifiedbyid'] ?? '',
         createddate: json['createddate'] ?? '',
         lastmodifieddate: json['lastmodifieddate'] ?? '',
         email: json['email'] ?? '',
         ownerid: json['ownerid'] ?? '',
+        full_number: json['full_number'] ?? "",
         whatsappNumber: json['whatsapp_number'] ?? '',
         blocked: json['blocked'] ?? false,
         countryCode: json['country_code'] ?? '',
@@ -120,13 +129,16 @@ class LeadModel {
       'id': id ?? '',
       'firstname': firstname ?? '',
       'lastname': lastname ?? '',
+      'full_number': full_number ?? "",
       'leadsource': leadsource ?? '',
       'leadstatus': leadstatus ?? '',
+      'lead_id': lead_id ?? "",
       'createdbyid': createdbyid ?? '',
       'lastmodifiedbyid': lastmodifiedbyid ?? '',
       'createddate': createddate ?? '',
       'lastmodifieddate': lastmodifieddate ?? '',
       'email': email ?? '',
+      'contactname': contactname ?? "",
       'ownerid': ownerid ?? '',
       'description': description ?? "",
       'whatsapp_number': whatsappNumber ?? '',

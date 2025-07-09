@@ -8,6 +8,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/recent_chat_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
+import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
 import '../../models/lead_model.dart';
@@ -45,6 +46,8 @@ class _RecentChatViewState extends State<RecentChatView> {
   bool isRefresh = false;
   int countunread = 0;
   List allRecentChats = [];
+  List pinnedLeads = [];
+
   List unreadList = [];
   String? number;
 
@@ -156,21 +159,49 @@ class _RecentChatViewState extends State<RecentChatView> {
         elevation: 5,
         actions: [
           showPin
-              ? const Padding(
-                  padding: EdgeInsets.only(right: 12.0),
-                  child: Icon(
-                    Icons.push_pin,
-                    color: Colors.white,
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: InkWell(
+                    onTap: () {
+                      if (isPinned) {
+                        Provider.of<LeadListViewModel>(context, listen: false)
+                            .unpinChat(pinnedLeadId)
+                            .then((onValue) {
+                          getLeadList(showLoading: false);
+                        });
+                      } else {
+                        Provider.of<LeadListViewModel>(context, listen: false)
+                            .pinChat(pinnedLeadId)
+                            .then((onValue) {
+                          getLeadList(showLoading: false);
+                        });
+                      }
+                      setState(() {
+                        showPin = false;
+                        pinnedLeadId = "";
+                      });
+                    },
+                    child: isPinned == false
+                        ? const Icon(
+                            Icons.push_pin_outlined,
+                            color: Colors.white,
+                          )
+                        : Image.asset(
+                            "assets/images/unpin_icon.png",
+                            color: Colors.white,
+                            height: 20,
+                          ),
                   ),
                 )
-              : SizedBox()
+              : const SizedBox(),
         ],
       ),
       body: GestureDetector(
         onTap: () {
           setState(() {
-            pinLeadId = "";
+            pinnedLeadId = "";
             showPin = false;
+            isPinned = false;
           });
           FocusScope.of(context).unfocus();
         },
@@ -254,6 +285,104 @@ class _RecentChatViewState extends State<RecentChatView> {
             ),
           ),
         ),
+        pinnedLeads.isEmpty
+            ? const SizedBox()
+            : const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                child: Text(
+                  "Pinned Leads",
+                  style: TextStyle(fontFamily: AppFonts.medium),
+                ),
+              ),
+        pinnedLeads.isEmpty
+            ? const SizedBox()
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Container(
+                  height: 70,
+                  child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: pinnedLeads.length,
+                      itemBuilder: (context, index) {
+                        var model = pinnedLeads[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 10.0),
+                          child: InkWell(
+                            onTap: () async {
+                              setState(() {
+                                pinnedLeadId = "";
+                                showPin = false;
+                                isPinned = false;
+                              });
+
+                              if (model.full_number != null) {
+                                _marksread(model.full_number ?? "");
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ChatScreen(
+                                      pinnedLeads: pinnedLeads,
+                                      leadName: model.contactname ?? "",
+                                      wpnumber: model.full_number,
+                                      id: model.id,
+                                      contryCode: model.countrycode,
+                                    ),
+                                  ),
+                                ).then((_) {
+                                  _getUnreadCount();
+
+                                  setState(() {
+                                    // unreadMsgCount = "0";
+                                    // unreadMsgCount = "";
+                                  });
+                                  // print("unreadMsgCount====${unreadMsgCount}  ");
+                                });
+                                leads?.viewModels.clear();
+                                Provider.of<LeadListViewModel>(context,
+                                        listen: false)
+                                    .fetchRecentChat();
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('No Phone Number '),
+                                    duration: Duration(seconds: 3),
+                                    backgroundColor:
+                                        AppColor.motivationCar1Color,
+                                  ),
+                                );
+                              }
+                            },
+                            child: Container(
+                              width: 60,
+                              child: Column(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: AppColor.navBarIconColor,
+                                    child: Text(
+                                      "${pinnedLeads[index].contactname?.isNotEmpty == true ? pinnedLeads[index].contactname![0].toUpperCase() : '?'}",
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    pinnedLeads[index].contactname,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        fontFamily: AppFonts.semiBold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                ),
+              ),
         Expanded(
             child: chatLoader
                 ? const Center(
@@ -392,7 +521,7 @@ class _RecentChatViewState extends State<RecentChatView> {
   bool chatLoader = false;
   Future<void> getLeadList({bool showLoading = true}) async {
     if (mounted) {
-      if (showLoading == false) {
+      if (showLoading == true) {
         setState(() {
           chatLoader = true;
         });
@@ -403,20 +532,20 @@ class _RecentChatViewState extends State<RecentChatView> {
             listen: false)
         .fetchRecentChat()
         .then((onValue) {
-      // allRecentChats = [];
-      // tempLeadModelList = [];
+      allRecentChats = [];
+      tempLeadModelList = [];
+      pinnedLeads = [];
 
       try {
         for (var viewModel in leadlistvm.viewModels) {
           var recentMsgmodel = viewModel.model;
           if (recentMsgmodel?.records != null) {
             for (var record in recentMsgmodel!.records!) {
-              allRecentChats
-                ..clear()
-                ..add(record);
-              tempLeadModelList
-                ..clear()
-                ..add(record);
+              allRecentChats.add(record);
+              tempLeadModelList.add(record);
+              if (record.pinned) {
+                pinnedLeads.add(record);
+              }
             }
           }
         }
@@ -433,7 +562,7 @@ class _RecentChatViewState extends State<RecentChatView> {
   }
 
   bool showPin = false;
-  String pinLeadId = "";
+  String pinnedLeadId = "";
   bool isPinned = false;
 
   Widget leadRecordList(Records model, String unreadMsgCount) {
@@ -443,13 +572,16 @@ class _RecentChatViewState extends State<RecentChatView> {
     return GestureDetector(
       onLongPress: () {
         setState(() {
-          pinLeadId = model.id ?? "";
           showPin = true;
+          pinnedLeadId = model.lead_id ?? "";
+          isPinned = model.pinned ?? false;
         });
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: showPin && pinnedLeadId == model.lead_id
+              ? AppColor.pageBgGrey
+              : Colors.white,
           borderRadius: BorderRadius.circular(10),
           border: Border(
             left: BorderSide(
@@ -471,6 +603,11 @@ class _RecentChatViewState extends State<RecentChatView> {
           padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
           child: InkWell(
             onTap: () {
+              setState(() {
+                pinnedLeadId = "";
+                showPin = false;
+                isPinned = false;
+              });
               if (model.full_number != null) {
                 _marksread(model.full_number ?? "");
 
@@ -478,6 +615,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ChatScreen(
+                      pinnedLeads: pinnedLeads,
                       leadName: model.contactname ?? "",
                       wpnumber: model.full_number,
                       id: model.id,
@@ -508,29 +646,32 @@ class _RecentChatViewState extends State<RecentChatView> {
             },
             child: Row(
               children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: AppColor.navBarIconColor,
-                      child: Text(
-                        model.contactname?.isNotEmpty == true
-                            ? model.contactname![0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 18.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: AppColor.navBarIconColor,
+                        child: Text(
+                          model.contactname?.isNotEmpty == true
+                              ? model.contactname![0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 5),
+                        vertical: 10.0, horizontal: 5),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -546,9 +687,15 @@ class _RecentChatViewState extends State<RecentChatView> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+                              const SizedBox(
+                                height: 3,
+                              ),
                               Text(
                                 "${model.full_number}",
                                 style: const TextStyle(fontSize: 12),
+                              ),
+                              const SizedBox(
+                                height: 5,
                               ),
                               Text(
                                 "${model.message}",
@@ -584,6 +731,16 @@ class _RecentChatViewState extends State<RecentChatView> {
                       style:
                           const TextStyle(fontSize: 10, color: Colors.black54),
                     ),
+                    model.pinned ?? false
+                        ? const Padding(
+                            padding: EdgeInsets.only(top: 8.0),
+                            child: Icon(
+                              Icons.push_pin,
+                              color: Colors.black87,
+                              size: 18,
+                            ),
+                          )
+                        : SizedBox()
                   ],
                 )
               ],

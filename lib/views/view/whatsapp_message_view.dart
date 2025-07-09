@@ -30,9 +30,12 @@ import 'package:video_player/video_player.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/models/lead_model.dart';
+import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/utils/function_lib.dart';
+import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
@@ -53,6 +56,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 class ChatScreen extends StatefulWidget {
   final String? leadName;
   final String? wpnumber;
+  final List? pinnedLeads;
   LeadModel? model;
   final String? contryCode;
   String? id;
@@ -61,6 +65,7 @@ class ChatScreen extends StatefulWidget {
       {Key? key,
       this.leadName,
       this.wpnumber,
+      this.pinnedLeads,
       this.id,
       this.model,
       this.contryCode
@@ -257,7 +262,7 @@ class _ChatScreenState extends State<ChatScreen> {
           bottom: true,
           top: false,
           child: Scaffold(
-            backgroundColor: AppColor.backgroundGrey,
+            backgroundColor: AppColor.pageBgGrey,
             appBar: AppBar(
               leading: IconButton(
                 icon: const Icon(
@@ -266,73 +271,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 onPressed: () => Navigator.pop(context),
               ),
-              title: GestureDetector(
-                onTap: () async {
-                  if (widget.model == null) {
-                    return;
-                  }
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LeadDetailView(
-                        model: widget.model,
-                      ),
-                    ),
-                  );
-
-                  if (result == true) {
-                    print("result on detailesss:::: ");
-                    Navigator.pop(context, true);
-                  }
-                },
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      backgroundImage: NetworkImage(
-                        'https://www.w3schools.com/w3images/avatar2.png',
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        widget.leadName ?? "",
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
+              title: Text(
+                "Chat",
+                style: TextStyle(color: Colors.white),
               ),
-              actions: [
-                msgController.msgToDelete.length > 0
-                    ? IconButton(
-                        icon: const Icon(
-                          Icons.delete,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          _showSimpleDialog("");
-                        },
-                      )
-                    : SizedBox(),
-                PopupMenuButton<String>(
-                  icon: const Icon(
-                    Icons.more_vert,
-                    color: Colors.white,
-                  ),
-                  onSelected: (String value) {
-                    if (value == 'Clear Chat') {
-                      _showDeleteDialog();
-                    }
-                  },
-                  itemBuilder: (BuildContext context) =>
-                      <PopupMenuEntry<String>>[
-                    const PopupMenuItem<String>(
-                      value: 'Clear Chat',
-                      child: Text('Clear Chat'),
-                    ),
-                  ],
-                ),
-              ],
+              centerTitle: true,
             ),
             body: Container(
               child: Stack(
@@ -366,68 +309,6 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  // void _showProfileDialog(BuildContext context) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         content: SingleChildScrollView(
-  //           child: Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               const Center(
-  //                 child: CircleAvatar(
-  //                   radius: 50,
-  //                   backgroundImage: NetworkImage(
-  //                     'https://www.w3schools.com/w3images/avatar2.png',
-  //                   ),
-  //                 ),
-  //               ),
-  //               const SizedBox(height: 10),
-  //               Center(
-  //                 child: Text(
-  //                   widget.leadName ?? "No Name Provided",
-  //                   style: const TextStyle(
-  //                       fontWeight: FontWeight.bold, fontSize: 18),
-  //                 ),
-  //               ),
-  //               const SizedBox(height: 10),
-  //               Center(
-  //                 child: Text(
-  //                   widget.wpnumber ?? "No Name Provided",
-  //                   style: const TextStyle(
-  //                       fontWeight: FontWeight.bold, fontSize: 18),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: Container(
-  //               padding:
-  //                   const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-  //               decoration: BoxDecoration(
-  //                 color: AppColor.navBarIconColor,
-  //                 borderRadius: BorderRadius.circular(8),
-  //               ),
-  //               child: const Text(
-  //                 "Close",
-  //                 style: TextStyle(
-  //                   color: Colors.white,
-  //                 ),
-  //               ),
-  //             ),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-
   void deletechat() async {
     print("delete function callin g working");
     final prefs = await SharedPreferences.getInstance();
@@ -437,7 +318,6 @@ class _ChatScreenState extends State<ChatScreen> {
         .msghistorydelete(leadnumber: widget.wpnumber, number: number)
         .then((value) => {
               _pullRefresh(),
-              // Navigator.pop(context),
               print("deeeelete sucefulyyy"),
             });
   }
@@ -1259,428 +1139,670 @@ class _ChatScreenState extends State<ChatScreen> {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: allMessages.length,
-                  itemBuilder: (context, index) {
-                    log("allMessages[index].buttons:::::: ${allMessages[index].buttons}");
-                    List butttons = [];
-                    if (allMessages[index].buttons == null) {
-                      butttons = [];
-                    } else {
-                      butttons = allMessages[index].buttons ?? [];
-                    }
-                    String result = "";
-                    final regex = RegExp(r'\{\{\d+\}\}');
-                    if (allMessages[index].messageBody != null &&
-                        allMessages[index].bodyTextParams != null &&
-                        regex.hasMatch(allMessages[index].messageBody)) {
-                      result = replacePlaceholders(
-                          allMessages[index].messageBody ?? "",
-                          allMessages[index].bodyTextParams.toString());
-                    } else if (allMessages[index].messageBody != null &&
-                        allMessages[index].exampleBodyText != null &&
-                        regex.hasMatch(allMessages[index].messageBody)) {
-                      result = replacePlaceholders(
-                          allMessages[index].messageBody ?? "",
-                          allMessages[index].exampleBodyText ?? "");
-                    } else {
-                      result = allMessages[index].messageBody ?? "";
-                    }
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  widget.pinnedLeads!.isEmpty
+                      ? const SizedBox()
+                      : const Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12.0, vertical: 8),
+                          child: Text(
+                            "Pinned Leads",
+                            style: TextStyle(fontFamily: AppFonts.medium),
+                          ),
+                        ),
+                  widget.pinnedLeads!.isEmpty
+                      ? const SizedBox()
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: Container(
+                            height: 70,
+                            child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: widget.pinnedLeads!.length,
+                                itemBuilder: (context, index) {
+                                  var model = widget.pinnedLeads![index];
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 10.0),
+                                    child: InkWell(
+                                      onTap: () async {
+                                        Navigator.pop(context);
+                                        var num = "";
 
-                    String imageUrl = "";
+                                        num = "${model.full_number}";
 
-                    DateTime now = DateTime.now();
-                    String formattedTime = DateFormat('hh:mm a').format(now);
+                                        print(
+                                            "model  finalResult=>${model.full_number}");
+                                        if (model.full_number != null) {
+                                          _marksread(num);
 
-                    DateTime utcTime = allMessages[index].createddate;
-                    DateTime istTimee =
-                        utcTime.add(const Duration(hours: 5, minutes: 30));
-                    formattedTime = DateFormat('hh:mm a').format(istTimee);
-                    bool isSameDay(DateTime? dateA, DateTime? dateB) {
-                      return dateA?.year == dateB?.year &&
-                          dateA?.month == dateB?.month &&
-                          dateA?.day == dateB?.day;
-                    }
+                                          final result = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => ChatScreen(
+                                                pinnedLeads:
+                                                    widget.pinnedLeads!,
+                                                leadName:
+                                                    model.contactname ?? "",
+                                                wpnumber: model.full_number,
+                                                id: model.id,
+                                                model: widget.model == null
+                                                    ? null
+                                                    : model,
+                                              ),
+                                            ),
+                                          ).then((onValue) {
+                                            _marksread(num);
+                                            _getUnreadCount();
+                                          });
+                                          if (result == true) {
+                                            print(
+                                                "is result getting true.........?");
+                                            _getUnreadCount();
+                                            // getLeadList();
+                                          }
 
-                    String dayLabel = '';
-                    if (isSameDay(istTimee, now)) {
-                      dayLabel = 'Today';
-                    } else if (isSameDay(
-                        istTimee, now.subtract(const Duration(days: 1)))) {
-                      dayLabel = 'Yesterday';
-                    } else {
-                      dayLabel = DateFormat('d MMMM yyyy').format(istTimee);
-                    }
+                                          _getUnreadCount();
+                                          final prefs = await SharedPreferences
+                                              .getInstance();
+                                          var number =
+                                              prefs.getString('phoneNumber');
+                                          Provider.of<UnreadCountVm>(context,
+                                                  listen: false)
+                                              .fetchunreadcount(
+                                                  number: number ?? "");
+                                          setState(() {
+                                            // unreadMsgCount = "0";
+                                            // unreadMsgCount = "";
+                                          });
 
-                    String finalFormattedTime = '$dayLabel';
-                    // print(
-                    //     "finalFormattedTime::: ${finalFormattedTime}  ${isSameDay}");
-                    String title = allMessages[index].title ?? "";
-                    String msghistoryid = allMessages[index].id;
-
-                    if (title.isNotEmpty) {
-                      imageUrl =
-                          "${AppConstants.baseImgUrl}public/${tenatCode}/attachment/$title";
-                    }
-
-                    bool showDateLabel = false;
-                    if (index == 0) {
-                      showDateLabel = true;
-                    } else {
-                      DateTime prevTime = allMessages[index - 1]
-                          .createddate
-                          .add(const Duration(hours: 5, minutes: 30));
-                      if (!isSameDay(istTimee, prevTime)) {
-                        showDateLabel = true;
-                      }
-                    }
-
-                    return (allMessages[index].header == null &&
-                            allMessages[index].messageBody == null &&
-                            imageUrl.isEmpty &&
-                            (allMessages[index].message == null ||
-                                allMessages[index].message.toString().isEmpty))
-                        ? SizedBox()
-                        : Column(
-                            children: [
-                              if (showDateLabel)
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 0),
-                                  child: Center(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                          color: const Color.fromARGB(
-                                              255, 169, 215, 236),
-                                          borderRadius:
-                                              BorderRadius.circular(6)),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(6.0),
-                                        child: Text(
-                                          finalFormattedTime,
-                                          style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold),
+                                          // Provider.of<LeadListViewModel>(
+                                          //         context,
+                                          //         listen: false)
+                                          //     .fetch();
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text('No Phone Number '),
+                                              duration: Duration(seconds: 3),
+                                              backgroundColor:
+                                                  AppColor.motivationCar1Color,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        width: 60,
+                                        child: Column(
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 20,
+                                              backgroundColor:
+                                                  AppColor.navBarIconColor,
+                                              child: Text(
+                                                "${widget.pinnedLeads![index].contactname?.isNotEmpty == true ? widget.pinnedLeads![index].contactname![0].toUpperCase() : '?'}",
+                                                style: const TextStyle(
+                                                  fontSize: 20,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            Text(
+                                              widget.pinnedLeads![index]
+                                                  .contactname,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                  fontFamily:
+                                                      AppFonts.semiBold),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
+                                  );
+                                }),
+                          ),
+                        ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: 15,
+            ),
+            Expanded(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      // color: Colors.amber,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 4),
+                        child: Row(
+                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                if (widget.model == null) {
+                                  return;
+                                }
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LeadDetailView(
+                                      model: widget.model,
+                                    ),
                                   ),
+                                );
+
+                                if (result == true) {
+                                  print("result on detailesss:::: ");
+                                  Navigator.pop(context, true);
+                                }
+                              },
+                              child: Row(
+                                children: [
+                                  const CircleAvatar(
+                                    backgroundImage: NetworkImage(
+                                      'https://www.w3schools.com/w3images/avatar2.png',
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * .5,
+                                    child: Text(
+                                      widget.leadName ?? "",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                          fontFamily: AppFonts.medium,
+                                          color:
+                                              Color.fromARGB(255, 59, 52, 52)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Spacer(),
+                            msgController.msgToDelete.length > 0
+                                ? IconButton(
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.black,
+                                    ),
+                                    onPressed: () {
+                                      _showSimpleDialog("");
+                                    },
+                                  )
+                                : SizedBox(),
+                            PopupMenuButton<String>(
+                              icon: const Icon(
+                                Icons.more_vert,
+                                color: Colors.black,
+                              ),
+                              onSelected: (String value) {
+                                if (value == 'Clear Chat') {
+                                  _showDeleteDialog();
+                                }
+                              },
+                              itemBuilder: (BuildContext context) =>
+                                  <PopupMenuEntry<String>>[
+                                const PopupMenuItem<String>(
+                                  value: 'Clear Chat',
+                                  child: Text('Clear Chat'),
                                 ),
-                              Padding(
-                                  padding: const EdgeInsets.only(top: 2.0),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      if (msgController
-                                          .msgToDelete.isNotEmpty) {
-                                        msgController.updateDeleteMsgList(
-                                            allMessages[index].id ?? "");
-                                      }
-                                    },
-                                    onLongPress: () {
-                                      msgController.updateDeleteMsgList(
-                                          allMessages[index].id ?? "");
-                                    },
-                                    child: Container(
-                                      color: msgController.msgToDelete
-                                              .contains(allMessages[index].id)
-                                          ? Color(0xffAFAFAF)
-                                          : Colors.transparent,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            allMessages[index].status ==
-                                                    "Incoming"
-                                                ? MainAxisAlignment.start
-                                                : MainAxisAlignment.end,
-                                        children: [
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 2.0),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Divider(),
+                    Expanded(
+                      child: ListView.builder(
+                          controller: _scrollController,
+                          itemCount: allMessages.length,
+                          itemBuilder: (context, index) {
+                            log("allMessages[index].buttons:::::: ${allMessages[index].buttons}");
+                            List butttons = [];
+                            if (allMessages[index].buttons == null) {
+                              butttons = [];
+                            } else {
+                              butttons = allMessages[index].buttons ?? [];
+                            }
+                            String result = "";
+                            final regex = RegExp(r'\{\{\d+\}\}');
+                            if (allMessages[index].messageBody != null &&
+                                allMessages[index].bodyTextParams != null &&
+                                regex
+                                    .hasMatch(allMessages[index].messageBody)) {
+                              result = replacePlaceholders(
+                                  allMessages[index].messageBody ?? "",
+                                  allMessages[index].bodyTextParams.toString());
+                            } else if (allMessages[index].messageBody != null &&
+                                allMessages[index].exampleBodyText != null &&
+                                regex
+                                    .hasMatch(allMessages[index].messageBody)) {
+                              result = replacePlaceholders(
+                                  allMessages[index].messageBody ?? "",
+                                  allMessages[index].exampleBodyText ?? "");
+                            } else {
+                              result = allMessages[index].messageBody ?? "";
+                            }
+
+                            String imageUrl = "";
+
+                            DateTime now = DateTime.now();
+                            String formattedTime =
+                                DateFormat('hh:mm a').format(now);
+
+                            DateTime utcTime = allMessages[index].createddate;
+                            DateTime istTimee = utcTime
+                                .add(const Duration(hours: 5, minutes: 30));
+                            formattedTime =
+                                DateFormat('hh:mm a').format(istTimee);
+                            bool isSameDay(DateTime? dateA, DateTime? dateB) {
+                              return dateA?.year == dateB?.year &&
+                                  dateA?.month == dateB?.month &&
+                                  dateA?.day == dateB?.day;
+                            }
+
+                            String dayLabel = '';
+                            if (isSameDay(istTimee, now)) {
+                              dayLabel = 'Today';
+                            } else if (isSameDay(istTimee,
+                                now.subtract(const Duration(days: 1)))) {
+                              dayLabel = 'Yesterday';
+                            } else {
+                              dayLabel =
+                                  DateFormat('d MMMM yyyy').format(istTimee);
+                            }
+
+                            String finalFormattedTime = '$dayLabel';
+                            // print(
+                            //     "finalFormattedTime::: ${finalFormattedTime}  ${isSameDay}");
+                            String title = allMessages[index].title ?? "";
+                            String msghistoryid = allMessages[index].id;
+
+                            if (title.isNotEmpty) {
+                              imageUrl =
+                                  "${AppConstants.baseImgUrl}public/${tenatCode}/attachment/$title";
+                            }
+
+                            bool showDateLabel = false;
+                            if (index == 0) {
+                              showDateLabel = true;
+                            } else {
+                              DateTime prevTime = allMessages[index - 1]
+                                  .createddate
+                                  .add(const Duration(hours: 5, minutes: 30));
+                              if (!isSameDay(istTimee, prevTime)) {
+                                showDateLabel = true;
+                              }
+                            }
+
+                            return (allMessages[index].header == null &&
+                                    allMessages[index].messageBody == null &&
+                                    imageUrl.isEmpty &&
+                                    (allMessages[index].message == null ||
+                                        allMessages[index]
+                                            .message
+                                            .toString()
+                                            .isEmpty))
+                                ? SizedBox()
+                                : Column(
+                                    children: [
+                                      if (showDateLabel)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 0),
+                                          child: Center(
                                             child: Container(
-                                              margin:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 5),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 8),
-                                              child: Align(
-                                                alignment: _getAlignment(
-                                                    allMessages[index].status),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      allMessages[
-                                                                      index]
-                                                                  .status ==
-                                                              "Outgoing"
-                                                          ? CrossAxisAlignment
-                                                              .end
-                                                          : CrossAxisAlignment
-                                                              .start,
-                                                  children: [
-                                                    if (index == 0 ||
-                                                        allMessages[index]
-                                                                .status !=
-                                                            allMessages[
-                                                                    index - 1]
-                                                                .status ||
-                                                        allMessages[index]
-                                                                .name !=
-                                                            allMessages[
-                                                                    index - 1]
-                                                                .name)
-                                                      Text(
-                                                        allMessages[index]
-                                                                    .status ==
-                                                                "Incoming"
-                                                            ? allMessages[index]
-                                                                .name
-                                                            : userName,
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 13,
-                                                          color: Colors.black87,
-                                                        ),
-                                                      ),
-                                                    IntrinsicWidth(
-                                                      child: Container(
-                                                        constraints:
-                                                            BoxConstraints(
-                                                          minWidth: MediaQuery.of(
-                                                                      context)
-                                                                  .size
-                                                                  .width *
-                                                              0.25,
-                                                          maxWidth: MediaQuery.of(
-                                                                      context)
-                                                                  .size
-                                                                  .width *
-                                                              0.65,
-                                                        ),
-                                                        margin: const EdgeInsets
-                                                            .symmetric(
-                                                            vertical: 4),
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(10),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: allMessages[
-                                                                          index]
-                                                                      .status ==
-                                                                  "Outgoing"
-                                                              ? const Color(
-                                                                  0xffE3FFC9)
-                                                              : const Color
-                                                                  .fromARGB(
-                                                                  255,
-                                                                  179,
-                                                                  238,
-                                                                  243),
-                                                          borderRadius:
-                                                              BorderRadius.only(
-                                                            topLeft:
-                                                                const Radius
-                                                                    .circular(
-                                                                    12),
-                                                            topRight:
-                                                                const Radius
-                                                                    .circular(
-                                                                    12),
-                                                            bottomLeft: allMessages[
-                                                                            index]
-                                                                        .status ==
-                                                                    "Outgoing"
-                                                                ? const Radius
-                                                                    .circular(
-                                                                    12)
-                                                                : Radius.zero,
-                                                            bottomRight: allMessages[
-                                                                            index]
-                                                                        .status ==
-                                                                    "Outgoing"
-                                                                ? Radius.zero
-                                                                : const Radius
-                                                                    .circular(
-                                                                    12),
-                                                          ),
-                                                          boxShadow: [
-                                                            BoxShadow(
-                                                              color: Colors
-                                                                  .black
-                                                                  .withOpacity(
-                                                                      0.2),
-                                                              blurRadius: 4,
-                                                              offset:
-                                                                  const Offset(
-                                                                      2, 2),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            if (imageUrl
-                                                                .isNotEmpty)
-                                                              _buildAttachmentWidget(
-                                                                  imageUrl),
-                                                            if (allMessages[index]
-                                                                        .header !=
-                                                                    null &&
-                                                                imageUrl
-                                                                    .isEmpty)
-                                                              _buildHeaderMedia(
-                                                                  allMessages[
-                                                                          index]
-                                                                      .header!,
-                                                                  allMessages[
-                                                                          index]
-                                                                      .headerBody),
-                                                            if (allMessages[index]
-                                                                        .message !=
-                                                                    null &&
-                                                                allMessages[
-                                                                        index]
-                                                                    .message!
-                                                                    .isNotEmpty)
-                                                              Text(
-                                                                allMessages[
-                                                                        index]
-                                                                    .message!,
-                                                                style:
-                                                                    const TextStyle(
-                                                                        fontSize:
-                                                                            14,
-                                                                        height:
-                                                                            1.5),
-                                                                maxLines: 4,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                              ),
-                                                            if (allMessages[
-                                                                        index]
-                                                                    .messageBody !=
-                                                                null)
-                                                              Text('${result}'),
-                                                            // const SizedBox(
-                                                            //     height: 5),
-                                                            if (allMessages[
-                                                                        index]
-                                                                    .description !=
-                                                                null)
-                                                              Text(allMessages[
-                                                                      index]
-                                                                  .description),
-                                                            SizedBox(
-                                                                height:
-                                                                    allMessages[index].description !=
-                                                                            null
-                                                                        ? 5
-                                                                        : 0),
-                                                            if (allMessages[
-                                                                        index]
-                                                                    .footer !=
-                                                                null)
-                                                              Text(
-                                                                allMessages[
-                                                                        index]
-                                                                    .footer!,
-                                                                style: const TextStyle(
-                                                                    fontSize:
-                                                                        12,
-                                                                    color: Colors
-                                                                        .grey),
-                                                              ),
-                                                            if (allMessages[
-                                                                        index]
-                                                                    .erormessage !=
-                                                                null)
-                                                              Text(
-                                                                allMessages[
-                                                                        index]
-                                                                    .erormessage!,
-                                                                style: const TextStyle(
-                                                                    fontSize:
-                                                                        12,
-                                                                    color: Colors
-                                                                        .red),
-                                                              ),
-                                                            if (butttons
-                                                                .isNotEmpty)
-                                                              _buildButtons(
-                                                                  butttons),
-                                                            (allMessages[index]
-                                                                        .status ==
-                                                                    "Outgoing")
-                                                                ? Row(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .end,
-                                                                    children: [
-                                                                      Text(
-                                                                        formattedTime,
-                                                                        style:
-                                                                            const TextStyle(
-                                                                          // fontWeight:
-                                                                          //     FontWeight.bold,
-                                                                          fontSize:
-                                                                              12,
-                                                                          color:
-                                                                              Colors.black45,
-                                                                        ),
-                                                                      ),
-                                                                      Icon(
-                                                                        Icons
-                                                                            .done_all,
-                                                                        color: allMessages[index].deliveryStatus ==
-                                                                                "read"
-                                                                            ? Colors.green
-                                                                            : Colors.grey,
-                                                                        size:
-                                                                            18,
-                                                                      ),
-                                                                    ],
-                                                                  )
-                                                                : Row(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .end,
-                                                                    children: [
-                                                                      Text(
-                                                                        formattedTime,
-                                                                        style:
-                                                                            const TextStyle(
-                                                                          // fontWeight:
-                                                                          //     FontWeight.bold,
-                                                                          fontSize:
-                                                                              12,
-                                                                          color:
-                                                                              Colors.black45,
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
+                                              decoration: BoxDecoration(
+                                                  color: const Color.fromARGB(
+                                                      255, 169, 215, 236),
+                                                  borderRadius:
+                                                      BorderRadius.circular(6)),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(6.0),
+                                                child: Text(
+                                                  finalFormattedTime,
+                                                  style: const TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.bold),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  )),
-                            ],
-                          );
-                  }),
+                                        ),
+                                      Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 2.0),
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              if (msgController
+                                                  .msgToDelete.isNotEmpty) {
+                                                msgController
+                                                    .updateDeleteMsgList(
+                                                        allMessages[index].id ??
+                                                            "");
+                                              }
+                                            },
+                                            onLongPress: () {
+                                              msgController.updateDeleteMsgList(
+                                                  allMessages[index].id ?? "");
+                                            },
+                                            child: Container(
+                                              color: msgController.msgToDelete
+                                                      .contains(
+                                                          allMessages[index].id)
+                                                  ? Color(0xffAFAFAF)
+                                                  : Colors.transparent,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    allMessages[index].status ==
+                                                            "Incoming"
+                                                        ? MainAxisAlignment
+                                                            .start
+                                                        : MainAxisAlignment.end,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 2.0),
+                                                    child: Container(
+                                                      margin: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 5),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 8),
+                                                      child: Align(
+                                                        alignment:
+                                                            _getAlignment(
+                                                                allMessages[
+                                                                        index]
+                                                                    .status),
+                                                        child: Column(
+                                                          crossAxisAlignment: allMessages[
+                                                                          index]
+                                                                      .status ==
+                                                                  "Outgoing"
+                                                              ? CrossAxisAlignment
+                                                                  .end
+                                                              : CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            if (index == 0 ||
+                                                                allMessages[index]
+                                                                        .status !=
+                                                                    allMessages[
+                                                                            index -
+                                                                                1]
+                                                                        .status ||
+                                                                allMessages[index]
+                                                                        .name !=
+                                                                    allMessages[
+                                                                            index -
+                                                                                1]
+                                                                        .name)
+                                                              Text(
+                                                                allMessages[index]
+                                                                            .status ==
+                                                                        "Incoming"
+                                                                    ? allMessages[
+                                                                            index]
+                                                                        .name
+                                                                    : userName,
+                                                                style:
+                                                                    const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 13,
+                                                                  color: Colors
+                                                                      .black87,
+                                                                ),
+                                                              ),
+                                                            IntrinsicWidth(
+                                                              child: Container(
+                                                                constraints:
+                                                                    BoxConstraints(
+                                                                  minWidth: MediaQuery.of(
+                                                                              context)
+                                                                          .size
+                                                                          .width *
+                                                                      0.25,
+                                                                  maxWidth: MediaQuery.of(
+                                                                              context)
+                                                                          .size
+                                                                          .width *
+                                                                      0.65,
+                                                                ),
+                                                                margin: const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical:
+                                                                        4),
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        10),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: allMessages[index]
+                                                                              .status ==
+                                                                          "Outgoing"
+                                                                      ? const Color(
+                                                                          0xffE3FFC9)
+                                                                      : const Color
+                                                                          .fromARGB(
+                                                                          255,
+                                                                          179,
+                                                                          238,
+                                                                          243),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .only(
+                                                                    topLeft:
+                                                                        const Radius
+                                                                            .circular(
+                                                                            12),
+                                                                    topRight:
+                                                                        const Radius
+                                                                            .circular(
+                                                                            12),
+                                                                    bottomLeft: allMessages[index].status ==
+                                                                            "Outgoing"
+                                                                        ? const Radius
+                                                                            .circular(
+                                                                            12)
+                                                                        : Radius
+                                                                            .zero,
+                                                                    bottomRight: allMessages[index].status ==
+                                                                            "Outgoing"
+                                                                        ? Radius
+                                                                            .zero
+                                                                        : const Radius
+                                                                            .circular(
+                                                                            12),
+                                                                  ),
+                                                                  boxShadow: [
+                                                                    BoxShadow(
+                                                                      color: Colors
+                                                                          .black
+                                                                          .withOpacity(
+                                                                              0.2),
+                                                                      blurRadius:
+                                                                          4,
+                                                                      offset:
+                                                                          const Offset(
+                                                                              2,
+                                                                              2),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                child: Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    if (imageUrl
+                                                                        .isNotEmpty)
+                                                                      _buildAttachmentWidget(
+                                                                          imageUrl),
+                                                                    if (allMessages[index].header !=
+                                                                            null &&
+                                                                        imageUrl
+                                                                            .isEmpty)
+                                                                      _buildHeaderMedia(
+                                                                          allMessages[index]
+                                                                              .header!,
+                                                                          allMessages[index]
+                                                                              .headerBody),
+                                                                    if (allMessages[index].message !=
+                                                                            null &&
+                                                                        allMessages[index]
+                                                                            .message!
+                                                                            .isNotEmpty)
+                                                                      Text(
+                                                                        allMessages[index]
+                                                                            .message!,
+                                                                        style: const TextStyle(
+                                                                            fontSize:
+                                                                                14,
+                                                                            height:
+                                                                                1.5),
+                                                                        maxLines:
+                                                                            4,
+                                                                        overflow:
+                                                                            TextOverflow.ellipsis,
+                                                                      ),
+                                                                    if (allMessages[index]
+                                                                            .messageBody !=
+                                                                        null)
+                                                                      Text(
+                                                                          '${result}'),
+                                                                    // const SizedBox(
+                                                                    //     height: 5),
+                                                                    if (allMessages[index]
+                                                                            .description !=
+                                                                        null)
+                                                                      Text(allMessages[
+                                                                              index]
+                                                                          .description),
+                                                                    SizedBox(
+                                                                        height: allMessages[index].description !=
+                                                                                null
+                                                                            ? 5
+                                                                            : 0),
+                                                                    if (allMessages[index]
+                                                                            .footer !=
+                                                                        null)
+                                                                      Text(
+                                                                        allMessages[index]
+                                                                            .footer!,
+                                                                        style: const TextStyle(
+                                                                            fontSize:
+                                                                                12,
+                                                                            color:
+                                                                                Colors.grey),
+                                                                      ),
+                                                                    if (allMessages[index]
+                                                                            .erormessage !=
+                                                                        null)
+                                                                      Text(
+                                                                        allMessages[index]
+                                                                            .erormessage!,
+                                                                        style: const TextStyle(
+                                                                            fontSize:
+                                                                                12,
+                                                                            color:
+                                                                                Colors.red),
+                                                                      ),
+                                                                    if (butttons
+                                                                        .isNotEmpty)
+                                                                      _buildButtons(
+                                                                          butttons),
+                                                                    (allMessages[index].status ==
+                                                                            "Outgoing")
+                                                                        ? Row(
+                                                                            mainAxisAlignment:
+                                                                                MainAxisAlignment.end,
+                                                                            children: [
+                                                                              Text(
+                                                                                formattedTime,
+                                                                                style: const TextStyle(
+                                                                                  // fontWeight:
+                                                                                  //     FontWeight.bold,
+                                                                                  fontSize: 12,
+                                                                                  color: Colors.black45,
+                                                                                ),
+                                                                              ),
+                                                                              Icon(
+                                                                                Icons.done_all,
+                                                                                color: allMessages[index].deliveryStatus == "read" ? Colors.green : Colors.grey,
+                                                                                size: 18,
+                                                                              ),
+                                                                            ],
+                                                                          )
+                                                                        : Row(
+                                                                            mainAxisAlignment:
+                                                                                MainAxisAlignment.end,
+                                                                            children: [
+                                                                              Text(
+                                                                                formattedTime,
+                                                                                style: const TextStyle(
+                                                                                  // fontWeight:
+                                                                                  //     FontWeight.bold,
+                                                                                  fontSize: 12,
+                                                                                  color: Colors.black45,
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          )),
+                                    ],
+                                  );
+                          }),
+                    ),
+                  ],
+                ),
+              ),
             ),
             _buildMessageInputArea(),
           ],
@@ -1736,105 +1858,112 @@ class _ChatScreenState extends State<ChatScreen> {
     messageViewModel = Provider.of<MessageViewModel>(context);
 
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          if (_isRecording)
-            const Row(
-              children: [
-                Icon(Icons.fiber_manual_record, color: Colors.red),
-                SizedBox(width: 6),
-                Text("Recording..."),
-              ],
-            ),
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.attach_file),
-                onPressed: _showPicker,
+      padding: const EdgeInsets.only(bottom: 0.0, left: 0, right: 0),
+      child: Container(
+        color: Colors.white,
+        child: Column(
+          children: [
+            if (_isRecording)
+              const Row(
+                children: [
+                  Icon(Icons.fiber_manual_record, color: Colors.red),
+                  SizedBox(width: 6),
+                  Text("Recording..."),
+                ],
               ),
-              Expanded(
-                child: Row(
-                  children: [
-                    if (image != null && !isImageSent)
-                      _buildFilePreview(image!),
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        decoration: InputDecoration(
-                          hintText: 'Type a message...',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide.none,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.attach_file),
+                    onPressed: _showPicker,
+                  ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        if (image != null && !isImageSent)
+                          _buildFilePreview(image!),
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            decoration: InputDecoration(
+                              hintText: 'Type a message...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFFF1F1F1),
+                            ),
                           ),
-                          filled: true,
-                          fillColor: const Color(0xFFF1F1F1),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4.0),
+                    child: Listener(
+                      onPointerDown: (_) => _startRecording(setState, context),
+                      onPointerUp: (_) => _stopRecording(setState),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Color.fromARGB(255, 168, 205, 235),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(10),
+                        child: Icon(
+                          _isRecording ? Icons.stop : Icons.mic_none_sharp,
+                          color: _isRecording ? Colors.red : Colors.black,
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 4.0),
-                child: Listener(
-                  onPointerDown: (_) => _startRecording(setState, context),
-                  onPointerUp: (_) => _stopRecording(setState),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 168, 205, 235),
-                      shape: BoxShape.circle,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xff8BBCD0),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.code, color: Colors.white),
+                        onPressed: () {
+                          WalletController wc =
+                              Provider.of(context, listen: false);
+                          wc.setFinalAmt("");
+                          _getBootmSheet();
+                        },
+                      ),
                     ),
-                    padding: const EdgeInsets.all(10),
-                    child: Icon(
-                      _isRecording ? Icons.stop : Icons.mic_none_sharp,
-                      color: _isRecording ? Colors.red : Colors.black,
+                  ),
+                  if (allMessages.isNotEmpty)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(255, 76, 162, 189),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: showLoader
+                          ? const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: SizedBox(
+                                height: 30,
+                                width: 30,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white),
+                              ),
+                            )
+                          : IconButton(
+                              icon: const Icon(Icons.send_rounded,
+                                  color: Colors.white),
+                              onPressed: _handleSendMessage,
+                            ),
                     ),
-                  ),
-                ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xff8BBCD0),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.code, color: Colors.white),
-                    onPressed: () {
-                      WalletController wc = Provider.of(context, listen: false);
-                      wc.setFinalAmt("");
-                      _getBootmSheet();
-                    },
-                  ),
-                ),
-              ),
-              if (allMessages.isNotEmpty)
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 76, 162, 189),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: showLoader
-                      ? const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: SizedBox(
-                            height: 30,
-                            width: 30,
-                            child:
-                                CircularProgressIndicator(color: Colors.white),
-                          ),
-                        )
-                      : IconButton(
-                          icon: const Icon(Icons.send_rounded,
-                              color: Colors.white),
-                          onPressed: _handleSendMessage,
-                        ),
-                ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -3901,6 +4030,25 @@ class _ChatScreenState extends State<ChatScreen> {
 
       showLoader = false;
     });
+  }
+
+  UnreadCountVm? unreadCountVm;
+  List unreadList = [];
+  Future<void> _getUnreadCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    var number = prefs.getString('phoneNumber');
+
+    if (!mounted) return;
+    Provider.of<LeadListViewModel>(context, listen: false).fetch();
+    await Provider.of<UnreadCountVm>(context, listen: false)
+        .fetchunreadcount(number: number ?? "");
+
+    var unreadMsgModel;
+    for (var unreadModel in unreadCountVm?.viewModels ?? []) {
+      unreadMsgModel = unreadModel.model as UnreadMsgModel;
+    }
+    unreadList = unreadMsgModel.records ?? [];
+    setState(() {});
   }
 }
 

@@ -39,6 +39,7 @@ class RecentChatModel extends BaseModel {
 
 class Records {
   String? id;
+  String? lead_id;
   String? parent_id;
   String? contactname;
   String? country_code;
@@ -47,25 +48,29 @@ class Records {
   String? whatsapp_number;
   String? full_number;
   DateTime? createddate;
-
+  bool? pinned;
   Records(
       {this.id,
       this.parent_id,
+      this.lead_id,
       this.contactname,
       this.country_code,
       this.full_number,
       this.countrycode,
       this.whatsapp_number,
       this.createddate,
+      this.pinned,
       this.message});
 
   factory Records.fromMap(Map<String, dynamic> data) {
     return Records(
       id: data['id']?.toString(),
       parent_id: data['parent_id']?.toString(),
+      lead_id: data['lead_id']?.toString(),
       country_code: data['country_code'].toString(),
       countrycode: data['countrycode'].toString(),
       message: data['message'] ?? "",
+      pinned: data['pinned'] ?? false,
       contactname: data['contactname']?.toString(),
       full_number: data['full_number']?.toString(),
       whatsapp_number: data['whatsapp_number']?.toString(),
@@ -78,6 +83,8 @@ class Records {
   Map<String, dynamic> toMap() => {
         'id': id,
         'parent_id': parent_id,
+        'lead_id': lead_id,
+        'pinned': pinned,
         'contactname': contactname,
         'full_number': full_number,
         'countrycode': countrycode,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -327,7 +328,13 @@ class DashBoardController extends ChangeNotifier {
       String apiUrl = "${AppConstants.sfDeviceToken}";
       final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
 
-      Map body = {"userId": usrId, "deviceId": sfDeviceTokn, "fcmToken": sfFcm};
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      String? fcmtoken = await messaging.getToken();
+      Map body = {
+        "userId": usrId,
+        "deviceId": sfDeviceTokn,
+        "fcmToken": fcmtoken
+      };
       final response = await http.post(Uri.parse(apiUrl),
           headers: {
             'Authorization': 'Bearer $token',
