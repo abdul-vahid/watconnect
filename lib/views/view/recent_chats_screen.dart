@@ -684,6 +684,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                 "${model.contactname}",
                                 style: const TextStyle(
                                   fontSize: 14,
+                                  fontFamily: AppFonts.semiBold,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -799,7 +800,7 @@ class _RecentChatViewState extends State<RecentChatView> {
 
       socket!.on("receivedwhatsappmessage", (data) {
         print(" New WhatsApp message: $data");
-        getLeadList();
+        getLeadList(showLoading: false);
         _getUnreadCount();
       });
 
