@@ -13,8 +13,6 @@ import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
 
-import '../../utils/app_utils.dart';
-
 class LocalNotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -35,7 +33,7 @@ class LocalNotificationService {
       onDidReceiveNotificationResponse: (details) async {
         debugPrint("Notification tapped");
         debugPrint(
-            "Payload: ${details.payload}   ${details.payload.runtimeType} ");
+            "Payload:   ${details}  ${details.data} ${details.payload}   ${details.payload.runtimeType} ");
         debugPrint("Action ID: ${details.actionId}   ${details.data}");
         debugPrint("Notification ID: ${details.id}");
 
@@ -69,26 +67,6 @@ class LocalNotificationService {
     );
   }
 
-  static void onDidReceiveLocalNotification(
-      int? id, String? title, String? body, String? payload) async {
-    BuildContext? context = AppUtils.currentContext;
-    if (context != null) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: Text(title ?? ""),
-          content: Text(body ?? ""),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
   static Future<void> displayNotification(RemoteMessage message) async {
     print("is this called once::::::::::::::::::::");
     try {
@@ -97,11 +75,11 @@ class LocalNotificationService {
       String? imageUrl;
       BigPictureStyleInformation? bigPictureStyle;
 
-      if (message.data.containsKey('urls')) {
+      if (message.data.containsKey('fileUrl')) {
         try {
-          List<dynamic> urls = jsonDecode(message.data['urls']);
-          if (urls.isNotEmpty && urls[0] != null) {
-            imageUrl = urls[0];
+          var urls = (message.data['fileUrl']);
+          if (urls.isNotEmpty) {
+            imageUrl = urls;
           }
         } catch (e) {
           debugPrint("Error decoding image URL: $e");
@@ -150,7 +128,7 @@ class LocalNotificationService {
 
       debugPrint("Notification shown ");
     } catch (e) {
-      debugPrint("Error displaying notification: $e");
+      debugPrint("Error displaying notinfication: $e");
     }
   }
 
@@ -178,11 +156,28 @@ class LocalNotificationService {
 
   static FlutterLocalNotificationsPlugin get instance => _notificationsPlugin;
 
+  static List pinnedLeads = [];
   static void NavigationFunc(String leadId, BuildContext cntxt) {
     print("NavigationFunc ::: 1");
     debug("NavigationFunc called with leadId dsfcsf: $leadId");
     LeadModel? matchedModel;
     var leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
+
+    pinnedLeads = [];
+
+    for (var viewModel in leadlistvm.viewModels) {
+      var leadmodel = viewModel.model;
+      print("leadmodel:::::   ::   ${leadmodel}");
+      print(
+          "leadmodel?.records:::::::::: ${leadmodel?.records}  ${leadmodel?.records.length}");
+      if (leadmodel?.records != null) {
+        for (var record in leadmodel!.records!) {
+          if (record.pinned == true) {
+            pinnedLeads.add(record);
+          }
+        }
+      }
+    }
 
     for (var viewModel in leadlistvm.viewModels) {
       var leadmodel = viewModel.model;
@@ -210,6 +205,7 @@ class LocalNotificationService {
       cntxt,
       MaterialPageRoute(
         builder: (_) => ChatScreen(
+          pinnedLeads: pinnedLeads,
           leadName:
               "${matchedModel!.firstname ?? ""} ${matchedModel.lastname ?? ""}",
           wpnumber: matchedModel.whatsappNumber!.contains("+")

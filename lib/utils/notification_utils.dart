@@ -35,7 +35,7 @@ class NotificationUtil {
         ?.getInitialMessage()
         .then((RemoteMessage? remoteMessage) async {
       debug(
-          "getInitialMessage triggered (terminated state) ${remoteMessage?.data}");
+          "getInitialMessage triggered (terminated state)   ${remoteMessage?.notification} ${remoteMessage?.data}");
       if (remoteMessage != null) {
         final leadId = remoteMessage.data['lead_id'];
         if (leadId != null) {
@@ -46,6 +46,8 @@ class NotificationUtil {
             NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
           });
         }
+      } else {
+        print("remote messha eos is nullllllllllllll");
       }
     });
 
@@ -126,6 +128,7 @@ class NotificationUtil {
     }
   }
 
+  List pinnedLeads = [];
   void NavigationFunc(String leadId, BuildContext cntxt) {
     debug("NavigationFunc called with leadId: $leadId");
     LeadModel? matchedModel;
@@ -135,6 +138,15 @@ class NotificationUtil {
       print("leadmodel:::::   ::   ${leadmodel}");
       print(
           "leadmodel?.records:::::::::: ${leadmodel?.records}  ${leadmodel?.records.length}");
+      pinnedLeads = [];
+
+      if (leadmodel?.records != null) {
+        for (var record in leadmodel!.records!) {
+          if (record.pinned == true) {
+            pinnedLeads.add(record);
+          }
+        }
+      }
       if (leadmodel?.records != null) {
         for (var record in leadmodel!.records!) {
           if (record.id.toString() == leadId) {
@@ -152,6 +164,7 @@ class NotificationUtil {
       cntxt,
       MaterialPageRoute(
         builder: (_) => ChatScreen(
+          pinnedLeads: pinnedLeads,
           leadName:
               "${matchedModel!.firstname ?? ""} ${matchedModel.lastname ?? ""}",
           wpnumber: matchedModel.whatsappNumber!.contains("+")
@@ -198,6 +211,8 @@ Future<void> showImageNotification(
     contentTitle: message.notification?.title ?? '',
     summaryText: message.notification?.body ?? '',
   );
+
+  print("tmage notification is hsown here");
 
   final AndroidNotificationDetails androidPlatformChannelSpecifics =
       AndroidNotificationDetails(

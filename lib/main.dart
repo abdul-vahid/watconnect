@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 // import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -60,6 +61,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  // await LocalNotificationService().initialize();
   runApp(const MyApp());
 }
 
@@ -133,14 +135,24 @@ class MyApp extends StatelessWidget {
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("message firebaseMessagingBackgroundHandler::: ");
-  debug("Background FCM:  ${message} ${message.notification?.title}");
+  debug(
+      "Background FCM:  ${message}   ${message.notification}   ${message.notification?.title}");
+
+  if (message.notification != null) {
+    debugPrint(
+        "Firebase default notification bhi dikh rahi hogi. Cancel karte hain...");
+    await Future.delayed(Duration(milliseconds: 500)); // chhota delay
+    await FlutterLocalNotificationsPlugin().cancelAll(); // Default hataya
+  }
+
   final imageUrl = message.data['fileUrl'];
 
   if (imageUrl != null && imageUrl.isNotEmpty) {
     try {
-      final filePath = await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
-      print("filePath:  remoteMessage:: ${filePath}   ${message}");
-      await showImageNotification(message, filePath);
+      LocalNotificationService.displayNotification(message);
+      // final filePath = await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
+      // print("filePath:  remoteMessage:: ${filePath}   ${message}");
+      // await showImageNotification(message, filePath);
     } catch (e) {
       debugPrint("Image download failed, fallback to text notification: $e");
       LocalNotificationService.displayNotification(message);
