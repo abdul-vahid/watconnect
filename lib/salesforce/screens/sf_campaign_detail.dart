@@ -197,13 +197,13 @@ Widget buildRow(String label, {dynamic value = ""}) {
               child: Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 0, 0, 0),
+                  color: Colors.black,
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               width: 10,
             ),
             Expanded(

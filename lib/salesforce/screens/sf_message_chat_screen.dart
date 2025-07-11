@@ -322,6 +322,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   Widget build(BuildContext context) {
     return Consumer<ChatMessageController>(builder: (context, ref, child) {
       return Scaffold(
+        backgroundColor: Colors.white,
         resizeToAvoidBottomInset: true,
         appBar: const SfChatAppBar(),
         body: Stack(
@@ -465,6 +466,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
             child) {
       return Column(
         children: [
+          Divider(),
           if (chatMsgController.isRecording)
             const Row(
               children: [
@@ -547,7 +549,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColor.navBarIconColor,
+                      color: const Color(0xff8BBCD0),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
@@ -579,7 +581,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColor.navBarIconColor,
+                    color: Color.fromARGB(255, 76, 162, 189),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -594,7 +596,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Icon(Icons.send, color: Colors.white),
+                        : const Icon(Icons.send_rounded, color: Colors.white),
                   )),
                 ),
               ),

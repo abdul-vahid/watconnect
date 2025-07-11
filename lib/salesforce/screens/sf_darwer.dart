@@ -73,7 +73,8 @@ class _SfAppDrawerWidgetState extends State<SfAppDrawerWidget> {
                       ListTile(
                         onTap: () {
                           ref.setSelectedTitle(category.sObjectName ?? "");
-                          ref.drawerListApiCall(category.sObjectName ?? "");
+                          ref.drawerListApiCall(
+                              type: category.sObjectName ?? "");
                           Navigator.push(
                               context,
                               MaterialPageRoute(

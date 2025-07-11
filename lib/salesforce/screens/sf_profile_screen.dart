@@ -15,6 +15,7 @@ class _SfProfileScreenState extends State<SfProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         iconTheme:
             const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
@@ -26,74 +27,70 @@ class _SfProfileScreenState extends State<SfProfileScreen> {
           style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
         ),
       ),
-      body: Container(
-        color: Colors.white38,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Consumer<DashBoardController>(
-                builder: (context, dashBoardController, child) {
-              return Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                        color: AppColor.navBarIconColor,
-                        borderRadius: BorderRadius.circular(08)),
-                    height: 40,
-                    width: double.infinity,
-                    child: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        'Profile Information',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.white),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Consumer<DashBoardController>(
+              builder: (context, dashBoardController, child) {
+            return Column(
+              children: [
+                // Container(
+                //   decoration: BoxDecoration(
+                //       color: AppColor.navBarIconColor,
+                //       borderRadius: BorderRadius.circular(08)),
+                //   height: 40,
+                //   width: double.infinity,
+                //   child: const Padding(
+                //     padding: EdgeInsets.all(8.0),
+                //     child: Text(
+                //       'Profile Information',
+                //       style: TextStyle(
+                //           fontWeight: FontWeight.bold,
+                //           fontSize: 16,
+                //           color: Colors.white),
+                //     ),
+                //   ),
+                // ),
+                const SizedBox(
+                  height: 15,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 3,
+                        offset: const Offset(2, 4),
                       ),
-                    ),
+                    ],
                   ),
-                  SizedBox(
-                    height: 15,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 15),
+                      buildRow("Full Name",
+                          value: dashBoardController.sfUserData?.name ?? ""),
+                      buildRow("User Name",
+                          value:
+                              dashBoardController.sfUserData?.username ?? ""),
+                      buildRow("Email",
+                          value: dashBoardController.sfUserData?.email ?? ""),
+                      buildRow("Phone Number",
+                          value: dashBoardController.sfUserData?.phone ?? ""),
+                      buildRow("Role",
+                          value:
+                              dashBoardController.sfUserData?.userRole ?? ""),
+                      buildRow("Profile",
+                          value: dashBoardController.sfUserData?.profile ?? ""),
+                    ],
                   ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          spreadRadius: 2,
-                          blurRadius: 7,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 15),
-                        buildRow("Full Name",
-                            value: dashBoardController.sfUserData?.name ?? ""),
-                        buildRow("User Name",
-                            value:
-                                dashBoardController.sfUserData?.username ?? ""),
-                        buildRow("Email",
-                            value: dashBoardController.sfUserData?.email ?? ""),
-                        buildRow("Phone Number",
-                            value: dashBoardController.sfUserData?.phone ?? ""),
-                        buildRow("Role",
-                            value:
-                                dashBoardController.sfUserData?.userRole ?? ""),
-                        buildRow("Profile",
-                            value:
-                                dashBoardController.sfUserData?.profile ?? ""),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            }),
-          ),
+                ),
+              ],
+            );
+          }),
         ),
       ),
     );

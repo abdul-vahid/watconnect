@@ -26,6 +26,7 @@ class _SfNotificationScreenState extends State<SfNotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         iconTheme:
             const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
@@ -76,29 +77,48 @@ class _SfNotificationScreenState extends State<SfNotificationScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12.0),
-                              child: Text(
-                                "${dashBoardController.sfNoticationList.length} Notifications Available",
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12.0, vertical: 10),
+                            child: Text(
+                              "${dashBoardController.sfNoticationList.length} Notifications Available",
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
                           Expanded(
-                            child: ListView.builder(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              itemCount:
-                                  dashBoardController.sfNoticationList.length,
-                              itemBuilder: (context, index) {
-                                var item =
-                                    dashBoardController.sfNoticationList[index];
-                                return renctChatListItem(item);
-                              },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.5),
+                                    blurRadius: 5,
+                                    spreadRadius: 3,
+                                    offset: const Offset(2, 4),
+                                  ),
+                                ],
+                                color: Colors.white,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(30),
+                                  topRight: Radius.circular(30),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 8.0, left: 3, right: 3),
+                                child: ListView.builder(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  itemCount: dashBoardController
+                                      .sfNoticationList.length,
+                                  itemBuilder: (context, index) {
+                                    var item = dashBoardController
+                                        .sfNoticationList[index];
+                                    return renctChatListItem(item);
+                                  },
+                                ),
+                              ),
                             ),
                           ),
                         ],

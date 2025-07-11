@@ -5,8 +5,12 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/main.dart';
+import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 
 import 'function_lib.dart';
 import '../models/lead_model.dart';
@@ -37,14 +41,46 @@ class NotificationUtil {
       debug(
           "getInitialMessage triggered (terminated state)   ${remoteMessage?.notification} ${remoteMessage?.data}");
       if (remoteMessage != null) {
-        final leadId = remoteMessage.data['lead_id'];
-        if (leadId != null) {
-          await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
-                  listen: false)
-              .fetch()
-              .then((val) {
-            NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
-          });
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String sfAccessToken =
+            await prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+        if (sfAccessToken.isEmpty) {
+          final leadId = remoteMessage.data['lead_id'];
+          if (leadId != null) {
+            await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+                    listen: false)
+                .fetch()
+                .then((val) {
+              NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
+            });
+          }
+        } else {
+          final leadId = remoteMessage.data['RecordId'];
+          DashBoardController dashBoardController =
+              Provider.of(context, listen: false);
+          await dashBoardController.drawerListApiCall(type: "Lead");
+          for (var item in dashBoardController.drawerListItems) {
+            if (item.id == leadId) {
+              var drawerListItem = item;
+
+              ChatMessageController cmProvider =
+                  Provider.of(context, listen: false);
+              DashBoardController dbProvider =
+                  Provider.of(context, listen: false);
+              String phNum =
+                  "${drawerListItem.countryCode ?? ""}${drawerListItem.whatsappNumber ?? ""}";
+              dbProvider.setSelectedContaactInfo(drawerListItem);
+              await cmProvider.messageHistoryApiCall(
+                userNumber: phNum,
+              );
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SfMessageChatScreen()));
+
+              return;
+            }
+          }
         }
       } else {
         print("remote messha eos is nullllllllllllll");
@@ -79,15 +115,47 @@ class NotificationUtil {
         .listen((RemoteMessage? remoteMessage) async {
       debugPrint(
           "onMessageOpenedApp triggered (background)  ${remoteMessage?.data}");
-      final leadId = remoteMessage?.data['lead_id'];
 
-      if (leadId != null) {
-        await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
-                listen: false)
-            .fetch()
-            .then((val) {
-          NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
-        });
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String sfAccessToken =
+          await prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+
+      if (sfAccessToken.isEmpty) {
+        final leadId = remoteMessage?.data['lead_id'];
+
+        if (leadId != null) {
+          await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
+                  listen: false)
+              .fetch()
+              .then((val) {
+            NavigationFunc(leadId.toString(), navigatorKey.currentContext!);
+          });
+        }
+      } else {
+        final leadId = remoteMessage?.data['RecordId'];
+        DashBoardController dashBoardController =
+            Provider.of(context, listen: false);
+        await dashBoardController.drawerListApiCall(type: "Lead");
+        for (var item in dashBoardController.drawerListItems) {
+          if (item.id == leadId) {
+            var drawerListItem = item;
+
+            ChatMessageController cmProvider =
+                Provider.of(context, listen: false);
+            DashBoardController dbProvider =
+                Provider.of(context, listen: false);
+            String phNum =
+                "${drawerListItem.countryCode ?? ""}${drawerListItem.whatsappNumber ?? ""}";
+            dbProvider.setSelectedContaactInfo(drawerListItem);
+            await cmProvider.messageHistoryApiCall(
+              userNumber: phNum,
+            );
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => SfMessageChatScreen()));
+
+            return;
+          }
+        }
       }
     });
 

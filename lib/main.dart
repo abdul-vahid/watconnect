@@ -136,13 +136,13 @@ class MyApp extends StatelessWidget {
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("message firebaseMessagingBackgroundHandler::: ");
   debug(
-      "Background FCM:  ${message}   ${message.notification}   ${message.notification?.title}");
+      "Background FCM:  $message   ${message.notification}   ${message.notification?.title}");
 
   if (message.notification != null) {
     debugPrint(
         "Firebase default notification bhi dikh rahi hogi. Cancel karte hain...");
-    await Future.delayed(Duration(milliseconds: 50)); // chhota delay
-    await FlutterLocalNotificationsPlugin().cancelAll(); // Default hataya
+    await Future.delayed(const Duration(milliseconds: 50));
+    await FlutterLocalNotificationsPlugin().cancelAll();
   }
 
   final imageUrl = message.data['fileUrl'];
@@ -150,9 +150,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (imageUrl != null && imageUrl.isNotEmpty) {
     try {
       LocalNotificationService.displayNotification(message);
-      // final filePath = await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
-      // print("filePath:  remoteMessage:: ${filePath}   ${message}");
-      // await showImageNotification(message, filePath);
     } catch (e) {
       debugPrint("Image download failed, fallback to text notification: $e");
       LocalNotificationService.displayNotification(message);

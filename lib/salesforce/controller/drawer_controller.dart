@@ -73,9 +73,12 @@ class DashBoardController extends ChangeNotifier {
     notify();
   }
 
-  Future<void> drawerListApiCall(String type) async {
+  Future<void> drawerListApiCall(
+      {String type = "Lead", bool showLoading = true}) async {
     try {
-      setConfigListLoader(true);
+      if (showLoading) {
+        setConfigListLoader(true);
+      }
       final response = await AppApi().commonGetMethod(
         "${AppConstants.sfGetDrawerList}${type}",
         sendToken: true,
@@ -386,10 +389,11 @@ class DashBoardController extends ChangeNotifier {
       );
       log("headers:::: ${"Bearer $token"}    ${apiUrl}");
       print(
-          "SF Notification List response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+          "SF Notification List response ::   ${response.statusCode} ${response}");
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final List<dynamic> data =
+            response.body.isEmpty ? [] : jsonDecode(response.body) ?? [];
         sfNoticationList
           ..clear()
           ..addAll(data.map((e) => SfDrawerItemModel.fromJson(e)));

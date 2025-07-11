@@ -27,6 +27,7 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         iconTheme:
             const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
@@ -131,15 +132,37 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                             ),
                           ),
                           Expanded(
-                            child: ListView.builder(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              itemCount:
-                                  dashBoardController.sfRecentChatList.length,
-                              itemBuilder: (context, index) {
-                                var item =
-                                    dashBoardController.sfRecentChatList[index];
-                                return renctChatListItem(item);
-                              },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.5),
+                                    blurRadius: 5,
+                                    spreadRadius: 3,
+                                    offset: const Offset(2, 4),
+                                  ),
+                                ],
+                                color: Colors.white,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(30),
+                                  topRight: Radius.circular(30),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 10.0, left: 3, right: 3),
+                                child: ListView.builder(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  itemCount: dashBoardController
+                                      .sfRecentChatList.length,
+                                  itemBuilder: (context, index) {
+                                    var item = dashBoardController
+                                        .sfRecentChatList[index];
+                                    return renctChatListItem(item);
+                                  },
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -179,7 +202,7 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
         ),
         margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
+          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 12),
           child: InkWell(
             onTap: () async {
               showBlurOnlyLoaderDialog(context);

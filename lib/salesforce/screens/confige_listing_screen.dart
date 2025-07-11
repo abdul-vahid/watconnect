@@ -10,6 +10,7 @@ import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:whatsapp/utils/app_fonts.dart';
 
 class ConfigListingScreen extends StatefulWidget {
   String type;
@@ -33,6 +34,7 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
   Widget build(BuildContext context) {
     return Consumer<DashBoardController>(builder: (context, ref, child) {
       return Scaffold(
+        backgroundColor: AppColor.pageBgGrey,
         appBar: AppBar(
           automaticallyImplyLeading: false,
           leading: IconButton(
@@ -47,69 +49,6 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
           ),
           centerTitle: true,
           elevation: 5,
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(50.0),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              child: TextField(
-                controller: textController,
-                onChanged: ref.filterRecs,
-                decoration: InputDecoration(
-                  isDense: true,
-                  hintText: 'Search...',
-                  hintStyle: TextStyle(
-                    color: AppColor.textoriconColor.withOpacity(0.6),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.all(10),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Stack(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.filter_list,
-                            color: Color.fromARGB(255, 0, 0, 0),
-                            size: 20,
-                          ),
-                          onPressed: () {
-                            _showFilterBottomSheet(context);
-                          },
-                        ),
-                        ref.configStatusList.length == 0
-                            ? SizedBox()
-                            : Positioned(
-                                left: 8,
-                                top: 5,
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.brown),
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(4.0),
-                                      child: Text(
-                                        ref.configStatusList.length.toString(),
-                                        style: const TextStyle(
-                                            color: Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              )
-                      ],
-                    ),
-                  ),
-                  prefixIconConstraints: const BoxConstraints(minWidth: 40),
-                ),
-              ),
-            ),
-          ),
         ),
         body: RefreshIndicator(
           onRefresh: _pullRefresh,
@@ -170,7 +109,8 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                                         //   selectedValue = newValue!;
                                         // });
                                         ref.setSelectedTitle(newValue ?? "");
-                                        ref.drawerListApiCall(newValue ?? "");
+                                        ref.drawerListApiCall(
+                                            type: newValue ?? "");
                                       },
                                       items: ref.drawerItems
                                           .map<DropdownMenuItem<String>>(
@@ -184,13 +124,155 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                                   ),
                                 ),
                               )),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 15.0),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                    flex: 2,
+                                    child: InkWell(
+                                      onTap: () {
+                                        _showFilterBottomSheet(context);
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withOpacity(0.1),
+                                                blurRadius: 2,
+                                                spreadRadius: 2,
+                                                offset: const Offset(1, 1),
+                                              ),
+                                            ],
+                                            color: Colors.white,
+                                            border: Border.all(
+                                                color: AppColor.backgroundGrey),
+                                            borderRadius:
+                                                BorderRadius.circular(12)),
+                                        child: Center(
+                                          child: Stack(
+                                            children: [
+                                              const Padding(
+                                                padding: EdgeInsets.all(10.0),
+                                                child: Icon(
+                                                  Icons.filter_list,
+                                                  color: Color.fromARGB(
+                                                      255, 0, 0, 0),
+                                                  size: 20,
+                                                ),
+                                              ),
+                                              ref.configStatusList.length == 0
+                                                  ? SizedBox()
+                                                  : Positioned(
+                                                      left: 8,
+                                                      top: 5,
+                                                      child: Container(
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                                color: Colors
+                                                                    .brown),
+                                                        child: Center(
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(4.0),
+                                                            child: Text(
+                                                              ref.configStatusList
+                                                                  .length
+                                                                  .toString(),
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    )),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                Expanded(
+                                  flex: 9,
+                                  child: TextField(
+                                    controller: textController,
+                                    onChanged: ref.filterRecs,
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      hintText: 'Search...',
+                                      hintStyle: TextStyle(
+                                        color: AppColor.textoriconColor
+                                            .withOpacity(0.6),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: const BorderSide(
+                                          color: AppColor.navBarIconColor,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      contentPadding: const EdgeInsets.all(10),
+                                      disabledBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            color: AppColor.backgroundGrey),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                            color: AppColor.backgroundGrey),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      prefixIcon: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                          child: Icon(Icons.search)),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 15,
+                          ),
                           Expanded(
-                            child: ListView.builder(
-                              itemCount: ref.drawerListItems.length,
-                              itemBuilder: (context, index) {
-                                return recordListItem(
-                                    ref.drawerListItems[index]);
-                              },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.5),
+                                    blurRadius: 5,
+                                    spreadRadius: 3,
+                                    offset: const Offset(2, 4),
+                                  ),
+                                ],
+                                color: Colors.white,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(30),
+                                  topRight: Radius.circular(30),
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 4.0, right: 4, top: 15),
+                                child: ListView.builder(
+                                  itemCount: ref.drawerListItems.length,
+                                  itemBuilder: (context, index) {
+                                    return recordListItem(
+                                        ref.drawerListItems[index]);
+                                  },
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -289,22 +371,19 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                                 "${drawerListItem.name}",
                                 style: const TextStyle(
                                   fontSize: 14,
+                                  fontFamily: AppFonts.semiBold,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Container(
-                                decoration: BoxDecoration(
-                                    color: statusColor,
-                                    borderRadius: BorderRadius.circular(4)),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(3.0),
-                                  child: Text(
-                                    "${drawerListItem.status}",
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 3.0),
+                                child: Text(
+                                  "${drawerListItem.status}",
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: AppColor.navBarIconColor,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),

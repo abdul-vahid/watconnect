@@ -9,6 +9,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/lead_model.dart';
+import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
@@ -51,18 +54,47 @@ class LocalNotificationService {
 
         debugPrint("finJson::::: $finJson");
 
-        String leadId = finJson['lead_id']?.toString() ?? '';
-        if (leadId.isEmpty) {
-          debugPrint("No lead_id found in payload.");
-          return;
-        }
+        if (finJson.containsKey('lead_id')) {
+          String leadId = finJson['lead_id']?.toString() ?? '';
+          if (leadId.isEmpty) {
+            debugPrint("No lead_id found in payload.");
+            return;
+          }
 
-        final ctx = navigatorKey.currentContext!;
-        await Provider.of<LeadListViewModel>(ctx, listen: false)
-            .fetch()
-            .then((val) {
-          NavigationFunc(leadId, ctx);
-        });
+          final ctx = navigatorKey.currentContext!;
+          await Provider.of<LeadListViewModel>(ctx, listen: false)
+              .fetch()
+              .then((val) {
+            NavigationFunc(leadId, ctx);
+          });
+        } else {
+          final ctx = navigatorKey.currentContext!;
+          final leadId = finJson['RecordId'];
+          DashBoardController dashBoardController =
+              Provider.of(ctx, listen: false);
+          await dashBoardController.drawerListApiCall(type: "Lead");
+          for (var item in dashBoardController.drawerListItems) {
+            if (item.id == leadId) {
+              var drawerListItem = item;
+
+              ChatMessageController cmProvider =
+                  Provider.of(ctx, listen: false);
+              DashBoardController dbProvider = Provider.of(ctx, listen: false);
+              String phNum =
+                  "${drawerListItem.countryCode ?? ""}${drawerListItem.whatsappNumber ?? ""}";
+              dbProvider.setSelectedContaactInfo(drawerListItem);
+              await cmProvider.messageHistoryApiCall(
+                userNumber: phNum,
+              );
+              Navigator.push(
+                  ctx,
+                  MaterialPageRoute(
+                      builder: (context) => SfMessageChatScreen()));
+
+              return;
+            }
+          }
+        }
       },
     );
   }
