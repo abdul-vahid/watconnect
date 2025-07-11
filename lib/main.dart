@@ -141,7 +141,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (message.notification != null) {
     debugPrint(
         "Firebase default notification bhi dikh rahi hogi. Cancel karte hain...");
-    await Future.delayed(Duration(milliseconds: 500)); // chhota delay
+    await Future.delayed(Duration(milliseconds: 50)); // chhota delay
     await FlutterLocalNotificationsPlugin().cancelAll(); // Default hataya
   }
 
