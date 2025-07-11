@@ -56,99 +56,95 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
       return Column(
         children: [
           Expanded(
-            child: dashBoardController.recentChatListLoader
-                ? const Center(
-                    child: SizedBox(
-                      height: 50,
-                      width: 50,
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : dashBoardController.sfRecentChatList.isEmpty
-                    ? const Center(
-                        child: Text(
-                          "No Recent Chats Found..",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Consumer<DashBoardController>(builder: (context, ref, child) {
+                  return Container(
+                      height: 65,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white,
                           ),
-                        ),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Consumer<DashBoardController>(
-                              builder: (context, ref, child) {
-                            return Container(
-                                height: 65,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 15.0),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(8),
-                                      color: Colors.white,
-                                    ),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<String>(
-                                        value: ref.selectedTitle,
-                                        isExpanded: true,
-                                        onChanged: (newValue) {
-                                          // setState(() {
-                                          //   selectedValue = newValue!;
-                                          // });
-                                          ref.setSelectedTitle(newValue ?? "");
-                                        },
-                                        items: ref.drawerItems
-                                            .map<DropdownMenuItem<String>>(
-                                                (item) {
-                                          return DropdownMenuItem<String>(
-                                            value: item.sObjectName,
-                                            child: Text(item.sObjectName ?? ""),
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ),
-                                  ),
-                                ));
-                          }),
-                          Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12.0),
-                              child: Text(
-                                "${dashBoardController.sfRecentChatList.length} Chats Available",
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: ref.selectedTitle,
+                              isExpanded: true,
+                              onChanged: (newValue) async {
+                                await ref.setSelectedTitle(newValue ?? "");
+
+                                ref.recentChatListApiCall();
+                                // setState(() {
+                                //   selectedValue = newValue!;
+                                // });
+                              },
+                              items: ref.drawerItems
+                                  .map<DropdownMenuItem<String>>((item) {
+                                return DropdownMenuItem<String>(
+                                  value: item.sObjectName,
+                                  child: Text(item.sObjectName ?? ""),
+                                );
+                              }).toList(),
                             ),
                           ),
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.5),
-                                    blurRadius: 5,
-                                    spreadRadius: 3,
-                                    offset: const Offset(2, 4),
+                        ),
+                      ));
+                }),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: Text(
+                      "${dashBoardController.sfRecentChatList.length} Chats Available",
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 5,
+                          spreadRadius: 3,
+                          offset: const Offset(2, 4),
+                        ),
+                      ],
+                      color: Colors.white,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: dashBoardController.recentChatListLoader
+                        ? const Center(
+                            child: SizedBox(
+                              height: 50,
+                              width: 50,
+                              child: CircularProgressIndicator(),
+                            ),
+                          )
+                        : dashBoardController.sfRecentChatList.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  "No Recent Chats Found..",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                ],
-                                color: Colors.white,
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(30),
-                                  topRight: Radius.circular(30),
                                 ),
-                              ),
-                              child: Padding(
+                              )
+                            : Padding(
                                 padding: const EdgeInsets.only(
                                     top: 10.0, left: 3, right: 3),
                                 child: ListView.builder(
@@ -163,10 +159,10 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                                   },
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       );
