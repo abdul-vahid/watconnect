@@ -294,7 +294,7 @@ Widget buildBottomNavigationBar({
               child: Icon(
                 items[selected]['icon'],
                 size: 24,
-                color: Colors.black,
+                color: AppColor.navBarIconColor,
               ),
             ),
           ),
