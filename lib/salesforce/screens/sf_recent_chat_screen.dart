@@ -264,7 +264,8 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                               ),
                             ),
                             const Spacer(),
-                            drawerListItem.unreadCount == 0
+                            drawerListItem.unreadCount == 0 ||
+                                    drawerListItem.unreadCount == null
                                 ? const SizedBox()
                                 : Container(
                                     decoration: const BoxDecoration(

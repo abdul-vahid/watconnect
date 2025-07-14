@@ -54,6 +54,10 @@ class BusinessNumberController extends ChangeNotifier {
           defaultNumber.whasappSettingNumber ?? "",
         );
 
+        setBusinessNumberApiCall(
+          busNumber: defaultNumber.whasappSettingNumber ?? "",
+        );
+
         notify();
         log("Fetched ${businessNumbers.length} businessNumbers.");
       } else {
@@ -87,7 +91,7 @@ class BusinessNumberController extends ChangeNotifier {
         final prefs = await SharedPreferences.getInstance();
         prefs.setString(SharedPrefsConstants.sfBusinessNumber, busNumber);
         EasyLoading.showToast("Business Number set Successfully");
-        getBusinessNumberApiCall();
+
         DashBoardController dbController =
             Provider.of(navigatorKey.currentContext!, listen: false);
         dbController.getDasBoardReportApiCall();

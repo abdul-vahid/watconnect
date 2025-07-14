@@ -394,6 +394,29 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                             ],
                           ),
                         ),
+                        const Spacer(),
+                        drawerListItem.unreadCount == 0 ||
+                                drawerListItem.unreadCount == null
+                            ? const SizedBox()
+                            : Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.green,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: Text(
+                                      drawerListItem.unreadCount.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
                       ],
                     ),
                   ),

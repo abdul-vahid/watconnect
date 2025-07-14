@@ -117,6 +117,8 @@ class _SfHomeScreenState extends State<SfHomeScreen> {
               onSelected: (value) async {
                 await busNumCtrl.setBusinessNumberApiCall(
                     busNumber: value.whasappSettingNumber ?? "");
+
+                await busNumCtrl.getBusinessNumberApiCall();
               },
             );
           })
