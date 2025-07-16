@@ -17,11 +17,11 @@ class BaseService {
 
   Future<dynamic> post({required String url, required String body}) async {
     var token = await AppUtils.getToken();
-    // debugLog("Token a == $token");
+    debugLog("Token a == $token");
     token ??= "";
     // printLongString("body base service send= $body");
     final responseJsonData = await _apiService.postResponse(url, body, token);
-    // print("responseJsonData:::: from the api::: ${responseJsonData}");
+    print("responseJsonData::post:: from the api::: ${responseJsonData}");
     // print("rsponse==>$responseJsonData");
     return responseJsonData;
   }

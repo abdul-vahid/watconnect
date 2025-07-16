@@ -343,9 +343,9 @@ class _SfAddCampScreenState extends State<SfAddCampScreen> {
       SfcampaignController sfcampaignController =
           Provider.of(context, listen: false);
 
-      sfcampaignController.sfAddCampaignCall(addCampList).then((onValue) {
-        // Navigator.pop(context);
-      });
+      // sfcampaignController.sfAddCampaignCall(addCampList).then((onValue) {
+      // Navigator.pop(context);
+      // });
 
       // print("Sf add camp body::::::::: ${jsonEncode(body)}");
     }

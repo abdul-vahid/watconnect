@@ -61,8 +61,12 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
   }
 
   getBusNumApiCall() async {
-    BusinessNumberController busNumCtrl = Provider.of(context, listen: false);
-    await busNumCtrl.getBusinessNumberApiCall();
+    DashBoardController drProvider = Provider.of(context, listen: false);
+
+    if (drProvider.fromSalesForce) {
+      BusinessNumberController busNumCtrl = Provider.of(context, listen: false);
+      await busNumCtrl.getBusinessNumberApiCall();
+    }
   }
 
   @override

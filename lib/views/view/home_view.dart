@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:focus_detector/focus_detector.dart';
@@ -11,15 +12,9 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
-import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
-import 'package:whatsapp/salesforce/model/business_number_model.dart';
-import 'package:whatsapp/salesforce/screens/confige_listing_screen.dart';
-import 'package:whatsapp/salesforce/screens/sf_campaign_listing_screen.dart';
-import 'package:whatsapp/salesforce/screens/sf_darwer.dart';
-import 'package:whatsapp/salesforce/widget/sf_dashboard_card.dart';
+
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/utils/app_utils.dart';
@@ -229,7 +224,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     await Provider.of<CampaignCountViewModel>(context, listen: false)
         .fetchCampaignCount(number: selectedWhatsAppNumber);
 
-    Provider.of<ChartListViewModel>(context, listen: false).fetchLeadsMonth();
+    // Provider.of<ChartListViewModel>(context, listen: false).fetchLeadsMonth();
     Provider.of<LeadCountViewModel>(context, listen: false).countNewLead();
     Provider.of<AutoResponseViewModel>(context, listen: false)
         .autoResponseFetch();
@@ -870,90 +865,109 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                   padding: const EdgeInsets.all(15),
                   child: Column(
                     children: [
-                      // modules.contains("Campaign")
-                      //     ? campaignCount != "0"
-                      //         ? Container(
-                      //             decoration: const BoxDecoration(
-                      //               color: AppColor.navBarIconColor,
-                      //               borderRadius: BorderRadius.all(
-                      //                 Radius.circular(10),
-                      //               ),
-                      //             ),
-                      //             // width: 400,
-                      //             height: 50,
-                      //             child: const Center(
-                      //               child: Text(
-                      //                 'Campaign',
-                      //                 style: TextStyle(
-                      //                   color: Color.fromARGB(
-                      //                       255, 255, 255, 255),
-                      //                   fontSize: 18,
-                      //                 ),
-                      //               ),
-                      //             ),
-                      //           )
-                      //         : SizedBox()
-                      //     : SizedBox(),
-                      modules.contains("Campaign")
-                          ? campaignCount != "0"
-                              ? Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.12),
-                                        blurRadius: 6,
-                                        spreadRadius: 2,
-                                        offset: const Offset(0, 2),
+                      res.isNotEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0, vertical: 60),
+                              child: Center(
+                                  child: Text(
+                                res,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    fontFamily: AppFonts.semiBold,
+                                    color: Colors.redAccent,
+                                    fontSize: 18),
+                              )),
+                            )
+                          :
+
+                          // modules.contains("Campaign")
+                          //     ? campaignCount != "0"
+                          //         ? Container(
+                          //             decoration: const BoxDecoration(
+                          //               color: AppColor.navBarIconColor,
+                          //               borderRadius: BorderRadius.all(
+                          //                 Radius.circular(10),
+                          //               ),
+                          //             ),
+                          //             // width: 400,
+                          //             height: 50,
+                          //             child: const Center(
+                          //               child: Text(
+                          //                 'Campaign',
+                          //                 style: TextStyle(
+                          //                   color: Color.fromARGB(
+                          //                       255, 255, 255, 255),
+                          //                   fontSize: 18,
+                          //                 ),
+                          //               ),
+                          //             ),
+                          //           )
+                          //         : SizedBox()
+                          //     : SizedBox(),
+                          modules.contains("Campaign")
+                              ? campaignCount != "0"
+                                  ? Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.12),
+                                            blurRadius: 6,
+                                            spreadRadius: 2,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(
-                                        height: 10,
+                                      child: Column(
+                                        children: [
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          const Text(
+                                            'Campaign',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                            ),
+                                          ),
+                                          SfCircularChart(
+                                              tooltipBehavior: _tooltipBehavior,
+                                              legend: const Legend(
+                                                  isVisible: true,
+                                                  position: LegendPosition.top,
+                                                  overflowMode:
+                                                      LegendItemOverflowMode
+                                                          .wrap),
+                                              series: <PieSeries<_SalesData,
+                                                  String>>[
+                                                PieSeries<_SalesData, String>(
+                                                    legendIconType:
+                                                        LegendIconType.circle,
+                                                    radius: '100',
+                                                    dataSource: businessData,
+                                                    enableTooltip: true,
+                                                    pointColorMapper:
+                                                        (_SalesData sales,
+                                                                int index) =>
+                                                            areaColor[index %
+                                                                areaColor
+                                                                    .length],
+                                                    xValueMapper:
+                                                        (_SalesData sales, _) =>
+                                                            sales.status,
+                                                    yValueMapper:
+                                                        (_SalesData sales, _) =>
+                                                            sales.count)
+                                              ]),
+                                        ],
                                       ),
-                                      const Text(
-                                        'Campaign',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                      SfCircularChart(
-                                          tooltipBehavior: _tooltipBehavior,
-                                          legend: const Legend(
-                                              isVisible: true,
-                                              position: LegendPosition.top,
-                                              overflowMode:
-                                                  LegendItemOverflowMode.wrap),
-                                          series: <PieSeries<_SalesData,
-                                              String>>[
-                                            PieSeries<_SalesData, String>(
-                                                legendIconType: LegendIconType
-                                                    .circle,
-                                                radius: '100',
-                                                dataSource: businessData,
-                                                enableTooltip: true,
-                                                pointColorMapper:
-                                                    (_SalesData sales,
-                                                            int index) =>
-                                                        areaColor[index %
-                                                            areaColor.length],
-                                                xValueMapper:
-                                                    (_SalesData sales, _) =>
-                                                        sales.status,
-                                                yValueMapper:
-                                                    (_SalesData sales, _) =>
-                                                        sales.count)
-                                          ]),
-                                    ],
-                                  ),
-                                )
-                              : SizedBox()
-                          : SizedBox(),
+                                    )
+                                  : SizedBox()
+                              : SizedBox(),
 
                       const SizedBox(
                         height: 20,
@@ -977,55 +991,63 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                       //     ),
                       //   ),
                       // ),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.12),
-                              blurRadius: 6,
-                              spreadRadius: 2,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            const Text(
-                              'Template',
-                              style: TextStyle(
-                                color: Colors.black,
-                                // fontWeight: FontWeight.bold,
-                                fontFamily: AppFonts.semiBold,
-                                fontSize: 18,
+                      templatedata.isEmpty
+                          ? const SizedBox()
+                          : Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.12),
+                                    blurRadius: 6,
+                                    spreadRadius: 2,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  const Text(
+                                    'Template',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      // fontWeight: FontWeight.bold,
+                                      fontFamily: AppFonts.semiBold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  SfCircularChart(
+                                      tooltipBehavior: _tooltipBehavior,
+                                      legend: const Legend(
+                                          isVisible: true,
+                                          position: LegendPosition.top,
+                                          overflowMode:
+                                              LegendItemOverflowMode.wrap),
+                                      series: <DoughnutSeries<Templatedata,
+                                          String>>[
+                                        DoughnutSeries<Templatedata, String>(
+                                            radius: '100',
+                                            dataSource: templatedata,
+                                            enableTooltip: true,
+                                            pointColorMapper:
+                                                (Templatedata sales,
+                                                        int index) =>
+                                                    areaColor[index %
+                                                        areaColor.length],
+                                            xValueMapper:
+                                                (Templatedata sales, _) =>
+                                                    sales.status,
+                                            yValueMapper:
+                                                (Templatedata sales, _) =>
+                                                    sales.count)
+                                      ]),
+                                ],
                               ),
                             ),
-                            SfCircularChart(
-                                tooltipBehavior: _tooltipBehavior,
-                                legend: const Legend(
-                                    isVisible: true,
-                                    position: LegendPosition.top,
-                                    overflowMode: LegendItemOverflowMode.wrap),
-                                series: <DoughnutSeries<Templatedata, String>>[
-                                  DoughnutSeries<Templatedata, String>(
-                                      radius: '100',
-                                      dataSource: templatedata,
-                                      enableTooltip: true,
-                                      pointColorMapper: (Templatedata sales,
-                                              int index) =>
-                                          areaColor[index % areaColor.length],
-                                      xValueMapper: (Templatedata sales, _) =>
-                                          sales.status,
-                                      yValueMapper: (Templatedata sales, _) =>
-                                          sales.count)
-                                ]),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -1107,12 +1129,17 @@ class _HomeViewState extends State<HomeView> with RouteAware {
   void _updateItemsMap() {
     itemsMap.clear();
     allNums = [];
+    print(
+        "whatsAppSettingVM!.viewModels:::   ${whatsAppSettingVM!.viewModels}");
     for (var viewModel in whatsAppSettingVM!.viewModels) {
       var nmodel = viewModel.model;
-      for (var record in nmodel?.record ?? []) {
-        allNums.add(record);
-        allWhNums.add("${record.name} ${record.phone}");
-        itemsMap[record.phone] = "${record.name} ${record.phone}";
+      print("nmodel::::    ${viewModel}");
+      if (nmodel != null) {
+        for (var record in nmodel?.record ?? []) {
+          allNums.add(record);
+          allWhNums.add("${record.name} ${record.phone}");
+          itemsMap[record.phone] = "${record.name} ${record.phone}";
+        }
       }
     }
     print("itemsMap::: ${itemsMap}   ${allNums}");
@@ -1167,12 +1194,16 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     }
   }
 
+  var res = "";
   Future<void> _getUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
     var number = prefs.getString('phoneNumber');
 
     if (!mounted) return;
-    Provider.of<LeadListViewModel>(context, listen: false).fetch();
+    res =
+        await Provider.of<LeadListViewModel>(context, listen: false).fetch() ??
+            "";
+    print("res:::::::::::  ${res}");
     await Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number ?? "");
 

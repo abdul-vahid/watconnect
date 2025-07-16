@@ -33,13 +33,12 @@ class BaseListViewModel extends ChangeNotifier {
     try {
       final jsonObject = await BaseService().get(url: url);
       // await _refreshToken(url, jsonKey);
-      log("Response Data get == $jsonObject ${url}");
-      // print("jsonObject:: ${jsonObject.runtimeType}");
-      if (showToast) {
-        if (jsonObject is Map<String, dynamic> &&
-            jsonObject.containsKey('success') &&
-            jsonObject['success'] == false) {
-          EasyLoading.showToast(jsonObject['message']);
+      log("Response Data get == $jsonObject ${url}   ${(jsonObject.runtimeType)}  ");
+      // if(jsonObject.runtimeType==)
+
+      if (jsonObject.runtimeType != List<dynamic>) {
+        if (jsonObject['success'] == false) {
+          return jsonObject['message'];
         }
       }
 
@@ -162,7 +161,7 @@ class BaseListViewModel extends ChangeNotifier {
 
     try {
       var r = await BaseService().post(url: url, body: body);
-      // log("response=>$r    api>>> ${url}");
+      log("response=>$r    api>>> ${url}");
       if (showToast) {
         if (r is Map<String, dynamic> &&
             r.containsKey('success') &&

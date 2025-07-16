@@ -64,6 +64,11 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
 
   _pageBody() {
     return Consumer<DashBoardController>(builder: (context, ref, child) {
+      final Map<String, int> unreadCountMap = {
+        for (var item in ref.configUnreadCountList)
+          if (item.id != null) item.id!: item.unreadCount ?? 0
+      };
+
       return Column(
         children: [
           Expanded(
@@ -268,8 +273,11 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                                 child: ListView.builder(
                                   itemCount: ref.drawerListItems.length,
                                   itemBuilder: (context, index) {
-                                    return recordListItem(
-                                        ref.drawerListItems[index]);
+                                    final drawerItem =
+                                        ref.drawerListItems[index];
+                                    final count =
+                                        unreadCountMap[drawerItem.id] ?? 0;
+                                    return recordListItem(drawerItem, count);
                                   },
                                 ),
                               ),
@@ -283,7 +291,7 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
     });
   }
 
-  recordListItem(SfDrawerItemModel drawerListItem) {
+  recordListItem(SfDrawerItemModel drawerListItem, int cnt) {
     String phNum =
         "${drawerListItem.countryCode ?? ""}${drawerListItem.whatsappNumber ?? ""}";
     Color statusColor;
@@ -336,24 +344,19 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
             },
             child: Row(
               children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: AppColor.navBarIconColor,
-                      child: Text(
-                        drawerListItem.name?.isNotEmpty == true
-                            ? drawerListItem.name![0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: AppColor.navBarIconColor,
+                  child: Text(
+                    drawerListItem.name?.isNotEmpty == true
+                        ? drawerListItem.name![0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -375,28 +378,29 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 3.0),
-                                child: Text(
-                                  "${drawerListItem.status}",
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: AppColor.navBarIconColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
+                              drawerListItem.status!.isEmpty
+                                  ? const SizedBox()
+                                  : Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 3.0),
+                                      child: Text(
+                                        drawerListItem.status ?? "",
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: AppColor.navBarIconColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
                               Text(
-                                "${phNum}",
+                                phNum,
                                 style: const TextStyle(fontSize: 12),
                               ),
                             ],
                           ),
                         ),
                         const Spacer(),
-                        drawerListItem.unreadCount == 0 ||
-                                drawerListItem.unreadCount == null
+                        cnt == 0
                             ? const SizedBox()
                             : Container(
                                 decoration: const BoxDecoration(
@@ -407,7 +411,7 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                                   child: Padding(
                                     padding: const EdgeInsets.all(5.0),
                                     child: Text(
-                                      drawerListItem.unreadCount.toString(),
+                                      cnt.toString(),
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 12,

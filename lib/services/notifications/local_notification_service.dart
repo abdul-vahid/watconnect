@@ -70,10 +70,14 @@ class LocalNotificationService {
         } else {
           final ctx = navigatorKey.currentContext!;
           final leadId = finJson['RecordId'];
+          final objName = finJson['sObjectName'];
+
           DashBoardController dashBoardController =
               Provider.of(ctx, listen: false);
-          await dashBoardController.drawerListApiCall(type: "Lead");
+          await dashBoardController.drawerListApiCall(type: objName);
           for (var item in dashBoardController.drawerListItems) {
+            print(
+                "item ids::::::::::::::::::::::::::::::::::::::::::::  ${item.id}");
             if (item.id == leadId) {
               var drawerListItem = item;
 

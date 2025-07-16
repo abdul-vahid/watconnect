@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
@@ -219,91 +220,122 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => SfMessageChatScreen()));
+                      builder: (context) => const SfMessageChatScreen()));
             },
-            child: Row(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: AppColor.navBarIconColor,
-                      child: Text(
-                        drawerListItem.name?.isNotEmpty == true
-                            ? drawerListItem.name![0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Avatar
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: AppColor.navBarIconColor,
+                    child: Text(
+                      drawerListItem.name?.isNotEmpty == true
+                          ? drawerListItem.name![0].toUpperCase()
+                          : '?',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Main Content
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
                             Expanded(
-                              flex: 9,
                               child: Text(
-                                "${drawerListItem.name}",
+                                drawerListItem.name ?? "Unknown",
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                            const Spacer(),
-                            drawerListItem.unreadCount == 0 ||
-                                    drawerListItem.unreadCount == null
-                                ? const SizedBox()
-                                : Container(
-                                    decoration: const BoxDecoration(
-                                      color: Colors.green,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(5.0),
-                                        child: Text(
-                                          drawerListItem.unreadCount.toString(),
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  )
+                            if (drawerListItem.unreadCount != null &&
+                                drawerListItem.unreadCount! > 0)
+                              Container(
+                                margin: const EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  drawerListItem.unreadCount.toString(),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
-                        Text(
-                          "${drawerListItem.lastMsg ?? ""} ",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style:
-                              const TextStyle(fontSize: 12, color: Colors.grey),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                drawerListItem.lastMsg ?? "",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                            // const Spacer(),
+                            if (drawerListItem.lastMsgTime != 0)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Text(
+                                  formatDateTime(
+                                      drawerListItem.lastMsgTime ?? 0),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                )
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+}
+
+String formatDateTime(int timestamp) {
+  // Use the timestamp directly (milliseconds)
+  final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp).toLocal();
+  final now = DateTime.now();
+
+  final isToday = dateTime.year == now.year &&
+      dateTime.month == now.month &&
+      dateTime.day == now.day;
+
+  final timeFormat = DateFormat('h:mm a');
+  final dateFormat = DateFormat('d MMM, h:mm a');
+
+  return isToday ? timeFormat.format(dateTime) : dateFormat.format(dateTime);
 }

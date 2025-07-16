@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
@@ -10,15 +9,11 @@ import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:whatsapp/core/apis/app_exception.dart';
 import 'package:whatsapp/main.dart';
-import 'package:whatsapp/salesforce/api/api_helper.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
+import 'package:whatsapp/salesforce/controller/network_Services.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
-
-import 'dart:convert' show jsonEncode;
-
 import 'package:http_parser/http_parser.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 
@@ -152,77 +147,59 @@ class SfFileUploadController extends ChangeNotifier {
     }
   }
 
-  Future<void> _refreshToken(String url) async {
+  Future<void> refreshToken() async {
     String refreshTokenUrl = AppUtils.getUrl(AppConstants.refreshTokenAPIPath);
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String refreshToken = "";
-      String accessToken = "";
-      if (prefs.containsKey(SharedPrefsConstants.sfNodeRefreshToken)) {
-        refreshToken =
-            prefs.getString(SharedPrefsConstants.sfNodeRefreshToken)!;
-      }
-      Map<String, String> body = {"refreshToken": refreshToken};
+
+      var refshtokn = await prefs.getString(
+            SharedPrefsConstants.sfNodeRefreshToken,
+          ) ??
+          "";
+      Map<String, String> body = {"refreshToken": refshtokn};
 
       final response = await http.post(
-        Uri.parse(url),
+        Uri.parse(refreshTokenUrl),
         // headers: headers,
         body: body,
       );
       print(
-          "response.statusCode:::::: ${response.statusCode}   ${response.body}");
+          "  refresh token api  ${refreshTokenUrl} response.statusCode:::::: ${response.statusCode}   ${response.body}");
+      var jsonResponse = jsonDecode(response.body);
 
-      await prefs.setString(SharedPrefsConstants.sfNodeToken, accessToken);
+      var authToken = jsonResponse['authToken'];
+      var refreshToken = jsonResponse['refreshToken'];
+      await prefs.setString(SharedPrefsConstants.sfNodeToken, authToken);
       await prefs.setString(SharedPrefsConstants.refreshTokenKey, refreshToken);
-      await prefs.setString(
-          SharedPrefsConstants.sessionTimeKey, DateTime.now().toString());
+      EasyLoading.showToast("Retry again......");
     } catch (e) {}
-    // on UnauthorisedException {
-
-    //   AppUtils.getAlert(AppUtils.currentContext!, [
-    //     "You have been logged out!",
-    //   ], onPressed: () {
-    //     AppUtils.logout(AppUtils.currentContext);
-    //   });
-    // } on AppException catch (error) {
-    //   exception = error;
-    //   status = "Error";
-    //   viewModels.add(BaseViewModel(model: BaseModel()));
-    // } on Exception catch (error) {
-    //   status = "Error";
-    //   exception = error;
-    //   viewModels.add(BaseViewModel(model: BaseModel()));
-    // } catch (e) {
-    //   status = "Error";
-    //   exception = Exception(e.toString());
-    //   viewModels.add(BaseViewModel(model: BaseModel()));
-    // }
   }
 
   Future<dynamic> uploadFiledb(
-      File file, String cntryCode, String txtMsg, String ursNo,
-      {bool isFromTemplate = false}) async {
-    //
+    File file,
+    String cntryCode,
+    String txtMsg,
+    String ursNo, {
+    bool isFromTemplate = false,
+  }) async {
     setFileUploadLoader(true);
+
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
-    log("token::::::: node sf  ${file}  ${token}");
-    if (token == null || token.isEmpty) {
-      print("No token found");
-      return null;
-    }
-    var url = Uri.parse("${AppConstants.baseUrl}/api/whatsapp/files/null");
-    print("Request URL: $url");
-    var request = http.MultipartRequest("POST", url);
 
-    // Detect MIME type
+    if (token.isEmpty) {
+      setFileUploadLoader(false);
+      throw Exception("No token found");
+    }
+
+    final url = Uri.parse("${AppConstants.baseUrl}/api/whatsapp/files/null");
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
     setFileMimeType(mimeType);
+
     final fileStream = http.ByteStream(file.openRead());
     final length = await file.length();
 
-    // Attach file
-    var multipartFile = http.MultipartFile(
+    final multipartFile = http.MultipartFile(
       'file',
       fileStream,
       length,
@@ -230,45 +207,40 @@ class SfFileUploadController extends ChangeNotifier {
       contentType: MediaType.parse(mimeType),
     );
 
-    request.files.add(multipartFile);
+    final request = http.MultipartRequest("POST", url)
+      ..files.add(multipartFile)
+      ..headers.addAll({
+        "Authorization": token,
+        "Content-Type": "multipart/form-data",
+      });
 
-    // Add headers
-    request.headers.addAll({
-      "Authorization": token,
-      "Content-Type": "multipart/form-data",
-    });
-    debug("Request URL hhh: $url");
-    debug("Request Headers jj: ${request.headers}");
-    debug("Request Fields: ${request.fields}");
-    debug("Request Files: ${request.files}");
     try {
-      var response = await request.send();
-      debug("response.statusCode${response.statusCode}   ");
-      var responseBody = await response.stream.bytesToString();
-      if (response.statusCode == 200) {
+      final streamedResponse = await request.send();
+      final responseBody = await streamedResponse.stream.bytesToString();
+
+      if (streamedResponse.statusCode == 200) {
         setFileUploadLoader(false);
-        print("File uploaded successfully");
-        debug("File uploaded successfully $responseBody");
-        var map = jsonDecode(responseBody);
+        final map = jsonDecode(responseBody);
         setPublicUrlId(map['records'][0]['title']);
         await uploadFile(file, cntryCode, txtMsg, ursNo,
             isTemplate: isFromTemplate);
         return responseBody;
+      } else if (streamedResponse.statusCode == 401 ||
+          streamedResponse.statusCode == 403) {
+        setFileUploadLoader(false);
+
+        _handleAuthError();
+
+        throw HttpException("Unauthorized or Forbidden", uri: url);
       } else {
         setFileUploadLoader(false);
-        print("Failed to upload file: ${response.reasonPhrase}");
-        return null;
+        throw HttpException(
+            "Unexpected server response: ${streamedResponse.statusCode}",
+            uri: url);
       }
-    } on UnauthorisedException {
-      setFileUploadLoader(false);
-      String url = Uri.https(AppConstants.baseUrl, "/api/whatsapp/files/null")
-          .toString();
-
-      await _refreshToken(url);
     } catch (e) {
       setFileUploadLoader(false);
-      print("Error occurred during file upload   uploadFiledb: $e");
-      return null;
+      rethrow;
     }
   }
 
@@ -278,7 +250,7 @@ class SfFileUploadController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
 
-    if (token == null || token.isEmpty) {
+    if (token.isEmpty) {
       debug("Missing token!");
       return null;
     }
@@ -336,6 +308,7 @@ class SfFileUploadController extends ChangeNotifier {
     required File fil,
   }) async {
     setFileUploadLoader(true);
+
     final fullNum = "$code$usrNumber";
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
@@ -352,6 +325,7 @@ class SfFileUploadController extends ChangeNotifier {
     } else {
       type = "document";
     }
+
     final Map<String, dynamic> body = {
       "businessnumber": busNum,
       "userWhatsAppNumber": fullNum,
@@ -364,28 +338,19 @@ class SfFileUploadController extends ChangeNotifier {
       "document_type": type
     };
 
-    try {
-      final response = await AppApi().commonPostMethod(
-        AppConstants.sfSendFileApi,
-        body,
-        sendToken: true,
-      );
-
-      if (response?.statusCode == 200) {
-        setFileUploadLoader(false);
-        ChatMessageController chatMessageController =
-            Provider.of(navigatorKey.currentContext!, listen: false);
-        await chatMessageController.messageHistoryApiCall(
-            userNumber: fullNum, isFirstTime: false);
-      } else {
-        setFileUploadLoader(false);
-        log("Send message failed [${response?.statusCode}]: ${response?.body}");
-      }
-    } catch (e) {
-      setFileUploadLoader(false);
-      log("Error in sendMessageApiCall: $e");
-    } finally {
-      setFileUploadLoader(false);
+    final response = await NetworkService.makeRequest(
+        url: AppConstants.sfSendFileApi, method: 'POST', body: body);
+    if (response != null && response.statusCode == 200) {
+      ChatMessageController chatMessageController =
+          Provider.of(navigatorKey.currentContext!, listen: false);
+      await chatMessageController.messageHistoryApiCall(
+          userNumber: fullNum, isFirstTime: false);
     }
+    setFileUploadLoader(false);
+    notify();
+  }
+
+  void _handleAuthError() {
+    refreshToken();
   }
 }

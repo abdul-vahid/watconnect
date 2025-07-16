@@ -56,7 +56,7 @@ class _WebViewPageState extends State<WebViewPage> {
               ChatMessageController chatMessageController =
                   Provider.of(context, listen: false);
               bool success =
-                  await chatMessageController.getSfAccessTokenApiApiCall(body);
+                  await chatMessageController.getSfAccessTokenApiCall(body);
 
               if (success) {
                 DashBoardController dashBoardController =
@@ -71,6 +71,7 @@ class _WebViewPageState extends State<WebViewPage> {
                     "salesforce");
                 dashBoardController.setLoginType(true);
                 Navigator.pushAndRemoveUntil(
+                  // ignore: use_build_context_synchronously
                   context,
                   MaterialPageRoute(
                     builder: (context) => const FooterNavbarPage(),

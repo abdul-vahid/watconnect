@@ -160,8 +160,8 @@ class _SplashViewState extends State<SplashView> {
         await prefs.getString(SharedPrefsConstants.accessTokenKey) ?? "";
 
     log("access sf::   ${sfAccessToken}");
-    log("token js:: ${jstokn}  ");
-    log("user:: ${user}  ");
+    // log("token js:: ${jstokn}  ");
+    // log("user:: ${user}  ");
 
     if (prefs.containsKey(SharedPrefsConstants.userKey) ||
         prefs.containsKey(SharedPrefsConstants.sfAccessToken)) {

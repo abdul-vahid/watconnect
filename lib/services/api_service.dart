@@ -17,7 +17,17 @@ class APIService {
         'Accept': 'application/json',
         'Authorization': '$token',
       });
+      // print(
+      //     "get response without filters:::::: ${response.body}  ${response.statusCode}");
+
+      // if (response.statusCode == 402) {
+      //   var body = jsonDecode(response.body);
+      //   print("body:::::::::  ${body}  ${body.runtimeType}");
+      //   EasyLoading.showToast((body['message']));
+      //   return response.body;
+      // }
       responseJson = returnResponse(response);
+
       print("responseJson::: get api response :::: ${responseJson}");
     } on SocketException {
       throw FetchDataException('No Internet Connection');
@@ -115,6 +125,9 @@ class APIService {
         return jsonResponse;
       case 400:
         throw BadRequestException(response.body.toString());
+      case 402:
+        var jsonResponse = jsonDecode(response.body);
+        return jsonResponse;
       case 401:
       case 403:
         debug("Un Authorise");

@@ -3,9 +3,9 @@ import 'dart:developer';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:whatsapp/salesforce/api/api_helper.dart';
+import 'package:whatsapp/salesforce/controller/network_Services.dart';
+import 'package:whatsapp/salesforce/model/config_unread_count_model.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/model/drawer_model.dart';
 import 'package:whatsapp/salesforce/model/sf_profile_model.dart';
@@ -18,6 +18,9 @@ class DashBoardController extends ChangeNotifier {
 
   List<SfDrawerItemModel> drawerListItems = [];
   List<SfDrawerItemModel> tempDrawerListItems = [];
+
+  List<SfConfigUnreadCountModel> configUnreadCountList = [];
+  List<SfConfigUnreadCountModel> tempConfigUnreadCountList = [];
 
   Future<void> notify() async {
     await Future.delayed(Duration.zero);
@@ -33,24 +36,19 @@ class DashBoardController extends ChangeNotifier {
 
   List<SalesData> sfCampaignData = [];
   List<Templatedata> sfTemplatedata = [];
+
   Future<void> drawerApiCall() async {
-    try {
-      final response = await AppApi().commonGetMethod(
-        AppConstants.getDrawerItemsApi,
-        sendToken: true,
-      );
-
-      if (response is List) {
-        drawerItems = response.map((e) => SfDrawerModel.fromJson(e)).toList();
-        print("drawerItems:::: $drawerItems");
-      } else {
-        print("Unexpected response type: $response");
-      }
-    } catch (e) {
-      print("Error in chat history api: $e");
+    const url = AppConstants.getDrawerItemsApi;
+    final response = await NetworkService.makeRequest(
+      url: url,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      drawerItems = data.map((e) => SfDrawerModel.fromJson(e)).toList();
+      print("drawerItems:::: $drawerItems");
+      notify();
     }
-
-    notifyListeners();
   }
 
   bool configListLoader = false;
@@ -75,31 +73,46 @@ class DashBoardController extends ChangeNotifier {
 
   Future<void> drawerListApiCall(
       {String type = "Lead", bool showLoading = true}) async {
-    try {
-      if (showLoading) {
-        setConfigListLoader(true);
-      }
-      final response = await AppApi().commonGetMethod(
-        "${AppConstants.sfGetDrawerList}${type}",
-        sendToken: true,
-      );
-
-      print("congig resposne:::: ${response}   ");
-
-      List temp = response["data"];
-
+    drawerListUnreadCountApiCall(type: type);
+    if (showLoading) {
+      setConfigListLoader(true);
+    }
+    var url = "${AppConstants.sfGetDrawerList}$type";
+    final response = await NetworkService.makeRequest(
+      url: url,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      var res = jsonDecode(response.body);
+      List temp = res['data'];
       drawerListItems = temp.map((e) => SfDrawerItemModel.fromJson(e)).toList();
       tempDrawerListItems = drawerListItems;
-      print("drawerItems:::: $drawerItems");
-
-      setConfigListLoader(false);
       notify();
-    } catch (e) {
-      setConfigListLoader(false);
-      print("Error in drawerApiCall: $e");
     }
+    setConfigListLoader(false);
+  }
 
-    notifyListeners();
+  Future<void> drawerListUnreadCountApiCall({String type = "Lead"}) async {
+    // if (showLoading) {
+    //   setConfigListLoader(true);
+    // }
+    final prefs = await SharedPreferences.getInstance();
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+    var url =
+        "${AppConstants.sfGetDrawerUnreadList}$type&businessnumber=${busNum}&recordlimit=50";
+    final response = await NetworkService.makeRequest(
+      url: url,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      // var res = jsonDecode(response.body);
+      List temp = jsonDecode(response.body);
+      configUnreadCountList =
+          temp.map((e) => SfConfigUnreadCountModel.fromJson(e)).toList();
+      tempConfigUnreadCountList = configUnreadCountList;
+      notify();
+    }
+    setConfigListLoader(false);
   }
 
   void filterRecs(String value) {
@@ -117,37 +130,18 @@ class DashBoardController extends ChangeNotifier {
   SfProfileModel? sfUserData;
 
   Future<void> getProfileApiCall() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-
-      String apiUrl = "${AppConstants.sfGetProfile}";
-      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
-      print(
-          "get sfGetProfile response :: ${response.runtimeType}  ${response.statusCode} ${response}");
-
-      if (response.statusCode == 200) {
-        sfUserData = SfProfileModel.fromJson(jsonDecode(response.body));
-        sfDeviceTokenApiCall(sfUserData?.userId ?? "");
-        notify();
-        log("Fetched ${sfUserData?.name ?? ""}  get sfGetProfile .");
-      } else {
-        log(" get sfGetProfile API failed [${response.statusCode}]: ${response.body}");
-      }
-    } catch (e) {
-      print("Error in profile api: $e");
+    var url = AppConstants.sfGetProfile;
+    final response = await NetworkService.makeRequest(
+      url: url,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      sfUserData = SfProfileModel.fromJson(jsonDecode(response.body));
+      sfDeviceTokenApiCall(sfUserData?.userId ?? "");
+      notify();
+      log("Fetched ${sfUserData?.name ?? ""}  get sfGetProfile .");
     }
-
-    notifyListeners();
+    notify();
   }
 
   bool recentChatListLoader = false;
@@ -161,79 +155,62 @@ class DashBoardController extends ChangeNotifier {
   List<SfDrawerItemModel> tempsfRecentChatList = [];
 
   Future<void> recentChatListApiCall() async {
-    try {
-      setRecentChatListLoader(true);
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-      final busNum =
-          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      String apiUrl =
-          "${AppConstants.sfRecentChat}?businessnumber=${busNum}&recordlimit=5000&objectname=${selectedTitle}";
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $token',
-          "Content-Type": "application/json"
-        },
-      );
-      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
-      print(
-          " Recent Chat response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+    setRecentChatListLoader(true);
+    final prefs = await SharedPreferences.getInstance();
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+    String apiUrl =
+        "${AppConstants.sfRecentChat}?businessnumber=${busNum}&recordlimit=5000&objectname=${selectedTitle}";
+    final response = await NetworkService.makeRequest(
+      url: apiUrl,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      sfRecentChatList
+        ..clear()
+        ..addAll((data
+              ..sort((a, b) {
+                final at = a['lastMessageTime'];
+                final bt = b['lastMessageTime'];
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        sfRecentChatList
-          ..clear()
-          ..addAll(data.map((e) => SfDrawerItemModel.fromJson(e)));
-        tempsfRecentChatList = sfRecentChatList;
-        setRecentChatListLoader(false);
-      } else {
-        setRecentChatListLoader(false);
-        log("SF Recent Chat failed [${response.statusCode}]: ${response.body}");
-      }
+                // Nulls go to the end
+                if (at == null && bt == null) return 0;
+                if (at == null) return 1;
+                if (bt == null) return -1;
 
-      notify();
-    } catch (e) {
-      setRecentChatListLoader(false);
-      print("Error in Recent Chat: $e");
+                // Descending order
+                return bt.compareTo(at);
+              }))
+            .map((e) => SfDrawerItemModel.fromJson(e)));
+
+      tempsfRecentChatList = sfRecentChatList;
     }
-
-    notifyListeners();
+    notify();
+    setRecentChatListLoader(false);
   }
 
   Future<void> resentUnreadCountApiCall(String custNum,
       {bool isFromChat = true}) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-      final busNum =
-          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      String apiUrl = "${AppConstants.sfRecentChat}";
-      Map body = {"Business Number": busNum, "Customer Number": custNum};
-      final response = await http.post(Uri.parse(apiUrl),
-          headers: {
-            'Authorization': 'Bearer $token',
-            "Content-Type": "application/json"
-          },
-          body: jsonEncode(body));
-      log("headers:::: ${"Bearer $token"}    ${AppConstants.sfRecentChat}");
-      print(
-          " reset Un read response :: ${response.runtimeType}  ${response.statusCode} ${response}");
-      if (response.statusCode == 200) {
-        if (isFromChat) {
-          recentChatListApiCall();
-        } else {
-          sfNotificationHistoryApiCall();
-        }
+    final prefs = await SharedPreferences.getInstance();
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+    String apiUrl = AppConstants.sfRecentChat;
+    Map<String, dynamic> body = {
+      "Business Number": busNum,
+      "Customer Number": custNum
+    };
+    final response = await NetworkService.makeRequest(
+      url: apiUrl,
+      body: body,
+      method: 'POST',
+    );
+    if (response != null && response.statusCode == 200) {
+      if (isFromChat) {
+        recentChatListApiCall();
       } else {
-        log("SF reset Un read failed [${response.statusCode}]: ${response.body}");
+        sfNotificationHistoryApiCall();
       }
-      notify();
-    } catch (e) {
-      setRecentChatListLoader(false);
-      print("Error in Recent Chat: $e");
     }
-    notifyListeners();
+    notify();
   }
 
   TemplateStatsModel? tempStatus;
@@ -242,52 +219,33 @@ class DashBoardController extends ChangeNotifier {
   String totalCamp = "";
 
   Future<void> getDasBoardReportApiCall() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final busNum =
-          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      String apiUrl =
-          "${AppConstants.sfDashBoardReport}businessnumber=${busNum}";
-      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+    final prefs = await SharedPreferences.getInstance();
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+    String apiUrl = "${AppConstants.sfDashBoardReport}businessnumber=${busNum}";
 
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
+    final response = await NetworkService.makeRequest(
+      url: apiUrl,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      var reportList = jsonDecode(response.body);
 
-      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
       print(
-          "get dashboard Report response :: ${response.runtimeType}  ${response.statusCode} ${response.body}");
+          "reportList  ${reportList}['Total Records'].toString():::::: ${reportList[2]['Total Records'].toString()}");
 
-      if (response.statusCode == 200) {
-        var reportList = jsonDecode(response.body);
+      tempStatus = TemplateStatsModel.fromJson(reportList[0]);
 
-        print(
-            "reportList  ${reportList}['Total Records'].toString():::::: ${reportList[2]['Total Records'].toString()}");
+      campStatus = CampaignStatsModel.fromJson(reportList[1]);
+      var campCount = campStatus!.completed! +
+          campStatus!.inProgress! +
+          campStatus!.pending!;
 
-        tempStatus = TemplateStatsModel.fromJson(reportList[0]);
-
-        campStatus = CampaignStatsModel.fromJson(reportList[1]);
-        var campCount = campStatus!.completed! +
-            campStatus!.inProgress! +
-            campStatus!.pending!;
-
-        totalCamp = campCount.toString();
-        totalLead = reportList[2]['Total Records'].toString();
-        getSfCampWidgets();
-        getSfTemplateData();
-        notify();
-      } else {
-        log(" get dashboard Report API failed [${response.statusCode}]: ${response.body}");
-      }
-    } catch (e) {
-      print("Error in dashboard Report api: $e");
+      totalCamp = campCount.toString();
+      totalLead = reportList[2]['Total Records'].toString();
+      getSfCampWidgets();
+      getSfTemplateData();
     }
-
-    notifyListeners();
+    notify();
   }
 
   void getSfCampWidgets() {
@@ -325,40 +283,22 @@ class DashBoardController extends ChangeNotifier {
   }
 
   Future<void> sfDeviceTokenApiCall(String usrId) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
+    String apiUrl = "${AppConstants.sfDeviceToken}";
 
-      String apiUrl = "${AppConstants.sfDeviceToken}";
-      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-
-      FirebaseMessaging messaging = FirebaseMessaging.instance;
-      String? fcmtoken = await messaging.getToken();
-      Map body = {
-        "userId": usrId,
-        "deviceId": sfDeviceTokn,
-        "fcmToken": fcmtoken
-      };
-      final response = await http.post(Uri.parse(apiUrl),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode(body));
-
-      log("headers:::: ${"Bearer $token"}    ${apiUrl}    ${body}");
-      print(
-          "get sf device token response :: ${response.runtimeType}  ${response.statusCode} ${response}");
-
-      if (response.statusCode == 200) {
-        notify();
-      } else {
-        log(" sf device token API failed [${response.statusCode}]: ${response.body}");
-      }
-    } catch (e) {
-      print("Error in sf device token  api: $e");
-    }
-
-    notifyListeners();
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? fcmtoken = await messaging.getToken();
+    Map<String, dynamic> body = {
+      "userId": usrId,
+      "deviceId": sfDeviceTokn,
+      "fcmToken": fcmtoken
+    };
+    final response = await NetworkService.makeRequest(
+      url: apiUrl,
+      body: body,
+      method: 'POST',
+    );
+    if (response != null && response.statusCode == 200) {}
+    notify();
   }
 
   bool sfNotificationListLoader = false;
@@ -372,45 +312,25 @@ class DashBoardController extends ChangeNotifier {
   List<SfDrawerItemModel> tempSfNotificationList = [];
 
   Future<void> sfNotificationHistoryApiCall() async {
-    try {
-      setSfNotificationListLoader(true);
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-      final busNum =
-          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      String apiUrl =
-          "${AppConstants.sfNotificationHistory}?businessnumber=${busNum}";
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $token',
-          "Content-Type": "application/json"
-        },
-      );
-      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
-      print(
-          "SF Notification List response ::   ${response.statusCode} ${response}");
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data =
-            response.body.isEmpty ? [] : jsonDecode(response.body) ?? [];
-        sfNoticationList
-          ..clear()
-          ..addAll(data.map((e) => SfDrawerItemModel.fromJson(e)));
-        tempSfNotificationList = sfNoticationList;
-        setSfNotificationListLoader(false);
-      } else {
-        setSfNotificationListLoader(false);
-        log("SF Notification List  failed [${response.statusCode}]: ${response.body}");
-      }
-
-      notify();
-    } catch (e) {
-      setRecentChatListLoader(false);
-      print("Error in SF Notification List: $e");
+    setSfNotificationListLoader(true);
+    final prefs = await SharedPreferences.getInstance();
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+    String apiUrl =
+        "${AppConstants.sfNotificationHistory}?businessnumber=${busNum}";
+    final response = await NetworkService.makeRequest(
+      url: apiUrl,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      final List<dynamic> data =
+          response.body.isEmpty ? [] : jsonDecode(response.body) ?? [];
+      sfNoticationList
+        ..clear()
+        ..addAll(data.map((e) => SfDrawerItemModel.fromJson(e)));
+      tempSfNotificationList = sfNoticationList;
     }
-
-    notifyListeners();
+    setSfNotificationListLoader(false);
+    notify();
   }
 
   List<String> configStatusList = [];

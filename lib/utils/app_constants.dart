@@ -225,6 +225,10 @@ abstract class AppConstants {
   static const String getDrawerItemsApi = '${baseApi}watconnect/objectconfig';
   static const String sfGetDrawerList =
       '${baseApi}watconnect/objectconfig?sobjectname=';
+
+  static const String sfGetDrawerUnreadList =
+      '${baseApi}watconnect/objectconfig?objectname=';
+
   static const String sfSendMessageApi =
       '${baseApi}watconnect/messages?type=text';
   static const String sfSendFileApi =

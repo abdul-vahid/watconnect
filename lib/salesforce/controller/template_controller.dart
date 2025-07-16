@@ -1,14 +1,11 @@
 import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
-// import 'package:whatsapp/salesforce/api/api_helper.dart';
+import 'package:whatsapp/salesforce/controller/network_Services.dart';
 import 'package:whatsapp/salesforce/model/template_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 
@@ -84,56 +81,34 @@ class TemplateController extends ChangeNotifier {
 
   Future<void> getTemplateApiCall(
       {String category = "ALL", bool showLoader = true}) async {
-    try {
-      if (showLoader) {
-        setGetTempLoader(true);
-      }
-
-      final prefs = await SharedPreferences.getInstance();
-      final busNum =
-          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      String apiUrl =
-          "${AppConstants.sfGetTemplates}businessnumber=${busNum}&category=$category";
-      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
-      print(
-          "get Template response :: ${response.runtimeType}  ${response.statusCode} ${response}");
-
-      if (response.statusCode == 200) {
-        setGetTempLoader(false);
-        final List<dynamic> data = jsonDecode(response.body);
-        templateList
-          ..clear()
-          ..addAll(data.map((e) => TemplateModel.fromJson(e)));
-
-        templateNames
-          ..clear()
-          ..addAll(templateList
-              .map((e) => e.name ?? '')
-              .where((name) => name.isNotEmpty)
-              .toSet()
-              .toList());
-        templateNames.insert(0, "Select");
-        notify();
-        log("Fetched ${templateList.length} templateList.");
-      } else {
-        setGetTempLoader(false);
-        log("templateList API failed [${response.statusCode}]: ${response.body}");
-      }
-    } catch (e) {
-      setGetTempLoader(false);
-      print("Error in templateList api: $e");
+    if (showLoader) {
+      setGetTempLoader(true);
     }
-    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+    String apiUrl =
+        "${AppConstants.sfGetTemplates}businessnumber=${busNum}&category=$category";
+    final response = await NetworkService.makeRequest(
+      url: apiUrl,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      templateList
+        ..clear()
+        ..addAll(data.map((e) => TemplateModel.fromJson(e)));
+
+      templateNames
+        ..clear()
+        ..addAll(templateList
+            .map((e) => e.name ?? '')
+            .where((name) => name.isNotEmpty)
+            .toSet()
+            .toList());
+      templateNames.insert(0, "Select");
+    }
+    setGetTempLoader(false);
+    notify();
   }
 
   bool sendTempLoader = false;
@@ -150,77 +125,47 @@ class TemplateController extends ChangeNotifier {
       String? docId,
       String? url,
       String? mimetyp}) async {
-    try {
-      setSentTempLoader(true);
-      String apiUrl = "${AppConstants.sfSendTemplate}";
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-      final busNum =
-          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      Map body = {};
-      var paramToSend = await buildParamsJson(params);
-      if (params.isEmpty) {
-        body = {
-          "businessnumber": busNum,
-          "userWhatsAppNumber": usrNumber,
-          "metaTemplateId": tempId
-        };
-      } else {
-        body = {
-          "businessnumber": busNum,
-          "userWhatsAppNumber": usrNumber,
-          "metaTemplateId": tempId,
-          "params": paramToSend
-          // "businessnumber": busNum,
-          // "userWhatsAppNumber": usrNumber,
-          // "messageData": {
-          //   "category": selectedTemplate?.category ?? "",
-          //   "templateId": tempId,
-          //   "value": paramToSend,
-          // },
-          // "metaTemplateId": tempId,
-          // "params": paramToSend,
-          // "messageBody": paramToSend
-        };
-      }
-
-      print("docId::: ${docId}  url::: ${url}  mimetyp::: ${mimetyp}");
-
-      if (docId != null) {
-        body["document_id"] = docId;
-        body["url"] = url;
-        body["content_type"] = mimetyp;
-      }
-
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(body),
-      );
-
-      log("headers:::: ${"$token"}  \n  ${apiUrl}  \n ${jsonEncode(body)}");
-
-      print(
-          "send Template response :: ${response.runtimeType}  ${response.statusCode} ${response}");
-
-      if (response.statusCode == 200) {
-        setSentTempLoader(false);
-        EasyLoading.showToast("Template Send Successfully");
-        ChatMessageController msgCtrl =
-            Provider.of(navigatorKey.currentContext!, listen: false);
-        await msgCtrl.messageHistoryApiCall(
-            userNumber: usrNumber, isFirstTime: false);
-      } else {
-        setSentTempLoader(false);
-        log("send template API failed [${response.statusCode}]: ${response.body}");
-      }
-    } catch (e) {
-      setSentTempLoader(false);
-      print("Error in send template api: $e");
+    setSentTempLoader(true);
+    String apiUrl = "${AppConstants.sfSendTemplate}";
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+    Map<String, dynamic> body = {};
+    var paramToSend = await buildParamsJson(params);
+    if (params.isEmpty) {
+      body = {
+        "businessnumber": busNum,
+        "userWhatsAppNumber": usrNumber,
+        "metaTemplateId": tempId
+      };
+    } else {
+      body = {
+        "businessnumber": busNum,
+        "userWhatsAppNumber": usrNumber,
+        "metaTemplateId": tempId,
+        "params": paramToSend
+      };
     }
+
+    print("docId::: ${docId}  url::: ${url}  mimetyp::: ${mimetyp}");
+
+    if (docId != null) {
+      body["document_id"] = docId;
+      body["url"] = url;
+      body["content_type"] = mimetyp;
+    }
+
+    final response = await NetworkService.makeRequest(
+        url: apiUrl, method: 'POST', body: body);
+    if (response != null && response.statusCode == 200) {
+      EasyLoading.showToast("Template Send Successfully");
+      ChatMessageController msgCtrl =
+          Provider.of(navigatorKey.currentContext!, listen: false);
+      await msgCtrl.messageHistoryApiCall(
+          userNumber: usrNumber, isFirstTime: false);
+    }
+    setSentTempLoader(false);
+    notify();
   }
 
   String buildParamsJson(List<String> values) {
@@ -234,8 +179,7 @@ class TemplateController extends ChangeNotifier {
     }
 
     String jsonString = jsonEncode(paramList);
-    // String escapedString = jsonEncode(jsonString);
-
+    print("temp param as encoded strigify format::::::::::::   ${jsonString}");
     return jsonString;
   }
 

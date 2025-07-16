@@ -16,9 +16,11 @@ class LeadListViewModel extends BaseListViewModel {
 
   get record => null;
 
-  Future<void> fetch() async {
+  Future<String?> fetch() async {
     String url = AppUtils.getUrl(AppConstants.leadAPIPath);
-    await get(url: url, baseModel: LeadResponseModel());
+    var res = await get(url: url, baseModel: LeadResponseModel());
+    print("response::::::of lead list api:::::::   ${res}");
+    return res;
     // .then((onValue) {
     //   print("viewModels::: ${viewModels}");
     //   print("fetch val::: ${onValue}");

@@ -73,17 +73,23 @@ class _UserListView extends State<UserListView> {
     userlistvm = Provider.of<UserDataListViewModel>(context);
     allUsers.clear();
     print("selectedRole:::::::::::  ${selectedRole}");
+    print(
+        "selectedUser:::::::::    ${selectedUser}      ${userlistvm.viewModels}");
     for (var viewModel in userlistvm.viewModels) {
       UserDataModel productmodel = viewModel.model;
+      print("productmodel:::::::::::   ${productmodel}");
       _paymentterms.add(productmodel.userrole ?? "");
       if (selectedRole == null) {
         allUsers.add(productmodel);
+        print(
+            "adding element in the list:::::::::::::::::::::::::::::::::::::");
       } else {
         if (productmodel.userrole?.toLowerCase() ==
             selectedRole?.toLowerCase()) {
           allUsers.add(productmodel);
         }
       }
+
       if (selectedUser.isNotEmpty) {
         List tempUsers = allUsers;
         allUsers = [];

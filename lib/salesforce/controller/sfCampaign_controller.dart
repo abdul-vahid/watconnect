@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/salesforce/controller/network_Services.dart';
 import 'package:whatsapp/salesforce/model/campaign_history_model.dart';
 import 'package:whatsapp/salesforce/model/campaign_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
@@ -48,44 +47,23 @@ class SfcampaignController extends ChangeNotifier {
   }
 
   Future<void> getCampaignApiCall() async {
-    try {
-      setGetCampLoader(true);
-      final prefs = await SharedPreferences.getInstance();
-      final busNum =
-          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      String apiUrl = "${AppConstants.sfGetCampaign}businessnumber=${busNum}";
-      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
-      print(
-          "get campaing response :: ${response.runtimeType}  ${response.statusCode} ${response}");
-
-      if (response.statusCode == 200) {
-        setGetCampLoader(false);
-        final List<dynamic> data = jsonDecode(response.body);
-        sfCampaignList
-          ..clear()
-          ..addAll(data.map((e) => SfCampaignModel.fromJson(e)));
-
-        sfTempCampaignList = sfCampaignList;
-
-        notify();
-        log("Fetched ${sfCampaignList.length}  get campaign .");
-      } else {
-        setGetCampLoader(false);
-        log(" get campaign  API failed [${response.statusCode}]: ${response.body}");
-      }
-    } catch (e) {
-      setGetCampLoader(false);
-      print("Error in get campaign api: $e");
+    setGetCampLoader(true);
+    final prefs = await SharedPreferences.getInstance();
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+    String apiUrl = "${AppConstants.sfGetCampaign}businessnumber=${busNum}";
+    final response = await NetworkService.makeRequest(
+      url: apiUrl,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      sfCampaignList
+        ..clear()
+        ..addAll(data.map((e) => SfCampaignModel.fromJson(e)));
+      sfTempCampaignList = sfCampaignList;
     }
-    notifyListeners();
+    notify();
+    setGetCampLoader(false);
   }
 
   bool campHistoryLoader = false;
@@ -98,46 +76,27 @@ class SfcampaignController extends ChangeNotifier {
   List<SfCampaignHistoryModel> sfCampHistoryList = [];
 
   Future<void> getCampMsgHisApiCall() async {
-    try {
-      setCampHistoryLoader(true);
+    setCampHistoryLoader(true);
 
-      final prefs = await SharedPreferences.getInstance();
-      final busNum =
-          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      String apiUrl =
-          "${AppConstants.sfGetCampaignHistory}bussinesnumber=${busNum}&campaignid=${selectedCampaign?.id ?? ""}";
-      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+    final prefs = await SharedPreferences.getInstance();
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+    String apiUrl =
+        "${AppConstants.sfGetCampaignHistory}bussinesnumber=${busNum}&campaignid=${selectedCampaign?.id ?? ""}";
 
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
+    final response = await NetworkService.makeRequest(
+      url: apiUrl,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      sfCampHistoryList
+        ..clear()
+        ..addAll(data.map((e) => SfCampaignHistoryModel.fromJson(e)));
 
-      log("headers:::: ${"Bearer $token"}    ${apiUrl}");
-      print(
-          " campaing history response :: ${response.runtimeType}  ${response.statusCode} ${response}");
-
-      if (response.statusCode == 200) {
-        setCampHistoryLoader(false);
-        final List<dynamic> data = jsonDecode(response.body);
-        sfCampHistoryList
-          ..clear()
-          ..addAll(data.map((e) => SfCampaignHistoryModel.fromJson(e)));
-
-        notify();
-        log("Fetched ${sfCampHistoryList.length}  history campaign .");
-      } else {
-        setCampHistoryLoader(false);
-        log("  campaign history  API failed [${response.statusCode}]: ${response.body}");
-      }
-    } catch (e) {
-      setCampHistoryLoader(false);
-      print("Error in  campaign history api: $e");
+      log("Fetched ${sfCampHistoryList.length}  history campaign .");
     }
-    notifyListeners();
+    notify();
+    setCampHistoryLoader(false);
   }
 
   bool addCampLoader = false;
@@ -147,42 +106,42 @@ class SfcampaignController extends ChangeNotifier {
     notify();
   }
 
-  Future<bool> sfAddCampaignCall(List body) async {
-    setAddCampLoader(true);
-    try {
-      final encodedBody = jsonEncode(body);
+  // Future<bool> sfAddCampaignCall(List body) async {
+  //   setAddCampLoader(true);
+  //   try {
+  //     final encodedBody = jsonEncode(body);
 
-      final prefs = await SharedPreferences.getInstance();
+  //     final prefs = await SharedPreferences.getInstance();
 
-      final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+  //     final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
 
-      final response = await http.post(
-        Uri.parse(AppConstants.sfAddCampaign),
-        headers: {
-          'Authorization': 'Bearer $token',
-          "Content-Type": "application/json"
-        },
-        body: encodedBody,
-      );
+  //     final response = await http.post(
+  //       Uri.parse(AppConstants.sfAddCampaign),
+  //       headers: {
+  //         'Authorization': 'Bearer $token',
+  //         "Content-Type": "application/json"
+  //       },
+  //       body: encodedBody,
+  //     );
 
-      log("headers:::: ${"Bearer $token"}  $encodedBody  ${AppConstants.sfAddCampaign}");
-      print(
-          " campaing add response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+  //     log("headers:::: ${"Bearer $token"}  $encodedBody  ${AppConstants.sfAddCampaign}");
+  //     print(
+  //         " campaing add response :: ${response.runtimeType}  ${response.statusCode} ${response}");
 
-      if (response.statusCode == 200) {
-        setAddCampLoader(false);
-        getCampaignApiCall();
-      } else {
-        setAddCampLoader(false);
-        log("SF ADD CAMP failed [${response.statusCode}]: ${response.body}");
-      }
-    } catch (e) {
-      setAddCampLoader(false);
-      log("Error in SF ADD CAMP: $e");
-    }
+  //     if (response.statusCode == 200) {
+  //       setAddCampLoader(false);
+  //       getCampaignApiCall();
+  //     } else {
+  //       setAddCampLoader(false);
+  //       log("SF ADD CAMP failed [${response.statusCode}]: ${response.body}");
+  //     }
+  //   } catch (e) {
+  //     setAddCampLoader(false);
+  //     log("Error in SF ADD CAMP: $e");
+  //   }
 
-    return false;
-  }
+  //   return false;
+  // }
 
   searchCamp(String searchVal) {
     if (searchVal.isEmpty) {

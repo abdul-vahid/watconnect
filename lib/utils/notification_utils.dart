@@ -55,10 +55,12 @@ class NotificationUtil {
             });
           }
         } else {
-          final leadId = remoteMessage.data['RecordId'];
+          final leadId = remoteMessage.data['user_id'];
+          final objName = remoteMessage.data['sObjectName'];
+
           DashBoardController dashBoardController =
               Provider.of(context, listen: false);
-          await dashBoardController.drawerListApiCall(type: "Lead");
+          await dashBoardController.drawerListApiCall(type: objName);
           for (var item in dashBoardController.drawerListItems) {
             if (item.id == leadId) {
               var drawerListItem = item;
@@ -83,7 +85,7 @@ class NotificationUtil {
           }
         }
       } else {
-        print("remote messha eos is nullllllllllllll");
+        // print("remote messha eos is nullllllllllllll");
       }
     });
 
@@ -132,10 +134,12 @@ class NotificationUtil {
           });
         }
       } else {
-        final leadId = remoteMessage?.data['RecordId'];
+        final leadId = remoteMessage?.data['user_id'];
+        final objName = remoteMessage?.data['sObjectName'];
+
         DashBoardController dashBoardController =
             Provider.of(context, listen: false);
-        await dashBoardController.drawerListApiCall(type: "Lead");
+        await dashBoardController.drawerListApiCall(type: objName);
         for (var item in dashBoardController.drawerListItems) {
           if (item.id == leadId) {
             var drawerListItem = item;
