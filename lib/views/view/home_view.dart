@@ -458,617 +458,252 @@ class _HomeViewState extends State<HomeView> with RouteAware {
               ),
             ],
           ),
-          body: SingleChildScrollView(
-            child: Column(
-              children: [
-                SizedBox(height: 12),
-
-                // Padding(
-                //   padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                //   child: AppUtils.getDropdown(
-                //     'Select',
-                //     data: allWhNums,
-                //     onChanged: (p0) {
-                //       setState(() {
-                //         _phone = p0;
-                //         // _userType = null;
-                //       });
-                //     },
-                //     value: _phone,
-                //     validator: (value) => value == null ? 'Role is required' : null,
-                //   ),
-                // ),
-                // Container(
-                //   width: 300,
-                //   child: AppUtils.getDropdown(
-                //     'Select Category',
-                //     data: dropdownItems,
-                //     onChanged: (String? selectedCategory) {},
-                //   ),
-                // ),
-                // Padding(
-                //   padding: const EdgeInsets.all(8.0),
-                //   child: Wrap(
-                //     spacing: 8.0,
-                //     runSpacing: 8.0,
-                //     alignment: WrapAlignment.start,
-                //     children: [
-                //       GestureDetector(
-                //         onTap: () => {
-                //           Navigator.push(
-                //               context,
-                //               MaterialPageRoute(
-                //                   builder: (context) => const LeadListView()))
-                //         },
-                //         child: Card(
-                //           elevation: 2,
-                //           color: const Color(0xFFF6EDE8),
-                //           shape: RoundedRectangleBorder(
-                //             borderRadius: BorderRadius.circular(15),
-                //           ),
-                //           child: Container(
-                //             width: 160,
-                //             padding: const EdgeInsets.all(16),
-                //             decoration: BoxDecoration(
-                //               borderRadius: BorderRadius.circular(15),
-                //               image: const DecorationImage(
-                //                 image: AssetImage("assets/images/bg011.jpg"),
-                //                 fit: BoxFit.cover,
-                //               ),
-                //             ),
-                //             child: Column(
-                //               crossAxisAlignment: CrossAxisAlignment.start,
-                //               children: [
-                //                 const Icon(
-                //                   Icons.leaderboard,
-                //                   size: 30,
-                //                   color: Colors.white,
-                //                 ),
-                //                 Container(height: 5),
-                //                 const Text(
-                //                   "ALL Leads",
-                //                   style: TextStyle(
-                //                     color: Colors.white,
-                //                     fontSize: 14,
-                //                     fontWeight: FontWeight.w700,
-                //                   ),
-                //                 ),
-                //                 Row(
-                //                   children: [
-                //                     RichText(
-                //                       text: TextSpan(
-                //                         text: (countNewLeads ?? 0).toString(),
-                //                         style: const TextStyle(
-                //                           color: Colors.white,
-                //                           fontSize: 30,
-                //                           fontWeight: FontWeight.w600,
-                //                         ),
-                //                         children: const [
-                //                           TextSpan(
-                //                             text: '/ Total',
-                //                             style: TextStyle(
-                //                               color: Colors.white,
-                //                               fontWeight: FontWeight.bold,
-                //                               fontSize: 14,
-                //                             ),
-                //                           ),
-                //                         ],
-                //                       ),
-                //                     ),
-                //                   ],
-                //                 ),
-                //               ],
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       GestureDetector(
-                //         onTap: () => {
-                //           if (modules.contains("Campaign") ||
-                //               modules.contains('Campaigns'))
-                //             {
-                //               Navigator.push(
-                //                   context,
-                //                   MaterialPageRoute(
-                //                       builder: (context) =>
-                //                           const CampaignListView()))
-                //             }
-                //           else
-                //             {
-                //               EasyLoading.showToast(
-                //                   "Access to Campaign is not included in this Plan")
-                //             }
-                //         },
-                //         child: Card(
-                //           elevation: 2,
-                //           color: const Color(0xfffece9f2),
-                //           shape: RoundedRectangleBorder(
-                //             borderRadius: BorderRadius.circular(15),
-                //           ),
-                //           child: Container(
-                //             width: 160,
-                //             padding: const EdgeInsets.all(16),
-                //             decoration: BoxDecoration(
-                //               borderRadius: BorderRadius.circular(15),
-                //               image: const DecorationImage(
-                //                 image: AssetImage(
-                //                   "assets/images/bg011.jpg",
-                //                 ), // Add your image path
-                //                 fit: BoxFit.cover, // Cover entire card
-                //               ),
-                //             ),
-                //             child: Column(
-                //               crossAxisAlignment: CrossAxisAlignment.start,
-                //               children: [
-                //                 const Icon(
-                //                   Icons.assignment_ind,
-                //                   size: 30,
-                //                   color: Colors.white,
-                //                 ),
-                //                 Container(height: 5),
-                //                 const Text(
-                //                   "Pending Campa..",
-                //                   style: TextStyle(
-                //                     color: Colors.white,
-                //                     fontSize: 14,
-                //                     fontWeight: FontWeight.w600,
-                //                   ),
-                //                 ),
-                //                 Row(
-                //                   children: [
-                //                     RichText(
-                //                       text: TextSpan(
-                //                         text: (campaignCount ?? 0)
-                //                             .toString(), // Default text
-                //                         style: const TextStyle(
-                //                           color: Colors.white,
-                //                           fontSize: 30,
-                //                           fontWeight: FontWeight.w600,
-                //                         ),
-                //                         children: const [
-                //                           TextSpan(
-                //                             text: '/ Total',
-                //                             style: TextStyle(
-                //                               color: Colors.white,
-                //                               fontWeight: FontWeight.bold,
-                //                               fontSize: 14,
-                //                             ),
-                //                           ),
-                //                         ],
-                //                       ),
-                //                     ),
-                //                   ],
-                //                 ),
-                //               ],
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       GestureDetector(
-                //         onTap: () => {
-                //           Navigator.push(
-                //               context,
-                //               MaterialPageRoute(
-                //                   builder: (context) =>
-                //                       const TempleteListView()))
-                //         },
-                //         child: Card(
-                //           elevation: 2,
-                //           color: const Color(0xfffece9f2),
-                //           shape: RoundedRectangleBorder(
-                //             borderRadius: BorderRadius.circular(15),
-                //           ),
-                //           child: Container(
-                //             width: 160,
-                //             padding: const EdgeInsets.all(16),
-                //             decoration: BoxDecoration(
-                //               borderRadius: BorderRadius.circular(15),
-                //               image: const DecorationImage(
-                //                 image: AssetImage(
-                //                   "assets/images/bg011.jpg",
-                //                 ), // Add your image path
-                //                 fit: BoxFit.cover, // Cover entire card
-                //               ),
-                //             ),
-                //             child: Column(
-                //               crossAxisAlignment: CrossAxisAlignment.start,
-                //               children: [
-                //                 const Icon(
-                //                   Icons.assignment,
-                //                   size: 30,
-                //                   color: Colors.white,
-                //                 ),
-                //                 Container(height: 5),
-                //                 const Text(
-                //                   "Total Templates",
-                //                   style: TextStyle(
-                //                     color: Colors.white,
-                //                     fontSize: 14,
-                //                     fontWeight: FontWeight.w600,
-                //                   ),
-                //                 ),
-                //                 Row(
-                //                   children: [
-                //                     RichText(
-                //                       text: TextSpan(
-                //                         text: (templateCount ?? 0).toString(),
-                //                         style: const TextStyle(
-                //                           color: Colors.white,
-                //                           fontSize: 30,
-                //                           fontWeight: FontWeight.w600,
-                //                         ),
-                //                         children: const [
-                //                           TextSpan(
-                //                             text: '/ Total',
-                //                             style: TextStyle(
-                //                               color: Colors.white,
-                //                               fontWeight: FontWeight.bold,
-                //                               fontSize: 14,
-                //                             ),
-                //                           ),
-                //                         ],
-                //                       ),
-                //                     ),
-                //                   ],
-                //                 ),
-                //               ],
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //       Card(
-                //         elevation: 2,
-                //         color: const Color(0xFFF6EDE8),
-                //         shape: RoundedRectangleBorder(
-                //           borderRadius: BorderRadius.circular(15),
-                //         ),
-                //         child: Container(
-                //           width: 160,
-                //           padding: const EdgeInsets.all(16),
-                //           decoration: BoxDecoration(
-                //             borderRadius: BorderRadius.circular(15),
-                //             image: const DecorationImage(
-                //               image: AssetImage(
-                //                 "assets/images/bg011.jpg",
-                //               ), // Add your image path
-                //               fit: BoxFit.cover, // Cover entire card
-                //             ),
-                //           ),
-                //           child: Column(
-                //             crossAxisAlignment: CrossAxisAlignment.start,
-                //             children: [
-                //               const Icon(
-                //                 Icons.message,
-                //                 size: 30,
-                //                 // color: Colors.white,
-                //                 color: Colors.white,
-                //               ),
-                //               Container(height: 5),
-                //               const Text(
-                //                 "Auto Message",
-                //                 style: TextStyle(
-                //                   color: Colors.white,
-                //                   fontSize: 14,
-                //                   fontWeight: FontWeight.w600,
-                //                 ),
-                //               ),
-                //               Row(
-                //                 children: [
-                //                   RichText(
-                //                     text: TextSpan(
-                //                       text: autoResponseCount ?? "",
-                //                       style: const TextStyle(
-                //                         color: Colors.white,
-                //                         fontSize: 30,
-                //                         fontWeight: FontWeight.w600,
-                //                       ),
-                //                       children: const [
-                //                         TextSpan(
-                //                           text: '/ Total',
-                //                           style: TextStyle(
-                //                             color: Colors.white,
-                //                             fontWeight: FontWeight.bold,
-                //                             fontSize: 14,
-                //                           ),
-                //                         ),
-                //                       ],
-                //                     ),
-                //                   ),
-                //                 ],
-                //               ),
-                //             ],
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15.0),
-                  child: Row(
-                    children: [
-                      HomePageCard(
-                        title: "All Leads",
-                        subtitle: "${(countNewLeads ?? 0).toString()} / Total",
-                        icon: Icons.leaderboard_rounded,
-                        polygonAsset: "assets/images/home_polygon.png",
-                        tap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const LeadListView()));
-                        },
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      HomePageCard(
-                        title: "All Campaigns",
-                        subtitle: "${(campaignCount ?? 0).toString()} / Total",
-                        icon: Icons.leaderboard_rounded,
-                        polygonAsset: "assets/images/home_polygon.png",
-                        tap: () {
-                          if (modules.contains("Campaign") ||
-                              modules.contains('Campaigns')) {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const CampaignListView()));
-                          } else {
-                            EasyLoading.showToast(
-                                "Access to Campaign is not included in this Plan");
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(
-                  height: 20,
-                ),
-
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15.0),
-                  child: Row(
-                    children: [
-                      HomePageCard(
-                        title: "Total Templates",
-                        subtitle: "${(templateCount ?? 0).toString()} / Total",
-                        icon: Icons.leaderboard_rounded,
-                        polygonAsset: "assets/images/home_polygon.png",
-                        tap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const TempleteListView()));
-                        },
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      HomePageCard(
-                        title: "Auto Message",
-                        subtitle: "${autoResponseCount ?? ""} / Total",
-                        icon: Icons.leaderboard_rounded,
-                        polygonAsset: "assets/images/home_polygon.png",
-                        tap: () {},
-                      ),
-                    ],
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.all(15),
+          body: res.isNotEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 15.0, vertical: 60),
+                  child: Center(
+                      child: Text(
+                    res,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontFamily: AppFonts.semiBold,
+                        color: Colors.redAccent,
+                        fontSize: 18),
+                  )),
+                )
+              : SingleChildScrollView(
                   child: Column(
                     children: [
-                      res.isNotEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 60),
-                              child: Center(
-                                  child: Text(
-                                res,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                    fontFamily: AppFonts.semiBold,
-                                    color: Colors.redAccent,
-                                    fontSize: 18),
-                              )),
-                            )
-                          :
+                      SizedBox(height: 12),
 
-                          // modules.contains("Campaign")
-                          //     ? campaignCount != "0"
-                          //         ? Container(
-                          //             decoration: const BoxDecoration(
-                          //               color: AppColor.navBarIconColor,
-                          //               borderRadius: BorderRadius.all(
-                          //                 Radius.circular(10),
-                          //               ),
-                          //             ),
-                          //             // width: 400,
-                          //             height: 50,
-                          //             child: const Center(
-                          //               child: Text(
-                          //                 'Campaign',
-                          //                 style: TextStyle(
-                          //                   color: Color.fromARGB(
-                          //                       255, 255, 255, 255),
-                          //                   fontSize: 18,
-                          //                 ),
-                          //               ),
-                          //             ),
-                          //           )
-                          //         : SizedBox()
-                          //     : SizedBox(),
-                          modules.contains("Campaign")
-                              ? campaignCount != "0"
-                                  ? Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(16),
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.12),
-                                            blurRadius: 6,
-                                            spreadRadius: 2,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          const Text(
-                                            'Campaign',
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18,
-                                            ),
-                                          ),
-                                          SfCircularChart(
-                                              tooltipBehavior: _tooltipBehavior,
-                                              legend: const Legend(
-                                                  isVisible: true,
-                                                  position: LegendPosition.top,
-                                                  overflowMode:
-                                                      LegendItemOverflowMode
-                                                          .wrap),
-                                              series: <PieSeries<_SalesData,
-                                                  String>>[
-                                                PieSeries<_SalesData, String>(
-                                                    legendIconType:
-                                                        LegendIconType.circle,
-                                                    radius: '100',
-                                                    dataSource: businessData,
-                                                    enableTooltip: true,
-                                                    pointColorMapper:
-                                                        (_SalesData sales,
-                                                                int index) =>
-                                                            areaColor[index %
-                                                                areaColor
-                                                                    .length],
-                                                    xValueMapper:
-                                                        (_SalesData sales, _) =>
-                                                            sales.status,
-                                                    yValueMapper:
-                                                        (_SalesData sales, _) =>
-                                                            sales.count)
-                                              ]),
-                                        ],
-                                      ),
-                                    )
-                                  : SizedBox()
-                              : SizedBox(),
+                      // Padding(
+
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Row(
+                          children: [
+                            HomePageCard(
+                              title: "All Leads",
+                              subtitle:
+                                  "${(countNewLeads ?? 0).toString()} / Total",
+                              icon: Icons.leaderboard_rounded,
+                              polygonAsset: "assets/images/home_polygon.png",
+                              tap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LeadListView()));
+                              },
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            HomePageCard(
+                              title: "All Campaigns",
+                              subtitle:
+                                  "${(campaignCount ?? 0).toString()} / Total",
+                              icon: Icons.leaderboard_rounded,
+                              polygonAsset: "assets/images/home_polygon.png",
+                              tap: () {
+                                if (modules.contains("Campaign") ||
+                                    modules.contains('Campaigns')) {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const CampaignListView()));
+                                } else {
+                                  EasyLoading.showToast(
+                                      "Access to Campaign is not included in this Plan");
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
 
                       const SizedBox(
                         height: 20,
                       ),
-                      // Container(
-                      //   decoration: const BoxDecoration(
-                      //     color: AppColor.navBarIconColor,
-                      //     borderRadius: BorderRadius.all(
-                      //       Radius.circular(10),
-                      //     ),
-                      //   ),
-                      //   // width: 400,
-                      //   height: 50,
-                      //   child: const Center(
-                      //     child: Text(
-                      //       'Template',
-                      //       style: TextStyle(
-                      //         color: Color.fromARGB(255, 255, 255, 255),
-                      //         fontSize: 18,
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
-                      templatedata.isEmpty
-                          ? const SizedBox()
-                          : Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.12),
-                                    blurRadius: 6,
-                                    spreadRadius: 2,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  const Text(
-                                    'Template',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      // fontWeight: FontWeight.bold,
-                                      fontFamily: AppFonts.semiBold,
-                                      fontSize: 18,
+
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Row(
+                          children: [
+                            HomePageCard(
+                              title: "Total Templates",
+                              subtitle:
+                                  "${(templateCount ?? 0).toString()} / Total",
+                              icon: Icons.leaderboard_rounded,
+                              polygonAsset: "assets/images/home_polygon.png",
+                              tap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const TempleteListView()));
+                              },
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            HomePageCard(
+                              title: "Auto Message",
+                              subtitle: "${autoResponseCount ?? ""} / Total",
+                              icon: Icons.leaderboard_rounded,
+                              polygonAsset: "assets/images/home_polygon.png",
+                              tap: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.all(15),
+                        child: Column(
+                          children: [
+                            modules.contains("Campaign")
+                                ? campaignCount != "0"
+                                    ? Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          color: Colors.white,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black
+                                                  .withOpacity(0.12),
+                                              blurRadius: 6,
+                                              spreadRadius: 2,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            const Text(
+                                              'Campaign',
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18,
+                                              ),
+                                            ),
+                                            SfCircularChart(
+                                                tooltipBehavior:
+                                                    _tooltipBehavior,
+                                                legend: const Legend(
+                                                    isVisible: true,
+                                                    position:
+                                                        LegendPosition.top,
+                                                    overflowMode:
+                                                        LegendItemOverflowMode
+                                                            .wrap),
+                                                series: <PieSeries<_SalesData,
+                                                    String>>[
+                                                  PieSeries<_SalesData, String>(
+                                                      legendIconType:
+                                                          LegendIconType.circle,
+                                                      radius: '100',
+                                                      dataSource: businessData,
+                                                      enableTooltip: true,
+                                                      pointColorMapper:
+                                                          (_SalesData sales,
+                                                                  int index) =>
+                                                              areaColor[index %
+                                                                  areaColor
+                                                                      .length],
+                                                      xValueMapper:
+                                                          (_SalesData sales,
+                                                                  _) =>
+                                                              sales.status,
+                                                      yValueMapper:
+                                                          (_SalesData sales,
+                                                                  _) =>
+                                                              sales.count)
+                                                ]),
+                                          ],
+                                        ),
+                                      )
+                                    : SizedBox()
+                                : SizedBox(),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            templatedata.isEmpty
+                                ? const SizedBox()
+                                : Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.12),
+                                          blurRadius: 6,
+                                          spreadRadius: 2,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        const Text(
+                                          'Template',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            // fontWeight: FontWeight.bold,
+                                            fontFamily: AppFonts.semiBold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        SfCircularChart(
+                                            tooltipBehavior: _tooltipBehavior,
+                                            legend: const Legend(
+                                                isVisible: true,
+                                                position: LegendPosition.top,
+                                                overflowMode:
+                                                    LegendItemOverflowMode
+                                                        .wrap),
+                                            series: <DoughnutSeries<
+                                                Templatedata, String>>[
+                                              DoughnutSeries<Templatedata,
+                                                      String>(
+                                                  radius: '100',
+                                                  dataSource: templatedata,
+                                                  enableTooltip: true,
+                                                  pointColorMapper:
+                                                      (Templatedata sales,
+                                                              int index) =>
+                                                          areaColor[index %
+                                                              areaColor.length],
+                                                  xValueMapper:
+                                                      (Templatedata sales, _) =>
+                                                          sales.status,
+                                                  yValueMapper:
+                                                      (Templatedata sales, _) =>
+                                                          sales.count)
+                                            ]),
+                                      ],
                                     ),
                                   ),
-                                  SfCircularChart(
-                                      tooltipBehavior: _tooltipBehavior,
-                                      legend: const Legend(
-                                          isVisible: true,
-                                          position: LegendPosition.top,
-                                          overflowMode:
-                                              LegendItemOverflowMode.wrap),
-                                      series: <DoughnutSeries<Templatedata,
-                                          String>>[
-                                        DoughnutSeries<Templatedata, String>(
-                                            radius: '100',
-                                            dataSource: templatedata,
-                                            enableTooltip: true,
-                                            pointColorMapper:
-                                                (Templatedata sales,
-                                                        int index) =>
-                                                    areaColor[index %
-                                                        areaColor.length],
-                                            xValueMapper:
-                                                (Templatedata sales, _) =>
-                                                    sales.status,
-                                            yValueMapper:
-                                                (Templatedata sales, _) =>
-                                                    sales.count)
-                                      ]),
-                                ],
-                              ),
-                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
         ),
       );
     });
   }
-
-  // Widget _buildCircleIcon(IconData icon) {
-  //   return Container(
-  //     padding: const EdgeInsets.all(10),
-  //     decoration: const BoxDecoration(
-  //       color: Color(0xFF00A1E4),
-  //       shape: BoxShape.circle,
-  //     ),
-  //     child: Icon(icon, color: Colors.white, size: 24),
-  //   );
-  // }
 
   void getTemplateData() {
     Map<String, int> categoryCount = {};

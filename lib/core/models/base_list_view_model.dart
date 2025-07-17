@@ -35,6 +35,7 @@ class BaseListViewModel extends ChangeNotifier {
 
       log("Response Data get == $jsonObject ${url}   ${(jsonObject.runtimeType)}  ");
 
+      print("jsonObject.statusCode:::::::::::::::  ${jsonObject.statusCode}");
       if (jsonObject.data.runtimeType != List && jsonObject.statusCode == 402) {
         if (jsonObject.data['success'] == false) {
           return jsonObject.data['message'];
@@ -162,6 +163,13 @@ class BaseListViewModel extends ChangeNotifier {
       var r = await BaseService().post(url: url, body: body);
       log("response=>$r    api>>> ${url}");
 
+      print("jsonObject.statusCode:::::::::::::::  ${r.statusCode}");
+      if (r.statusCode == 402) {
+        if (r.data['success'] == false) {
+          return r.data['message'];
+        }
+      }
+
       print("r  is to return:::::::::::  ${r}");
       return r.data;
     } on UnauthorisedException {
@@ -177,6 +185,11 @@ class BaseListViewModel extends ChangeNotifier {
     try {
       print("bodyyy user update=>$body");
       var res = await BaseService().put(url: url, body: body);
+      if (res.statusCode == 402) {
+        if (res.data['success'] == false) {
+          return res.data['message'];
+        }
+      }
       return res.data;
     } on UnauthorisedException {
       await _refreshToken(url);
