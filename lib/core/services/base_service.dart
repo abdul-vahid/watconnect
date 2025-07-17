@@ -7,15 +7,15 @@ import '../../utils/function_lib.dart';
 
 class BaseService {
   static final APIService _apiService = APIService();
-  Future<dynamic> get({required String url}) async {
+  Future<ApiResponse> get({required String url}) async {
     var token = await AppUtils.getToken();
-    final responseJsonData = await _apiService.getResponse(url, token!);
+    ApiResponse responseJsonData = await _apiService.getResponse(url, token!);
     log("token:::::: ${token}");
-    log("responseiso=>$responseJsonData");
+    log("responseiso=>${responseJsonData}");
     return responseJsonData;
   }
 
-  Future<dynamic> post({required String url, required String body}) async {
+  Future<ApiResponse> post({required String url, required String body}) async {
     var token = await AppUtils.getToken();
     debugLog("Token a == $token");
     token ??= "";
@@ -26,7 +26,7 @@ class BaseService {
     return responseJsonData;
   }
 
-  Future<dynamic> delete({required String url, String? body}) async {
+  Future<ApiResponse> delete({required String url, String? body}) async {
     var token = await AppUtils.getToken();
     // debug("Token == $token");
     token ??= "";
@@ -37,7 +37,7 @@ class BaseService {
     return responseJsonData;
   }
 
-  Future<dynamic> put({required String url, required String body}) async {
+  Future<ApiResponse> put({required String url, required String body}) async {
     var token = await AppUtils.getToken();
     debug("Token == $token");
     token ??= "";

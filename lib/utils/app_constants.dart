@@ -83,11 +83,11 @@ abstract class AppConstants {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  static const String baseUrl = "https://sandbox.watconnect.com/swp";
-  // static const String baseUrl = "https://admin.watconnect.com/ibs";
+  // static const String baseUrl = "https://sandbox.watconnect.com/swp";
+  static const String baseUrl = "https://admin.watconnect.com/ibs";
 
-  static const String baseImgUrl = "https://sandbox.watconnect.com/";
-  // static const String baseImgUrl = "https://admin.watconnect.com/";
+  // static const String baseImgUrl = "https://sandbox.watconnect.com/";
+  static const String baseImgUrl = "https://admin.watconnect.com/";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -201,15 +201,15 @@ abstract class AppConstants {
 
   static const String getAllTagsApi = '/api/whatsapp/tag';
 
-  static const String getWalletApi = '${baseUrl}/api/whatsapp/wallet/balance';
+  static const String getWalletApi = '$baseUrl/api/whatsapp/wallet/balance';
 
   static const String getTransactionApi =
-      '${baseUrl}/api/whatsapp/wallet/transactions';
+      '$baseUrl/api/whatsapp/wallet/transactions';
 
   static const String checkWalletBalance =
-      '${baseUrl}/api/whatsapp/wallet/check_balance';
-  static const String debitWalletBalance = '${baseUrl}/api/whatsapp/wallet';
-  static const String templateRates = '${baseUrl}/api/whatsapp/template_rates';
+      '$baseUrl/api/whatsapp/wallet/check_balance';
+  static const String debitWalletBalance = '$baseUrl/api/whatsapp/wallet';
+  static const String templateRates = '$baseUrl/api/whatsapp/template_rates';
   static const String pinLead = "/api/leads/{leadId}/pin";
   static const String unpinLead = "/api/leads/{leadId}/unpin";
 

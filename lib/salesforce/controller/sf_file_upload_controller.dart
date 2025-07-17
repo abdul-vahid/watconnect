@@ -14,6 +14,7 @@ import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/network_Services.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
+// ignore: depend_on_referenced_packages
 import 'package:http_parser/http_parser.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 
@@ -26,14 +27,14 @@ class SfFileUploadController extends ChangeNotifier {
   String fileDocId = "";
   setFileDocId(String docId) {
     fileDocId = docId;
-    log("file upload doc id::::::   ${fileDocId}");
+    log("file upload doc id::::::   $fileDocId");
     notify();
   }
 
   String fileMimeType = "";
   setFileMimeType(String mimeType) {
     fileMimeType = mimeType;
-    log("file fileMimeType::::::   ${fileMimeType}");
+    log("file fileMimeType::::::   $fileMimeType");
     notify();
   }
 
@@ -49,8 +50,8 @@ class SfFileUploadController extends ChangeNotifier {
     setFileUploadLoader(false);
     setFileMimeType("");
     setFileDocId("");
-    print(
-        "reseting all:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+    // print(
+    //     "reseting all:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
     notify();
   }
 
@@ -58,8 +59,8 @@ class SfFileUploadController extends ChangeNotifier {
   setPublicUrlId(String title) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(SharedPrefsConstants.sfNodeTennatCode) ?? "";
-    filePubUrl = "${AppConstants.baseImgUrl}public/${token}/attachment/$title";
-    log("file upload public url::::::   ${filePubUrl}");
+    filePubUrl = "${AppConstants.baseImgUrl}public/$token/attachment/$title";
+    log("file upload public url::::::   $filePubUrl");
 
     notify();
   }
@@ -102,11 +103,11 @@ class SfFileUploadController extends ChangeNotifier {
         } else {
           var authToken = jsonResponse['authToken'];
           var refreshToken = jsonResponse['refreshToken'];
-          print('Success: $jsonResponse    authToken::   ${authToken}');
+          print('Success: $jsonResponse    authToken::   $authToken');
 
           Map<String, dynamic> decodedToken = JwtDecoder.decode(authToken);
           print(
-              "decodedToken::::::  ${decodedToken}      tenantcode     ${decodedToken['tenantcode'] ?? ""}");
+              "decodedToken::::::  $decodedToken      tenantcode     ${decodedToken['tenantcode'] ?? ""}");
 
           SharedPreferences.getInstance().then((prefs) async {
             await prefs.setString(
@@ -125,8 +126,8 @@ class SfFileUploadController extends ChangeNotifier {
             );
 
             final token =
-                await prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
-            log("get token after set ytoken:::::::::::    ${token}");
+                prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
+            log("get token after set ytoken:::::::::::    $token");
           });
 
           EasyLoading.dismiss();
@@ -164,7 +165,7 @@ class SfFileUploadController extends ChangeNotifier {
         body: body,
       );
       print(
-          "  refresh token api  ${refreshTokenUrl} response.statusCode:::::: ${response.statusCode}   ${response.body}");
+          "  refresh token api  $refreshTokenUrl response.statusCode:::::: ${response.statusCode}   ${response.body}");
       var jsonResponse = jsonDecode(response.body);
 
       var authToken = jsonResponse['authToken'];

@@ -1,13 +1,12 @@
+// ignore_for_file: use_build_context_synchronously, non_constant_identifier_names, avoid_print
+
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ui';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_sound/public/flutter_sound_player.dart';
-import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -87,10 +86,10 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     try {
       String? recordedPath = await _recorder.stopRecorder();
       if (recordedPath != null) {
-        File _audioFile = File(recordedPath);
+        File audioFile = File(recordedPath);
 
         ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
-        chatMsgCtrl.setSelectedFile(_audioFile);
+        chatMsgCtrl.setSelectedFile(audioFile);
 
         chatMsgCtrl.setRecordingStatus(false);
 
@@ -114,7 +113,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
       await _beginRecording();
       return;
     }
-    print("status:::::   ${status}");
+
     PermissionStatus status1 = await Permission.microphone.status;
     print('Microphone permission status: $status1');
 
@@ -143,22 +142,6 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
       EasyLoading.showToast("Microphone access is restricted or limited.");
       return;
     }
-  }
-
-  Future<void> _stopRecordingAndPreview() async {
-    // await _recorder.stopRecorder();
-    String? recordedPath = await _recorder.stopRecorder();
-
-    File _audioFile = File(recordedPath!);
-
-    ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
-    chatMsgCtrl.setSelectedFile(_audioFile);
-    chatMsgCtrl.setRecordingStatus(false);
-
-    print("_audioFile::::::::::::::    ${_audioFile}");
-
-    await Future.delayed(Duration(milliseconds: 300));
-    _showPreviewDialog();
   }
 
   Future<void> _beginRecording() async {
@@ -217,7 +200,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
       await audioPlayerForDuration.setFilePath(_audioPath!);
       audioDuration = audioPlayerForDuration.duration;
     } catch (e) {
-      print("Error getting audio duration: $e");
+      print("catching errer in show audio preview dialog:::::::::   $e");
     } finally {
       await audioPlayerForDuration.dispose();
     }
@@ -355,8 +338,6 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
 
   _pageBody() {
     return Consumer<ChatMessageController>(builder: (context, ref, child) {
-      print("ref.chatHistoryList:::::: ${ref.chatHistoryList.length}");
-
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (ref.msgDeleteList.isEmpty) {
           _scrollToBottom();
@@ -466,7 +447,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
             child) {
       return Column(
         children: [
-          Divider(),
+          const Divider(),
           if (chatMsgController.isRecording)
             const Row(
               children: [
@@ -581,7 +562,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 76, 162, 189),
+                    color: const Color.fromARGB(255, 76, 162, 189),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -589,10 +570,10 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                     padding: const EdgeInsets.all(10.0),
                     child: chatMsgController.sendMsgLoader == true ||
                             fileUploadController.fileUploadLoader == true
-                        ? Container(
+                        ? const SizedBox(
                             height: 25,
                             width: 25,
-                            child: const CircularProgressIndicator(
+                            child: CircularProgressIndicator(
                               color: Colors.white,
                             ),
                           )
@@ -608,7 +589,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   }
 
   sendMsg(String msg) {
-    print("we are calling this:::  ${msg}");
+    print("we are calling this:::  $msg");
     if (msg.trim().isEmpty) {
       EasyLoading.showToast("Type something.....",
           toastPosition: EasyLoadingToastPosition.center);
@@ -804,7 +785,6 @@ void TemplatebottomSheetShow(context, {bool isFromCamp = false}) {
               onChanged: (newVal) {
                 if (newVal != null) {
                   tempc.setSelectedTempName(newVal);
-                  print("NEW VAL::::: ${tempc.selectedTempName}");
                 }
               },
             ),
@@ -1086,14 +1066,12 @@ Future<void> sendChatTemp(
     context, List<TextEditingController> controllers) async {
   TemplateController tempc = Provider.of(context, listen: false);
   var templateData = tempc.selectedTemplate;
-  print("templateData:::::::::     ${templateData?.templateId ?? ""}");
   DashBoardController dbController = Provider.of(context, listen: false);
 
   var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
   var code = dbController.selectedContactInfo?.countryCode ?? "91";
-  String userNumer = "${code}${usrNumber}";
+  String userNumer = "$code$usrNumber";
   List<String> userInputs = controllers.map((e) => e.text.trim()).toList();
-  print("User Inputs: $userInputs");
   ChatMessageController chatMsgController = Provider.of(context, listen: false);
   SfFileUploadController sfFileUploadController =
       Provider.of(context, listen: false);
@@ -1173,7 +1151,7 @@ Future<void> pickMedia(BuildContext context, String type) async {
     );
 
     if (result != null) {
-      EasyLoading.showToast("${type} Picked Successfully");
+      EasyLoading.showToast("$type Picked Successfully");
       chatMsgController.setSelectedFile(File(result.files.first.path!));
     }
   }

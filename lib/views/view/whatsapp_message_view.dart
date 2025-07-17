@@ -149,9 +149,25 @@ class _ChatScreenState extends State<ChatScreen> {
   String leadId = "lead_456";
   String phNum = "+919876543210";
 
-  bool _listenerAdded = false;
+  // bool _listenerAdded = false;
+
+  markUnread() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+
+    Map<String, String>? bodydata = {"whatsapp_number": widget.wpnumber ?? ""};
+
+    var response = await Provider.of<UnreadCountVm>(context, listen: false)
+        .marksreadcountmsg(
+      leadnumber: widget.wpnumber ?? "",
+      number: number,
+      bodydata: bodydata,
+    );
+  }
+
   @override
   void initState() {
+    markUnread();
     WalletController walletController = Provider.of(context, listen: false);
     getWalletStatus();
     walletController.templateRatesApiCall();
@@ -3662,10 +3678,10 @@ class _ChatScreenState extends State<ChatScreen> {
       // print("Token: $token");
 
       socket = IO.io(
-        'https://sandbox.watconnect.com',
+        'https://admin.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
-            .setPath('/swp/socket.io')
+            .setPath('/ibs/socket.io')
             .setExtraHeaders({'Authorization': 'Bearer $token'})
             .build(),
       );

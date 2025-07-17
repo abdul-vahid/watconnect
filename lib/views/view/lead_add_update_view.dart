@@ -568,7 +568,8 @@ class _Forms extends State<LeadAddView> {
                               controller: dobController,
                               // initialValue: widget.model?.dob,
                               onSaved: (dt) {
-                                selectedDate = dt;
+                                // print()
+                                // selectedDate = dt;
                               },
                               onTap: () async {
                                 DateTime? pickedDate = await showDatePicker(
@@ -583,7 +584,7 @@ class _Forms extends State<LeadAddView> {
 
                                   dobController.text = formattedDate;
                                   selectedDate =
-                                      "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                                      "${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}";
 
                                   print(
                                       "selectedDate::::::::::: ${selectedDate}");
@@ -1201,7 +1202,6 @@ class _Forms extends State<LeadAddView> {
         "blocked": false
       };
 
-      print("lelelelelel;eelelle=>>>${body}");
       AppUtils.onLoading(context, "Updating, please wait...");
 
       print("addleadModel:::::::::::::::::::::::  ${body}");

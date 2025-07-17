@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +23,6 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
   void initState() {
     DashBoardController dasbController = Provider.of(context, listen: false);
     dasbController.recentChatListApiCall();
-    // TODO: implement initState
     super.initState();
   }
 
@@ -98,15 +99,13 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                       ));
                 }),
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: Text(
-                      "${dashBoardController.sfRecentChatList.length} Chats Available",
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+                  child: Text(
+                    "${dashBoardController.sfRecentChatList.length} Chats Available",
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -176,147 +175,144 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
     Color statusColor;
     statusColor = Colors.lightBlue.withOpacity(0.7);
 
-    return InkWell(
-      onTap: () {},
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border(
-            left: BorderSide(
-              color: statusColor,
-              width: 5,
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border(
+          left: BorderSide(
+            color: statusColor,
+            width: 5,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
-              spreadRadius: 3,
-              offset: const Offset(2, 4),
-            ),
-          ],
         ),
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 12),
-          child: InkWell(
-            onTap: () async {
-              showBlurOnlyLoaderDialog(context);
-              ChatMessageController cmProvider =
-                  Provider.of(context, listen: false);
-              DashBoardController dbProvider =
-                  Provider.of(context, listen: false);
+        boxShadow: [
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 5,
+            spreadRadius: 3,
+            offset: const Offset(2, 4),
+          ),
+        ],
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 12),
+        child: InkWell(
+          onTap: () async {
+            showBlurOnlyLoaderDialog(context);
+            ChatMessageController cmProvider =
+                Provider.of(context, listen: false);
+            DashBoardController dbProvider =
+                Provider.of(context, listen: false);
 
-              dbProvider.setSelectedContaactInfo(drawerListItem);
-              await cmProvider
-                  .messageHistoryApiCall(
-                userNumber: phNum,
-              )
-                  .then((onValue) {
-                Navigator.pop(context);
-                dbProvider.resentUnreadCountApiCall(phNum);
-              });
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const SfMessageChatScreen()));
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Avatar
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: AppColor.navBarIconColor,
-                    child: Text(
-                      drawerListItem.name?.isNotEmpty == true
-                          ? drawerListItem.name![0].toUpperCase()
-                          : '?',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+            dbProvider.setSelectedContaactInfo(drawerListItem);
+            await cmProvider
+                .messageHistoryApiCall(
+              userNumber: phNum,
+            )
+                .then((onValue) {
+              Navigator.pop(context);
+              dbProvider.resentUnreadCountApiCall(phNum);
+            });
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const SfMessageChatScreen()));
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Avatar
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: AppColor.navBarIconColor,
+                  child: Text(
+                    drawerListItem.name?.isNotEmpty == true
+                        ? drawerListItem.name![0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                ),
+                const SizedBox(width: 12),
 
-                  // Main Content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
+                // Main Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              drawerListItem.name ?? "Unknown",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          if (drawerListItem.unreadCount != null &&
+                              drawerListItem.unreadCount! > 0)
+                            Container(
+                              margin: const EdgeInsets.only(left: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                               child: Text(
-                                drawerListItem.name ?? "Unknown",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                drawerListItem.unreadCount.toString(),
                                 style: const TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 12,
+                                  color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                            if (drawerListItem.unreadCount != null &&
-                                drawerListItem.unreadCount! > 0)
-                              Container(
-                                margin: const EdgeInsets.only(left: 8),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  drawerListItem.unreadCount.toString(),
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              drawerListItem.lastMsg ?? "",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey,
                               ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Expanded(
+                            ),
+                          ),
+                          // const Spacer(),
+                          if (drawerListItem.lastMsgTime != 0)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
                               child: Text(
-                                drawerListItem.lastMsg ?? "",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                formatDateTime(drawerListItem.lastMsgTime ?? 0),
                                 style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 11,
                                   color: Colors.grey,
                                 ),
                               ),
                             ),
-                            // const Spacer(),
-                            if (drawerListItem.lastMsgTime != 0)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Text(
-                                  formatDateTime(
-                                      drawerListItem.lastMsgTime ?? 0),
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

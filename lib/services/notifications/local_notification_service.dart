@@ -35,9 +35,10 @@ class LocalNotificationService {
       initSettings,
       onDidReceiveNotificationResponse: (details) async {
         debugPrint("Notification tapped");
+        // var dc = jsonDecode(details.payload!);
         debugPrint(
             "Payload:   ${details}  ${details.data} ${details.payload}   ${details.payload.runtimeType} ");
-        debugPrint("Action ID: ${details.actionId}   ${details.data}");
+        debugPrint("Action ID: ${details.actionId}    ${details.data}");
         debugPrint("Notification ID: ${details.id}");
 
         if (details.payload == null || details.payload!.isEmpty) {

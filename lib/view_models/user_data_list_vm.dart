@@ -61,7 +61,7 @@ class UserDataListViewModel extends BaseListViewModel {
     try {
       var result = await apiService.deleteResponse(url, token);
 
-      if (result != null && result is Map && result['status'] == 'success') {
+      if (result != null && result is Map) {
         print('User successfully deleted');
       } else {
         print('Failed to delete user');

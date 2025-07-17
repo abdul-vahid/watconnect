@@ -66,10 +66,10 @@ class LeadListViewModel extends BaseListViewModel {
   }
 
   Future<dynamic> updatelead(Map addLeadBody, String leadId) async {
-    print("working.....");
+    print("working....            leadid${leadId}.");
     String url = AppUtils.getUrl(AppConstants.leadAPIPath);
     String apiUrl = "${url}/${leadId}";
-    print("urll=>$url");
+    print("apiUrl=>$apiUrl");
     String jsonString = jsonEncode(addLeadBody);
     var result = await put(url: apiUrl, body: jsonString);
     print("result=>$result");

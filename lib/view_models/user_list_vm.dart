@@ -237,30 +237,30 @@ class UserListViewModel extends BaseListViewModel {
     }
   }
 
-  Future<dynamic> login(String username, String password, String tcode) async {
-    //final result = await UserService().login(username, password);
-    debug("login");
-    String url = AppUtils.getUrl(AppConstants.loginAPIPath);
-    Map<String, String> requestData = {
-      'email': username,
-      'password': password,
-      'tcode': tcode
-    };
+  // Future<dynamic> login(String username, String password, String tcode) async {
+  //   //final result = await UserService().login(username, password);
+  //   debug("login");
+  //   String url = AppUtils.getUrl(AppConstants.loginAPIPath);
+  //   Map<String, String> requestData = {
+  //     'email': username,
+  //     'password': password,
+  //     'tcode': tcode
+  //   };
 
-    String body = jsonEncode(requestData);
-    debug('body==$body');
+  //   String body = jsonEncode(requestData);
+  //   debug('body==$body');
 
-    var str = await postData(url: url, body: body, baseModel: UserModel());
-    debug(viewModels.length);
-    print("str::: ${str}");
+  //   var str = await postData(url: url, body: body, baseModel: UserModel());
+  //   debug(viewModels.length);
+  //   print("str::: ${str}");
 
-    if (viewModels.isEmpty) {
-      print("str as lsit::: ${[str]}");
-      return str.toString();
-    }
+  //   if (viewModels.isEmpty) {
+  //     print("str as lsit::: ${[str]}");
+  //     return str.toString();
+  //   }
 
-    return viewModels;
-  }
+  //   return viewModels;
+  // }
 }
 
 Future<String> getDeviceId() async {

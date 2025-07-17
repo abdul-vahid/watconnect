@@ -45,7 +45,7 @@ class _SfHomeScreenState extends State<SfHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      drawer: SfAppDrawerWidget(),
+      drawer: const SfAppDrawerWidget(),
       appBar: AppBar(
         iconTheme:
             const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),

@@ -32,21 +32,20 @@ class BaseListViewModel extends ChangeNotifier {
 
     try {
       final jsonObject = await BaseService().get(url: url);
-      // await _refreshToken(url, jsonKey);
-      log("Response Data get == $jsonObject ${url}   ${(jsonObject.runtimeType)}  ");
-      // if(jsonObject.runtimeType==)
 
-      if (jsonObject.runtimeType != List<dynamic>) {
-        if (jsonObject['success'] == false) {
-          return jsonObject['message'];
+      log("Response Data get == $jsonObject ${url}   ${(jsonObject.runtimeType)}  ");
+
+      if (jsonObject.data.runtimeType != List && jsonObject.statusCode == 402) {
+        if (jsonObject.data['success'] == false) {
+          return jsonObject.data['message'];
         }
       }
 
-      print("jsonObject is! List:::: ${jsonObject is! List}");
-      var records = jsonObject;
-      if (jsonObject is! List) {
+      print("jsonObject is! List:::: ${jsonObject.data is! List}");
+      var records = jsonObject.data;
+      if (jsonObject.data is! List) {
         debug("not an array");
-        records = [jsonObject];
+        records = [jsonObject.data];
         // return records;
       }
       print(
@@ -69,9 +68,9 @@ class BaseListViewModel extends ChangeNotifier {
       await _refreshToken(url);
 
       final jsonObjectRequest = await BaseService().get(url: url);
-      var records = jsonObjectRequest;
-      if (jsonObjectRequest is! List) {
-        records = [jsonObjectRequest];
+      var records = jsonObjectRequest.data;
+      if (jsonObjectRequest.data is! List) {
+        records = [jsonObjectRequest.data];
       }
       debug("Response Data === $records");
       //AppUtils.printDebug("Response Data === $records");
@@ -162,15 +161,9 @@ class BaseListViewModel extends ChangeNotifier {
     try {
       var r = await BaseService().post(url: url, body: body);
       log("response=>$r    api>>> ${url}");
-      if (showToast) {
-        if (r is Map<String, dynamic> &&
-            r.containsKey('success') &&
-            r['success'] == false) {
-          EasyLoading.showToast(r['message']);
-        }
-      }
+
       print("r  is to return:::::::::::  ${r}");
-      return r;
+      return r.data;
     } on UnauthorisedException {
       await _refreshToken(url);
       return await BaseService().post(url: url, body: body);
@@ -183,7 +176,8 @@ class BaseListViewModel extends ChangeNotifier {
       String jsonKey = "records"}) async {
     try {
       print("bodyyy user update=>$body");
-      return await BaseService().put(url: url, body: body);
+      var res = await BaseService().put(url: url, body: body);
+      return res.data;
     } on UnauthorisedException {
       await _refreshToken(url);
       return await BaseService().put(url: url, body: body);
@@ -193,61 +187,62 @@ class BaseListViewModel extends ChangeNotifier {
   Future<dynamic> delete({required String url, String? body}) async {
     try {
       print("bdoodododododoy=>$body");
-      return await BaseService().delete(url: url, body: body);
+      var res = await BaseService().delete(url: url, body: body);
+      return res.data;
     } on UnauthorisedException {
       await _refreshToken(url);
       return await BaseService().delete(url: url, body: body);
     }
   }
 
-  Future<String> postData(
-      {required BaseModel baseModel,
-      required String url,
-      required String body,
-      String jsonKey = "records"}) async {
-    try {
-      debug("postData");
-      final jsonObject = await BaseService().post(url: url, body: body);
-      print(
-          "responseJsonData:  ${jsonObject['errors']}  ${jsonObject['authToken']}");
+  // Future<String> postData(
+  //     {required BaseModel baseModel,
+  //     required String url,
+  //     required String body,
+  //     String jsonKey = "records"}) async {
+  //   try {
+  //     debug("postData");
+  //     final jsonObject = await BaseService().post(url: url, body: body);
+  //     print(
+  //         "responseJsonData:  ${jsonObject['errors']}  ${jsonObject['authToken']}");
 
-      if (jsonObject['success'] == false) {
-        return jsonObject['errors'].toString();
-      }
+  //     if (jsonObject['success'] == false) {
+  //       return jsonObject['errors'].toString();
+  //     }
 
-      var records = jsonObject is List ? jsonObject : [jsonObject];
+  //     var records = jsonObject is List ? jsonObject : [jsonObject];
 
-      var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
-      viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
-      status = "Completed";
-    } on UnauthorisedException {
-      await _refreshToken(url);
-      final jsonObject = await BaseService().post(url: url, body: body);
-      print("jsonObject['errors'] error::::::${jsonObject['errors']}");
-      if (jsonObject['errors'] != null) {
-        print("jsonObject['errors']::::::${jsonObject['errors'].toString()}");
-        return jsonObject['errors'].toString();
-      }
+  //     var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
+  //     viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
+  //     status = "Completed";
+  //   } on UnauthorisedException {
+  //     await _refreshToken(url);
+  //     final jsonObject = await BaseService().post(url: url, body: body);
+  //     print("jsonObject['errors'] error::::::${jsonObject['errors']}");
+  //     if (jsonObject['errors'] != null) {
+  //       print("jsonObject['errors']::::::${jsonObject['errors'].toString()}");
+  //       return jsonObject['errors'].toString();
+  //     }
 
-      final records = jsonObject[jsonKey];
-      var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
-      viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
-      status = "Completed";
-    } on AppException catch (error) {
-      status = "Error";
-      exception = error;
-      viewModels.add(BaseViewModel(model: BaseModel()));
-    } on Exception catch (e) {
-      exception = e;
-      status = "Error";
-      viewModels.add(BaseViewModel(model: BaseModel()));
-    } catch (e) {
-      print("error:::here  ${e}");
-      exception = Exception(e.toString());
-      status = "Error";
-    }
+  //     final records = jsonObject[jsonKey];
+  //     var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
+  //     viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
+  //     status = "Completed";
+  //   } on AppException catch (error) {
+  //     status = "Error";
+  //     exception = error;
+  //     viewModels.add(BaseViewModel(model: BaseModel()));
+  //   } on Exception catch (e) {
+  //     exception = e;
+  //     status = "Error";
+  //     viewModels.add(BaseViewModel(model: BaseModel()));
+  //   } catch (e) {
+  //     print("error:::here  ${e}");
+  //     exception = Exception(e.toString());
+  //     status = "Error";
+  //   }
 
-    notifyListeners();
-    return "";
-  }
+  //   notifyListeners();
+  //   return "";
+  // }
 }

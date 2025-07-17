@@ -85,7 +85,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   Future<void> _getUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
-
+    unreadList = [];
     if (!mounted) return;
     Provider.of<LeadListViewModel>(context, listen: false).fetch();
     await Provider.of<UnreadCountVm>(context, listen: false)
@@ -95,6 +95,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     for (var unreadModel in unreadCountVm?.viewModels ?? []) {
       unreadMsgModel = unreadModel.model as UnreadMsgModel;
     }
+    print(" unreadMsgModel.records::::::::::   ${unreadMsgModel.records}");
     unreadList = unreadMsgModel.records ?? [];
     setState(() {});
   }
@@ -769,7 +770,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                                   height: MediaQuery.of(context)
                                                           .size
                                                           .height *
-                                                      .45,
+                                                      .55,
                                                   child: Column(
                                                     children: [
                                                       Padding(
@@ -1303,28 +1304,35 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     List tempLead = [];
     allLeads.clear();
     allLeads = [];
-
     print(
-        "tempLeadModelList:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::    ${tempLeadModelList}");
+        "tempLeadModelList:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::    ${tempLeadModelList.length}");
     tempLead = tempLeadModelList;
     if (selectTagFilterList.isEmpty) {
       filteredLeads = tempLead;
-    } else if (selOption == "AND") {
-      filteredLeads = tempLead.where((lead) {
-        final leadTagNames = lead.tagNames.map((tag) => tag.name).toSet();
-        return leadTagNames.every(
-          (tagName) => selectTagFilterList.contains(tagName),
-        );
-      }).toList();
-    } else if (selOption == "OR") {
-      filteredLeads = tempLead.where((lead) {
-        final leadTagNames = lead.tagNames.map((tag) => tag.name).toSet();
-        return leadTagNames.any(
-          (tagName) => selectTagFilterList.contains(tagName),
-        );
-      }).toList();
-    }
+    } else {
+      if (selOption == "AND") {
+        print("selectTagFilterList::::::::::::::  ${selectTagFilterList}");
+        filteredLeads = tempLead.where((lead) {
+          final leadTagNames = lead.tagNames.map((tag) => tag.name).toSet();
+          print("leadTagNames::::::AND::::::  ${leadTagNames}");
+          return selectTagFilterList.every(
+            (tagName) => leadTagNames.contains(tagName),
+          );
+        }).toList();
+      } else if (selOption == "OR") {
+        filteredLeads = tempLead.where((lead) {
+          final leadTagNames = lead.tagNames
+              .map((tag) => tag.name.toLowerCase())
+              .toSet(); // normalize to lowercase
+          print("leadTagNames::::::OR::::::  ${leadTagNames}");
 
+          return selectTagFilterList
+              .map((e) => e.toLowerCase())
+              .any((tagName) => leadTagNames.contains(tagName));
+        }).toList();
+      }
+    }
+    print(":::::::::::   ${filteredLeads.length} ");
     setState(() {
       allLeads = filteredLeads;
     });

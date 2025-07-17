@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
@@ -17,7 +19,6 @@ class SfNotificationScreen extends StatefulWidget {
 class _SfNotificationScreenState extends State<SfNotificationScreen> {
   @override
   void initState() {
-    print("calling api");
     DashBoardController dasbController = Provider.of(context, listen: false);
     dasbController.sfNotificationHistoryApiCall();
     super.initState();
@@ -179,7 +180,7 @@ class _SfNotificationScreenState extends State<SfNotificationScreen> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => SfMessageChatScreen()));
+                      builder: (context) => const SfMessageChatScreen()));
             },
             child: Row(
               children: [
