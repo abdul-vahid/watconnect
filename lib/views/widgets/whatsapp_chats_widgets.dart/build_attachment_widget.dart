@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -10,7 +12,7 @@ import 'package:whatsapp/views/view/view_fullscreen_img.dart';
 
 Widget buildAttachmentWidget(String url, BuildContext context) {
   String fileType = url.split('.').last.toLowerCase();
-  print("printing:: file type::: ${fileType}");
+  print("printing:: file type::: $fileType");
   switch (fileType) {
     case 'pdf':
       return InkWell(
@@ -93,7 +95,7 @@ void openDocument(BuildContext context, String url) async {
   final filename = url.split('/').last;
   final dir = await getApplicationDocumentsDirectory();
   final file = File('${dir.path}/$filename');
-  print("filename:::: ${filename}   ${dir}");
+  print("filename:::: $filename   $dir");
   // Show loading dialog (optional)
   showDialog(
     context: context,

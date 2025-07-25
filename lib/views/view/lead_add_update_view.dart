@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use, use_build_context_synchronously, prefer_typing_uninitialized_variables, must_be_immutable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
@@ -24,6 +26,8 @@ import 'lead_list_view.dart';
 List userData = [];
 Map userMap = {};
 
+// ignore: duplicate_ignore
+// ignore: must_be_immutable
 class LeadAddView extends StatefulWidget {
   LeadModel? model;
   LeadAddView({Key? key, this.model}) : super(key: key);
@@ -34,21 +38,21 @@ class LeadAddView extends StatefulWidget {
 
 class _Forms extends State<LeadAddView> {
   var baseViewModels;
-  final List<String> _salutations = [
-    "Mr",
-    "Mrs",
-    "Ms",
-    "Dr",
-    "Prof",
-  ];
-  final List<String> _titles = [
-    "CEO",
-    "Director",
-    "Manager",
-    "Owner",
-    "Partner",
-    "Executive",
-  ];
+  // final List<String> _salutations = [
+  //   "Mr",
+  //   "Mrs",
+  //   "Ms",
+  //   "Dr",
+  //   "Prof",
+  // ];
+  // final List<String> _titles = [
+  //   "CEO",
+  //   "Director",
+  //   "Manager",
+  //   "Owner",
+  //   "Partner",
+  //   "Executive",
+  // ];
 
   final List<String> _leadsources = [
     "Phone",
@@ -70,50 +74,50 @@ class _Forms extends State<LeadAddView> {
     "Closed - Not Converted",
   ];
 
-  final List<String> _industries = [
-    "Agriculture",
-    "Apparel",
-    "Banking",
-    "Bio Technology",
-    "Chemical",
-    "Communications",
-    "Construction",
-    "Consulting",
-    "Education",
-    "Electronics",
-    "Energy",
-    "Engineering",
-    "EnterTainment",
-    "Finance",
-    "Food and Beverage",
-    "Goverment",
-    "Healthcare",
-    "Hospitality",
-    "Insurance",
-    "Legal",
-    "Machinary",
-    "Manufacturing",
-    "Media",
-    "Non Profit(NGO)",
-    "Recreation",
-    "Retail",
-    "Shipping",
-    "Technology",
-    "Telecommunications",
-    "Transportaion",
-    "Utilities",
-    "Other",
-  ];
-  final List<String> _payments = [
-    "Subscription",
-    "One Time",
-  ];
-  final List<String> _paymentterms = [
-    "12",
-    "24 Month",
-    "One Time",
-    "One Time with Yearly Renewal"
-  ];
+  // final List<String> _industries = [
+  // "Agriculture",
+  // "Apparel",
+  // "Banking",
+  // "Bio Technology",
+  // "Chemical",
+  // "Communications",
+  // "Construction",
+  // "Consulting",
+  // "Education",
+  // "Electronics",
+  // "Energy",
+  // "Engineering",
+  // "EnterTainment",
+  // "Finance",
+  // "Food and Beverage",
+  // "Goverment",
+  // "Healthcare",
+  // "Hospitality",
+  // "Insurance",
+  //   "Legal",
+  //   "Machinary",
+  //   "Manufacturing",
+  //   "Media",
+  //   "Non Profit(NGO)",
+  //   "Recreation",
+  //   "Retail",
+  //   "Shipping",
+  //   "Technology",
+  //   "Telecommunications",
+  //   "Transportaion",
+  //   "Utilities",
+  //   "Other",
+  // ];
+  // final List<String> _payments = [
+  //   "Subscription",
+  //   "One Time",
+  // ];
+  // final List<String> _paymentterms = [
+  //   "12",
+  //   "24 Month",
+  //   "One Time",
+  //   "One Time with Yearly Renewal"
+  // ];
 
   final List<Map<String, String>> _countrycode = [
     {"country": "India", "country_code": "+91"},
@@ -267,7 +271,7 @@ class _Forms extends State<LeadAddView> {
   Map<String, String> code = {};
   bool isEdit = false;
   String? selectedCountry;
-  TextEditingController dobController = new TextEditingController();
+  TextEditingController dobController = TextEditingController();
   String? selectedDate;
   bool hasTags = false;
   String? leadStatus;
@@ -306,7 +310,7 @@ class _Forms extends State<LeadAddView> {
       isEdit = true;
     }
 
-    print("leadsource::::::::::::    ${_leadsource}");
+    print("leadsource::::::::::::    $_leadsource");
 
     if (isEdit) {
       print(
@@ -325,7 +329,7 @@ class _Forms extends State<LeadAddView> {
       _leadsource =
           widget.model!.leadsource!.isEmpty ? null : widget.model!.leadsource;
       print(
-          "widget.model?.address ::::::::::: ${widget.model?.address}  ${_leadsource}");
+          "widget.model?.address ::::::::::: ${widget.model?.address}  $_leadsource");
       _selectedCountry = widget.model?.address ?? "";
       _asignStaff = widget.model?.ownername ?? "";
       // userId = widget.model?.ownername??"";
@@ -342,30 +346,30 @@ class _Forms extends State<LeadAddView> {
   String? _lastname;
   String? description;
   String? _email;
-  String? _phone;
-  String? _company;
+  // String? _phone;
+  // String? _company;
   // ignore: unused_field
   String? _asignStaff;
   String? _leadsource;
   String? _leadstatus;
   // String? _rating;
-  String? _salutation;
+  // String? _salutation;
   // String? _fax;
   // ignore: unused_field
   String? _payment;
   // ignore: unused_field
   String? _paymentterm;
-  String? _industry;
-  String? _title;
-  String? _street;
-  String? _city;
+  // String? _industry;
+  // String? _title;
+  // String? _street;
+  // String? _city;
   GetUserViewModel? userVm;
   String? name;
   // ignore: unused_field
   String? _amount;
-  String? _zipcode;
+  // String? _zipcode;
   String? _description;
-  String? _selectedState;
+  // String? _selectedState;
   String? _selectedCountry;
   String? _whatsapnumber;
   String? defaultSel;
@@ -391,7 +395,7 @@ class _Forms extends State<LeadAddView> {
       name = model.managername;
     }
 
-    print("name::::: ${name}   ${userData}");
+    print("name::::: $name   $userData");
     if (userData.contains(name)) {
       defaultSel = name;
       setState(() {});
@@ -519,7 +523,7 @@ class _Forms extends State<LeadAddView> {
                           children: [
                             const Text(
                               'First Name',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                             const SizedBox(height: 5),
@@ -536,11 +540,11 @@ class _Forms extends State<LeadAddView> {
                                 return null;
                               },
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
-                            Text('Last Name',
-                                style: const TextStyle(
+                            const Text('Last Name',
+                                style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
                             AppUtils.getTextFormField(
@@ -560,7 +564,7 @@ class _Forms extends State<LeadAddView> {
                             const SizedBox(height: 10),
 
                             const Text('Date of Birth',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
                             AppUtils.getTextFormField(
@@ -587,7 +591,7 @@ class _Forms extends State<LeadAddView> {
                                       "${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}";
 
                                   print(
-                                      "selectedDate::::::::::: ${selectedDate}");
+                                      "selectedDate::::::::::: $selectedDate");
                                 }
                               },
                               // validator: (value) {
@@ -603,7 +607,7 @@ class _Forms extends State<LeadAddView> {
                             ),
 
                             const Text('Country Code',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
 
@@ -640,7 +644,7 @@ class _Forms extends State<LeadAddView> {
                             ),
 
                             const Text('Phone',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
 
@@ -648,9 +652,9 @@ class _Forms extends State<LeadAddView> {
                               'Enter phone number',
                               initialValue: widget.model?.whatsappNumber,
                               onSaved: (wpnumber) {
-                                _whatsapnumber = '${wpnumber}';
+                                _whatsapnumber = '$wpnumber';
                                 print(
-                                    "sdfdsfssdfjhsdkfjskdjfskdjsdk4${_whatsapnumber}");
+                                    "sdfdsfssdfjhsdkfjskdjfskdjsdk4$_whatsapnumber");
                               },
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
@@ -663,7 +667,7 @@ class _Forms extends State<LeadAddView> {
                             const SizedBox(height: 10),
                             // Email Field
                             const Text('Email',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
                             AppUtils.getTextFormField(
@@ -677,7 +681,7 @@ class _Forms extends State<LeadAddView> {
                             const SizedBox(height: 10),
                             // Email Field
                             const Text('Lead Description',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
                             AppUtils.getTextFormField(
@@ -691,7 +695,7 @@ class _Forms extends State<LeadAddView> {
 
                             const SizedBox(height: 10),
                             const Text('Lead Status',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 10),
                             AppUtils.getDropdown(
@@ -709,7 +713,7 @@ class _Forms extends State<LeadAddView> {
                             ),
                             const SizedBox(height: 10),
                             const Text('Assigned User',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 10),
                             AppUtils.getDropdown(
@@ -763,11 +767,13 @@ class _Forms extends State<LeadAddView> {
                           children: [
                             hasTags
                                 ? const Text('Tags',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14))
-                                : SizedBox(),
-                            hasTags ? const SizedBox(height: 5) : SizedBox(),
+                                : const SizedBox(),
+                            hasTags
+                                ? const SizedBox(height: 5)
+                                : const SizedBox(),
                             hasTags
                                 ? MultiSelectDialogField<TagRecord>(
                                     dialogWidth:
@@ -810,7 +816,7 @@ class _Forms extends State<LeadAddView> {
                                           "Selected tags: $selectedTagList");
                                     },
                                   )
-                                : SizedBox(),
+                                : const SizedBox(),
                             hasTags
                                 ? Wrap(
                                     spacing: 8.0,
@@ -831,9 +837,9 @@ class _Forms extends State<LeadAddView> {
                                       );
                                     }).toList(),
                                   )
-                                : SizedBox(),
+                                : const SizedBox(),
                             const Text('Lead Source',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(height: 5),
                             AppUtils.getDropdown(
@@ -882,7 +888,7 @@ class _Forms extends State<LeadAddView> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text('Address',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 14)),
                             const SizedBox(
                               height: 5,
@@ -1017,11 +1023,8 @@ class _Forms extends State<LeadAddView> {
   }
 
   void onButtonPressed() {
-    print("_leadstatus::: ${_leadstatus}    ${selectedTagList}");
+    print("_leadstatus::: $_leadstatus    $selectedTagList");
 
-    // return;
-
-    // ignore: prefer_typing_uninitialized_variables
     var userId;
     if (_addleadFormKey.currentState!.validate()) {
       _addleadFormKey.currentState!.save();
@@ -1063,7 +1066,7 @@ class _Forms extends State<LeadAddView> {
 
       // AppUtils.onLoading(context, "Saving, please wait...");
 
-      print("addleadModel:::::::::::::::::::::::  ${body}");
+      print("addleadModel:::::::::::::::::::::::  $body");
 
       _getleadData?.addlead(body).then((value) {
         debug("value#### $value");
@@ -1149,7 +1152,7 @@ class _Forms extends State<LeadAddView> {
   // }
 
   Future<void> updateData() async {
-    print("_leadstatus:::${_leadstatus}");
+    print("_leadstatus:::$_leadstatus");
     var userId;
     userId = userMap.keys
         .firstWhere((k) => userMap[k] == _asignStaff, orElse: () => null);
@@ -1158,31 +1161,6 @@ class _Forms extends State<LeadAddView> {
 
       var id = widget.model?.id;
       debug('idmodel====$id');
-      LeadModel leadModel = LeadModel(
-        id: id,
-        firstname: _firstname?.trim(),
-        lastname: _lastname?.trim(),
-        email: _email?.trim(),
-        whatsappNumber: _whatsapnumber?.trim(),
-        // city: _city?.trim(),
-        // company: _company?.trim(),
-        leadsource: _leadsource,
-        leadstatus: _leadstatus,
-        // salutation: _salutation,
-        // industry: _industry,
-        // title: _title?.trim(),
-        ownername: _asignStaff,
-        ownerid: userId,
-        // paymentmodel: _payment,
-        // paymentterms: _paymentterm,
-        // street: _street?.trim(),
-        // state: _selectedState?.trim(),
-        // country: _selectedCountry,
-        countryCode: selectedCountry,
-        // zipcode: _zipcode?.trim(),
-        // description: _description?.trim(),
-        // amount: _amount,
-      );
 
       Map body = {
         "id": widget.model?.id,
@@ -1204,7 +1182,7 @@ class _Forms extends State<LeadAddView> {
 
       AppUtils.onLoading(context, "Updating, please wait...");
 
-      print("addleadModel:::::::::::::::::::::::  ${body}");
+      print("addleadModel:::::::::::::::::::::::  $body");
 
       _getleadData?.updatelead(body, widget.model?.id ?? "").then((value) {
         debug("value#### $value");
@@ -1230,7 +1208,7 @@ class _Forms extends State<LeadAddView> {
       }).catchError((error, stackTrace) {
         Navigator.pop(context);
         List<String> errorMessages = AppUtils.getErrorMessages(error);
-        print("errorMessages:::: ${errorMessages}");
+        print("errorMessages:::: $errorMessages");
         AppUtils.getAlert(context, errorMessages, title: "Error Alert");
       });
 
@@ -1289,17 +1267,17 @@ class _Forms extends State<LeadAddView> {
   Future<void> getWalletStatus() async {
     final prefs = await SharedPreferences.getInstance();
 
-    modules = await prefs
-            .getStringList(SharedPrefsConstants.userAvailableMoulesKey) ??
-        [];
+    modules =
+        prefs.getStringList(SharedPrefsConstants.userAvailableMoulesKey) ?? [];
 
     hasTags =
         modules.contains("Tag") || modules.contains("Tags") ? true : false;
-    print("hasWallet::::::::::::::::::::::::    ${hasTags}");
+    print("hasWallet::::::::::::::::::::::::    $hasTags");
     setState(() {});
   }
 }
 
+// ignore: camel_case_types
 class detailsHeading extends StatelessWidget {
   String title;
   detailsHeading({super.key, required this.title});
@@ -1317,11 +1295,11 @@ class detailsHeading extends StatelessWidget {
       height: 40,
       width: double.infinity,
       child: Padding(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         child: Text(
           title,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
               fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
         ),
       ),

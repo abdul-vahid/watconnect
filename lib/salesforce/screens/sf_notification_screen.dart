@@ -2,11 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
-import 'package:whatsapp/salesforce/screens/confige_listing_screen.dart';
-import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
+
 import 'package:whatsapp/utils/app_color.dart';
 
 class SfNotificationScreen extends StatefulWidget {
@@ -131,8 +129,8 @@ class _SfNotificationScreenState extends State<SfNotificationScreen> {
   }
 
   renctChatListItem(SfDrawerItemModel drawerListItem) {
-    String phNum =
-        "${drawerListItem.countryCode ?? ""}${drawerListItem.whatsappNumber ?? ""}";
+    // String phNum =
+    //     "${drawerListItem.countryCode ?? ""}${drawerListItem.whatsappNumber ?? ""}";
     Color statusColor;
     statusColor = Colors.lightBlue.withOpacity(0.7);
 
@@ -162,25 +160,27 @@ class _SfNotificationScreenState extends State<SfNotificationScreen> {
           padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
           child: InkWell(
             onTap: () async {
-              showBlurOnlyLoaderDialog(context);
-              ChatMessageController cmProvider =
-                  Provider.of(context, listen: false);
-              DashBoardController dbProvider =
-                  Provider.of(context, listen: false);
+              // showBlurOnlyLoaderDialog(context);
+              // ChatMessageController cmProvider =
+              //     Provider.of(context, listen: false);
+              // DashBoardController dbProvider =
+              //     Provider.of(context, listen: false);
 
-              dbProvider.setSelectedContaactInfo(drawerListItem);
-              await cmProvider
-                  .messageHistoryApiCall(
-                userNumber: phNum,
-              )
-                  .then((onValue) {
-                Navigator.pop(context);
-                dbProvider.resentUnreadCountApiCall(phNum, isFromChat: false);
-              });
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const SfMessageChatScreen()));
+              // dbProvider.setSelectedContaactInfo(drawerListItem);
+              // await cmProvider
+              //     .messageHistoryApiCall(
+              //   userNumber: phNum,
+              // )
+              //     .then((onValue) {
+              //   Navigator.pop(context);
+              //   dbProvider.resentUnreadCountApiCall(phNum, isFromChat: false);
+              // });
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) => SfMessageChatScreen(
+              //             // pinnedLeadsList: ,
+              //             )));
             },
             child: Row(
               children: [

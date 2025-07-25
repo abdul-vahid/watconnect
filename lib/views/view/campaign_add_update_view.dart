@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously, deprecated_member_use, prefer_typing_uninitialized_variables, unused_field, non_constant_identifier_names, no_leading_underscores_for_local_identifiers, unused_local_variable
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -53,7 +55,7 @@ class _Forms extends State<CampaignAddUpdateView> {
   GroupsViewModel? groupsVM;
   List<TextEditingController> controllers = [];
   TextEditingController fileNameController = TextEditingController();
-  TextEditingController _templateController = TextEditingController();
+  // TextEditingController _templateController = TextEditingController();
   late MessageViewModel messageViewModel;
   bool isEdit = false;
   int count = 0;
@@ -144,7 +146,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           .toList();
 
       print(
-          "selectedGroupsName  ids ::: ${selectedGroupsName}  ${selectedGroupIds}");
+          "selectedGroupsName  ids ::: $selectedGroupsName  $selectedGroupIds");
     }
 
     if (widget.model != null) {
@@ -191,9 +193,9 @@ class _Forms extends State<CampaignAddUpdateView> {
   // Map<String, dynamic> templateName1 = {};
   Set<Map<String, String>> groupsNameSet = {};
   String? _name;
-  String? _templeteName;
+  // String? _templeteName;
   String? _type;
-  String? _groupName;
+  // String? _groupName;
   String? _description;
 
   final GlobalKey<FormState> _addleadFormKey = GlobalKey<FormState>();
@@ -239,7 +241,7 @@ class _Forms extends State<CampaignAddUpdateView> {
         }
       }
       allGroupDetails = groupsNameSet.toList();
-      print("allGroupDetails::: ::: allGroupDetails:::::: ${allGroupDetails}");
+      print("allGroupDetails::: ::: allGroupDetails:::::: $allGroupDetails");
     }
 
     setState(() {
@@ -354,18 +356,18 @@ class _Forms extends State<CampaignAddUpdateView> {
     debug("File saved successfully.");
   }
 
-  Future<void> _pullRefresh() async {
-    if (widget.model != null) {
-      return;
-    }
-    Provider.of<CampaignViewModel>(context, listen: false).fetchCampaign();
+  // Future<void> _pullRefresh() async {
+  //   if (widget.model != null) {
+  //     return;
+  //   }
+  //   Provider.of<CampaignViewModel>(context, listen: false).fetchCampaign();
 
-    isRefresh = true;
-    return Future<void>.delayed(const Duration(seconds: 1));
-  }
+  //   isRefresh = true;
+  //   return Future<void>.delayed(const Duration(seconds: 1));
+  // }
 
   Widget _pageBody() {
-    print("selectedGroups  page body ::::::::::: ${selectedGroups}");
+    print("selectedGroups  page body ::::::::::: $selectedGroups");
     return SingleChildScrollView(
       child: Form(
         key: _addleadFormKey,
@@ -395,7 +397,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 onChanged: (p0) {
                   setState(() {
                     _name = p0;
-                    print("name:: # ${_name}");
+                    print("name:: # $_name");
                   });
                 },
               ),
@@ -591,7 +593,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                   onConfirm: (values) {
                     setState(() {
                       selectedMembers = values;
-                      print("selectedMembers::::::: ${selectedMembers}");
+                      print("selectedMembers::::::: $selectedMembers");
                       // Update display list
                       selectedNamesWithNumbers = values
                           .map((member) =>
@@ -618,7 +620,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                               "${member['name']} (${member['whatsapp_number']})" ==
                               selectedItem);
 
-                          print("selectedMembers::: ${selectedMembers}");
+                          print("selectedMembers::: $selectedMembers");
                         });
                       },
                       backgroundColor: Colors.blue.withOpacity(0.2),
@@ -665,7 +667,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                     final analysis = await analyzeCsvFile(csvFile!);
                     csvAnalysis = analysis;
 
-                    print("analysis:::: result:::  ${analysis}");
+                    print("analysis:::: result:::  $analysis");
 
                     if (analysis['isValid']) {
                       print("Total Rows: ${analysis['rowCount']}");
@@ -673,7 +675,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                       (analysis['countryCodeCounts'] as Map<String, int>)
                           .forEach((code, count) => print("$code: $count"));
 
-                      debug('csvFile Path: ${csvFile}');
+                      debug('csvFile Path: $csvFile');
 
                       csvrows = analysis['rowCount'];
                       final convertBytes =
@@ -720,7 +722,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 onChanged: (p0) {
                   setState(() {
                     _type = p0;
-                    print("_type::: ${_type}");
+                    print("_type::: $_type");
                   });
                 },
                 value: _type,
@@ -749,7 +751,7 @@ class _Forms extends State<CampaignAddUpdateView> {
 
   void onButtonPressed() async {
     print("fileNameControllerL::::: ${fileNameController.text}");
-    print("selectedGroups:::: ${selectedGroupsName}");
+    print("selectedGroups:::: $selectedGroupsName");
     if (selectedGroupsName.isEmpty && fileNameController.text.trim().isEmpty) {
       EasyLoading.showToast("Upload a CSV or Select a group");
       return;
@@ -771,7 +773,7 @@ class _Forms extends State<CampaignAddUpdateView> {
       return;
     }
     print(
-      "controllers::: ${controllers}  ${isChecked}  ${image}  ${isOtherFileSelected}  ${imgToShow}",
+      "controllers::: $controllers  $isChecked  $image  $isOtherFileSelected  $imgToShow",
     );
 
     Map body = {
@@ -828,7 +830,7 @@ class _Forms extends State<CampaignAddUpdateView> {
         "template_name": widget.model?.templateName ?? "",
         "id": widget.model?.campaignId ?? "",
       };
-      print("camp before siending::: ${camp}");
+      print("camp before siending::: $camp");
       AppUtils.onLoading(context, "Updating, please wait...");
       Provider.of<CampaignViewModel>(
         context,
@@ -871,19 +873,19 @@ class _Forms extends State<CampaignAddUpdateView> {
         if (campaignModel?.data != null) {
           for (var record in campaignModel!.data!) {
             if (record.status != null) {
-              print("rec name ::${record.name}  ${selectedTemplateName}");
+              print("rec name ::${record.name}  $selectedTemplateName");
               if (selectedTemplateName == record.name) {
                 currentTemplate = record;
                 selectedTemplateId = currentTemplate.id;
                 selectedLanguage = currentTemplate.language;
                 log(
-                  "current template::::: ${currentTemplate}  ${currentTemplate.name}",
+                  "current template::::: $currentTemplate  ${currentTemplate.name}",
                 );
                 print(
                   "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}",
                 );
                 components = currentTemplate.components;
-                print("Component info:: ${components.length} ${components}");
+                print("Component info:: ${components.length} $components");
 
                 for (var e in components) {
                   print("checking the type:: ${e.type}");
@@ -901,7 +903,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                 setState(() {});
 
                 log(
-                  "components ::: ${selectedHeader}   ${selectedBody}  ${selectedButtons}",
+                  "components ::: $selectedHeader   $selectedBody  $selectedButtons",
                 );
 
                 return;
@@ -1004,7 +1006,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                               decoration: InputDecoration(
                                 labelText:
                                     "Enter value for placeholder ${index + 1}",
-                                border: OutlineInputBorder(),
+                                border: const OutlineInputBorder(),
                               ),
                             ),
                           );
@@ -1157,7 +1159,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                                           ),
                                         ),
                                       )
-                                    : SizedBox(),
+                                    : const SizedBox(),
                               const SizedBox(
                                 height: 10,
                               ),
@@ -1216,9 +1218,6 @@ class _Forms extends State<CampaignAddUpdateView> {
                                   });
                                   return;
                                 }
-
-                                File? imageFile;
-                                String docId = "";
 
                                 for (int i = 0; i < controllers.length; i++) {
                                   bodyTextParams[(i + 1).toString()] =
@@ -1317,7 +1316,7 @@ class _Forms extends State<CampaignAddUpdateView> {
   }
 
   Widget _buildMediaWidget(String format, String content) {
-    print("format:::::: ${format}  ${content}");
+    print("format:::::: $format  $content");
     switch (format) {
       case "IMAGE":
         return content.isEmpty
@@ -1385,7 +1384,7 @@ class _Forms extends State<CampaignAddUpdateView> {
         file = pickedFile.files.first;
         image = File(file!.path!);
         // _Vcontroller = VideoPlayerController.file(image!);
-        print("image::: ${image}");
+        print("image::: $image");
 
         // fileNameController.text = file!.name;
       });
@@ -1406,7 +1405,7 @@ class _Forms extends State<CampaignAddUpdateView> {
         file = pickedFile.files.first;
         image = File(file!.path!);
         _Vcontroller = VideoPlayerController.file(image!);
-        print("image::: ${image}");
+        print("image::: $image");
         fileNameController.text = file!.name;
       });
       return image;
@@ -1450,14 +1449,14 @@ class _Forms extends State<CampaignAddUpdateView> {
   Future<void> sendTemplateApiCall(bool send) async {
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
-    print("sending camplagnnnn::::::: ${fileid}  ${imgToShow}");
+    print("sending camplagnnnn::::::: $fileid  $imgToShow");
     List ba = selectedButtons == null
         ? []
         : selectedButtons?.buttons.map((button) => button.toMap()).toList() ??
             [];
     String hdr = selectedHeader != null ? selectedHeader.format ?? "" : "";
 
-    print("hdr hdr  hdr::: ${hdr}");
+    print("hdr hdr  hdr::: $hdr");
     String hdrBody;
 
     if (hdr.isEmpty) {
@@ -1488,7 +1487,7 @@ class _Forms extends State<CampaignAddUpdateView> {
       "business_number": number,
     };
 
-    print("createtemp campaign:::: ${createtemp}");
+    print("createtemp campaign:::: $createtemp");
     late MessageViewModel mstemp = MessageViewModel(context);
     mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) {
       sendingCamplaign();
@@ -1522,7 +1521,7 @@ class _Forms extends State<CampaignAddUpdateView> {
 
     String templateToSend = selectedTemplateName ?? "";
 
-    print("selected header:: >><><>< ${selectedHeader}     ${templateToSend}");
+    print("selected header:: >><><>< $selectedHeader     $templateToSend");
 
     setState(() {
       _isLoading = true;
@@ -1551,7 +1550,7 @@ class _Forms extends State<CampaignAddUpdateView> {
         getaccountData.addCampaign(camp).then((value) async {
           if (value is Map<String, dynamic>) {
             String? campaignId = value["record"]?["id"];
-            print("campaignId>>>  ${campaignId}");
+            print("campaignId>>>  $campaignId");
             if (campaignId == null) {
               debug("Campaign ID is null. File upload skipped.");
               return;
@@ -1565,14 +1564,14 @@ class _Forms extends State<CampaignAddUpdateView> {
               };
 
               MessageViewModel mstemp = MessageViewModel(context);
-              var campaignResponse = await mstemp
+              await mstemp
                   .sendCampParam(
                 campParambody: paramBody,
               )
                   .then((onValue) async {
-                print("csvFile ::::   ${csvFile}");
+                print("csvFile ::::   $csvFile");
 
-                print("image ::::   ${image}");
+                print("image ::::   $image");
                 if (csvFile != null) {
                   await messageViewModel
                       .uploadCampFiledb(csvFile!, campaignId, isFromCamp: false)
@@ -1647,7 +1646,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           getaccountData.addCampaign(camp).then((value) async {
             if (value is Map<String, dynamic>) {
               String? campaignId = value["record"]?["id"];
-              print("campaignId>>>  ${campaignId}");
+              print("campaignId>>>  $campaignId");
               if (campaignId == null) {
                 debug("Campaign ID is null. File upload skipped.");
                 return;
@@ -1665,9 +1664,9 @@ class _Forms extends State<CampaignAddUpdateView> {
                   campParambody: paramBody,
                 );
               }
-              print("csvFile ::::   ${csvFile}");
+              print("csvFile ::::   $csvFile");
 
-              print("image ::::   ${image}");
+              print("image ::::   $image");
               if (csvFile != null) {
                 await messageViewModel
                     .uploadCampFiledb(csvFile!, campaignId, isFromCamp: false)
@@ -1706,7 +1705,7 @@ class _Forms extends State<CampaignAddUpdateView> {
       });
     }
 
-    print("selected button::: ${selectedButtons} ");
+    print("selected button::: $selectedButtons ");
   }
 
   Future<void> sendTextTemplate(
@@ -1725,18 +1724,13 @@ class _Forms extends State<CampaignAddUpdateView> {
 
     // String footer = selectedFooter?.text ?? "";
 
-    Map<String, dynamic> exBodyText = {
-      ...campaignParam,
-      "sendToAdmin": sendOnLoginNum,
-    };
-
     List ba = selectedButtons == null
         ? []
         : selectedButtons?.buttons.map((button) => button.toMap()).toList() ??
             [];
     String hdr = selectedHeader != null ? selectedHeader.format ?? "" : "";
 
-    print("hdr hdr  hdr::: ${hdr}");
+    print("hdr hdr  hdr::: $hdr");
     String hdrBody;
 
     if (hdr.isEmpty) {
@@ -1803,15 +1797,16 @@ class _Forms extends State<CampaignAddUpdateView> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Permission Required"),
-        content: Text("Please enable Manage External Storage from Settings."),
+        title: const Text("Permission Required"),
+        content:
+            const Text("Please enable Manage External Storage from Settings."),
         actions: [
           TextButton(
-            child: Text("Cancel"),
+            child: const Text("Cancel"),
             onPressed: () => Navigator.pop(context),
           ),
           TextButton(
-            child: Text("Open Settings"),
+            child: const Text("Open Settings"),
             onPressed: () async {
               Navigator.pop(context);
               await openAppSettings();
@@ -1824,7 +1819,7 @@ class _Forms extends State<CampaignAddUpdateView> {
 
   void _showPermissionDeniedSnackBar(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Permission denied. Cannot proceed.")),
+      const SnackBar(content: Text("Permission denied. Cannot proceed.")),
     );
   }
 
@@ -2010,7 +2005,7 @@ class _Forms extends State<CampaignAddUpdateView> {
                           }
                         });
                         print(
-                            "selectedTemplateName:::::::::: ${selectedTemplateName}");
+                            "selectedTemplateName:::::::::: $selectedTemplateName");
                         _setSelectedTemplates();
                       },
                       value: selectedTemplateName,
@@ -2028,13 +2023,13 @@ class _Forms extends State<CampaignAddUpdateView> {
                         ),
                         onPressed: () {
                           print(
-                              "selectedTemplateName>>> ${selectedTemplateName}");
+                              "selectedTemplateName>>> $selectedTemplateName");
                           if (selectedTemplateName == null ||
                               selectedTemplateName == "Select Template Name") {
                             EasyLoading.showToast("Select Template Name");
                             return;
                           }
-                          log("all comp info >> >>  ${selectedHeader}  ${selectedBody} ${selectedFooter} ${selectedButtons}}");
+                          log("all comp info >> >>  $selectedHeader  $selectedBody $selectedFooter $selectedButtons}");
                           log("selectedBody['text']>>> ${selectedBody.text}  ");
                           final regex = RegExp(r'\{\{\d+\}\}');
 
@@ -2084,7 +2079,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           var recentMsgmodel = viewModel.model;
           if (recentMsgmodel?.records != null) {
             for (var record in recentMsgmodel!.records!) {
-              print("record::: ${record}");
+              print("record::: $record");
 
               Map<String, dynamic> body = {
                 "name": record.contactname,
@@ -2102,7 +2097,7 @@ class _Forms extends State<CampaignAddUpdateView> {
           }
         }
       } catch (e) {
-        print("e:::::::: ${e}");
+        print("e:::::::: $e");
         campLeads = [];
       }
     });
@@ -2115,31 +2110,25 @@ class _Forms extends State<CampaignAddUpdateView> {
     ];
     String csv = const ListToCsvConverter().convert(rows);
 
-    final Directory? downloadsDir = await getApplicationDocumentsDirectory();
+    final Directory downloadsDir = await getApplicationDocumentsDirectory();
 
-    if (downloadsDir != null) {
-      final String downloadsPath =
-          downloadsDir.path.replaceAll("Android/data", "Download");
-      final file = File('$downloadsPath/sample.csv');
-      await file.create(recursive: true);
-      await file.writeAsString(csv);
+    final String downloadsPath =
+        downloadsDir.path.replaceAll("Android/data", "Download");
+    final file = File('$downloadsPath/sample.csv');
+    await file.create(recursive: true);
+    await file.writeAsString(csv);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text("CSV saved"),
-          action: SnackBarAction(
-            label: "Open",
-            onPressed: () {
-              OpenFilex.open(file.path);
-            },
-          ),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text("CSV saved"),
+        action: SnackBarAction(
+          label: "Open",
+          onPressed: () {
+            OpenFilex.open(file.path);
+          },
         ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Unable to access Downloads directory")),
-      );
-    }
+      ),
+    );
   }
 }
 

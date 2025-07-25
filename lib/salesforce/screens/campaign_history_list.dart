@@ -1,5 +1,6 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/sfCampaign_controller.dart';
 import 'package:whatsapp/salesforce/model/campaign_history_model.dart';
@@ -158,7 +159,7 @@ class _CampaignHistoryListState extends State<CampaignHistoryList> {
                               width: 10,
                             ),
                             sfCampHistoryList.deliveryStatus!.isEmpty
-                                ? SizedBox()
+                                ? const SizedBox()
                                 : Container(
                                     decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(6),
@@ -208,7 +209,7 @@ class _CampaignHistoryListState extends State<CampaignHistoryList> {
                         //   ),
                         // ),
                         sfCampHistoryList.errorMsg!.isEmpty
-                            ? SizedBox()
+                            ? const SizedBox()
                             : Padding(
                                 padding: const EdgeInsets.only(top: 4.0),
                                 child: Text(

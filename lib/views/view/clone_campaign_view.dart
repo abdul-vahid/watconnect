@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously, deprecated_member_use, prefer_typing_uninitialized_variables, non_constant_identifier_names, unused_local_variable, unused_field
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -6,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
@@ -196,12 +197,12 @@ class _Forms extends State<CampaignCloneview> {
             // String fileTitle = model.record.fileTitle ?? "";
 
             print(
-                "csvFile:::::: after set:::: ${csvFile}    ${csvFile.runtimeType}");
+                "csvFile:::::: after set:::: $csvFile    ${csvFile.runtimeType}");
             _description = model.record.fileDescription;
             groupsNameSet = model.record.groups ?? [];
 
-            print("imgToShow::::${imgToShow}");
-            print("groupsNameSet::: ${groupsNameSet}");
+            print("imgToShow::::$imgToShow");
+            print("groupsNameSet::: $groupsNameSet");
             selectedGroupsName =
                 groupsNameSet.map((e) => e['id'].toString()).toList();
             // selectedGrpsName =
@@ -222,13 +223,13 @@ class _Forms extends State<CampaignCloneview> {
             selectedGroups =
                 groupsNameSet.map((e) => e['name'].toString()).toList();
             print(
-                "selectedTemplateName:::  ${groupsNameSet}   ${selectedGroups}    ${selectedTemplateName}");
+                "selectedTemplateName:::  $groupsNameSet   $selectedGroups    $selectedTemplateName");
           });
         }
         // _setSelectedTemplates();
       });
     } catch (e, stackTrace) {
-      print("error in setting data::: ${e}       ${stackTrace}");
+      print("error in setting data::: $e       $stackTrace");
     }
 
     print("_name_name${_name.text}");
@@ -304,7 +305,7 @@ class _Forms extends State<CampaignCloneview> {
 
   bool isOtherFileSelected = false;
   Future<void> _sendTemplateSheet() {
-    TextEditingController _templateController = TextEditingController();
+    TextEditingController templateController = TextEditingController();
     int selectedBtnIdx = 0;
     SelectedTemplateCategory = null;
     // selectedTemplateName = null;
@@ -391,7 +392,7 @@ class _Forms extends State<CampaignCloneview> {
                               decoration: InputDecoration(
                                 labelText:
                                     "Enter value for placeholder ${index + 1}",
-                                border: OutlineInputBorder(),
+                                border: const OutlineInputBorder(),
                               ),
                             ),
                           );
@@ -544,7 +545,7 @@ class _Forms extends State<CampaignCloneview> {
                                           ),
                                         ),
                                       )
-                                    : SizedBox(),
+                                    : const SizedBox(),
                               const SizedBox(
                                 height: 10,
                               ),
@@ -604,8 +605,8 @@ class _Forms extends State<CampaignCloneview> {
                                   return;
                                 }
 
-                                File? imageFile;
-                                String docId = "";
+                                // File? imageFile;
+                                // String docId = "";
 
                                 for (int i = 0; i < controllers.length; i++) {
                                   bodyTextParams[(i + 1).toString()] =
@@ -624,7 +625,7 @@ class _Forms extends State<CampaignCloneview> {
                                 if (selectedHeader == null) {
                                   String templateToSend =
                                       selectedTemplateName ??
-                                          _templateController.text;
+                                          templateController.text;
 
                                   _tempController.text =
                                       selectedTemplateName ?? "";
@@ -672,7 +673,7 @@ class _Forms extends State<CampaignCloneview> {
                                   // }
                                 }
                                 String templateToSend = selectedTemplateName ??
-                                    _templateController.text;
+                                    templateController.text;
 
                                 _tempController.text =
                                     selectedTemplateName ?? "";
@@ -797,7 +798,7 @@ class _Forms extends State<CampaignCloneview> {
                     ? const Center(
                         child: Text("No Groups Available",
                             style: TextStyle(fontSize: 18)))
-                    : Text("Select Groups"),
+                    : const Text("Select Groups"),
                 selectedColor: Colors.blue,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.blue, width: 1),
@@ -877,7 +878,7 @@ class _Forms extends State<CampaignCloneview> {
                 onConfirm: (values) {
                   setState(() {
                     selectedMembers = values;
-                    print("selectedMembers::::::: ${selectedMembers}");
+                    print("selectedMembers::::::: $selectedMembers");
                     // Update display list
                     selectedNamesWithNumbers = values
                         .map((member) =>
@@ -903,7 +904,7 @@ class _Forms extends State<CampaignCloneview> {
                             "${member['name']} (${member['whatsapp_number']})" ==
                             selectedItem);
 
-                        print("selectedMembers::: ${selectedMembers}");
+                        print("selectedMembers::: $selectedMembers");
                       });
                     },
                     backgroundColor: Colors.blue.withOpacity(0.2),
@@ -947,7 +948,7 @@ class _Forms extends State<CampaignCloneview> {
                   ? InkWell(
                       onTap: () {
                         downloadCsv(
-                            "https://admin.watconnect.com/public/${tenatCode}/campaign_files/${cloneCsvName}",
+                            "https://admin.watconnect.com/public/$tenatCode/campaign_files/$cloneCsvName",
                             cloneCsvName);
                       },
                       child: Container(
@@ -1088,7 +1089,7 @@ class _Forms extends State<CampaignCloneview> {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
                 onPressed: () {
-                  print("selectedGroupIds:::::::::: ${selectedGroupIds}");
+                  print("selectedGroupIds:::::::::: $selectedGroupIds");
                   print(
                       "_dateStartInput.text:::::::::: ${_dateStartInput.text}");
                   onButtonPressed();
@@ -1144,10 +1145,6 @@ class _Forms extends State<CampaignCloneview> {
     }
     if (_tempController.text.trim().isEmpty) {
       EasyLoading.showToast("Please Select Template Category");
-      return;
-    }
-    if (_name == null) {
-      EasyLoading.showToast("Please enter campaign name");
       return;
     }
     if (_dateStartInput.text.trim().isEmpty) {
@@ -1210,9 +1207,8 @@ class _Forms extends State<CampaignCloneview> {
 
       String templateToSend = selectedTemplateName ?? "";
       print(
-          "templateToSend::: ${templateToSend}  ${compoTextParams}  ${numberedCampParam}");
-      print(
-          "selected header:: >><><>< ${selectedHeader}     ${templateToSend}");
+          "templateToSend::: $templateToSend  $compoTextParams  $numberedCampParam");
+      print("selected header:: >><><>< $selectedHeader     $templateToSend");
 
       if (templateToSend.isEmpty) {
         setState(() {
@@ -1237,7 +1233,7 @@ class _Forms extends State<CampaignCloneview> {
           getaccountData.addCampaign(camp).then((value) async {
             if (value is Map<String, dynamic>) {
               String? campaignId = value["record"]?["id"];
-              print("campaignId>>>  ${campaignId}");
+              print("campaignId>>>  $campaignId");
               if (campaignId == null) {
                 debug("Campaign ID is null. File upload skipped.");
                 return;
@@ -1251,12 +1247,12 @@ class _Forms extends State<CampaignCloneview> {
                 };
 
                 MessageViewModel mstemp = MessageViewModel(context);
-                var campaignResponse = await mstemp
+                await mstemp
                     .sendCampParam(
                   campParambody: paramBody,
                 )
                     .then((onValue) async {
-                  print("csvFile:::: ${csvFile}    ${fileNameController.text}");
+                  print("csvFile:::: $csvFile    ${fileNameController.text}");
 
                   if (csvFile != null) {
                     await messageViewModel
@@ -1342,15 +1338,15 @@ class _Forms extends State<CampaignCloneview> {
                 'description': _description,
               };
             } catch (e) {
-              print("errroeL::: ${e}");
+              print("errroeL::: $e");
             }
 
-            print("camp::::::::::: ${camp}");
+            print("camp::::::::::: $camp");
 
             getaccountData.addCampaign(camp).then((value) async {
               if (value is Map<String, dynamic>) {
                 String? campaignId = value["record"]?["id"];
-                print("campaignId>>>  ${campaignId}");
+                print("campaignId>>>  $campaignId");
                 if (campaignId == null) {
                   debug("Campaign ID is null. File upload skipped.");
                   return;
@@ -1364,13 +1360,13 @@ class _Forms extends State<CampaignCloneview> {
                   };
 
                   MessageViewModel mstemp = MessageViewModel(context);
-                  var campaignResponse = await mstemp
+                  await mstemp
                       .sendCampParam(
                     campParambody: paramBody,
                   )
                       .then((onValue) async {
                     print(
-                        "csvFile::  <><>:: ${csvFile}    ${fileNameController.text}");
+                        "csvFile::  <><>:: $csvFile    ${fileNameController.text}");
                     if (csvFile != null) {
                       await messageViewModel
                           .uploadCampFiledb(csvFile!, campaignId)
@@ -1447,10 +1443,10 @@ class _Forms extends State<CampaignCloneview> {
       setState(() {
         _isLoading = false;
       });
-      print("printing error::: ${e}   ${stackTrace}");
+      print("printing error::: $e   $stackTrace");
     }
 
-    print("selected button::: ${selectedButtons} ");
+    print("selected button::: $selectedButtons ");
   }
 
   Future<void> sendTextTemplate(
@@ -1497,8 +1493,8 @@ class _Forms extends State<CampaignCloneview> {
   }
 
   Future<void> _getBootmSheet() {
-    TextEditingController _templateController = TextEditingController();
-    int selectedBtnIdx = 0;
+    TextEditingController templateController = TextEditingController();
+    // int selectedBtnIdx = 0;
     // SelectedTemplateCategory = null;
     // selectedTemplateName = null;
     return showModalBottomSheet<void>(
@@ -1579,7 +1575,7 @@ class _Forms extends State<CampaignCloneview> {
                       onChanged: (String? newValue) {
                         setState(() {
                           selectedTemplateName = newValue;
-                          _templateController.text = newValue ?? '';
+                          templateController.text = newValue ?? '';
                           if (newValue != null) {
                             int selectedIndex = templateNames.indexOf(newValue);
 
@@ -1596,7 +1592,7 @@ class _Forms extends State<CampaignCloneview> {
                           }
                         });
                         print(
-                            "selectedTemplateName:::::::::: ${selectedTemplateName}");
+                            "selectedTemplateName:::::::::: $selectedTemplateName");
                         _setSelectedTemplates();
                       },
                       value: selectedTemplateName,
@@ -1614,13 +1610,13 @@ class _Forms extends State<CampaignCloneview> {
                         ),
                         onPressed: () {
                           print(
-                              "selectedTemplateName>>> ${selectedTemplateName}");
+                              "selectedTemplateName>>> $selectedTemplateName");
                           if (selectedTemplateName == null ||
                               selectedTemplateName == "Select Template Name") {
                             EasyLoading.showToast("Select Template Name");
                             return;
                           }
-                          log("all comp info >> >>  ${selectedHeader}  ${selectedBody} ${selectedFooter} ${selectedButtons}}");
+                          log("all comp info >> >>  $selectedHeader  $selectedBody $selectedFooter $selectedButtons}");
                           log("selectedBody['text']>>> ${selectedBody.text}  ");
                           final regex = RegExp(r'\{\{\d+\}\}');
 
@@ -1629,8 +1625,8 @@ class _Forms extends State<CampaignCloneview> {
                             Navigator.of(context).pop();
                             _sendTemplateSheet();
                           } else {
-                            String templateToSend = selectedTemplateName ??
-                                _templateController.text;
+                            String templateToSend =
+                                selectedTemplateName ?? templateController.text;
                             print("Template to send: $templateToSend");
 
                             setState(() {
@@ -1679,7 +1675,7 @@ class _Forms extends State<CampaignCloneview> {
       // Update the state once with unique values
       setState(() {
         templateNames = uniqueTemplateNames.toList();
-        print("templateNames::: :${templateNames}");
+        print("templateNames::: :$templateNames");
       });
     }
   }
@@ -1698,7 +1694,7 @@ class _Forms extends State<CampaignCloneview> {
           var recentMsgmodel = viewModel.model;
           if (recentMsgmodel?.records != null) {
             for (var record in recentMsgmodel!.records!) {
-              print("record::: ${record}");
+              print("record::: $record");
               Map<String, dynamic> body = {
                 "name": record.contactname,
                 "member_id": record.id,
@@ -1714,7 +1710,7 @@ class _Forms extends State<CampaignCloneview> {
           }
         }
       } catch (e) {
-        print("e:::::::: ${e}");
+        print("e:::::::: $e");
         campLeads = [];
       }
     });
@@ -1727,14 +1723,14 @@ class _Forms extends State<CampaignCloneview> {
   Future<void> sendTemplateApiCall(bool send) async {
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
-    print("sending camplagnnnn:::::::   ${selectedButtons}");
+    print("sending camplagnnnn:::::::   $selectedButtons");
     List ba = selectedButtons == null
         ? []
         : selectedButtons?.buttons.map((button) => button.toMap()).toList() ??
             [];
     String hdr = selectedHeader != null ? selectedHeader.format ?? "" : "";
 
-    print("hdr hdr  hdr::: ${hdr}");
+    print("hdr hdr  hdr::: $hdr");
     String hdrBody;
 
     if (hdr.isEmpty) {
@@ -1764,7 +1760,7 @@ class _Forms extends State<CampaignCloneview> {
       "buttons": ba,
       "business_number": number,
     };
-    print("createtemp campaign:::: ${createtemp}");
+    print("createtemp campaign:::: $createtemp");
     late MessageViewModel mstemp = MessageViewModel(context);
     mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) {
       sendingCamplaign();

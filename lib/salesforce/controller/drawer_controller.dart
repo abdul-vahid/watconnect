@@ -1,8 +1,11 @@
+// ignore_for_file: avoid_print, unnecessary_string_interpolations
+
 import 'dart:convert';
 import 'dart:developer';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/salesforce/controller/network_Services.dart';
 import 'package:whatsapp/salesforce/model/config_unread_count_model.dart';
@@ -16,7 +19,15 @@ import 'package:whatsapp/utils/app_constants.dart';
 class DashBoardController extends ChangeNotifier {
   List<SfDrawerModel> drawerItems = [];
 
+  SfDrawerModel? selectedDawerModel;
+  setSelectedDrawerItem(val) {
+    selectedDawerModel = val;
+    notify();
+  }
+
   List<SfDrawerItemModel> drawerListItems = [];
+  List<SfDrawerItemModel> pinnedConfigItems = [];
+
   List<SfDrawerItemModel> tempDrawerListItems = [];
 
   List<SfConfigUnreadCountModel> configUnreadCountList = [];
@@ -47,8 +58,10 @@ class DashBoardController extends ChangeNotifier {
       final List<dynamic> data = jsonDecode(response.body);
       drawerItems = data.map((e) => SfDrawerModel.fromJson(e)).toList();
       print("drawerItems:::: $drawerItems");
-      notify();
+    } else {
+      drawerItems = [];
     }
+    notify();
   }
 
   bool configListLoader = false;
@@ -66,10 +79,19 @@ class DashBoardController extends ChangeNotifier {
 
   SfDrawerItemModel? selectedContactInfo;
 
+  SfDrawerItemModel? selectedPinnedInfo;
+
+  setSelectedPinnedInfo(info) {
+    selectedPinnedInfo = info;
+    notify();
+  }
+
   setSelectedContaactInfo(info) {
     selectedContactInfo = info;
     notify();
   }
+
+  //getDrawerItemsApi
 
   Future<void> drawerListApiCall(
       {String type = "Lead", bool showLoading = true}) async {
@@ -86,6 +108,18 @@ class DashBoardController extends ChangeNotifier {
       var res = jsonDecode(response.body);
       List temp = res['data'];
       drawerListItems = temp.map((e) => SfDrawerItemModel.fromJson(e)).toList();
+      pinnedConfigItems.clear();
+      pinnedConfigItems
+        ..clear
+        ..addAll(
+          drawerListItems.where((item) => item.isPinned == true),
+        );
+
+      // pinnedConfigItems = drawerListItems
+      //     .where((e) => e.isPinned == true)
+      //     .map((e) => SfDrawerItemModel.fromJson(e))
+      //     .toList();
+
       tempDrawerListItems = drawerListItems;
       notify();
     }
@@ -99,7 +133,7 @@ class DashBoardController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
     var url =
-        "${AppConstants.sfGetDrawerUnreadList}$type&businessnumber=${busNum}&recordlimit=50";
+        "${AppConstants.sfGetDrawerUnreadList}$type&businessnumber=$busNum&recordlimit=50";
     final response = await NetworkService.makeRequest(
       url: url,
       method: 'GET',
@@ -152,14 +186,17 @@ class DashBoardController extends ChangeNotifier {
   }
 
   List<SfDrawerItemModel> sfRecentChatList = [];
+  List<SfDrawerItemModel> sfPinnedRecentChatList = [];
   List<SfDrawerItemModel> tempsfRecentChatList = [];
 
-  Future<void> recentChatListApiCall() async {
-    setRecentChatListLoader(true);
+  Future<void> recentChatListApiCall({bool showLoading = true}) async {
+    if (showLoading) {
+      setRecentChatListLoader(true);
+    }
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
     String apiUrl =
-        "${AppConstants.sfRecentChat}?businessnumber=${busNum}&recordlimit=5000&objectname=${selectedTitle}";
+        "${AppConstants.sfRecentChat}?businessnumber=$busNum&recordlimit=5000&objectname=$selectedTitle";
     final response = await NetworkService.makeRequest(
       url: apiUrl,
       method: 'GET',
@@ -184,6 +221,12 @@ class DashBoardController extends ChangeNotifier {
             .map((e) => SfDrawerItemModel.fromJson(e)));
 
       tempsfRecentChatList = sfRecentChatList;
+      sfPinnedRecentChatList.clear();
+      sfPinnedRecentChatList
+        ..clear
+        ..addAll(
+          sfRecentChatList.where((item) => item.isPinned == true),
+        );
     }
     notify();
     setRecentChatListLoader(false);
@@ -221,7 +264,7 @@ class DashBoardController extends ChangeNotifier {
   Future<void> getDasBoardReportApiCall() async {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-    String apiUrl = "${AppConstants.sfDashBoardReport}businessnumber=${busNum}";
+    String apiUrl = "${AppConstants.sfDashBoardReport}businessnumber=$busNum";
 
     final response = await NetworkService.makeRequest(
       url: apiUrl,
@@ -231,7 +274,7 @@ class DashBoardController extends ChangeNotifier {
       var reportList = jsonDecode(response.body);
 
       print(
-          "reportList  ${reportList}['Total Records'].toString():::::: ${reportList[2]['Total Records'].toString()}");
+          "reportList  $reportList['Total Records'].toString():::::: ${reportList[2]['Total Records'].toString()}");
 
       tempStatus = TemplateStatsModel.fromJson(reportList[0]);
 
@@ -267,8 +310,7 @@ class DashBoardController extends ChangeNotifier {
   String sfFcm = "";
   setSfFcmToken(String tokn) {
     sfFcm = tokn;
-    print(
-        "setting the firebase fcm in salesforece:::::::::::::::::::  ${sfFcm}");
+    print("setting the firebase fcm in salesforece:::::::::::::::::::  $sfFcm");
     notify();
   }
 
@@ -276,8 +318,7 @@ class DashBoardController extends ChangeNotifier {
   setSfDeviceToken(String devTokn) {
     sfDeviceTokn = devTokn;
 
-    print(
-        "setting the device id in salesforece::::::::::::::: ${sfDeviceTokn}");
+    print("setting the device id in salesforece::::::::::::::: $sfDeviceTokn");
 
     notify();
   }
@@ -316,7 +357,7 @@ class DashBoardController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
     String apiUrl =
-        "${AppConstants.sfNotificationHistory}?businessnumber=${busNum}";
+        "${AppConstants.sfNotificationHistory}?businessnumber=$busNum";
     final response = await NetworkService.makeRequest(
       url: apiUrl,
       method: 'GET',
@@ -356,6 +397,53 @@ class DashBoardController extends ChangeNotifier {
       drawerListItems = tempDrawerListItems.where((e) {
         return configStatusList.contains(e.status);
       }).toList();
+    }
+    notify();
+  }
+
+  Future<void> pinUnPinApiCall({bool isFromRecentChat = false}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+
+    var url = isFromRecentChat
+        ? "${AppConstants.sfRecentChat}?businessnumber=$busNum&recordlimit=5000&objectname=$selectedTitle"
+        : AppConstants.getDrawerItemsApi;
+
+    print("selectedPinnedInfo name :::    ${selectedPinnedInfo?.name}");
+    Map<String, dynamic> body = {};
+    if (isFromRecentChat) {
+      body = {
+        "action": selectedPinnedInfo!.isPinned! ? "unpin" : "pin",
+        "parentId": selectedPinnedInfo?.id,
+      };
+    } else {
+      body = {
+        "type": "pin_action",
+        "parentId": selectedPinnedInfo?.id,
+        //  selectedDawerModel?.configId,
+        "userId": sfUserData?.userId,
+        // "pinnedBy": selectedPinnedInfo?.id,
+        "pin": selectedPinnedInfo!.isPinned! ? false : true
+      };
+    }
+    final response = await NetworkService.makeRequest(
+      url: url,
+      method: 'POST',
+      body: body,
+    );
+    if (response != null && response.statusCode == 200) {
+      setSelectedPinnedInfo(null);
+      if (isFromRecentChat) {
+        recentChatListApiCall(showLoading: false);
+      } else {
+        drawerListApiCall(
+            showLoading: false,
+            type: selectedDawerModel?.sObjectName ?? "Lead");
+      }
+    } else {
+      setSelectedPinnedInfo(null);
+      EasyLoading.showToast("Something went wrong.......");
+      // drawerItems = [];
     }
     notify();
   }

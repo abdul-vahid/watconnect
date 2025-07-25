@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use, prefer_typing_uninitialized_variables
+
 import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -22,39 +24,39 @@ class _UserListView extends State<UserListView> {
   List allUsers = [];
 
   final List<String> _paymentterms = [];
-  final List<String> _city = [
-    "Ajmer",
-    "Alwar",
-    "Bikaner",
-    "Barmer",
-    "Bundi",
-    "Chittorgarh",
-    "Dholpur",
-    "Dungarpur",
-    "Hanumangarh",
-    "Jaipur",
-    "Jaisalmer",
-    "Jalor",
-    "Jhunjhunu",
-    "Jodhpur",
-    "Karauli"
-        "Kota",
-    "Nagaur",
-    "Pali",
-    "Pratapgarh",
-    "Rajsamand",
-    "Sawai Madhopur",
-    "Sikar",
-    "Sri Ganganagar",
-    "Tonk",
-    "Udaipur",
-    "Bhilwara",
-    "Sirohi",
-    "Jalore",
-    "Churu",
-    "Ratangarh",
-    "Rajasthan",
-  ];
+  // final List<String> _city = [
+  //   "Ajmer",
+  //   "Alwar",
+  //   "Bikaner",
+  //   "Barmer",
+  //   "Bundi",
+  //   "Chittorgarh",
+  //   "Dholpur",
+  //   "Dungarpur",
+  //   "Hanumangarh",
+  //   "Jaipur",
+  //   "Jaisalmer",
+  //   "Jalor",
+  //   "Jhunjhunu",
+  //   "Jodhpur",
+  //   "Karauli"
+  //       "Kota",
+  //   "Nagaur",
+  //   "Pali",
+  //   "Pratapgarh",
+  //   "Rajsamand",
+  //   "Sawai Madhopur",
+  //   "Sikar",
+  //   "Sri Ganganagar",
+  //   "Tonk",
+  //   "Udaipur",
+  //   "Bhilwara",
+  //   "Sirohi",
+  //   "Jalore",
+  //   "Churu",
+  //   "Ratangarh",
+  //   "Rajasthan",
+  // ];
   TextEditingController textController = TextEditingController();
   var userlistvm;
   UserDataListViewModel? products;
@@ -72,12 +74,12 @@ class _UserListView extends State<UserListView> {
   Widget build(BuildContext context) {
     userlistvm = Provider.of<UserDataListViewModel>(context);
     allUsers.clear();
-    print("selectedRole:::::::::::  ${selectedRole}");
+    print("selectedRole:::::::::::  $selectedRole");
     print(
-        "selectedUser:::::::::    ${selectedUser}      ${userlistvm.viewModels}");
+        "selectedUser:::::::::    $selectedUser      ${userlistvm.viewModels}");
     for (var viewModel in userlistvm.viewModels) {
       UserDataModel productmodel = viewModel.model;
-      print("productmodel:::::::::::   ${productmodel}");
+      print("productmodel:::::::::::   $productmodel");
       _paymentterms.add(productmodel.userrole ?? "");
       if (selectedRole == null) {
         allUsers.add(productmodel);

@@ -1,11 +1,10 @@
-// ignore_for_file: use_build_context_synchronously, non_constant_identifier_names, avoid_print
+// ignore_for_file: use_build_context_synchronously, non_constant_identifier_names, avoid_print, must_be_immutable, deprecated_member_use
 
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
@@ -14,12 +13,12 @@ import 'package:flutter_sound/flutter_sound.dart' as fs;
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
 import 'package:whatsapp/salesforce/controller/template_controller.dart';
 import 'package:whatsapp/salesforce/model/chat_history_model.dart';
+import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/widget/chat_bubble.dart';
 import 'package:whatsapp/salesforce/widget/chat_buttons.dart';
 import 'package:whatsapp/salesforce/widget/chat_date_lable.dart';
@@ -33,7 +32,10 @@ import 'package:whatsapp/utils/app_color.dart';
 final GlobalKey<FormState> _addTemplateFormKey = GlobalKey<FormState>();
 
 class SfMessageChatScreen extends StatefulWidget {
-  const SfMessageChatScreen({super.key});
+  List<SfDrawerItemModel>? pinnedLeadsList;
+  bool isFromRecentChat;
+  SfMessageChatScreen(
+      {super.key, this.pinnedLeadsList, this.isFromRecentChat = false});
 
   @override
   State<SfMessageChatScreen> createState() => _SfMessageChatScreenState();
@@ -49,10 +51,6 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
 
   StreamSubscription? _previewPlayerSubscription;
 
-  // Duration _totalDuration = Duration.zero;
-  // Duration _currentPosition = Duration.zero;
-
-  // bool _isRecording = false;
   String? _audioPath;
 
   String userNumer = "";
@@ -296,25 +294,28 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     );
   }
 
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    return "${twoDigits(duration.inMinutes)}:${twoDigits(duration.inSeconds.remainder(60))}";
-  }
+  // String _formatDuration(Duration duration) {
+  //   String twoDigits(int n) => n.toString().padLeft(2, '0');
+  //   return "${twoDigits(duration.inMinutes)}:${twoDigits(duration.inSeconds.remainder(60))}";
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ChatMessageController>(builder: (context, ref, child) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        resizeToAvoidBottomInset: true,
-        appBar: const SfChatAppBar(),
-        body: Stack(
-          children: [
-            RefreshIndicator(
-              onRefresh: _pullRefresh,
-              child: ref.chatHistoryLoader ? Container() : _pageBody(),
-            ),
-          ],
+      return SafeArea(
+        bottom: true,
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          resizeToAvoidBottomInset: true,
+          appBar: const SfChatAppBar(),
+          body: Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: _pullRefresh,
+                child: _pageBody(),
+              ),
+            ],
+          ),
         ),
       );
     });
@@ -325,15 +326,16 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   }
 
   void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        print("scrolling to the extreme bottom.............");
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent + 2800,
+          _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
-      });
-    }
+      }
+    });
   }
 
   _pageBody() {
@@ -348,86 +350,319 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-              child: ref.chatHistoryList.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "No Chat Available..",
-                        style: TextStyle(color: Colors.black, fontSize: 16),
-                      ),
-                    )
-                  : ListView.builder(
-                      controller: _scrollController,
-                      itemCount: ref.chatHistoryList.length,
-                      itemBuilder: (context, index) {
-                        final item = ref.chatHistoryList[index];
-                        final currentRaw = item.createdDate;
+            child: Column(
+              children: [
+                if (widget.pinnedLeadsList!.isNotEmpty)
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(top: 15.0, left: 15, right: 15),
+                    child: SizedBox(
+                      height: 90,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: widget.pinnedLeadsList!.length,
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () async {
+                              if (widget.isFromRecentChat) {
+                                DashBoardController dashBoardController =
+                                    Provider.of(context, listen: false);
+                                String phNum =
+                                    "${dashBoardController.sfPinnedRecentChatList[index].countryCode ?? ""}${dashBoardController.sfPinnedRecentChatList[index].whatsappNumber ?? ""}";
 
-                        if (currentRaw == null || currentRaw.isEmpty) {
-                          return const SizedBox();
-                        }
+                                ChatMessageController cmProvider =
+                                    Provider.of(context, listen: false);
+                                DashBoardController dbProvider =
+                                    Provider.of(context, listen: false);
+                                dbProvider.setSelectedPinnedInfo(null);
 
-                        final DateTime currentTime = DateTime.parse(currentRaw)
-                            .toUtc()
-                            .add(const Duration(hours: 5, minutes: 30));
+                                dbProvider.setSelectedContaactInfo(
+                                    dashBoardController
+                                        .sfPinnedRecentChatList[index]);
+                                await cmProvider
+                                    .messageHistoryApiCall(
+                                        userNumber: phNum, isFirstTime: true)
+                                    .then((onValue) {});
+                              } else {
+                                String phNum =
+                                    "${widget.pinnedLeadsList![index].countryCode ?? ""}${widget.pinnedLeadsList![index].whatsappNumber ?? ""}";
 
-                        bool showDateLabel = index == 0;
-                        if (!showDateLabel) {
-                          final prevRaw =
-                              ref.chatHistoryList[index - 1].createdDate;
-                          if (prevRaw != null && prevRaw.isNotEmpty) {
-                            final prevTime = DateTime.parse(prevRaw)
-                                .toUtc()
-                                .add(const Duration(hours: 5, minutes: 30));
-                            showDateLabel = !isSameDay(currentTime, prevTime);
-                          }
-                        }
+                                ChatMessageController cmProvider =
+                                    Provider.of(context, listen: false);
+                                DashBoardController dbProvider =
+                                    Provider.of(context, listen: false);
+                                dbProvider.setSelectedPinnedInfo(null);
+                                dbProvider.setSelectedContaactInfo(
+                                    widget.pinnedLeadsList![index]);
 
-                        String tempBody = "";
+                                await cmProvider
+                                    .messageHistoryApiCall(
+                                  userNumber: phNum,
+                                )
+                                    .then((onValue) {
+                                  // Navigator.pop(navigatorKey.currentContext!);
+                                });
+                              }
 
-                        if (item.templateParams!.isEmpty) {
-                          tempBody = item.templateBody ?? "";
-                        } else {
-                          tempBody = replaceTemplateParams(
-                              item.templateBody ?? "",
-                              item.templateParams ?? "");
-                        }
-
-                        List<ButtonItem> buttons =
-                            (item.button?.isNotEmpty ?? false)
-                                ? item.getParsedButtons()
-                                : [];
-
-                        final hasContent =
-                            (item.message?.isNotEmpty ?? false) ||
-                                (item.templateName?.isNotEmpty ?? false) ||
-                                (tempBody.isNotEmpty) ||
-                                (item.attachmentUrl?.isNotEmpty ?? false);
-
-                        if (!hasContent) return const SizedBox();
-
-                        return Column(
-                          children: [
-                            if (showDateLabel) ChatDateLabel(date: currentTime),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 15.0),
-                              child: Container(
-                                color: ref.msgDeleteList
-                                        .contains(item.messageId ?? "")
-                                    ? const Color(0xffE6E6E6)
-                                    : Colors.transparent,
-                                child: ChatBubble(
-                                  tempBody: tempBody,
-                                  item: item,
-                                  buttons: buttons,
-                                  currentTime: currentTime,
-                                ),
+                              _scrollToBottom();
+                            },
+                            child: SizedBox(
+                              width: 60,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: AppColor.navBarIconColor,
+                                    child: Text(
+                                      widget.pinnedLeadsList![index].name!
+                                              .isNotEmpty
+                                          ? widget
+                                              .pinnedLeadsList![index].name![0]
+                                              .toUpperCase()
+                                          : '?',
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    widget.pinnedLeadsList![index].name ?? "",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        );
-                      },
-                    )),
-          _buildMessageInputArea(),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 5,
+                          spreadRadius: 3,
+                          offset: const Offset(2, 4),
+                        ),
+                      ],
+                      color: Colors.white,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            children: [
+                              const CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                  'https://www.w3schools.com/w3images/avatar2.png',
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Consumer<DashBoardController>(
+                                  builder: (context, dbRef, child) {
+                                    return Text(
+                                      dbRef.selectedContactInfo?.name ?? "",
+                                      style:
+                                          const TextStyle(color: Colors.black),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const Spacer(),
+                              Consumer<ChatMessageController>(
+                                  builder: (context, msgCtrol, child) {
+                                return msgCtrol.msgDeleteList.isEmpty
+                                    ? const SizedBox()
+                                    : InkWell(
+                                        onTap: () {
+                                          DashBoardController dbController =
+                                              Provider.of(context,
+                                                  listen: false);
+
+                                          String code = dbController
+                                                  .selectedContactInfo
+                                                  ?.countryCode ??
+                                              "91";
+                                          String num = dbController
+                                                  .selectedContactInfo
+                                                  ?.whatsappNumber ??
+                                              "";
+                                          String whatsappNum = "$code$num";
+                                          msgCtrol.chatMsgDeleteApiCall(
+                                              whatsappNum);
+                                        },
+                                        child: const Icon(
+                                          Icons.delete,
+                                          color: Colors.black,
+                                        ),
+                                      );
+                              }),
+                              PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert,
+                                    color: Colors.black),
+                                onSelected: (String value) {
+                                  if (value == 'Clear Chat') {
+                                    ChatMessageController messageController =
+                                        Provider.of(context, listen: false);
+                                    DashBoardController dbController =
+                                        Provider.of(context, listen: false);
+
+                                    String usrNumber = dbController
+                                            .selectedContactInfo
+                                            ?.whatsappNumber ??
+                                        "";
+                                    String code = dbController
+                                            .selectedContactInfo?.countryCode ??
+                                        "91";
+                                    var wpNum = "$code$usrNumber";
+                                    messageController
+                                        .deleteHistoryApiCall(wpNum);
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) => const [
+                                  PopupMenuItem<String>(
+                                    value: 'Clear Chat',
+                                    child: Text('Clear Chat'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        ref.chatHistoryLoader
+                            ? const Padding(
+                                padding: EdgeInsets.only(top: 38.0),
+                                child: CircularProgressIndicator(
+                                  color: AppColor.navBarIconColor,
+                                ),
+                              )
+                            : ref.chatHistoryList.isEmpty
+                                ? const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(top: 28.0),
+                                      child: Text(
+                                        "No Chat Available..",
+                                        style: TextStyle(
+                                            color: Colors.black, fontSize: 16),
+                                      ),
+                                    ),
+                                  )
+                                : Expanded(
+                                    child: ListView.builder(
+                                      controller: _scrollController,
+                                      itemCount: ref.chatHistoryList.length,
+                                      itemBuilder: (context, index) {
+                                        final item = ref.chatHistoryList[index];
+                                        final currentRaw = item.createdDate;
+                                        if (currentRaw == null ||
+                                            currentRaw.isEmpty) {
+                                          return const SizedBox();
+                                        }
+
+                                        final currentTime =
+                                            DateTime.parse(currentRaw)
+                                                .toUtc()
+                                                .add(const Duration(
+                                                    hours: 5, minutes: 30));
+
+                                        bool showDateLabel = index == 0;
+                                        if (!showDateLabel) {
+                                          final prevRaw = ref
+                                              .chatHistoryList[index - 1]
+                                              .createdDate;
+                                          if (prevRaw != null &&
+                                              prevRaw.isNotEmpty) {
+                                            final prevTime =
+                                                DateTime.parse(prevRaw)
+                                                    .toUtc()
+                                                    .add(const Duration(
+                                                        hours: 5, minutes: 30));
+                                            showDateLabel = !isSameDay(
+                                                currentTime, prevTime);
+                                          }
+                                        }
+
+                                        String tempBody =
+                                            item.templateParams!.isEmpty
+                                                ? (item.templateBody ?? "")
+                                                : replaceTemplateParams(
+                                                    item.templateBody ?? "",
+                                                    item.templateParams ?? "");
+
+                                        List<ButtonItem> buttons =
+                                            (item.button?.isNotEmpty ?? false)
+                                                ? item.getParsedButtons()
+                                                : [];
+
+                                        final hasContent =
+                                            (item.message?.isNotEmpty ??
+                                                    false) ||
+                                                (item.templateName
+                                                        ?.isNotEmpty ??
+                                                    false) ||
+                                                (tempBody.isNotEmpty) ||
+                                                (item.attachmentUrl
+                                                        ?.isNotEmpty ??
+                                                    false);
+
+                                        if (!hasContent) {
+                                          return const SizedBox();
+                                        }
+
+                                        return Column(
+                                          children: [
+                                            if (showDateLabel)
+                                              ChatDateLabel(date: currentTime),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 15.0),
+                                              child: Container(
+                                                color: ref.msgDeleteList
+                                                        .contains(
+                                                            item.messageId ??
+                                                                "")
+                                                    ? const Color(0xffE6E6E6)
+                                                    : Colors.transparent,
+                                                child: ChatBubble(
+                                                  tempBody: tempBody,
+                                                  item: item,
+                                                  buttons: buttons,
+                                                  currentTime: currentTime,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ),
+                        if (ref.chatHistoryList.isEmpty ||
+                            ref.chatHistoryLoader)
+                          const Spacer(),
+                        _buildMessageInputArea(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       );
     });

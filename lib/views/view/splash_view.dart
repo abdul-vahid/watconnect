@@ -1,7 +1,8 @@
+// ignore_for_file: use_build_context_synchronously, unnecessary_brace_in_string_interps, library_private_types_in_public_api
+
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
@@ -10,9 +11,7 @@ import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
-import 'package:whatsapp/utils/function_lib.dart';
 
-import 'package:whatsapp/view_models/user_list_vm.dart';
 import 'package:whatsapp/views/view/login_view.dart';
 import '../widgets/bottomnavigatonbar.dart';
 
@@ -28,9 +27,7 @@ class SplashView extends StatefulWidget {
 
 class _SplashViewState extends State<SplashView> {
   @override
-  static FirebaseMessaging? _firebaseMessaging;
   void initState() {
-    _firebaseMessaging = FirebaseMessaging.instance;
     // _firebaseMessaging?.requestPermission(
     //   alert: true,
     //   announcement: false,
@@ -154,10 +151,10 @@ class _SplashViewState extends State<SplashView> {
   void _isLoggedIn() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String sfAccessToken =
-        await prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-    String user = await prefs.getString(SharedPrefsConstants.userKey) ?? "";
-    String jstokn =
-        await prefs.getString(SharedPrefsConstants.accessTokenKey) ?? "";
+        prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+    String user = prefs.getString(SharedPrefsConstants.userKey) ?? "";
+    // String jstokn =
+    // await prefs.getString(SharedPrefsConstants.accessTokenKey) ?? "";
 
     log("access sf::   ${sfAccessToken}");
     // log("token js:: ${jstokn}  ");

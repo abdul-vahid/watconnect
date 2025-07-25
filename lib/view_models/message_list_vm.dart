@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, depend_on_referenced_packages, non_constant_identifier_names
+
 import 'dart:convert' show jsonEncode;
 import 'dart:developer';
 import 'dart:io';
@@ -78,7 +80,7 @@ class MessageViewModel extends BaseListViewModel {
       String? tempCate}) async {
     print("c=templeate snd callled");
     String url = AppUtils.getUrl(
-        '${AppConstants.templetesend}=$number&category=${tempCate}');
+        '${AppConstants.templetesend}=$number&category=$tempCate');
     print("url==mobile templete send >$url");
     String body = jsonEncode(msgmobilbody);
     var result = await post(url: url, body: body);

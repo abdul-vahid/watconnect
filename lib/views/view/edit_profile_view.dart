@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use, avoid_print, use_build_context_synchronously, must_be_immutable
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/views/view/lead_add_update_view.dart';
@@ -227,7 +229,7 @@ class _EditProfileView extends State<EditProfileView> {
 
   @override
   Widget build(BuildContext context) {
-    print("selectedCounssssssstry${selectedCountry}");
+    print("selectedCounssssssstry$selectedCountry");
     print("phone==widget>${widget.phone}");
     _getUserData = GetUserViewModel(context);
     return Scaffold(
@@ -489,7 +491,7 @@ class _EditProfileView extends State<EditProfileView> {
   }
 
   Future<void> updateData() async {
-    print("selectedCountry::: ${selectedCountry}");
+    print("selectedCountry::: $selectedCountry");
     if (_profileFormKey.currentState!.validate()) {
       _profileFormKey.currentState!.save();
       // AppUtils.onLoading(context, "Updating, please wait...");

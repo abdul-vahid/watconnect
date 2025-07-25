@@ -3,6 +3,7 @@ import 'dart:convert';
 class Permission {
   String? name;
 
+  // ignore: prefer_typing_uninitialized_variables
   static var microphone;
 
   Permission({this.name});

@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -27,7 +29,7 @@ class _SfCampaignDetailScreenState extends State<SfCampaignDetailScreen> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => CampaignHistoryList()));
+                      builder: (context) => const CampaignHistoryList()));
             },
             child: Container(
               height: 50,
@@ -115,7 +117,7 @@ class _SfCampaignDetailScreenState extends State<SfCampaignDetailScreen> {
                       // ),
 
                       buildRow("Template Name",
-                          value: "${selectedCampData?.templateName ?? ""}"),
+                          value: selectedCampData?.templateName ?? ""),
 
                       buildRow("Business Number",
                           value: selectedCampData?.bussinessNumber ?? ""),
@@ -223,7 +225,7 @@ Widget buildRow(String label, {dynamic value = ""}) {
           ],
         ),
       ),
-      Divider()
+      const Divider()
     ],
   );
 }

@@ -1,9 +1,10 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'dart:developer';
 // import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/apis/app_exception.dart';
 import '../../core/models/base_model.dart';
@@ -28,12 +29,12 @@ class BaseListViewModel extends ChangeNotifier {
       required String url,
       String jsonKey = "records",
       bool showToast = false}) async {
-    log("get api url>>> ${url}   ");
+    log("get api url>>> $url   ");
 
     try {
       final jsonObject = await BaseService().get(url: url);
 
-      log("Response Data get == $jsonObject ${url}   ${(jsonObject.runtimeType)}  ");
+      log("Response Data get == $jsonObject $url   ${(jsonObject.runtimeType)}  ");
 
       print("jsonObject.statusCode:::::::::::::::  ${jsonObject.statusCode}");
       if (jsonObject.data.runtimeType != List && jsonObject.statusCode == 402) {
@@ -50,19 +51,19 @@ class BaseListViewModel extends ChangeNotifier {
         // return records;
       }
       print(
-          ":____________________>>>>>>>>>> ${url} ${records.length}   ${records.runtimeType}  ${records}  ${records[0]['records']}");
+          ":____________________>>>>>>>>>> $url ${records.length}   ${records.runtimeType}  $records  ${records[0]['records']}");
       try {
-        var rec = records[0]['records'];
+        // var rec = records[0]['records'];
         var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
 
-        print("modelMap::::::::: ${modelMap}   ${url}   ");
+        print("modelMap::::::::: $modelMap   $url   ");
 
         viewModels =
             modelMap.map((item) => BaseViewModel(model: item)).toList();
 
         // print("execute of the get method ${url}  ${viewModels}  ");
       } catch (e, stackTrace) {
-        print("catching error in parsing :: ${e}     $stackTrace");
+        print("catching error in parsing :: $e     $stackTrace");
       }
       status = "Completed";
     } on UnauthorisedException {
@@ -83,7 +84,7 @@ class BaseListViewModel extends ChangeNotifier {
       exception = error;
       viewModels.add(BaseViewModel(model: BaseModel()));
     } on Exception catch (e) {
-      print("e:::::::::::::: ${e}");
+      print("e:::::::::::::: $e");
       exception = e;
       status = "Error";
       viewModels.add(BaseViewModel(model: BaseModel()));
@@ -105,7 +106,7 @@ class BaseListViewModel extends ChangeNotifier {
         refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!;
       }
       Map<String, String> body = {"refreshToken": refreshToken};
-      debug("rftgyhjuhgtfrderftghyjkjhygttgyhuj${body}");
+      debug("rftgyhjuhgtfrderftghyjkjhygttgyhuj$body");
       final jsonObject = await postForRefreshToken(
           url: refreshTokenUrl, body: jsonEncode(body));
       accessToken = jsonObject["authToken"];
@@ -157,11 +158,11 @@ class BaseListViewModel extends ChangeNotifier {
       required String body,
       String jsonKey = "records",
       bool showToast = false}) async {
-    log("req body>> ${url} >>>>>> ${body}");
+    log("req body>> $url >>>>>> $body");
 
     try {
       var r = await BaseService().post(url: url, body: body);
-      log("response=>$r    api>>> ${url}");
+      log("response=>$r    api>>> $url");
 
       print("jsonObject.statusCode:::::::::::::::  ${r.statusCode}");
       if (r.statusCode == 402) {
@@ -170,7 +171,7 @@ class BaseListViewModel extends ChangeNotifier {
         }
       }
 
-      print("r  is to return:::::::::::  ${r}");
+      print("r  is to return:::::::::::  $r");
       return r.data;
     } on UnauthorisedException {
       await _refreshToken(url);

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, await_only_futures
+
 import 'dart:convert';
 import 'dart:developer' as dev;
 
@@ -14,6 +16,7 @@ String token = "";
 
 Future<bool> isInternetAvailable() async {
   final connectivityResult = await Connectivity().checkConnectivity();
+  // ignore: unrelated_type_equality_checks
   return connectivityResult != ConnectivityResult.none;
 }
 
@@ -45,7 +48,7 @@ class AppApi {
         jsonEncode(params),
         header,
       ).timeout(const Duration(minutes: 2));
-      print("repose::: ${response}  ${response.statusCode} ${response.body}");
+      print("repose::: $response  ${response.statusCode} ${response.body}");
       if (response.body.isNotEmpty) {
         printResponse(url: url, header: header, response: response.body);
       }
@@ -70,7 +73,7 @@ class AppApi {
       if (sendToken) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         token = await prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-        header.putIfAbsent("Authorization", () => "Bearer ${token}");
+        header.putIfAbsent("Authorization", () => "Bearer $token");
       }
 
       // header.putIfAbsent("content-type", () => "application/json");
@@ -79,7 +82,7 @@ class AppApi {
 
       var response = await NetworkCalls.get(url, header)
           .timeout(const Duration(seconds: 20));
-      print("get reposne before log::: ${response}");
+      print("get reposne before log::: $response");
       printResponse(url: url, header: header, response: response);
 
       return jsonDecode(response);
@@ -148,6 +151,6 @@ printResponse(
   dev.log("response api header   >>> ${jsonEncode(header)}");
 
   dev.log('\n');
-  var data = jsonDecode(response ?? "");
+  // var data = jsonDecode(response ?? "");
   // dev.log("response body >>>>>>>> ${data}   ");
 }

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:whatsapp/views/view/show_audio.dart';
@@ -155,7 +157,7 @@ class AttachmentPreviewWidget extends StatelessWidget {
       {required String imageAsset}) {
     return InkWell(
       onTap: () {
-        print("before opening doc:::: ${attachmentUrl}");
+        print("before opening doc:::: $attachmentUrl");
         openDocument(context, attachmentUrl ?? "");
       },
       child: ClipRRect(

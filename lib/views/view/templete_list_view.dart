@@ -1,4 +1,6 @@
 // import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+// ignore_for_file: deprecated_member_use, avoid_print, prefer_typing_uninitialized_variables, use_build_context_synchronously
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -176,7 +178,7 @@ class _TempleteListView extends State<TempleteListView> {
                                   selectTempList = selected;
                                 });
                               },
-                              initialValue: [],
+                              initialValue: const [],
                             ),
                             const SizedBox(height: 16),
                             Wrap(
@@ -190,7 +192,6 @@ class _TempleteListView extends State<TempleteListView> {
                                       selectTempList.remove(selectedItem);
                                     });
                                   },
-                                  // ignore: deprecated_member_use
                                   backgroundColor: Colors.blue.withOpacity(0.2),
                                   labelStyle:
                                       const TextStyle(color: Colors.blue),
@@ -280,7 +281,7 @@ class _TempleteListView extends State<TempleteListView> {
 
   void filterLeads(List filter) {
     print(
-        "filter:::::${filter}  ${tempTemplates.length} ${allTemplates.length}  ${allTemplates.length}  ${allTemplates.runtimeType}");
+        "filter:::::$filter  ${tempTemplates.length} ${allTemplates.length}  ${allTemplates.length}  ${allTemplates.runtimeType}");
 
     if (filter.contains('All') || filter.isEmpty) {
       allTemplates = tempTemplates;
@@ -329,7 +330,6 @@ class _TempleteListView extends State<TempleteListView> {
                     decoration: BoxDecoration(
                         boxShadow: [
                           BoxShadow(
-                            // ignore: deprecated_member_use
                             color: Colors.black.withOpacity(0.1),
                             blurRadius: 2,
                             spreadRadius: 2,
@@ -351,7 +351,7 @@ class _TempleteListView extends State<TempleteListView> {
                             ),
                           ),
                           selectTempList.isEmpty
-                              ? SizedBox()
+                              ? const SizedBox()
                               : Container(
                                   decoration: const BoxDecoration(
                                       color: AppColor.navBarIconColor,
@@ -414,7 +414,7 @@ class _TempleteListView extends State<TempleteListView> {
           ),
         ),
         allTemplates.isEmpty || noMatchedLeads
-            ? SizedBox()
+            ? const SizedBox()
             : Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -755,7 +755,7 @@ class _TempleteListView extends State<TempleteListView> {
       var campginmodel = viewModel.model;
       if (campginmodel?.data != null) {
         allTemplates = [];
-        log("selecttemplte:::: ${selecttemplte}");
+        log("selecttemplte:::: $selecttemplte");
         for (var record in campginmodel!.data!) {
           if (record.status != null) {
             tempTemplates.add(record);

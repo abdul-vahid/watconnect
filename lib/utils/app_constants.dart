@@ -1,4 +1,6 @@
 /// Environment variables and shared app constants.
+// ignore_for_file: constant_identifier_names
+
 abstract class SharedPrefsConstants {
   static const String accessTokenKey = "access_token";
   static const String refreshTokenKey = "refresh_token";
@@ -12,6 +14,7 @@ abstract class SharedPrefsConstants {
   static const String usertenantcodeKey = "tenantcode";
 
   static const String hasWalletKey = "hasWallet";
+  static const String hasCallsKey = "hasCalls";
 
   static const String userAvailableMoulesKey = "modules";
   static const String userrolekey = "userrole";
@@ -83,11 +86,11 @@ abstract class AppConstants {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // static const String baseUrl = "https://sandbox.watconnect.com/swp";
-  static const String baseUrl = "https://admin.watconnect.com/ibs";
+  static const String baseUrl = "https://sandbox.watconnect.com/swp";
+  // static const String baseUrl = "https://admin.watconnect.com/ibs";
 
-  // static const String baseImgUrl = "https://sandbox.watconnect.com/";
-  static const String baseImgUrl = "https://admin.watconnect.com/";
+  static const String baseImgUrl = "https://sandbox.watconnect.com/";
+  // static const String baseImgUrl = "https://admin.watconnect.com/";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -212,6 +215,15 @@ abstract class AppConstants {
   static const String templateRates = '$baseUrl/api/whatsapp/template_rates';
   static const String pinLead = "/api/leads/{leadId}/pin";
   static const String unpinLead = "/api/leads/{leadId}/unpin";
+  static const String callHistoryApi =
+      "/api/whatsapp/call?business_number=917240500172&whatsapp_number=";
+
+  static const String callAcceptApi = "/api/whatsapp/call/accept";
+
+  static const String callRejectApi = "/api/whatsapp/call/reject";
+
+  static const String initiateCallApi =
+      "/api/whatsapp/call?business_number={business_number}&whatsapp_number=%2B{whatsapp_number}";
 
   // /whatsapp/
 

@@ -56,8 +56,7 @@ Future<void> showSimpleDialog(
               ),
             ),
             onPressed: () {
-              MessageController msgController =
-                  Provider.of<MessageController>(context, listen: false);
+              Provider.of<MessageController>(context, listen: false);
               // singlemsgdelete(msgController.msgToDelete);
               Navigator.of(context).pop(); // Close dialog after deletion
             },

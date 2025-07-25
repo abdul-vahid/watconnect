@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, avoid_print, avoid_function_literals_in_foreach_calls, unnecessary_const
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/models/tags_list_model.dart';
@@ -7,6 +9,7 @@ import 'package:whatsapp/view_models/tags_list_vm.dart';
 import 'package:whatsapp/views/view/lead_add_update_view.dart';
 import 'package:whatsapp/views/view/tags_list_view.dart';
 
+// ignore: must_be_immutable
 class TagAddUpdateView extends StatefulWidget {
   TagRecord? tagData;
   TagAddUpdateView({super.key, this.tagData});
@@ -18,7 +21,7 @@ class TagAddUpdateView extends StatefulWidget {
 class _TagAddUpdateViewState extends State<TagAddUpdateView> {
   final GlobalKey<FormState> _addTagFormKey = GlobalKey<FormState>();
 
-  TextEditingController tagNameController = new TextEditingController();
+  TextEditingController tagNameController = TextEditingController();
 
   // TextEditingController keywordController = new TextEditingController();
 
@@ -483,7 +486,7 @@ class _TagAddUpdateViewState extends State<TagAddUpdateView> {
                           }).toList()
                         ],
                       )
-                    : SizedBox()
+                    : const SizedBox()
               ],
             ),
           )),
@@ -496,21 +499,21 @@ class _TagAddUpdateViewState extends State<TagAddUpdateView> {
         controller: TextEditingController(),
       ));
     });
-    print("autoTagRules::::::::after add::::   ${autoTagRules}");
+    print("autoTagRules::::::::after add::::   $autoTagRules");
   }
 
   void resetAutoTagRule() {
     setState(() {
       autoTagRules.clear();
     });
-    print("autoTagRules::::::::after add::::   ${autoTagRules}");
+    print("autoTagRules::::::::after add::::   $autoTagRules");
   }
 
   void removeAutoTagRule(int index) {
     setState(() {
       autoTagRules.removeAt(index);
     });
-    print("autoTagRules::::::::after remove::::   ${autoTagRules}");
+    print("autoTagRules::::::::after remove::::   $autoTagRules");
   }
 
   Future<void> createTag() async {
@@ -562,7 +565,7 @@ class _TagAddUpdateViewState extends State<TagAddUpdateView> {
       );
     });
 
-    print("body:: in api : ${body}");
+    print("body:: in api : $body");
   }
 
   Future<void> updateTag() async {
@@ -627,7 +630,7 @@ class _TagAddUpdateViewState extends State<TagAddUpdateView> {
       );
     });
 
-    print("update tag body:::::: ${body}");
+    print("update tag body:::::: $body");
   }
 }
 

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use
+
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -31,7 +33,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
   int selectedPage = 0;
   bool isDeviceConnected = false;
   bool isAlertSet = false;
-  int _currentPageIndex = 0;
+  // int _currentPageIndex = 0;
   // late NotchBottomBarController _controller;
 
   @override
@@ -46,10 +48,6 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     getuserrole();
     print("init startwtwtwyw=>${userModelData?.userrole}");
     super.initState();
-
-    setState(() {
-      _currentPageIndex = 0;
-    });
   }
 
   getBusNumApiCall() async {
@@ -119,6 +117,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       );
   @override
   Widget build(BuildContext context) {
+    // ignore: no_leading_underscores_for_local_identifiers
     final _pageOptions = [
       HomeView(),
       ProfileView(),

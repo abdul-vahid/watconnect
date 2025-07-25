@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
@@ -45,7 +47,7 @@ Widget buildHeaderMedia(
                           pdfUrl: headerBody,
                         )));
           } catch (e) {
-            print("erorore opening file>>> ${e}");
+            print("erorore opening file>>> $e");
           }
         },
         child: Image.asset(

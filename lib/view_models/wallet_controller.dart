@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'dart:developer';
 
@@ -162,7 +164,7 @@ class WalletController extends ChangeNotifier {
         msg = data["message"];
         EasyLoading.showToast(msg);
 
-        print("hasBalance in api calll:::::::::::  ${hasBalance}");
+        print("hasBalance in api calll:::::::::::  $hasBalance");
         notify();
       } else {
         msg = data["message"];
@@ -222,7 +224,7 @@ class WalletController extends ChangeNotifier {
       var data = jsonDecode(response.body);
       if (response.statusCode == 200) {
         res = data["success"];
-        var transactionData = data["transaction"];
+        // var transactionData = data["transaction"];
       } else {
         log(" debit wallet balance API failed [${response.statusCode}]: ${response.body}");
       }
@@ -243,7 +245,7 @@ class WalletController extends ChangeNotifier {
       // setGetCampLoader(true);
       final prefs = await SharedPreferences.getInstance();
 
-      String apiUrl = "${AppConstants.templateRates}";
+      String apiUrl = AppConstants.templateRates;
       final token = prefs.getString(SharedPrefsConstants.accessTokenKey) ?? "";
       final response = await http.get(
         Uri.parse(apiUrl),
@@ -252,9 +254,9 @@ class WalletController extends ChangeNotifier {
           'Content-Type': 'application/json',
         },
       );
-      log("headers::::  ${apiUrl}");
+      log("headers::::  $apiUrl");
       print(
-          "Template Rates response :: ${response.runtimeType}  ${response.statusCode} ${response}");
+          "Template Rates response :: ${response.runtimeType}  ${response.statusCode} $response");
 
       if (response.statusCode == 200) {
         // setGetCampLoader(false);
@@ -279,15 +281,15 @@ class WalletController extends ChangeNotifier {
   }
 
   calAmount({Map? csv, Map? body}) {
-    log("temp::::: rate:::::: list::::::::::   ${templateRatesList}");
-    print("csv:::::   ${csv}");
-    print("body:::::   ${body}");
+    log("temp::::: rate:::::: list::::::::::   $templateRatesList");
+    print("csv:::::   $csv");
+    print("body:::::   $body");
 
     Map<String, int> codeCount = mergeCountryCodeCounts(
         memberList: body?['lead_ids'],
         originalCounts: csv?['countryCodeCounts']);
 
-    print("codeCount:::::::     ${codeCount}");
+    print("codeCount:::::::     $codeCount");
     print("temp cate ::: ${body?['template_id']}");
 
     var amount = calculateTotalCost(
@@ -295,7 +297,7 @@ class WalletController extends ChangeNotifier {
         codeCounts: codeCount,
         pricingList: templateRatesList);
 
-    print("final amount::::::     ${amount}");
+    print("final amount::::::     $amount");
 
     finalAmount = amount.toString();
     notify();
@@ -360,7 +362,7 @@ class WalletController extends ChangeNotifier {
 
   calculateAmount(String tempCate, String code) async {
     String cCode = code.replaceAll("+", '');
-    print("tempCate:::::::::   ${tempCate}    ${code}   ${cCode}");
+    print("tempCate:::::::::   $tempCate    $code   $cCode");
 
     String amt = "";
 

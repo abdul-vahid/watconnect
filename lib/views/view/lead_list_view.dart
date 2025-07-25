@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use, avoid_print, use_build_context_synchronously, prefer_typing_uninitialized_variables
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
+// ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:whatsapp/models/tags_list_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
@@ -268,7 +271,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            List<String> uniquePaymentTerms = _leadfilter.toSet().toList();
+            _leadfilter.toSet().toList();
 
             return Container(
               // height: 220,
@@ -349,7 +352,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                   selectleadList = selected;
                                 });
                               },
-                              initialValue: [],
+                              initialValue: const [],
                             ),
                             const SizedBox(height: 16),
                             Wrap(
@@ -436,15 +439,14 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   }
 
   Future<String?> _marksread(String whatsappNumber) async {
-    print("sajdjsahdjsah jhsjhkjdhakj${whatsappNumber}");
+    print("sajdjsahdjsah jhsjhkjdhakj$whatsappNumber");
 
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
     Map<String, String>? bodydata = {"whatsapp_number": whatsappNumber};
 
-    var response = await Provider.of<UnreadCountVm>(context, listen: false)
-        .marksreadcountmsg(
+    await Provider.of<UnreadCountVm>(context, listen: false).marksreadcountmsg(
       leadnumber: whatsappNumber,
       number: number,
       bodydata: bodydata,
@@ -585,7 +587,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
             ? const SizedBox()
             : Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Container(
+                child: SizedBox(
                   height: 70,
                   child: ListView.builder(
                       scrollDirection: Axis.horizontal,
@@ -660,7 +662,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                 );
                               }
                             },
-                            child: Container(
+                            child: SizedBox(
                               width: 60,
                               child: Column(
                                 children: [
@@ -697,7 +699,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   "${allLeads.length} Leads Available",
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                   textAlign: TextAlign.left,
                 ),
               ),
@@ -752,7 +754,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                       } else if (index == 0) {
                                         setState(() {
                                           print(
-                                              "tempLeadModelList::::::::::: ${tempLeadModelList}");
+                                              "tempLeadModelList::::::::::: $tempLeadModelList");
                                           allLeads = tempLeadModelList;
                                         });
                                       } else {
@@ -762,11 +764,11 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                             isScrollControlled: true,
                                             enableDrag: false,
                                             builder: (context) {
-                                              String _selectedOption = 'AND';
+                                              String selectedOption = 'AND';
                                               return StatefulBuilder(builder:
                                                   (BuildContext context,
                                                       StateSetter setState) {
-                                                return Container(
+                                                return SizedBox(
                                                   height: MediaQuery.of(context)
                                                           .size
                                                           .height *
@@ -787,7 +789,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                                                           .bold,
                                                                   fontSize: 17),
                                                             ),
-                                                            Spacer(),
+                                                            const Spacer(),
                                                             IconButton(
                                                                 onPressed: () {
                                                                   Navigator.pop(
@@ -799,7 +801,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                                           ],
                                                         ),
                                                       ),
-                                                      Divider(),
+                                                      const Divider(),
                                                       Row(
                                                         children: [
                                                           Row(
@@ -807,11 +809,11 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                                               Radio<String>(
                                                                 value: 'AND',
                                                                 groupValue:
-                                                                    _selectedOption,
+                                                                    selectedOption,
                                                                 onChanged:
                                                                     (value) {
                                                                   setState(() {
-                                                                    _selectedOption =
+                                                                    selectedOption =
                                                                         value!;
                                                                   });
                                                                 },
@@ -826,11 +828,11 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                                               Radio<String>(
                                                                 value: 'OR',
                                                                 groupValue:
-                                                                    _selectedOption,
+                                                                    selectedOption,
                                                                 onChanged:
                                                                     (value) {
                                                                   setState(() {
-                                                                    _selectedOption =
+                                                                    selectedOption =
                                                                         value!;
                                                                   });
                                                                 },
@@ -890,7 +892,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                                           );
                                                         }).toList(),
                                                       ),
-                                                      Spacer(),
+                                                      const Spacer(),
                                                       Padding(
                                                         padding:
                                                             const EdgeInsets
@@ -949,7 +951,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                                                 // 1. Perform filtering (synchronously)
 
                                                                 tagBasedFilter(
-                                                                    _selectedOption);
+                                                                    selectedOption);
                                                                 Navigator.pop(
                                                                     context);
                                                               },
@@ -1022,7 +1024,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                 },
                               ),
                             ),
-                            Divider(),
+                            const Divider(),
                             noMatchedLeads || noRecordFound
                                 ? const Center(
                                     child: Text(
@@ -1087,14 +1089,12 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
         statusColor = const Color.fromARGB(255, 46, 198, 69);
         break;
       case 'Open - Not Contacted && Working - Contacted':
-        // ignore: deprecated_member_use
         statusColor = Colors.lightBlue.withOpacity(0.7);
         break;
       case 'Closed - Converted && Closed - Not Converted':
         statusColor = AppColor.motivationCar1Color;
         break;
       default:
-        // ignore: deprecated_member_use
         statusColor = Colors.lightBlue.withOpacity(0.7);
         break;
     }
@@ -1121,7 +1121,6 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           ),
           boxShadow: [
             BoxShadow(
-              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.1),
               blurRadius: 5,
               spreadRadius: 3,
@@ -1180,7 +1179,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                   unreadMsgCount = "0";
                   unreadMsgCount = "";
                 });
-                print("unreadMsgCount====${unreadMsgCount}  ");
+                print("unreadMsgCount====$unreadMsgCount  ");
 
                 leads?.viewModels.clear();
                 Provider.of<LeadListViewModel>(context, listen: false).fetch();
@@ -1276,8 +1275,8 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                           const Icon(Icons.arrow_circle_right_outlined),
                           model.pinned ?? false
                               ? const Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: const Icon(
+                                  padding: EdgeInsets.only(top: 8.0),
+                                  child: Icon(
                                     Icons.push_pin,
                                     color: Colors.black54,
                                     size: 16,
@@ -1311,10 +1310,10 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       filteredLeads = tempLead;
     } else {
       if (selOption == "AND") {
-        print("selectTagFilterList::::::::::::::  ${selectTagFilterList}");
+        print("selectTagFilterList::::::::::::::  $selectTagFilterList");
         filteredLeads = tempLead.where((lead) {
           final leadTagNames = lead.tagNames.map((tag) => tag.name).toSet();
-          print("leadTagNames::::::AND::::::  ${leadTagNames}");
+          print("leadTagNames::::::AND::::::  $leadTagNames");
           return selectTagFilterList.every(
             (tagName) => leadTagNames.contains(tagName),
           );
@@ -1324,7 +1323,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           final leadTagNames = lead.tagNames
               .map((tag) => tag.name.toLowerCase())
               .toSet(); // normalize to lowercase
-          print("leadTagNames::::::OR::::::  ${leadTagNames}");
+          print("leadTagNames::::::OR::::::  $leadTagNames");
 
           return selectTagFilterList
               .map((e) => e.toLowerCase())
@@ -1339,7 +1338,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   }
 
   filterLeads(List filter) {
-    print("filter::: ${filter}");
+    print("filter::: $filter");
     print("empty :::  ${tempLeadModelList.length}");
     leadModelList = tempLeadModelList;
     if (filter.isEmpty) {
@@ -1371,7 +1370,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       });
 
       print("tempLeadModelList:::::::::::::  ${tempLeadModelList.length}");
-      print("matchleadsmatchleads${matchleads}");
+      print("matchleadsmatchleads$matchleads");
     }
   }
 
@@ -1484,8 +1483,8 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
         otherLeads.add(lead);
       }
     }
-    print("prioritizedLeads:::::::::  ${prioritizedLeads}");
-    print("otherLeads:::::::::  ${otherLeads}");
+    print("prioritizedLeads:::::::::  $prioritizedLeads");
+    print("otherLeads:::::::::  $otherLeads");
 
     allLeads = [
       ...prioritizedLeads,

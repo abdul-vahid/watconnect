@@ -1,7 +1,6 @@
 //import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:whatsapp/services/api_service.dart';
 import '../core/models/base_list_view_model.dart';
 import '../models/file_model/file_model.dart';
 import '../utils/app_constants.dart';
@@ -26,9 +25,6 @@ class FileUploadVm extends BaseListViewModel {
       debugPrint("Error: Image file is null or empty.");
       return;
     }
-
-    final APIService apiService = APIService();
-    var token = await AppUtils.getToken() ?? "";
 
     String url = AppUtils.getUrl("${AppConstants.imagesend}/$parentId");
 

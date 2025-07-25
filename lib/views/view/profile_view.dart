@@ -1,7 +1,8 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
 
 // import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
@@ -17,9 +18,9 @@ import '../../models/user_model/user_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import '../../view_models/get_user_vm.dart';
-import '../../view_models/user_data_list_vm.dart' show UserDataListViewModel;
 import '../../view_models/user_list_vm.dart';
 
+// ignore: must_be_immutable
 class ProfileView extends StatefulWidget {
   GetUser? user;
   ProfileView({super.key, this.user});
@@ -222,7 +223,7 @@ class _ProfileViewState extends State<ProfileView> {
 
   Widget _getBody() {
     String fullPhone = "${user!.countrycode} ${user!.whatsapp_number}";
-    String fullname = "${fName!} ${lName!}";
+    // String fullname = "${fName!} ${lName!}";
     String role = user?.userrole ?? "";
     print("sandbox.watconnect.com/${userModel?.id}',");
 
@@ -360,102 +361,102 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  Future<void> _showDeleteDialog() async {
-    await showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white, // Background color of the dialog
-          shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(15), // Rounded corners for the dialog
-          ),
+  // Future<void> _showDeleteDialog() async {
+  //   await showDialog<void>(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         backgroundColor: Colors.white, // Background color of the dialog
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius:
+  //               BorderRadius.circular(15), // Rounded corners for the dialog
+  //         ),
 
-          content: Column(
-            mainAxisSize: MainAxisSize.min, // Let the content size fit
-            children: [
-              const Text(
-                'Are you sure you want to delete this campaign?',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 15),
-              const Divider(),
-              const SizedBox(height: 15),
-              // Optional: Custom button text styling
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.grey,
-                      backgroundColor:
-                          Colors.grey[200], // Button background color for 'No'
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'No',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                  const SizedBox(width: 20),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: AppColor.navBarIconColor,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Yes',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    onPressed: () {
-                      _deleteUser();
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  //         content: Column(
+  //           mainAxisSize: MainAxisSize.min, // Let the content size fit
+  //           children: [
+  //             const Text(
+  //               'Are you sure you want to delete this campaign?',
+  //               style: TextStyle(
+  //                 fontSize: 16,
+  //                 color: Colors.black,
+  //               ),
+  //             ),
+  //             const SizedBox(height: 15),
+  //             const Divider(),
+  //             const SizedBox(height: 15),
+  //             // Optional: Custom button text styling
+  //             Row(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: [
+  //                 TextButton(
+  //                   style: TextButton.styleFrom(
+  //                     foregroundColor: Colors.grey,
+  //                     backgroundColor:
+  //                         Colors.grey[200], // Button background color for 'No'
+  //                     padding: const EdgeInsets.symmetric(
+  //                         horizontal: 20, vertical: 12),
+  //                     shape: RoundedRectangleBorder(
+  //                       borderRadius: BorderRadius.circular(8),
+  //                     ),
+  //                   ),
+  //                   child: const Text(
+  //                     'No',
+  //                     style: TextStyle(fontSize: 14),
+  //                   ),
+  //                   onPressed: () {
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                 ),
+  //                 const SizedBox(width: 20),
+  //                 TextButton(
+  //                   style: TextButton.styleFrom(
+  //                     foregroundColor: Colors.white,
+  //                     backgroundColor: AppColor.navBarIconColor,
+  //                     padding: const EdgeInsets.symmetric(
+  //                         horizontal: 20, vertical: 12),
+  //                     shape: RoundedRectangleBorder(
+  //                       borderRadius: BorderRadius.circular(8),
+  //                     ),
+  //                   ),
+  //                   child: const Text(
+  //                     'Yes',
+  //                     style: TextStyle(fontSize: 14),
+  //                   ),
+  //                   onPressed: () {
+  //                     _deleteUser();
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                 ),
+  //               ],
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
-  void _deleteUser() {
-    // Implement the delete functionality here
-    String? userId;
-    UserDataListViewModel(context).deleteUser(userId).then((value) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('User deleted successfully.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context); // Go back to the previous screen after delete
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error deleting user.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    });
-  }
+  // void _deleteUser() {
+  //   // Implement the delete functionality here
+  //   String? userId;
+  //   UserDataListViewModel(context).deleteUser(userId).then((value) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('User deleted successfully.'),
+  //         backgroundColor: Colors.green,
+  //       ),
+  //     );
+  //     Navigator.pop(context); // Go back to the previous screen after delete
+  //   }).catchError((error) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Error deleting user.'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   });
+  // }
 
   Padding getRow(String label, String? value) {
     return Padding(
@@ -484,7 +485,7 @@ class _ProfileViewState extends State<ProfileView> {
 
   void uploadImage() async {
     var userMap = user?.toJson();
-    print("userLLL >>> ${userMap}");
+    print("userLLL >>> $userMap");
     Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
 
     var selectedImage = await chooseImage("Gallery");

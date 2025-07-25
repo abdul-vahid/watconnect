@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use, use_build_context_synchronously, prefer_typing_uninitialized_variables, non_constant_identifier_names, library_private_types_in_public_api, prefer_final_fields, await_only_futures
+
 import 'dart:async';
 import 'dart:developer';
 // import 'dart:io' as IO;
@@ -12,7 +14,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/public/flutter_sound_player.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:focus_detector/focus_detector.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -24,22 +28,26 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart' show Consumer, Provider;
 import 'package:shared_preferences/shared_preferences.dart';
+// ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
+import 'package:whatsapp/models/call_history_model.dart';
 import 'package:whatsapp/models/lead_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/utils/function_lib.dart';
+import 'package:whatsapp/view_models/call_view_model.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/view_models/message_controller.dart';
 import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/view_models/wallet_controller.dart';
+import 'package:whatsapp/views/view/call_history_screen.dart';
 import 'package:whatsapp/views/view/lead_detail_view.dart';
 import 'package:whatsapp/views/view/show_audio.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
@@ -53,6 +61,7 @@ import '../../view_models/message_list_vm.dart';
 
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
+// ignore: must_be_immutable
 class ChatScreen extends StatefulWidget {
   final String? leadName;
   final String? wpnumber;
@@ -79,6 +88,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   List<TextEditingController> controllers = [];
+  ValueNotifier<String> callDurationNotifier = ValueNotifier<String>("00:00");
 
   List<String> templateNamesss = [];
   List<String> templateIds = [];
@@ -102,8 +112,9 @@ class _ChatScreenState extends State<ChatScreen> {
   var templeteViewModel;
   List deleteMgs = [];
   String messageid = "";
-
+  var callHistoryVm;
   File? _audioFile;
+  bool hasCalls = false;
 
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
@@ -136,6 +147,7 @@ class _ChatScreenState extends State<ChatScreen> {
   var selectedBody;
   var selectedFooter;
   dynamic selectedButtons;
+  // ignore: unused_field
   late VideoPlayerController _Vcontroller;
   TempleteListViewModel? templateVM;
 
@@ -144,6 +156,15 @@ class _ChatScreenState extends State<ChatScreen> {
   TextEditingController _templateController = TextEditingController();
 
   IO.Socket? socket;
+
+  IO.Socket? callSocket;
+
+  RTCPeerConnection? _peerConnection;
+  MediaStream? _localStream;
+  MediaStream? _remoteStream;
+
+  final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
+
   String token = "your_token_here";
   var userId;
   String leadId = "lead_456";
@@ -157,8 +178,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     Map<String, String>? bodydata = {"whatsapp_number": widget.wpnumber ?? ""};
 
-    var response = await Provider.of<UnreadCountVm>(context, listen: false)
-        .marksreadcountmsg(
+    await Provider.of<UnreadCountVm>(context, listen: false).marksreadcountmsg(
       leadnumber: widget.wpnumber ?? "",
       number: number,
       bodydata: bodydata,
@@ -167,6 +187,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void initState() {
+    _remoteRenderer.initialize();
     markUnread();
     WalletController walletController = Provider.of(context, listen: false);
     getWalletStatus();
@@ -197,8 +218,10 @@ class _ChatScreenState extends State<ChatScreen> {
   getWalletStatus() async {
     print("is thi func even getting called:::::  ");
     final prefs = await SharedPreferences.getInstance();
+    hasCalls = await prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
+
     hasWallet = await prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
-    print("hasWallet:::::::::::::::::   ${hasWallet}");
+    print("hasWallet:::::::::::::::::   $hasWallet");
     setState(() {});
   }
 
@@ -209,6 +232,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    _remoteRenderer.dispose();
     _recorder.closeRecorder();
     _player.closePlayer();
     audioPlayer.dispose();
@@ -217,6 +241,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
     super.dispose();
   }
+
+  bool showCallPopup = false;
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -232,6 +258,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    callHistoryVm = Provider.of<CallsViewModel>(context);
     log("is build method calling alwayss");
     messageViewModel = Provider.of<MessageViewModel>(context);
     print("messageViewModel in the build :: ${messageViewModel.viewModels}");
@@ -270,9 +297,13 @@ class _ChatScreenState extends State<ChatScreen> {
 
           // print("Screen focused again");
           connectSocket();
+          if (hasCalls) {
+            connectCallSocket();
+          }
         },
         onFocusLost: () {
           disconnectSocket();
+          disconnectCallSocket();
         },
         child: SafeArea(
           bottom: true,
@@ -287,37 +318,51 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 onPressed: () => Navigator.pop(context),
               ),
-              title: Text(
+              title: const Text(
                 "Chat",
                 style: TextStyle(color: Colors.white),
               ),
+              actions: [
+                hasCalls
+                    ? InkWell(
+                        onTap: () {
+                          initiateCallFunc();
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.only(right: 10.0),
+                          child: Icon(
+                            Icons.call,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    : const SizedBox()
+              ],
               centerTitle: true,
             ),
-            body: Container(
-              child: Stack(
-                children: [
-                  RefreshIndicator(
-                    onRefresh: _pullRefresh,
-                    child: _isLoading ? Container() : _pageBody(),
-                  ),
-                  if (_isLoading)
-                    Positioned.fill(
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                        child: Container(
-                          color: Colors.white.withOpacity(0.2),
-                          child: Center(
-                            child: LoadingAnimationWidget.flickr(
-                              leftDotColor: AppColor.cardsColor,
-                              rightDotColor: AppColor.navBarIconColor,
-                              size: 40,
-                            ),
+            body: Stack(
+              children: [
+                RefreshIndicator(
+                  onRefresh: _pullRefresh,
+                  child: _isLoading ? Container() : _pageBody(),
+                ),
+                if (_isLoading)
+                  Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                      child: Container(
+                        color: Colors.white.withOpacity(0.2),
+                        child: Center(
+                          child: LoadingAnimationWidget.flickr(
+                            leftDotColor: AppColor.cardsColor,
+                            rightDotColor: AppColor.navBarIconColor,
+                            size: 40,
                           ),
                         ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
         ),
@@ -413,7 +458,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> messagesendd(String text) async {
     print("messagesendd called");
 
-    TempleteListViewModel tm = TempleteListViewModel(context);
+    // TempleteListViewModel tm = TempleteListViewModel(context);
     MessageViewModel ms = MessageViewModel(context);
 
     final prefs = await SharedPreferences.getInstance();
@@ -453,7 +498,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "business_number": number,
       "message_id": messageid
     };
-    print("leadnumberleadnumberleadnumber${leadnumber}");
+    print("leadnumberleadnumberleadnumber$leadnumber");
     try {
       var value = await ms.sendMessage(number: number, addmsModel: addmsModel);
       print("valueee=>$value");
@@ -508,8 +553,8 @@ class _ChatScreenState extends State<ChatScreen> {
     print("tempeeppeppepepeppep=>$templateToSend");
     late MessageViewModel mstemp = MessageViewModel(context);
     print("agyaaaaaaaaaa");
-    TempleteListViewModel templeteViewModel =
-        Provider.of<TempleteListViewModel>(context, listen: false);
+    // TempleteListViewModel templeteViewModel =
+    //     Provider.of<TempleteListViewModel>(context, listen: false);
     print("wpppp=>${widget.wpnumber}");
     var leadnumber = widget.wpnumber;
     final prefs = await SharedPreferences.getInstance();
@@ -537,7 +582,7 @@ class _ChatScreenState extends State<ChatScreen> {
         "parameters": []
       });
     }
-    ;
+
     print("templetete body=>$templateBody");
 
     Map<String, dynamic> createtemp = {
@@ -582,7 +627,7 @@ class _ChatScreenState extends State<ChatScreen> {
               "interactive_id": null
             };
 
-            print("body before sending::: ${msghistorydata}");
+            print("body before sending::: $msghistorydata");
             mstemp.semdtempmsghistory(msghistorydata: msghistorydata).then(
                 (value) =>
                     {print("semdtempmsghistorysemdtempmsghistory=>$value")});
@@ -602,7 +647,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _isLoading = false;
     });
     var leadnumber = widget.wpnumber;
-    print("leadnumber${leadnumber}");
+    print("leadnumber$leadnumber");
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
     print("number=>$number");
@@ -688,7 +733,7 @@ class _ChatScreenState extends State<ChatScreen> {
         file = pickedFile.files.first;
         image = File(file!.path!);
         isImageSent = false;
-        print("image::: ${image}");
+        print("image::: $image");
         fileNameController.text = file!.name;
       });
     }
@@ -708,7 +753,7 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         file = pickedFile.files.first;
         image = File(file!.path!);
-        print("image::: ${image}");
+        print("image::: $image");
         fileNameController.text = file!.name;
       });
       return image;
@@ -731,7 +776,7 @@ class _ChatScreenState extends State<ChatScreen> {
         file = pickedFile.files.first;
         image = File(file!.path!);
         _Vcontroller = VideoPlayerController.file(image!);
-        print("image::: ${image}");
+        print("image::: $image");
         fileNameController.text = file!.name;
       });
     }
@@ -750,7 +795,7 @@ class _ChatScreenState extends State<ChatScreen> {
         file = pickedFile.files.first;
         image = File(file!.path!);
         // _Vcontroller = VideoPlayerController.file(image!);
-        print("image::: ${image}");
+        print("image::: $image");
         fileNameController.text = file!.name;
       });
     }
@@ -790,7 +835,7 @@ class _ChatScreenState extends State<ChatScreen> {
           "type": type,
           type: {"id": doucmentid, "caption": caps ?? "Caption"}
         };
-        String? responseimage = await messageViewModel
+        await messageViewModel
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
             .then((value) {
           print("video sedn video send send value----->$value");
@@ -800,7 +845,7 @@ class _ChatScreenState extends State<ChatScreen> {
         String? leadid = widget.id;
         print("video sedn video send sned lead id=>$leadid");
 
-        String? sendimagedatabase = await messageViewModel
+        await messageViewModel
             .uploadFiledb(image!, number, leadid)
             .then((value) {
           print("video sedn video send send----upload dididi->$value");
@@ -829,7 +874,7 @@ class _ChatScreenState extends State<ChatScreen> {
         print("\x1B[33mdsdsfsdfsd$imagehistorydata\x1B[0m");
 
         print("fileidfileid$fileid");
-        String? sendhistoryimage = await messageViewModel
+        await messageViewModel
             .sendimagehistory(
           msghistorydata: imagehistorydata,
         )
@@ -891,7 +936,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
-    print("image:::::::::::::::::::::::::::    ${image}");
+    print("image:::::::::::::::::::::::::::    $image");
     if (image != null) {
       print("type===> image  $type");
       String? response = await messageViewModel.uploadFile(image!, number);
@@ -912,7 +957,7 @@ class _ChatScreenState extends State<ChatScreen> {
           type: {"id": doucmentid, "caption": caps ?? "Image caption"}
         };
         print("ississiis=>$imagebody");
-        String? responseimage = await messageViewModel
+        await messageViewModel
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
             .then((value) {
           print("value----->$value");
@@ -922,10 +967,10 @@ class _ChatScreenState extends State<ChatScreen> {
         String? leadid = widget.id;
         print("leadid=>$leadid");
 
-        String? sendimagedatabase = await messageViewModel
+        await messageViewModel
             .uploadFiledb(image!, number, leadid)
             .then((value) {
-          print("value----upload dididi->${value}");
+          print("value----upload dididi->$value");
 
           Map<String, dynamic> response = jsonDecode(value);
 
@@ -948,15 +993,15 @@ class _ChatScreenState extends State<ChatScreen> {
           "business_number": number,
           "is_read": true
         };
-        print("\x1B[33mdsdsfsdfsd${imagehistorydata}\x1B[0m");
+        print("\x1B[33mdsdsfsdfsd$imagehistorydata\x1B[0m");
 
-        print("fileidfileid${fileid}");
-        String? sendhistoryimage = await messageViewModel
+        print("fileidfileid$fileid");
+        await messageViewModel
             .sendimagehistory(
           msghistorydata: imagehistorydata,
         )
             .then((value) {
-          print("\x1B[32msendhistoryimagesendhistoryimage${value}\x1B[0m");
+          print("\x1B[32msendhistoryimagesendhistoryimage$value\x1B[0m");
           return null;
         });
       } else {
@@ -979,7 +1024,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
-    print("image:::::::::::::::::::::::::::    ${_audioFile}");
+    print("image:::::::::::::::::::::::::::    $_audioFile");
     if (_audioFile != null) {
       print("type===> image  $type");
       String? response = await messageViewModel.uploadFile(_audioFile!, number);
@@ -1002,7 +1047,7 @@ class _ChatScreenState extends State<ChatScreen> {
           }
         };
         print("ississiis=>$imagebody");
-        String? responseimage = await messageViewModel
+        await messageViewModel
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
             .then((value) {
           print("value----->$value");
@@ -1012,10 +1057,10 @@ class _ChatScreenState extends State<ChatScreen> {
         String? leadid = widget.id;
         print("leadid=>$leadid");
 
-        String? sendimagedatabase = await messageViewModel
+        await messageViewModel
             .uploadFiledb(_audioFile!, number, leadid)
             .then((value) {
-          print("value----upload dididi->${value}");
+          print("value----upload dididi->$value");
 
           Map<String, dynamic> response = jsonDecode(value);
 
@@ -1038,15 +1083,15 @@ class _ChatScreenState extends State<ChatScreen> {
           "business_number": number,
           "is_read": true
         };
-        print("\x1B[33mdsdsfsdfsd${imagehistorydata}\x1B[0m");
+        print("\x1B[33mdsdsfsdfsd$imagehistorydata\x1B[0m");
 
-        print("fileidfileid${fileid}");
-        String? sendhistoryimage = await messageViewModel
+        print("fileidfileid$fileid");
+        await messageViewModel
             .sendimagehistory(
           msghistorydata: imagehistorydata,
         )
             .then((value) {
-          print("\x1B[32msendhistoryimagesendhistoryimage${value}\x1B[0m");
+          print("\x1B[32msendhistoryimagesendhistoryimage$value\x1B[0m");
           return null;
         });
       } else {
@@ -1086,7 +1131,7 @@ class _ChatScreenState extends State<ChatScreen> {
           "type": type,
           type: {"id": doucmentid, "caption": caps ?? "Caption"}
         };
-        String? responseimage = await messageViewModel
+        await messageViewModel
             .uploadimagewithdoucmentid(bodyy: imagebody, number: number)
             .then((value) {
           print("document send value----->$value");
@@ -1096,10 +1141,10 @@ class _ChatScreenState extends State<ChatScreen> {
         String? leadid = widget.id;
         print("document sned lead id=>$leadid");
 
-        String? sendimagedatabase = await messageViewModel
+        await messageViewModel
             .uploadFiledb(image!, number, leadid)
             .then((value) {
-          print("document send----upload dididi->${value}");
+          print("document send----upload dididi->$value");
 
           Map<String, dynamic> response = jsonDecode(value);
 
@@ -1122,15 +1167,15 @@ class _ChatScreenState extends State<ChatScreen> {
           "business_number": number,
           "is_read": true
         };
-        print("\x1B[33mdsdsfsdfsd${imagehistorydata}\x1B[0m");
+        print("\x1B[33mdsdsfsdfsd$imagehistorydata\x1B[0m");
 
-        print("fileidfileid${fileid}");
-        String? sendhistoryimage = await messageViewModel
+        print("fileidfileid$fileid");
+        await messageViewModel
             .sendimagehistory(
           msghistorydata: imagehistorydata,
         )
             .then((value) {
-          print("\x1B[32msendhistoryimagesendhistoryimage${value}\x1B[0m");
+          print("\x1B[32msendhistoryimagesendhistoryimage$value\x1B[0m");
           return null;
         });
       } else {
@@ -1182,7 +1227,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ? const SizedBox()
                       : Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Container(
+                          child: SizedBox(
                             height: 70,
                             child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
@@ -1259,7 +1304,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                           );
                                         }
                                       },
-                                      child: Container(
+                                      child: SizedBox(
                                         width: 60,
                                         child: Column(
                                           children: [
@@ -1309,7 +1354,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 child: Column(
                   children: [
-                    Container(
+                    SizedBox(
                       width: double.infinity,
                       // color: Colors.amber,
                       child: Padding(
@@ -1345,7 +1390,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 10),
-                                  Container(
+                                  SizedBox(
                                     width:
                                         MediaQuery.of(context).size.width * .5,
                                     child: Text(
@@ -1360,8 +1405,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                 ],
                               ),
                             ),
-                            Spacer(),
-                            msgController.msgToDelete.length > 0
+                            const Spacer(),
+                            msgController.msgToDelete.isNotEmpty
                                 ? IconButton(
                                     icon: const Icon(
                                       Icons.delete,
@@ -1371,7 +1416,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       _showSimpleDialog("");
                                     },
                                   )
-                                : SizedBox(),
+                                : const SizedBox(),
                             PopupMenuButton<String>(
                               icon: const Icon(
                                 Icons.more_vert,
@@ -1394,7 +1439,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                       ),
                     ),
-                    Divider(),
+                    const Divider(),
                     Expanded(
                       child: ListView.builder(
                           controller: _scrollController,
@@ -1455,15 +1500,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                   DateFormat('d MMMM yyyy').format(istTimee);
                             }
 
-                            String finalFormattedTime = '$dayLabel';
+                            String finalFormattedTime = dayLabel;
                             // print(
                             //     "finalFormattedTime::: ${finalFormattedTime}  ${isSameDay}");
                             String title = allMessages[index].title ?? "";
-                            String msghistoryid = allMessages[index].id;
+                            // String msghistoryid = allMessages[index].id;
 
                             if (title.isNotEmpty) {
                               imageUrl =
-                                  "${AppConstants.baseImgUrl}public/${tenatCode}/attachment/$title";
+                                  "${AppConstants.baseImgUrl}public/$tenatCode/attachment/$title";
                             }
 
                             bool showDateLabel = false;
@@ -1486,7 +1531,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                             .message
                                             .toString()
                                             .isEmpty))
-                                ? SizedBox()
+                                ? const SizedBox()
                                 : Column(
                                     children: [
                                       if (showDateLabel)
@@ -1535,7 +1580,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                               color: msgController.msgToDelete
                                                       .contains(
                                                           allMessages[index].id)
-                                                  ? Color(0xffAFAFAF)
+                                                  ? const Color(0xffAFAFAF)
                                                   : Colors.transparent,
                                               child: Row(
                                                 mainAxisAlignment:
@@ -1720,7 +1765,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                                             .messageBody !=
                                                                         null)
                                                                       Text(
-                                                                          '${result}'),
+                                                                          result),
                                                                     // const SizedBox(
                                                                     //     height: 5),
                                                                     if (allMessages[index]
@@ -1956,7 +2001,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   if (allMessages.isNotEmpty)
                     Container(
                       decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 76, 162, 189),
+                        color: const Color.fromARGB(255, 76, 162, 189),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: showLoader
@@ -2036,7 +2081,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               onPressed: () {
-                print("mmms=>${msghistoryid}");
+                print("mmms=>$msghistoryid");
                 MessageController msgController =
                     Provider.of<MessageController>(context, listen: false);
                 singlemsgdelete(msgController.msgToDelete);
@@ -2054,7 +2099,6 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       },
     );
-    ;
   }
 
   Future<void> _fetchTemplates() async {
@@ -2112,11 +2156,11 @@ class _ChatScreenState extends State<ChatScreen> {
                   }
                 }
 
-                log("current template:::  ${currentTemplate.category}   :: ${currentTemplate}  ${currentTemplate.name}");
+                log("current template:::  ${currentTemplate.category}   :: $currentTemplate  ${currentTemplate.name}");
                 print(
                     "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}");
                 components = currentTemplate.components;
-                print("Component info:: ${components.length} ${components}");
+                print("Component info:: ${components.length} $components");
 
                 for (var e in components) {
                   print("checking the type:: ${e.type}");
@@ -2134,7 +2178,7 @@ class _ChatScreenState extends State<ChatScreen> {
 // Call setState once after processing all components
                 setState(() {});
 
-                log("components ::: ${selectedHeader}   ${selectedBody}  ${selectedButtons}");
+                log("components ::: $selectedHeader   $selectedBody  $selectedButtons");
 
                 return;
               }
@@ -2183,7 +2227,7 @@ class _ChatScreenState extends State<ChatScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             _isLoading = false;
-            return Container(
+            return SizedBox(
               height: MediaQuery.of(context).size.height * .80,
               child: SingleChildScrollView(
                 child: Padding(
@@ -2227,7 +2271,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 decoration: InputDecoration(
                                   labelText:
                                       "Enter value for placeholder ${index + 1}",
-                                  border: OutlineInputBorder(),
+                                  border: const OutlineInputBorder(),
                                 ),
                               ),
                             );
@@ -2235,7 +2279,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                         Card(
                           elevation: 5,
-                          color: Color(0xffE3FFC9).withOpacity(0.5),
+                          color: const Color(0xffE3FFC9).withOpacity(0.5),
                           shadowColor: Colors.black38,
                           child: Padding(
                             padding: const EdgeInsets.all(10.0),
@@ -2443,8 +2487,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                       return;
                                     }
 
-                                    File? imageFile;
-                                    String docId = "";
+                                    // File? imageFile;
+                                    // String docId = "";
 
                                     for (int i = 0;
                                         i < controllers.length;
@@ -2503,8 +2547,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                         imgToShow,
                                       );
 
-                                      String? numberr =
-                                          prefs.getString('phoneNumber');
+                                      // String? numberr =
+                                      //     prefs.getString('phoneNumber');
                                       String? leadnumber = widget.wpnumber;
 
                                       await Provider.of<MessageViewModel>(
@@ -2617,12 +2661,11 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       },
     );
-    ;
   }
 
   Future<void> _getBootmSheet() {
-    TextEditingController _templateController = TextEditingController();
-    int selectedBtnIdx = 0;
+    TextEditingController templateController = TextEditingController();
+    // int selectedBtnIdx = 0;
     SelectedTemplateCategory = null;
     selectedTemplateName = null;
     return showModalBottomSheet<void>(
@@ -2703,7 +2746,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       onChanged: (String? newValue) {
                         setState(() {
                           selectedTemplateName = newValue;
-                          _templateController.text = newValue ?? '';
+                          templateController.text = newValue ?? '';
                           if (newValue != null) {
                             int selectedIndex = templateNames.indexOf(newValue);
 
@@ -2738,7 +2781,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                             );
                           })
-                        : SizedBox(),
+                        : const SizedBox(),
                     Center(
                       child: Consumer<WalletController>(
                           builder: (context, ref, child) {
@@ -2754,18 +2797,18 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                           onPressed: () {
                             print(
-                                "hasBalance::      ::: hasWallet    ::::::   :::::  ${ref.hasBalance}      ${hasWallet}");
+                                "hasBalance::      ::: hasWallet    ::::::   :::::  ${ref.hasBalance}      $hasWallet");
                             if ((hasWallet && ref.hasBalance) ||
                                 hasWallet == false) {
                               print(
-                                  "selectedTemplateName>>> ${selectedTemplateName}");
+                                  "selectedTemplateName>>> $selectedTemplateName");
                               if (selectedTemplateName == null ||
                                   selectedTemplateName ==
                                       "Select Template Name") {
                                 EasyLoading.showToast("Select Template Name");
                                 return;
                               }
-                              log("all comp info >> >>  ${selectedHeader}  ${selectedBody} ${selectedFooter} ${selectedButtons}}");
+                              log("all comp info >> >>  $selectedHeader  $selectedBody $selectedFooter $selectedButtons}");
                               log("selectedBody['text']>>> ${selectedBody.text}  ");
                               final regex = RegExp(r'\{\{\d+\}\}');
 
@@ -2775,7 +2818,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               } else if (selectedHeader == null ||
                                   selectedHeader.format == null) {
                                 String templateToSend = selectedTemplateName ??
-                                    _templateController.text;
+                                    templateController.text;
                                 print("Template to send: $templateToSend");
                                 templetesendd(templateToSend, []);
                                 Navigator.of(context).pop();
@@ -2788,7 +2831,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 } else {
                                   String templateToSend =
                                       selectedTemplateName ??
-                                          _templateController.text;
+                                          templateController.text;
                                   print("Template to send: $templateToSend");
                                   templetesendd(templateToSend, []);
                                   if (hasWallet) {
@@ -2841,10 +2884,10 @@ class _ChatScreenState extends State<ChatScreen> {
     };
 
     MessageViewModel mstemp = MessageViewModel(context);
-    TempleteListViewModel templeteViewModel =
-        Provider.of<TempleteListViewModel>(context, listen: false);
+    // TempleteListViewModel templeteViewModel =
+    //     Provider.of<TempleteListViewModel>(context, listen: false);
     print(
-        "selectedButtons?       ${selectedButtons} .buttons>>${selectedButtons?.buttons}");
+        "selectedButtons?       $selectedButtons .buttons>>${selectedButtons?.buttons}");
     List ba =
         selectedButtons?.buttons.map((button) => button.toMap()).toList() ?? [];
     String footer = selectedFooter?.text ?? "";
@@ -2906,7 +2949,6 @@ class _ChatScreenState extends State<ChatScreen> {
         "parameters": compoTextParams
       });
     }
-    ;
 
     print("template body=>$templateBody");
 
@@ -2915,7 +2957,7 @@ class _ChatScreenState extends State<ChatScreen> {
         number: number,
         msgmobilbody: templateBody,
         tempCate: SelectedTemplateCategory);
-    print("sendTemplateResponse>>>>>>> ${sendTemplateResponse}");
+    print("sendTemplateResponse>>>>>>> $sendTemplateResponse");
     String messageid = sendTemplateResponse['messages'][0]["id"] ?? "";
 
     print("value=== template>$sendTemplateResponse");
@@ -2976,11 +3018,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildMediaWidget(String format, String content) {
-    print("format:::::: ${format}  ${content}");
+    print("format:::::: $format  $content");
     switch (format) {
       case "IMAGE":
         return content.isEmpty
-            ? Container(
+            ? SizedBox(
                 height: 80,
                 width: 80,
                 child: Image.asset("assets/images/img_placeholder.png"),
@@ -3047,8 +3089,8 @@ class _ChatScreenState extends State<ChatScreen> {
     String? number = prefs.getString('phoneNumber');
 
     MessageViewModel mstemp = MessageViewModel(context);
-    TempleteListViewModel templeteViewModel =
-        Provider.of<TempleteListViewModel>(context, listen: false);
+    // TempleteListViewModel templeteViewModel =
+    //     Provider.of<TempleteListViewModel>(context, listen: false);
 
     List ba = [];
     if (selectedButtons != null) {
@@ -3089,13 +3131,13 @@ class _ChatScreenState extends State<ChatScreen> {
         print("Proxy response: $fileId");
       } else {
         var res = await messageViewModel.uploadFile(image!, number);
-        print("res>>>>> ${res}   ${res.runtimeType}  ${jsonDecode(res)} }");
+        print("res>>>>> $res   ${res.runtimeType}  ${jsonDecode(res)} }");
         var rs = jsonDecode(res);
-        print("rs:::: ${rs}   ${rs["id"]}");
+        print("rs:::: $rs   ${rs["id"]}");
         // fileId = res["id"].toString();
         fileId = rs["id"];
       }
-      print("fileId>>> ${fileId}");
+      print("fileId>>> $fileId");
 
       var leadnumber = widget.wpnumber;
       Map<String, dynamic> templateBody = {
@@ -3128,7 +3170,6 @@ class _ChatScreenState extends State<ChatScreen> {
           "parameters": []
         });
       }
-      ;
 
       var templateSendResponse = await mstemp.sendtemplete(
           number: number,
@@ -3219,7 +3260,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "business_number": number
     };
 
-    print("create map>>> ${createtemp}");
+    print("create map>>> $createtemp");
     Map<String, dynamic> templateBody = {};
     var leadnumber = widget.wpnumber;
     mstemp.createmsgtemplete(msgmobilbody: createtemp).then((value) => {
@@ -3319,7 +3360,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildAttachmentWidget(String url) {
     String fileType = url.split('.').last.toLowerCase();
-    print("printing:: file type::: ${fileType}");
+    print("printing:: file type::: $fileType");
     switch (fileType) {
       case 'pdf':
         return InkWell(
@@ -3590,7 +3631,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             pdfUrl: headerBody,
                           )));
             } catch (e) {
-              print("erorore opening file>>> ${e}");
+              print("erorore opening file>>> $e");
             }
           },
           child: Image.asset(
@@ -3600,7 +3641,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         );
       default:
-        return SizedBox.shrink();
+        return const SizedBox.shrink();
     }
   }
 
@@ -3633,13 +3674,13 @@ class _ChatScreenState extends State<ChatScreen> {
                   backgroundColor: Colors.grey[200],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4),
-                    side:
-                        BorderSide(color: AppColor.navBarIconColor, width: 1.5),
+                    side: const BorderSide(
+                        color: AppColor.navBarIconColor, width: 1.5),
                   ),
                 ),
                 child: Text(
                   button['text'] ?? "",
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppColor.navBarIconColor,
                     fontWeight: FontWeight.w700,
                     decoration: TextDecoration.underline,
@@ -3716,9 +3757,203 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<void> connectCallSocket() async {
+    try {
+      callSocket = IO.io(
+        'https://sandbox.watconnect.com',
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setPath('/swp/socket.io')
+            .setExtraHeaders({'Authorization': 'Bearer $token'})
+            .build(),
+      );
+
+      callSocket!.connect();
+
+      callSocket!.onConnect((_) {
+        print('✅ Connected to call WebSocket');
+        callSocket!.emit("setup", userId);
+      });
+
+      // Store dialog context
+      BuildContext? dialogContext;
+
+      // Handle call events
+      callSocket!.on("whatsapp_call_event", (data) {
+        log("📞 whatsapp_call_event: evnt ${data['data']['event']}  $data");
+
+        if (data['data']['event'] != "terminate") {
+          if (dialogContext == null) {
+            showDialog(
+              context: context,
+              barrierDismissible: true,
+              barrierColor: Colors.black.withOpacity(0.3),
+              builder: (BuildContext ctx) {
+                dialogContext = ctx;
+                return Center(
+                  child: Container(
+                    width: 320,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[900],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Avatar
+                        CircleAvatar(
+                          radius: 36,
+                          backgroundColor: Colors.white,
+                          child: Text(
+                            widget.leadName?.isNotEmpty == true
+                                ? widget.leadName![0].toUpperCase()
+                                : "?",
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Name
+                        Text(
+                          widget.leadName ?? "",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+
+                        // WhatsApp number
+                        Text(
+                          widget.wpnumber ?? "",
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Ringing text
+                        const Text(
+                          "📞 Ringing...",
+                          style: TextStyle(
+                            color: Colors.greenAccent,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Accept / Reject Buttons
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            // Reject Button
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                              ),
+                              onPressed: () {
+                                // Handle reject logic
+                                Navigator.of(dialogContext!).pop();
+                                dialogContext = null;
+                              },
+                              icon: const Icon(Icons.call_end,
+                                  color: Colors.white),
+                              label: const Text(
+                                "Reject",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+
+                            // Accept Button
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                              ),
+                              onPressed: () {
+                                acceptApiCall(data);
+                                // Handle accept logic
+                                Navigator.of(dialogContext!).pop();
+                                dialogContext = null;
+                              },
+                              icon: const Icon(Icons.call, color: Colors.white),
+                              label: const Text(
+                                "Accept",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        } else {
+          // terminate event
+          print("📴 Call Terminated");
+          if (dialogContext != null) {
+            Navigator.of(dialogContext!).pop();
+            dialogContext = null;
+          }
+        }
+      });
+
+      // On disconnect
+      callSocket!.onDisconnect((_) {
+        print("❌ WebSocket Disconnected");
+        if (dialogContext != null) {
+          Navigator.of(dialogContext!).pop();
+          dialogContext = null;
+        }
+      });
+
+      // On error
+      callSocket!.onError((error) {
+        print("⚠️ WebSocket Error: $error");
+        if (dialogContext != null) {
+          Navigator.of(dialogContext!).pop();
+          dialogContext = null;
+        }
+      });
+    } catch (error) {
+      print("❌ Error connecting to whatsapp_call_event: $error");
+    }
+  }
+
   void disconnectSocket() {
     if (socket != null) {
       socket!.disconnect();
+      print(" WebSocket Disconnected");
+    }
+  }
+
+  void disconnectCallSocket() {
+    if (callSocket != null) {
+      callSocket!.disconnect();
       print(" WebSocket Disconnected");
     }
   }
@@ -3760,7 +3995,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<String?> _marksread(String whatsappNumber) async {
-    print("sajdjsahdjsah jhsjhkjdhakj${whatsappNumber}");
+    print("sajdjsahdjsah jhsjhkjdhakj$whatsappNumber");
 
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
@@ -3768,8 +4003,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (number != null) {
       Map<String, String>? bodydata = {"whatsapp_number": whatsappNumber};
 
-      var response = await Provider.of<UnreadCountVm>(
-              navigatorKey.currentContext!,
+      await Provider.of<UnreadCountVm>(navigatorKey.currentContext!,
               listen: false)
           .marksreadcountmsg(
         leadnumber: whatsappNumber,
@@ -3791,7 +4025,7 @@ class _ChatScreenState extends State<ChatScreen> {
       await _beginRecording(setState);
       return;
     }
-    print("status:::::   ${status}");
+    print("status:::::   $status");
     PermissionStatus status1 = await Permission.microphone.status;
     print('Microphone permission status: $status1');
 
@@ -4066,6 +4300,194 @@ class _ChatScreenState extends State<ChatScreen> {
     unreadList = unreadMsgModel.records ?? [];
     setState(() {});
   }
+
+  bool showCallHistoryLoader = false;
+  List<CallHistoryData> callHistoryList = [];
+
+  Future<void> initiateCallFunc() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? busNum = prefs.getString('phoneNumber') ?? "";
+
+    await Provider.of<CallsViewModel>(context, listen: false)
+        .startCallApi(busNum, widget.wpnumber ?? "")
+        .then((onValue) {
+      setState(() {
+        showCallHistoryLoader = true;
+      });
+
+      callHistoryList = [];
+
+      for (var viewModel in callHistoryVm.viewModels) {
+        var leadmodel = viewModel.model;
+        print("leadmodel:::::::  $leadmodel   ${leadmodel.records}");
+        if (leadmodel?.records != null) {
+          for (var record in leadmodel!.records!) {
+            callHistoryList.add(record);
+          }
+        }
+      }
+      showCallDialog();
+
+      setState(() {
+        showCallHistoryLoader = false;
+      });
+    });
+  }
+
+  void showCallDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.2),
+      builder: (BuildContext context) {
+        print("call history list length:::    ${callHistoryList.length}");
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Container(
+            constraints: const BoxConstraints(maxHeight: 500), // Set max height
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Call History",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: callHistoryList.length,
+                    itemBuilder: (context, index) {
+                      final call = callHistoryList[index];
+                      print("call name:::    ${call.name}");
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: ListTile(
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                call.name ?? call.whatsappNumber ?? "",
+                                style: const TextStyle(
+                                  fontFamily: AppFonts.semiBold,
+                                  fontSize: 17,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                "${formatDateTime(int.tryParse(call.startTime ?? "") ?? 0)} - "
+                                "${(call.endTime?.isNotEmpty ?? false) ? formatDateTime(int.tryParse(call.endTime!) ?? 0) : "Not Answered"}",
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ),
+                          trailing: Text(formatDuration(call.duration ?? 0)),
+                        ),
+                      );
+                    },
+                    separatorBuilder: (context, index) => const Divider(
+                      height: 1,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> acceptApiCall(
+    Map<String, dynamic> callData,
+  ) async {
+    try {
+      // 1. Show loading if needed
+      // setState(() => isProcessing = true);
+
+      // 2. Create Peer Connection
+      final Map<String, dynamic> configuration = {
+        'iceServers': [
+          {'urls': 'stun:stun.l.google.com:19302'},
+        ]
+      };
+
+      _peerConnection = await createPeerConnection(configuration);
+
+      // 3. Setup remote stream listener
+      _remoteStream = await createLocalMediaStream('remote');
+      _peerConnection!.onTrack = (RTCTrackEvent event) {
+        if (event.streams.isNotEmpty) {
+          _remoteStream = event.streams[0];
+          _remoteRenderer.srcObject = _remoteStream;
+        }
+      };
+
+      // 4. Set remote SDP offer
+      final offer = RTCSessionDescription(
+        callData['data']['sdp'],
+        'offer',
+      );
+      await _peerConnection!.setRemoteDescription(offer);
+
+      // 5. Get local microphone audio
+      _localStream = await navigator.mediaDevices.getUserMedia({
+        'audio': true,
+        'video': false,
+      });
+
+      // 6. Add local audio tracks
+      _localStream!.getTracks().forEach((track) {
+        _peerConnection!.addTrack(track, _localStream!);
+      });
+
+      // 7. Create SDP answer
+      final answer = await _peerConnection!.createAnswer();
+      await _peerConnection!.setLocalDescription(answer);
+
+      // 8. Modify SDP
+      String modifiedSdp =
+          answer.sdp!.replaceAll("a=setup:actpass", "a=setup:active");
+
+      // 9. Prepare payload
+      Map<String, dynamic> payload = {
+        "payload": {
+          "messaging_product": "whatsapp",
+          "call_id": callData['data']['call_id'],
+          "action": "accept",
+          "session": {
+            "sdp_type": "answer",
+            "sdp": modifiedSdp,
+          }
+        },
+        "business_number": callData['data']['business_number']
+      };
+
+      // 10. Call Accept API
+      await Provider.of<CallsViewModel>(context, listen: false)
+          .callAcceptApi(payload);
+
+      // 11. Start Call Duration Timer
+      int duration = 0;
+      Timer.periodic(Duration(seconds: 1), (Timer timer) {
+        duration += 1;
+        // onDurationUpdate(duration.toString());
+      });
+    } catch (e) {
+      print("Error on accept: $e");
+      // Cleanup
+      _peerConnection?.close();
+      _peerConnection = null;
+    }
+  }
 }
 
 Widget _buildFilePreview(File image) {
@@ -4076,7 +4498,7 @@ Widget _buildFilePreview(File image) {
   } else if (ext.contains('mp4')) {
     return const Icon(Icons.play_arrow, color: Colors.black);
   } else if (['.jpg', '.jpeg', '.png'].contains(ext)) {
-    return Container(
+    return SizedBox(
       height: 50,
       width: 50,
       child: Image.file(image, fit: BoxFit.cover),

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, prefer_typing_uninitialized_variables
+
 import 'package:flutter/material.dart';
 
 class MessageController extends ChangeNotifier {
@@ -14,7 +16,7 @@ class MessageController extends ChangeNotifier {
       msgToDelete.add(val);
     }
 
-    print("msgToDelete>::>>:>>>:::>>>>  ${msgToDelete}");
+    print("msgToDelete>::>>:>>>:::>>>>  $msgToDelete");
 
     notifyListeners();
   }
@@ -28,7 +30,7 @@ class MessageController extends ChangeNotifier {
   setUsrProfile(str) {
     userProfile = "";
     userProfile = str;
-    print("setting the user prifiel:::::${userProfile}");
+    print("setting the user prifiel:::::$userProfile");
     notifyListeners();
   }
 

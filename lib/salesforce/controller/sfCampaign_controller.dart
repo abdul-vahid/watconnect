@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
@@ -50,7 +52,7 @@ class SfcampaignController extends ChangeNotifier {
     setGetCampLoader(true);
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-    String apiUrl = "${AppConstants.sfGetCampaign}businessnumber=${busNum}";
+    String apiUrl = "${AppConstants.sfGetCampaign}businessnumber=$busNum";
     final response = await NetworkService.makeRequest(
       url: apiUrl,
       method: 'GET',
@@ -81,7 +83,7 @@ class SfcampaignController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
     String apiUrl =
-        "${AppConstants.sfGetCampaignHistory}bussinesnumber=${busNum}&campaignid=${selectedCampaign?.id ?? ""}";
+        "${AppConstants.sfGetCampaignHistory}bussinesnumber=$busNum&campaignid=${selectedCampaign?.id ?? ""}";
 
     final response = await NetworkService.makeRequest(
       url: apiUrl,

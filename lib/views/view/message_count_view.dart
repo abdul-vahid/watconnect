@@ -1,9 +1,10 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously, deprecated_member_use
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/unread_msg_model/unread_msg_model.dart';
-import '../../models/user_model/user_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import '../../view_models/campaign_vm.dart';
@@ -34,7 +35,7 @@ class _MessageCountListView extends State<MessageCountListView> {
   void getProfileData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      UserModel? userModel = AppUtils.getSessionUser(prefs);
+      AppUtils.getSessionUser(prefs);
     });
   }
 
@@ -205,22 +206,20 @@ class _MessageCountListView extends State<MessageCountListView> {
                     const SizedBox(height: 16),
 
                     // Payment Term Dropdown
-                    Container(
-                      child: DropdownButtonFormField<String>(
-                        hint: const Text('Select Status'),
-                        items: uniquePaymentTerms.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectedcampaign = newValue;
-                          });
-                        },
-                        value: selectedcampaign,
-                      ),
+                    DropdownButtonFormField<String>(
+                      hint: const Text('Select Status'),
+                      items: uniquePaymentTerms.map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedcampaign = newValue;
+                        });
+                      },
+                      value: selectedcampaign,
                     ),
                     const SizedBox(height: 24),
 

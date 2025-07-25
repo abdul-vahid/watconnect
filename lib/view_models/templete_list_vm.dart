@@ -1,4 +1,6 @@
 //import 'package:http/http.dart' as http;
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:whatsapp/models/template_model/template_model.dart';
 import '../core/models/base_list_view_model.dart';

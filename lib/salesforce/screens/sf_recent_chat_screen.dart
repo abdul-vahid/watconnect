@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, deprecated_member_use
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use, avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -23,29 +23,65 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
   void initState() {
     DashBoardController dasbController = Provider.of(context, listen: false);
     dasbController.recentChatListApiCall();
+
+    DashBoardController dbProvider = Provider.of(context, listen: false);
+
+    dbProvider.setSelectedPinnedInfo(null);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColor.pageBgGrey,
-      appBar: AppBar(
-        iconTheme:
-            const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
-        centerTitle: true,
-        elevation: 2,
-        backgroundColor: AppColor.navBarIconColor,
-        title: const Text(
-          "Recent Chats",
-          style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
+    return Consumer<DashBoardController>(builder: (context, ref, child) {
+      return Scaffold(
+        backgroundColor: AppColor.pageBgGrey,
+        appBar: AppBar(
+          iconTheme:
+              const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
+          centerTitle: true,
+          elevation: 2,
+          backgroundColor: AppColor.navBarIconColor,
+          actions: [
+            ref.selectedPinnedInfo == null
+                ? const SizedBox()
+                : ref.selectedPinnedInfo?.isPinned ?? false
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: InkWell(
+                          onTap: () {
+                            ref.pinUnPinApiCall(isFromRecentChat: true);
+                          },
+                          child: Image.asset(
+                            "assets/images/unpin_icon.png",
+                            color: Colors.white,
+                            height: 20,
+                          ),
+                        ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: InkWell(
+                          onTap: () {
+                            ref.pinUnPinApiCall(isFromRecentChat: true);
+                          },
+                          child: const Icon(
+                            Icons.push_pin,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+          ],
+          title: const Text(
+            "Recent Chats",
+            style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
+          ),
         ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _pullRefresh,
-        child: _pageBody(),
-      ),
-    );
+        body: RefreshIndicator(
+          onRefresh: _pullRefresh,
+          child: _pageBody(),
+        ),
+      );
+    });
   }
 
   Future<void> _pullRefresh() async {
@@ -76,20 +112,26 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
-                              value: ref.selectedTitle,
+                              value: ref.selectedTitle.isNotEmpty == true
+                                  ? ref.selectedTitle
+                                  : null,
                               isExpanded: true,
+                              hint: const Text("Select Item"),
                               onChanged: (newValue) async {
+                                final selectedItem = ref.drawerItems.firstWhere(
+                                  (item) => item.sObjectName == newValue,
+                                );
+                                ref.setSelectedDrawerItem(selectedItem);
                                 await ref.setSelectedTitle(newValue ?? "");
-
                                 ref.recentChatListApiCall();
-                                // setState(() {
-                                //   selectedValue = newValue!;
-                                // });
                               },
                               items: ref.drawerItems
+                                  .where((item) =>
+                                      item.sObjectName != null &&
+                                      item.sObjectName != "Campaign")
                                   .map<DropdownMenuItem<String>>((item) {
                                 return DropdownMenuItem<String>(
-                                  value: item.sObjectName,
+                                  value: item.sObjectName!,
                                   child: Text(item.sObjectName ?? ""),
                                 );
                               }).toList(),
@@ -98,6 +140,105 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                         ),
                       ));
                 }),
+                dashBoardController.sfPinnedRecentChatList.isEmpty
+                    ? const SizedBox()
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: SizedBox(
+                          height: 90,
+                          child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: dashBoardController
+                                  .sfPinnedRecentChatList.length,
+                              itemBuilder: (context, index) {
+                                return GestureDetector(
+                                  onLongPress: () {
+                                    DashBoardController dbProvider =
+                                        Provider.of(context, listen: false);
+                                    print("this is pressisng longgggg");
+
+                                    dbProvider.setSelectedPinnedInfo(
+                                        dashBoardController
+                                            .sfPinnedRecentChatList[index]);
+                                  },
+                                  onTap: () async {
+                                    String phNum =
+                                        "${dashBoardController.sfPinnedRecentChatList[index].countryCode ?? ""}${dashBoardController.sfPinnedRecentChatList[index].whatsappNumber ?? ""}";
+                                    showBlurOnlyLoaderDialog(context);
+                                    ChatMessageController cmProvider =
+                                        Provider.of(context, listen: false);
+                                    DashBoardController dbProvider =
+                                        Provider.of(context, listen: false);
+                                    dbProvider.setSelectedPinnedInfo(null);
+
+                                    dbProvider.setSelectedContaactInfo(
+                                        dashBoardController
+                                            .sfPinnedRecentChatList[index]);
+                                    await cmProvider
+                                        .messageHistoryApiCall(
+                                      userNumber: phNum,
+                                    )
+                                        .then((onValue) {
+                                      Navigator.pop(context);
+                                    });
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                SfMessageChatScreen(
+                                                  pinnedLeadsList:
+                                                      dashBoardController
+                                                          .sfPinnedRecentChatList,
+                                                  isFromRecentChat: true,
+                                                )));
+                                  },
+                                  child: SizedBox(
+                                    width: 60,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor:
+                                              AppColor.navBarIconColor,
+                                          child: Text(
+                                            dashBoardController
+                                                    .sfPinnedRecentChatList[
+                                                        index]
+                                                    .name!
+                                                    .isNotEmpty
+                                                ? dashBoardController
+                                                    .sfPinnedRecentChatList[
+                                                        index]
+                                                    .name![0]
+                                                    .toUpperCase()
+                                                : '?',
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 4,
+                                        ),
+                                        Text(
+                                          dashBoardController
+                                                  .sfPinnedRecentChatList[index]
+                                                  .name ??
+                                              "",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }),
+                        ),
+                      ),
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
@@ -187,7 +328,6 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.1),
             blurRadius: 5,
             spreadRadius: 3,
@@ -198,12 +338,21 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
       margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 12),
-        child: InkWell(
+        child: GestureDetector(
+          onLongPress: () {
+            DashBoardController dbProvider =
+                Provider.of(context, listen: false);
+            dbProvider.setSelectedPinnedInfo(null);
+            print("this is pressisng longgggg");
+
+            dbProvider.setSelectedPinnedInfo(drawerListItem);
+          },
           onTap: () async {
+            DashBoardController dbProvider =
+                Provider.of(context, listen: false);
+            dbProvider.setSelectedPinnedInfo(null);
             showBlurOnlyLoaderDialog(context);
             ChatMessageController cmProvider =
-                Provider.of(context, listen: false);
-            DashBoardController dbProvider =
                 Provider.of(context, listen: false);
 
             dbProvider.setSelectedContaactInfo(drawerListItem);
@@ -218,7 +367,10 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const SfMessageChatScreen()));
+                    builder: (context) => SfMessageChatScreen(
+                          pinnedLeadsList: dbProvider.sfPinnedRecentChatList,
+                          isFromRecentChat: true,
+                        )));
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -242,7 +394,6 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                 ),
                 const SizedBox(width: 12),
 
-                // Main Content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,6 +430,9 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                                 ),
                               ),
                             ),
+                          (drawerListItem.isPinned ?? false)
+                              ? const Icon(Icons.push_pin)
+                              : const SizedBox()
                         ],
                       ),
                       const SizedBox(height: 2),
@@ -295,7 +449,6 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                               ),
                             ),
                           ),
-                          // const Spacer(),
                           if (drawerListItem.lastMsgTime != 0)
                             Padding(
                               padding: const EdgeInsets.only(left: 8.0),

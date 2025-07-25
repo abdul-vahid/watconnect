@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 Widget buildMediaWidget(String format, String content) {
-  print("format:::::: ${format}  ${content}");
+  // print("format:::::: $format  $content");
   switch (format) {
     case "IMAGE":
       return content.isEmpty
-          ? Container(
+          ? SizedBox(
               height: 80,
               width: 80,
               child: Image.asset("assets/images/img_placeholder.png"),

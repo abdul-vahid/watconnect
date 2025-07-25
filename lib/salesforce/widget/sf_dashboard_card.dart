@@ -1,4 +1,6 @@
 // file: dashboard_card_item.dart
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 
 class DashboardCardItem extends StatelessWidget {

@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
-import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -156,7 +155,7 @@ class ChatMessageController extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         final parsedJson = jsonDecode(response.body);
-        print("parsedJson:::::::   ${parsedJson}");
+        // print("parsedJson:::::::   $parsedJson");
         final accessToken = parsedJson["access_token"] ?? "";
         final refreshToken = parsedJson['refresh_token'] ?? "";
 
@@ -184,7 +183,7 @@ class ChatMessageController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
     String apiUrl =
-        "${AppConstants.sfDeleteChatHistory}businessnumber=${busNum}&whatsAppNumber=${wpNum}";
+        "${AppConstants.sfDeleteChatHistory}businessnumber=$busNum&whatsAppNumber=$wpNum";
 
     // final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
 
@@ -239,7 +238,7 @@ class ChatMessageController extends ChangeNotifier {
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
     String ids = msgDeleteList.join(",");
     String apiUrl =
-        "${AppConstants.sfDeleteChatMsg}businessnumber=${busNum}&whatsAppNumber=${wpNum}&metaMessageId=$ids";
+        "${AppConstants.sfDeleteChatMsg}businessnumber=$busNum&whatsAppNumber=$wpNum&metaMessageId=$ids";
 
     // final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
 
@@ -305,7 +304,7 @@ class ChatMessageController extends ChangeNotifier {
       msgDeleteList.add(id);
     }
 
-    log("ids to delete::::::    ${msgDeleteList}");
+    log("ids to delete::::::    $msgDeleteList");
     notify();
   }
 

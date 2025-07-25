@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously, non_constant_identifier_names
+
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 
@@ -43,7 +46,7 @@ class NotificationUtil {
       if (remoteMessage != null) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         String sfAccessToken =
-            await prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+            prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
         if (sfAccessToken.isEmpty) {
           final leadId = remoteMessage.data['lead_id'];
           if (leadId != null) {
@@ -61,6 +64,11 @@ class NotificationUtil {
           DashBoardController dashBoardController =
               Provider.of(context, listen: false);
           await dashBoardController.drawerListApiCall(type: objName);
+          List<SfDrawerItemModel> pinnedConfigItems = [];
+          pinnedConfigItems.addAll(
+            dashBoardController.drawerListItems
+                .where((item) => item.isPinned == true),
+          );
           for (var item in dashBoardController.drawerListItems) {
             if (item.id == leadId) {
               var drawerListItem = item;
@@ -78,7 +86,9 @@ class NotificationUtil {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => SfMessageChatScreen()));
+                      builder: (context) => SfMessageChatScreen(
+                            pinnedLeadsList: pinnedConfigItems,
+                          )));
 
               return;
             }
@@ -120,7 +130,7 @@ class NotificationUtil {
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String sfAccessToken =
-          await prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+          prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
 
       if (sfAccessToken.isEmpty) {
         final leadId = remoteMessage?.data['lead_id'];
@@ -140,6 +150,11 @@ class NotificationUtil {
         DashBoardController dashBoardController =
             Provider.of(context, listen: false);
         await dashBoardController.drawerListApiCall(type: objName);
+        List<SfDrawerItemModel> pinnedConfigItems = [];
+        pinnedConfigItems.addAll(
+          dashBoardController.drawerListItems
+              .where((item) => item.isPinned == true),
+        );
         for (var item in dashBoardController.drawerListItems) {
           if (item.id == leadId) {
             var drawerListItem = item;
@@ -154,8 +169,12 @@ class NotificationUtil {
             await cmProvider.messageHistoryApiCall(
               userNumber: phNum,
             );
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => SfMessageChatScreen()));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SfMessageChatScreen(
+                          pinnedLeadsList: pinnedConfigItems,
+                        )));
 
             return;
           }
@@ -196,7 +215,7 @@ class NotificationUtil {
         debug("FCM token registered to backend => $token");
       }
     } catch (e, stackTrace) {
-      debug("Error in registerToken: $e");
+      debug("Error in registerToken: $e   $stackTrace");
     }
   }
 
@@ -207,7 +226,7 @@ class NotificationUtil {
     var leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
     for (var viewModel in leadlistvm.viewModels) {
       var leadmodel = viewModel.model;
-      print("leadmodel:::::   ::   ${leadmodel}");
+      print("leadmodel:::::   ::   $leadmodel");
       print(
           "leadmodel?.records:::::::::: ${leadmodel?.records}  ${leadmodel?.records.length}");
       pinnedLeads = [];

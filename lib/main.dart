@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +19,8 @@ import 'package:whatsapp/salesforce/controller/template_controller.dart';
 import 'package:whatsapp/services/notifications/local_notification_service.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
-import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
+import 'package:whatsapp/view_models/call_view_model.dart';
 import 'package:whatsapp/view_models/campaign_chart_vm.dart';
 import 'package:whatsapp/view_models/groups_view_model.dart';
 import 'package:whatsapp/view_models/lead_controller.dart';
@@ -43,6 +45,12 @@ import 'view_models/lead_count_vm.dart';
 
 import 'view_models/whatsapp_setting_vm.dart';
 import 'views/view/splash_view.dart';
+
+import 'dart:core';
+
+import 'package:flutter/foundation.dart'
+    show debugDefaultTargetPlatformOverride;
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final RouteObserver<ModalRoute<void>> routeObserver =
@@ -105,6 +113,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DashBoardController()),
         ChangeNotifierProvider(create: (_) => TemplateController()),
         ChangeNotifierProvider(create: (_) => BusinessNumberController()),
+        ChangeNotifierProvider(create: (_) => CallsViewModel(context)),
         ChangeNotifierProvider(
           create: (_) => ChatMessageController(),
         ),
@@ -159,3 +168,17 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     LocalNotificationService.displayNotification(message);
   }
 }
+
+
+// Future<bool> startForegroundService() async {
+//   final androidConfig = FlutterBackgroundAndroidConfig(
+//     notificationTitle: 'Title of the notification',
+//     notificationText: 'Text of the notification',
+//     notificationImportance: AndroidNotificationImportance.normal,
+//     notificationIcon: AndroidResource(
+//         name: 'background_icon',
+//         defType: 'drawable'), // Default is ic_launcher from folder mipmap
+//   );
+//   await FlutterBackground.initialize(androidConfig: androidConfig);
+//   return FlutterBackground.enableBackgroundExecution();
+// }

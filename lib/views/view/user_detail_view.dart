@@ -1,10 +1,11 @@
 // import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/views/view/changepassword_view.dart';
-import 'package:whatsapp/views/view/lead_add_update_view.dart';
 import 'package:whatsapp/views/view/user_add_update_view.dart';
 import 'package:whatsapp/views/view/user_list_view.dart';
 
@@ -12,6 +13,7 @@ import '../../models/user_data_model/user_data_model.dart';
 import '../../utils/app_utils.dart';
 import '../../view_models/user_data_list_vm.dart';
 
+// ignore: must_be_immutable
 class UserDetailView extends StatefulWidget {
   UserDataModel? model;
   UserDetailView({super.key, this.model});
@@ -23,148 +25,149 @@ class UserDetailView extends StatefulWidget {
 class _UserDetailView extends State<UserDetailView> {
   // late NotchBottomBarController _controller;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _passwordController = TextEditingController();
+  // final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   get model => widget.model;
   String? userId;
-  bool _obscurePassword = true;
+  // bool _obscurePassword = true;
 
-  Future<void> _showSimpleDialog() async {
-    await showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        bool _obscurePassword1 = true;
-        bool _obscurePassword2 = true;
-        _passwordController.clear();
-        _confirmPasswordController.clear();
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return SimpleDialog(
-              backgroundColor: AppColor.navBarIconColor,
-              title: const Text(
-                'Change Password',
-                style: TextStyle(color: Colors.white),
-              ),
-              children: <Widget>[
-                Form(
-                  key: _formKey,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 10),
-                    child: Column(
-                      children: [
-                        // New Password
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword1,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please confirm your password';
-                            }
-                            if (value != _passwordController.text) {
-                              return 'Passwords do not match';
-                            }
-                            return null;
-                          },
-                          decoration: InputDecoration(
-                            hintText: "New Password",
-                            prefixIcon: const Icon(Icons.lock,
-                                color: Color(0xFF233A73)),
-                            filled: true,
-                            fillColor: Colors.blue[50],
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword1
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                              ),
-                              color: const Color(0xFF233A73),
-                              onPressed: () {
-                                setDialogState(() {
-                                  _obscurePassword1 = !_obscurePassword1;
-                                });
-                              },
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                        ),
+  // Future<void> _showSimpleDialog() async {
+  //   await showDialog<void>(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       bool _obscurePassword1 = true;
+  //       bool _obscurePassword2 = true;
+  //       _passwordController.clear();
+  //       _confirmPasswordController.clear();
+  //       return StatefulBuilder(
+  //         builder: (context, setDialogState) {
+  //           return SimpleDialog(
+  //             backgroundColor: AppColor.navBarIconColor,
+  //             title: const Text(
+  //               'Change Password',
+  //               style: TextStyle(color: Colors.white),
+  //             ),
+  //             children: <Widget>[
+  //               Form(
+  //                 key: _formKey,
+  //                 child: Padding(
+  //                   padding: const EdgeInsets.symmetric(
+  //                       horizontal: 10, vertical: 10),
+  //                   child: Column(
+  //                     children: [
+  //                       // New Password
+  //                       TextFormField(
+  //                         controller: _passwordController,
+  //                         obscureText: _obscurePassword1,
+  //                         validator: (value) {
+  //                           if (value == null || value.isEmpty) {
+  //                             return 'Please confirm your password';
+  //                           }
+  //                           if (value != _passwordController.text) {
+  //                             return 'Passwords do not match';
+  //                           }
+  //                           return null;
+  //                         },
+  //                         decoration: InputDecoration(
+  //                           hintText: "New Password",
+  //                           prefixIcon: const Icon(Icons.lock,
+  //                               color: Color(0xFF233A73)),
+  //                           filled: true,
+  //                           fillColor: Colors.blue[50],
+  //                           suffixIcon: IconButton(
+  //                             icon: Icon(
+  //                               _obscurePassword1
+  //                                   ? Icons.visibility
+  //                                   : Icons.visibility_off,
+  //                             ),
+  //                             color: const Color(0xFF233A73),
+  //                             onPressed: () {
+  //                               setDialogState(() {
+  //                                 _obscurePassword1 = !_obscurePassword1;
+  //                               });
+  //                             },
+  //                           ),
+  //                           border: OutlineInputBorder(
+  //                             borderRadius: BorderRadius.circular(15),
+  //                           ),
+  //                         ),
+  //                       ),
 
-                        const SizedBox(height: 10),
+  //                       const SizedBox(height: 10),
 
-                        // Confirm Password
-                        TextFormField(
-                          controller: _confirmPasswordController,
-                          obscureText: _obscurePassword2,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please confirm your password';
-                            }
-                            if (value != _passwordController.text) {
-                              return 'Passwords do not match';
-                            }
-                            return null;
-                          },
-                          decoration: InputDecoration(
-                            hintText: "Confirm Password",
-                            prefixIcon: const Icon(Icons.lock,
-                                color: Color(0xFF233A73)),
-                            filled: true,
-                            fillColor: Colors.blue[50],
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword2
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                              ),
-                              color: const Color(0xFF233A73),
-                              onPressed: () {
-                                setDialogState(() {
-                                  _obscurePassword2 = !_obscurePassword2;
-                                });
-                              },
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                        ),
+  //                       // Confirm Password
+  //                       TextFormField(
+  //                         controller: _confirmPasswordController,
+  //                         obscureText: _obscurePassword2,
+  //                         validator: (value) {
+  //                           if (value == null || value.isEmpty) {
+  //                             return 'Please confirm your password';
+  //                           }
+  //                           if (value != _passwordController.text) {
+  //                             return 'Passwords do not match';
+  //                           }
+  //                           return null;
+  //                         },
+  //                         decoration: InputDecoration(
+  //                           hintText: "Confirm Password",
+  //                           prefixIcon: const Icon(Icons.lock,
+  //                               color: Color(0xFF233A73)),
+  //                           filled: true,
+  //                           fillColor: Colors.blue[50],
+  //                           suffixIcon: IconButton(
+  //                             icon: Icon(
+  //                               _obscurePassword2
+  //                                   ? Icons.visibility
+  //                                   : Icons.visibility_off,
+  //                             ),
+  //                             color: const Color(0xFF233A73),
+  //                             onPressed: () {
+  //                               setDialogState(() {
+  //                                 _obscurePassword2 = !_obscurePassword2;
+  //                               });
+  //                             },
+  //                           ),
+  //                           border: OutlineInputBorder(
+  //                             borderRadius: BorderRadius.circular(15),
+  //                           ),
+  //                         ),
+  //                       ),
 
-                        const SizedBox(height: 20),
+  //                       const SizedBox(height: 20),
 
-                        // Action Buttons
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                onButtonPressed();
-                              },
-                              child: Text("ok", style: TextStyle(fontSize: 13)),
-                            ),
-                            const SizedBox(width: 10),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text("cancel",
-                                  style: TextStyle(fontSize: 13)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
+  //                       // Action Buttons
+  //                       Row(
+  //                         mainAxisAlignment: MainAxisAlignment.end,
+  //                         children: [
+  //                           ElevatedButton(
+  //                             onPressed: () {
+  //                               onButtonPressed();
+  //                             },
+  //                             child: const Text("ok",
+  //                                 style: TextStyle(fontSize: 13)),
+  //                           ),
+  //                           const SizedBox(width: 10),
+  //                           ElevatedButton(
+  //                             onPressed: () {
+  //                               Navigator.of(context).pop();
+  //                             },
+  //                             child: const Text("cancel",
+  //                                 style: TextStyle(fontSize: 13)),
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
   void onButtonPressed() {
     if (_formKey.currentState!.validate()) {
@@ -303,7 +306,7 @@ class _UserDetailView extends State<UserDetailView> {
                 child: Row(
                   children: [
                     const Text("Active",
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 15)),
                     Checkbox(
                       activeColor: widget.model!.isactive == true

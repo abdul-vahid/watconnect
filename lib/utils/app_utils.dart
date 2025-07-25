@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
@@ -82,7 +84,7 @@ class AppUtils {
           borderSide: const BorderSide(color: Colors.grey, width: 1),
           borderRadius: BorderRadius.circular(8),
         ),
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
       ),
       value: value,
       isExpanded: true,
@@ -143,7 +145,7 @@ class AppUtils {
         //   borderSide: const BorderSide(color: Color.fromARGB(255, 209, 0, 0)),
         //   borderRadius: BorderRadius.circular(8.0),
         // ),
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
         hintText: hintText,
         // hintStyle: tserrat(fontSize: 14),
       ),
@@ -212,6 +214,9 @@ class AppUtils {
 
         await prefs.setBool(SharedPrefsConstants.hasWalletKey,
             decodedToken['has_wallet'] ?? false);
+
+        await prefs.setBool(
+            SharedPrefsConstants.hasCallsKey, stringList.contains("Calls"));
 
         userModel.authToken =
             prefs.getString(SharedPrefsConstants.accessTokenKey);
@@ -282,12 +287,12 @@ class AppUtils {
   }
 
   static List<String> getErrorMessages(exception) {
-    print("exception   ${exception}   ${exception.runtimeType}");
+    print("exception   $exception   ${exception.runtimeType}");
     List<String> errorMessages = [];
     print("exception is AppException:::: ${exception is AppException}");
     if (exception is AppException) {
       Map<String, dynamic> data = jsonDecode(exception.getMessage());
-      print("data:::::::::::::  ${data}");
+      print("data:::::::::::::  $data");
       data.forEach((key, value) {
         debug("key == $key == $value");
         errorMessages.add(value);
@@ -300,12 +305,12 @@ class AppUtils {
   }
 
   static List<String> getLeadErrorMessages(exception) {
-    print("exception   ${exception}   ${exception.runtimeType}");
+    print("exception   $exception   ${exception.runtimeType}");
     List<String> errorMessages = [];
     print("exception is AppException:::: ${exception is AppException}");
     if (exception is AppException) {
       Map<String, dynamic> data = jsonDecode(exception.getMessage());
-      print("data:::::::::::::  ${data}");
+      print("data:::::::::::::  $data");
       errorMessages.add(data['errors']);
       // data.forEach((key, value) {
       //   debug("key == $key == $value");
@@ -316,7 +321,7 @@ class AppUtils {
       errorMessages.add(exception.toString());
     }
 
-    print("errorMessages::::::::::  ${errorMessages}");
+    print("errorMessages::::::::::  $errorMessages");
     return errorMessages;
   }
 

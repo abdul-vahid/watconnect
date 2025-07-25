@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -16,7 +18,7 @@ class UnreadCountVm extends BaseListViewModel {
     String? number = '',
   }) async {
     print(
-        "numberrr=>${number}   url of the api ${AppConstants.unreadcountpath}$number");
+        "numberrr=>$number   url of the api ${AppConstants.unreadcountpath}$number");
     String url = AppUtils.getUrl("${AppConstants.unreadcountpath}$number");
     debug("urldata=>$url");
     await get(url: url, baseModel: UnreadMsgModel());

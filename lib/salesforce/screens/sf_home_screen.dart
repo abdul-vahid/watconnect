@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -132,7 +134,7 @@ class _SfHomeScreenState extends State<SfHomeScreen> {
             return Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 0.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 0.0),
                   child: Row(
                     children: [
                       HomePageCard(
@@ -144,7 +146,7 @@ class _SfHomeScreenState extends State<SfHomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => SfCampaignScreen()),
+                                builder: (context) => const SfCampaignScreen()),
                           );
                         },
                       ),
@@ -175,7 +177,7 @@ class _SfHomeScreenState extends State<SfHomeScreen> {
                   height: 20,
                 ),
                 dbController.totalCamp == "0"
-                    ? SizedBox()
+                    ? const SizedBox()
                     : Padding(
                         padding: const EdgeInsets.only(
                             bottom: 20.0, left: 5, right: 5),
@@ -231,7 +233,7 @@ class _SfHomeScreenState extends State<SfHomeScreen> {
                         ),
                       ),
                 dbController.totalLead == "0"
-                    ? SizedBox()
+                    ? const SizedBox()
                     : Padding(
                         padding: const EdgeInsets.only(left: 5, right: 5),
                         child: Container(

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:provider/provider.dart';
@@ -15,11 +17,11 @@ class SalesforceAuth {
     bool? isFromDetailpage,
     String? id,
   }) async {
-    FlutterAppAuth _appAuth = FlutterAppAuth();
+    FlutterAppAuth appAuth = FlutterAppAuth();
 
     try {
-      final AuthorizationTokenResponse? result =
-          await _appAuth.authorizeAndExchangeCode(
+      final AuthorizationTokenResponse result =
+          await appAuth.authorizeAndExchangeCode(
         AuthorizationTokenRequest(
           serviceConfiguration: const AuthorizationServiceConfiguration(
             authorizationEndpoint:
@@ -36,71 +38,66 @@ class SalesforceAuth {
         ),
       );
 
-      print("result:::: ${result}");
+      print("result:::: $result");
 
-      if (result != null) {
-        print(
-            "result:::::::${result.tokenAdditionalParameters}}:::::::::::: ${result.authorizationAdditionalParameters}  ${result.tokenAdditionalParameters}");
-        debug('ID Token: ${result.idToken}');
-        final prefs = await SharedPreferences.getInstance();
+      print(
+          "result:::::::${result.tokenAdditionalParameters}}:::::::::::: ${result.authorizationAdditionalParameters}  ${result.tokenAdditionalParameters}");
+      debug('ID Token: ${result.idToken}');
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        SharedPrefsConstants.idTokenKey,
+        result.idToken ?? '',
+      );
+
+      if (result.refreshToken?.isNotEmpty == true) {
         await prefs.setString(
-          SharedPrefsConstants.idTokenKey,
-          result.idToken ?? '',
+          SharedPrefsConstants.refreshTokenKey,
+          result.refreshToken ?? '',
         );
+      }
 
-        if (result.refreshToken?.isNotEmpty == true) {
-          await prefs.setString(
-            SharedPrefsConstants.refreshTokenKey,
-            result.refreshToken ?? '',
-          );
-        }
-
+      if (result.accessToken?.isNotEmpty == true) {
+        await prefs.setString(
+          SharedPrefsConstants.accessTokenKey,
+          result.accessToken ?? '',
+        );
         if (result.accessToken?.isNotEmpty == true) {
           await prefs.setString(
             SharedPrefsConstants.accessTokenKey,
             result.accessToken ?? '',
           );
-          if (result.accessToken?.isNotEmpty == true) {
-            await prefs.setString(
-              SharedPrefsConstants.accessTokenKey,
-              result.accessToken ?? '',
-            );
-            DashBoardController dashBoardController =
-                Provider.of(context, listen: false);
-            dashBoardController.setLoginType(true);
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const FooterNavbarPage(),
-              ),
-              (Route<dynamic> route) => false,
-            );
-          }
+          DashBoardController dashBoardController =
+              Provider.of(context, listen: false);
+          dashBoardController.setLoginType(true);
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const FooterNavbarPage(),
+            ),
+            (Route<dynamic> route) => false,
+          );
         }
-        debug(
-            'result Token: ${result.authorizationAdditionalParameters}      ');
-        debug(
-            'result tokenAdditionalParameters: ${result.tokenAdditionalParameters} \n   ${result.tokenAdditionalParameters?['instance_url']}    ');
-        debug('Access Token: ${result.accessToken}');
-        debug('resulttt : ${result.refreshToken}');
-
-        await prefs.setString(
-          SharedPrefsConstants.sfAccessToken,
-          result.accessToken ?? '',
-        );
-
-        await prefs.setString(
-          SharedPrefsConstants.sfRefreshToken,
-          result.refreshToken ?? '',
-        );
-
-        await prefs.setString(
-          SharedPrefsConstants.sfInstanceurl,
-          result.tokenAdditionalParameters?['instance_url'] ?? '',
-        );
-      } else {
-        throw Exception("Authorization failed");
       }
+      debug('result Token: ${result.authorizationAdditionalParameters}      ');
+      debug(
+          'result tokenAdditionalParameters: ${result.tokenAdditionalParameters} \n   ${result.tokenAdditionalParameters?['instance_url']}    ');
+      debug('Access Token: ${result.accessToken}');
+      debug('resulttt : ${result.refreshToken}');
+
+      await prefs.setString(
+        SharedPrefsConstants.sfAccessToken,
+        result.accessToken ?? '',
+      );
+
+      await prefs.setString(
+        SharedPrefsConstants.sfRefreshToken,
+        result.refreshToken ?? '',
+      );
+
+      await prefs.setString(
+        SharedPrefsConstants.sfInstanceurl,
+        result.tokenAdditionalParameters?['instance_url'] ?? '',
+      );
     } catch (e) {
       debug("Error during login: $e");
       rethrow;

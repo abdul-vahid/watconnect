@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, unnecessary_brace_in_string_interps
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -126,12 +128,12 @@ class TemplateController extends ChangeNotifier {
       String? url,
       String? mimetyp}) async {
     setSentTempLoader(true);
-    String apiUrl = "${AppConstants.sfSendTemplate}";
+    String apiUrl = AppConstants.sfSendTemplate;
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+    // final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
     Map<String, dynamic> body = {};
-    var paramToSend = await buildParamsJson(params);
+    var paramToSend = buildParamsJson(params);
     if (params.isEmpty) {
       body = {
         "businessnumber": busNum,

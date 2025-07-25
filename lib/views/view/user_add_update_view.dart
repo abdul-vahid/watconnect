@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use, use_build_context_synchronously, prefer_typing_uninitialized_variables
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
@@ -6,7 +8,6 @@ import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/view_models/whatsapp_setting_vm.dart';
 import 'package:whatsapp/views/view/lead_add_update_view.dart';
-import 'package:whatsapp/views/view/user_list_view.dart';
 
 import '../../models/user_data_model/user_data_model.dart';
 import '../../utils/app_color.dart';
@@ -18,6 +19,7 @@ import '../../view_models/user_data_list_vm.dart';
 List accounts = [];
 Map accountsMap = {};
 
+// ignore: must_be_immutable
 class UserAddView extends StatefulWidget {
   UserDataModel? model;
 
@@ -31,8 +33,8 @@ class _Forms extends State<UserAddView> {
   bool isEdit = false;
   bool? isactive;
   List<String> selectWhNumsList = [];
-  @override
   WhatsappSettingViewModel? whatsAppSettingVM;
+  @override
   void initState() {
     getNumbers();
     final model = widget.model;
@@ -267,7 +269,6 @@ class _Forms extends State<UserAddView> {
   String? _phone;
   String? _whatsappPhone;
   String? _role;
-  String? _userType;
   String? _selectedaccountname;
   String? _password;
   bool isCreateMode = true;
@@ -395,7 +396,7 @@ class _Forms extends State<UserAddView> {
                         children: [
                           const SizedBox(height: 10),
                           const Text('First Name',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           AppUtils.getTextFormField(
@@ -413,7 +414,7 @@ class _Forms extends State<UserAddView> {
                           ),
                           const SizedBox(height: 10),
                           const Text('Last Name',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           AppUtils.getTextFormField(
@@ -431,7 +432,7 @@ class _Forms extends State<UserAddView> {
                           ),
                           const SizedBox(height: 10),
                           const Text('Email',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           AppUtils.getTextFormField(
@@ -449,7 +450,7 @@ class _Forms extends State<UserAddView> {
                           ),
                           const SizedBox(height: 10),
                           const Text('Country Code',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 14)),
                           DropdownButtonFormField<String>(
                             isDense: true,
@@ -480,7 +481,7 @@ class _Forms extends State<UserAddView> {
                           ),
                           const SizedBox(height: 10),
                           const Text('WhatsApp No',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 10),
                           AppUtils.getTextFormField(
@@ -553,7 +554,7 @@ class _Forms extends State<UserAddView> {
                             ),
                           const SizedBox(height: 10),
                           const Text('Role',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           AppUtils.getDropdown(
@@ -562,7 +563,6 @@ class _Forms extends State<UserAddView> {
                             onChanged: (p0) {
                               setState(() {
                                 _role = p0;
-                                _userType = null;
                               });
                             },
                             value: _role,
@@ -570,7 +570,7 @@ class _Forms extends State<UserAddView> {
                           ),
                           const SizedBox(height: 10),
                           const Text('Select Wh Number',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           MultiSelectDialogField<String>(
@@ -599,28 +599,28 @@ class _Forms extends State<UserAddView> {
                                 selectWhNumsList = selected;
                               });
                             },
-                            initialValue: [],
+                            initialValue: const [],
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           Wrap(
                             spacing: 8.0,
                             children: selectWhNumsList.map((selectedItem) {
                               return Chip(
                                 label: Text(selectedItem),
-                                deleteIcon: Icon(Icons.close),
+                                deleteIcon: const Icon(Icons.close),
                                 onDeleted: () {
                                   setState(() {
                                     selectWhNumsList.remove(selectedItem);
                                   });
                                 },
                                 backgroundColor: Colors.blue.withOpacity(0.2),
-                                labelStyle: TextStyle(color: Colors.blue),
+                                labelStyle: const TextStyle(color: Colors.blue),
                               );
                             }).toList(),
                           ),
                           const SizedBox(height: 10),
                           const Text('Manager',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 14)),
                           const SizedBox(height: 5),
                           AppUtils.getDropdown(
@@ -637,7 +637,7 @@ class _Forms extends State<UserAddView> {
                           Row(
                             children: [
                               const Text('Active',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14)),
                               const SizedBox(width: 5),
@@ -758,9 +758,9 @@ class _Forms extends State<UserAddView> {
   }
 
   Future<void> updateData() async {
-    print("country_code:::: ${selectedCountry}");
+    print("country_code:::: $selectedCountry");
     var accountId;
-    print("_firstname:  ${_firstname}");
+    print("_firstname:  $_firstname");
     if (_addleadFormKey.currentState!.validate()) {
       if (_firstname!.trim().length < 2) {
         EasyLoading.showToast(
@@ -840,7 +840,7 @@ class _Forms extends State<UserAddView> {
 
   Future<void> getNumbers() async {
     await Provider.of<WhatsappSettingViewModel>(context, listen: false).fetch();
-    print("whatsAppSettingVM ::: ${whatsAppSettingVM}");
+    print("whatsAppSettingVM ::: $whatsAppSettingVM");
     for (var viewModel in whatsAppSettingVM!.viewModels) {
       var nmodel = viewModel.model;
       for (var record in nmodel?.record ?? []) {

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -11,6 +13,7 @@ import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/lead_model.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
@@ -37,7 +40,7 @@ class LocalNotificationService {
         debugPrint("Notification tapped");
         // var dc = jsonDecode(details.payload!);
         debugPrint(
-            "Payload:   ${details}  ${details.data} ${details.payload}   ${details.payload.runtimeType} ");
+            "Payload:   $details  ${details.data} ${details.payload}   ${details.payload.runtimeType} ");
         debugPrint("Action ID: ${details.actionId}    ${details.data}");
         debugPrint("Notification ID: ${details.id}");
 
@@ -76,6 +79,12 @@ class LocalNotificationService {
           DashBoardController dashBoardController =
               Provider.of(ctx, listen: false);
           await dashBoardController.drawerListApiCall(type: objName);
+
+          List<SfDrawerItemModel> pinnedConfigItems = [];
+          pinnedConfigItems.addAll(
+            dashBoardController.drawerListItems
+                .where((item) => item.isPinned == true),
+          );
           for (var item in dashBoardController.drawerListItems) {
             print(
                 "item ids::::::::::::::::::::::::::::::::::::::::::::  ${item.id}");
@@ -94,7 +103,9 @@ class LocalNotificationService {
               Navigator.push(
                   ctx,
                   MaterialPageRoute(
-                      builder: (context) => SfMessageChatScreen()));
+                      builder: (context) => SfMessageChatScreen(
+                            pinnedLeadsList: pinnedConfigItems,
+                          )));
 
               return;
             }
@@ -194,6 +205,7 @@ class LocalNotificationService {
   static FlutterLocalNotificationsPlugin get instance => _notificationsPlugin;
 
   static List pinnedLeads = [];
+  // ignore: non_constant_identifier_names
   static void NavigationFunc(String leadId, BuildContext cntxt) {
     print("NavigationFunc ::: 1");
     debug("NavigationFunc called with leadId dsfcsf: $leadId");
@@ -204,7 +216,7 @@ class LocalNotificationService {
 
     for (var viewModel in leadlistvm.viewModels) {
       var leadmodel = viewModel.model;
-      print("leadmodel:::::   ::   ${leadmodel}");
+      print("leadmodel:::::   ::   $leadmodel");
       print(
           "leadmodel?.records:::::::::: ${leadmodel?.records}  ${leadmodel?.records.length}");
       if (leadmodel?.records != null) {
@@ -218,7 +230,7 @@ class LocalNotificationService {
 
     for (var viewModel in leadlistvm.viewModels) {
       var leadmodel = viewModel.model;
-      print("leadmodel:::::   ::   ${leadmodel}");
+      print("leadmodel:::::   ::   $leadmodel");
       print(
           "leadmodel?.records:::::::::: ${leadmodel?.records}  ${leadmodel?.records.length}");
       if (leadmodel?.records != null) {

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
@@ -23,7 +25,7 @@ class LeadDetailView extends StatefulWidget {
 }
 
 class _LeadDetailViewState extends State<LeadDetailView> {
-  final bool _isLoading = true; // Track loading state
+// Track loading state
 
   String? dateformat;
   get model => widget.model;
@@ -271,9 +273,8 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                         title: "Tags Information",
                       ),
                       widget.model!.tagNames!.isEmpty
-                          ? Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 18.0),
+                          ? const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 18.0),
                               child: Center(
                                   child: Text(
                                 "No Tags Available...",
@@ -335,7 +336,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
             ),
           ),
           Text(
-            value!.isEmpty ? "-" : value ?? "-",
+            value!.isEmpty ? "-" : value,
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -493,6 +494,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
           builder: (context) => LeadAddView(model: widget.model),
         ));
 
+    // ignore: unrelated_type_equality_checks
     if (result == true) {
       print("result on detailesss:::: ");
       Navigator.pop(context, true);

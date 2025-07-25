@@ -1,5 +1,7 @@
 //import 'package:http/http.dart' as http;
 
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -43,12 +45,12 @@ class CampaignViewModel extends BaseListViewModel {
 
   Future<void> getcampaignbyid(String id) async {
     try {
-      print("iddd=>get campaign id${id}");
+      print("iddd=>get campaign id$id");
       String url = AppUtils.getUrl("${AppConstants.getcampaignbyid}$id");
-      print("urlll cmapaign model====>${url}");
+      print("urlll cmapaign model====>$url");
       await get(url: url, baseModel: CampaignCloneModel());
     } catch (e) {
-      print("error in CampaignCloneModel :   ${e}");
+      print("error in CampaignCloneModel :   $e");
     }
   }
 

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import '../utils/app_constants.dart';
 
 void debug(message) {

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -19,7 +21,7 @@ class LeadListViewModel extends BaseListViewModel {
   Future<String?> fetch() async {
     String url = AppUtils.getUrl(AppConstants.leadAPIPath);
     var res = await get(url: url, baseModel: LeadResponseModel());
-    print("response::::::of lead list api:::::::   ${res}");
+    print("response::::::of lead list api:::::::   $res");
     return res;
     // .then((onValue) {
     //   print("viewModels::: ${viewModels}");
@@ -46,7 +48,7 @@ class LeadListViewModel extends BaseListViewModel {
 
   Future<void> fetchLeadTags() async {
     String url = AppUtils.getUrl(AppConstants.getAllTagsApi);
-    String apiUrl = "${url}?status=true";
+    String apiUrl = "$url?status=true";
     await get(url: apiUrl, baseModel: TagsModel());
   }
 
@@ -66,9 +68,10 @@ class LeadListViewModel extends BaseListViewModel {
   }
 
   Future<dynamic> updatelead(Map addLeadBody, String leadId) async {
-    print("working....            leadid${leadId}.");
+    print("working....            leadid$leadId.");
     String url = AppUtils.getUrl(AppConstants.leadAPIPath);
-    String apiUrl = "${url}/${leadId}";
+    String apiUrl = "$url/$leadId";
+
     print("apiUrl=>$apiUrl");
     String jsonString = jsonEncode(addLeadBody);
     var result = await put(url: apiUrl, body: jsonString);

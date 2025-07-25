@@ -1,4 +1,6 @@
 // import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/models/whatsapp_setting_model/whatsapp_setting_model.dart';
@@ -141,6 +143,7 @@ class _WhatsapSettingViewState extends State<WhatsapSettingView> {
   }
 }
 
+// ignore: must_be_immutable
 class AnotherScreen extends StatefulWidget {
   Record? contact;
 

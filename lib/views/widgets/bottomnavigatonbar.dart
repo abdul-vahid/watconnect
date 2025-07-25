@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use
+
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -6,7 +8,6 @@ import 'package:internet_connection_checker/internet_connection_checker.dart'
     show InternetConnectionChecker;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
 import 'package:whatsapp/models/user_model/user_model.dart';
 import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
@@ -36,7 +37,6 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
   int selectedPage = 0;
   bool isDeviceConnected = false;
   bool isAlertSet = false;
-  int _currentPageIndex = 0;
   int selected = 0;
   // late NotchBottomBarController _controller;
 
@@ -55,9 +55,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     super.initState();
     // _controller = NotchBottomBarController();
     // getConnectivity();s
-    setState(() {
-      _currentPageIndex = 0;
-    });
+    setState(() {});
   }
 
   getBusNumApiCall() async {
@@ -147,11 +145,13 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     DashBoardController drProvider = Provider.of(context, listen: false);
     print(
         "drProvider::::: from salesforce:::::::  ${drProvider.fromSalesForce}");
-    final _pageOptions = [
-      drProvider.fromSalesForce ? SfHomeScreen() : HomeView(),
-      drProvider.fromSalesForce ? SfProfileScreen() : ProfileView(),
+    final pageOptions = [
+      drProvider.fromSalesForce ? const SfHomeScreen() : HomeView(),
+      drProvider.fromSalesForce ? const SfProfileScreen() : ProfileView(),
       if (userModelData?.userrole == "ADMIN") const UserListView(),
-      drProvider.fromSalesForce ? SfRecentChatScreen() : RecentChatView(),
+      drProvider.fromSalesForce
+          ? const SfRecentChatScreen()
+          : const RecentChatView(),
     ];
 
     final List<Map<String, dynamic>> items = [
@@ -168,7 +168,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
             controller: _pageController,
             physics: const NeverScrollableScrollPhysics(),
             onPageChanged: (index) => setState(() => selected = index),
-            children: _pageOptions,
+            children: pageOptions,
           ),
           bottomNavigationBar: buildBottomNavigationBar(
             selected: selected,

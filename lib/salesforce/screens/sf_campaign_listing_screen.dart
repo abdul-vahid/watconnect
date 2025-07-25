@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
@@ -461,7 +463,7 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
                         // Update selectleadList with the confirmed selections
                         // selectleadList = selected;
                       },
-                      initialValue: [],
+                      initialValue: const [],
                     ),
                     const SizedBox(height: 16),
                     Wrap(

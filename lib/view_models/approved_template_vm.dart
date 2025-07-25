@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import '../core/models/base_list_view_model.dart';
 import '../models/approved_template_model/aprovedtempltemodel/aprovedtempltemodel.dart';

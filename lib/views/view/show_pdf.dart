@@ -1,10 +1,11 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart' show EasyLoading;
-import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
@@ -18,8 +19,8 @@ class ViewPdf extends StatefulWidget {
 }
 
 class _ViewPdfState extends State<ViewPdf> {
-  final Completer<PDFViewController> _controller =
-      Completer<PDFViewController>();
+  // final Completer<PDFViewController> _controller =
+  //     Completer<PDFViewController>();
 
   Future<void> downloadFile(String url, String fileName) async {
     try {

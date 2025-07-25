@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:whatsapp/utils/app_color.dart';
@@ -31,7 +33,8 @@ Widget buildButtons(List<dynamic> buttons) {
                 backgroundColor: Colors.grey[200],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
-                  side: BorderSide(color: AppColor.navBarIconColor, width: 1.5),
+                  side: const BorderSide(
+                      color: AppColor.navBarIconColor, width: 1.5),
                 ),
               ),
               child: Text(

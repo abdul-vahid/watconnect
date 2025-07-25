@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -46,8 +48,8 @@ class UserListViewModel extends BaseListViewModel {
     String url = AppUtils.getUrl(AppConstants.notificationfcm);
     print("Notification URL => $url");
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    var userModel = AppUtils.getSessionUser(prefs);
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // var userModel = AppUtils.getSessionUser(prefs);
 
     Map<String, String> body = {"fcm_token": token, "device_id": devId};
 
@@ -70,7 +72,7 @@ class UserListViewModel extends BaseListViewModel {
       String userId, String profilePicture) async {
     String url = AppUtils.getUrl(AppConstants.profilePictureUpdateAPIPath);
     Map<String, String> requestData = {'id': userId, 'body': profilePicture};
-    log("update body and url::: ${requestData}  ,  ${url}");
+    log("update body and url::: $requestData  ,  $url");
     var records = await post(url: url, body: jsonEncode(requestData));
     return records["records"]['profile_url'];
   }
@@ -91,11 +93,11 @@ class UserListViewModel extends BaseListViewModel {
       var multipartFile = await http.MultipartFile.fromPath("file", file.path);
       request.files.add(multipartFile);
 
-      print("staffRecord:>>::>>>:: ${staffRecord}");
+      print("staffRecord:>>::>>>:: $staffRecord");
       String jsonString = jsonEncode(staffRecord);
 
       String formattedString = "\"$jsonString\"";
-      print("staffRecord::: ${formattedString}");
+      print("staffRecord::: $formattedString");
       String correctedJson =
           formattedString.replaceAll("\"{", "{").replaceAll("}\"", "}");
 
@@ -272,7 +274,7 @@ Future<String> getDeviceId() async {
     // print("Aanaannndevice=>${androidInfo.device}");
     // print("Aanadeviceannn=>${androidInfo.name}");
     // print("ANDROID ID => ${androidInfo.androidId}");
-    return androidInfo.id ?? "unknown_device_id";
+    return androidInfo.id;
   } else if (defaultTargetPlatform == TargetPlatform.iOS) {
     print("Device: iOS");
     IosDeviceInfo iosInfo = await deviceInfo.iosInfo;

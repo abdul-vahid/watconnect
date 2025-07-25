@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -75,8 +77,8 @@ class _BalanceTransactionListScreenState
                 height: 10,
               ),
               walletController.transactionList.isEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 28.0),
+                  ? const Padding(
+                      padding: EdgeInsets.only(top: 28.0),
                       child: Center(child: Text("No Transactions Available")),
                     )
                   : Expanded(

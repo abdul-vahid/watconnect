@@ -75,6 +75,8 @@ class _SfAppDrawerWidgetState extends State<SfAppDrawerWidget> {
                           ref.setSelectedTitle(category.sObjectName ?? "");
                           ref.drawerListApiCall(
                               type: category.sObjectName ?? "");
+
+                          // ref.setSelectedDrawerItem(ref.drawerItems);
                           Navigator.push(
                               context,
                               MaterialPageRoute(

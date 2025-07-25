@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
@@ -159,7 +161,7 @@ class _TagsListViewState extends State<TagsListView> {
   }
 
   void _searchTags(String filter) {
-    print("filyerL:::: ${filter}");
+    print("filyerL:::: $filter");
     var searchTag = filter.trim().toLowerCase();
     if (searchTag.isEmpty) {
       setState(() {
@@ -226,7 +228,7 @@ class _TagsListViewState extends State<TagsListView> {
                         itemCount: allTagsList.length,
                         itemBuilder: (context, index) {
                           print(
-                              "index:::::::::::::::::::::::::::::::::::::::::::: ${index}");
+                              "index:::::::::::::::::::::::::::::::::::::::::::: $index");
 
                           if (index >= allTagsList.length) {
                             return const SizedBox(); // or just return nothing
@@ -289,7 +291,6 @@ class _TagsListViewState extends State<TagsListView> {
         ),
         boxShadow: [
           BoxShadow(
-            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.1),
             blurRadius: 5,
             spreadRadius: 3,
@@ -313,7 +314,7 @@ class _TagsListViewState extends State<TagsListView> {
             // tag.autoTagRules!.isEmpty ? Text("Rule : ") :
 
             tag.autoTagRules!.isEmpty
-                ? SizedBox()
+                ? const SizedBox()
                 : const Padding(
                     padding: EdgeInsets.only(top: 8.0, left: 5, bottom: 4),
                     child: Text(
@@ -509,7 +510,7 @@ class _TagsListViewState extends State<TagsListView> {
                                   selectTagList = selected;
                                 });
                               },
-                              initialValue: [],
+                              initialValue: const [],
                             ),
                             const SizedBox(height: 16),
                             Wrap(
@@ -584,7 +585,7 @@ class _TagsListViewState extends State<TagsListView> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            print("selectTagList:::  ::   ${selectTagList}");
+                            print("selectTagList:::  ::   $selectTagList");
                             allTagsList = [];
                             _applyFilter(selectTagList);
 

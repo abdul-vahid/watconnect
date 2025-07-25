@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'dart:developer';
 
@@ -10,8 +12,8 @@ class BaseService {
   Future<ApiResponse> get({required String url}) async {
     var token = await AppUtils.getToken();
     ApiResponse responseJsonData = await _apiService.getResponse(url, token!);
-    log("token:::::: ${token}");
-    log("responseiso=>${responseJsonData}");
+    log("token:::::: $token");
+    log("responseiso=>$responseJsonData");
     return responseJsonData;
   }
 
@@ -21,7 +23,7 @@ class BaseService {
     token ??= "";
     // printLongString("body base service send= $body");
     final responseJsonData = await _apiService.postResponse(url, body, token);
-    print("responseJsonData::post:: from the api::: ${responseJsonData}");
+    print("responseJsonData::post:: from the api::: $responseJsonData");
     // print("rsponse==>$responseJsonData");
     return responseJsonData;
   }

@@ -1,12 +1,12 @@
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
+
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/views/view/login_salesforce.dart';
-import 'package:whatsapp/views/view/loginwithsalesforce.dart';
 
 import '../../utils/app_utils.dart' show AppUtils;
 import '../../view_models/user_list_vm.dart';
@@ -190,7 +190,7 @@ class _LoginViewState extends State<LoginView> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (_) => WebViewPage(
+                                            builder: (_) => const WebViewPage(
                                                 url:
                                                     "https://test.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9HDaKRUgW3VrsUI_RKn2LNBUcxtribjudS7kOePtrSPn9mK.aWox_5gvqxOTD50qyOmRcRWV6jp3jwTOs&redirect_uri=https://test.salesforce.com/services/oauth2/success&scope=&state=random123"),
                                           ),

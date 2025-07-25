@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +9,7 @@ import 'package:whatsapp/salesforce/widget/attachment_preview_widget.dart';
 import 'package:whatsapp/salesforce/widget/chat_buttons.dart';
 import 'package:whatsapp/salesforce/widget/chat_sender_lable.dart';
 
+// ignore: must_be_immutable
 class ChatBubble extends StatelessWidget {
   final SfChatHistoryModel item;
   final List<ButtonItem> buttons;

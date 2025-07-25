@@ -1,9 +1,12 @@
+// ignore_for_file: avoid_print, deprecated_member_use, use_build_context_synchronously, prefer_typing_uninitialized_variables, unnecessary_brace_in_string_interps
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
+// ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/recent_chat_model.dart';
@@ -30,7 +33,7 @@ class _RecentChatViewState extends State<RecentChatView> {
   var userId;
   String leadId = "lead_456";
   String phNum = "+919876543210";
-  final List<String> _leadfilter = [];
+  // final List<String> _leadfilter = [];
   List<LeadModel> leadss = [];
   TextEditingController textController = TextEditingController();
   var leadlistvm;
@@ -219,8 +222,7 @@ class _RecentChatViewState extends State<RecentChatView> {
 
     Map<String, String>? bodydata = {"whatsapp_number": whatsappNumber};
 
-    var response = await Provider.of<UnreadCountVm>(context, listen: false)
-        .marksreadcountmsg(
+    await Provider.of<UnreadCountVm>(context, listen: false).marksreadcountmsg(
       leadnumber: whatsappNumber,
       number: number,
       bodydata: bodydata,
@@ -260,11 +262,11 @@ class _RecentChatViewState extends State<RecentChatView> {
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.all(10),
               disabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: AppColor.backgroundGrey),
+                borderSide: const BorderSide(color: AppColor.backgroundGrey),
                 borderRadius: BorderRadius.circular(10),
               ),
               border: OutlineInputBorder(
-                borderSide: BorderSide(color: AppColor.backgroundGrey),
+                borderSide: const BorderSide(color: AppColor.backgroundGrey),
                 borderRadius: BorderRadius.circular(10),
               ),
               focusedBorder: OutlineInputBorder(
@@ -298,7 +300,7 @@ class _RecentChatViewState extends State<RecentChatView> {
             ? const SizedBox()
             : Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                child: Container(
+                child: SizedBox(
                   height: 70,
                   child: ListView.builder(
                       scrollDirection: Axis.horizontal,
@@ -353,7 +355,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                 );
                               }
                             },
-                            child: Container(
+                            child: SizedBox(
                               width: 60,
                               child: Column(
                                 children: [
@@ -469,7 +471,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                   ),
                                 ),
 
-                                Divider(),
+                                const Divider(),
                                 // Lead Chat List
                                 const SizedBox(height: 10),
                                 allRecentChats.isEmpty || noMatchedLeads
@@ -741,7 +743,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                               size: 18,
                             ),
                           )
-                        : SizedBox()
+                        : const SizedBox()
                   ],
                 )
               ],

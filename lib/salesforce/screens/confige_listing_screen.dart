@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, avoid_print
+
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -6,12 +8,12 @@ import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
-// import 'package:whatsapp/salesforce/controller/template_controller.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_fonts.dart';
 
+// ignore: must_be_immutable
 class ConfigListingScreen extends StatefulWidget {
   String type;
   ConfigListingScreen({super.key, required this.type});
@@ -21,12 +23,22 @@ class ConfigListingScreen extends StatefulWidget {
 }
 
 class _ConfigListingScreenState extends State<ConfigListingScreen> {
-  final TextEditingController textController = new TextEditingController();
+  final TextEditingController textController = TextEditingController();
   String selectedValue = "";
   @override
   void initState() {
     selectedValue = widget.type;
-    // TODO: implement initState
+
+    DashBoardController dbProvider = Provider.of(context, listen: false);
+    for (var item in dbProvider.drawerItems) {
+      if (item.sObjectName == widget.type) {
+        dbProvider.setSelectedDrawerItem(item);
+      }
+    }
+
+    dbProvider.setSelectedPinnedInfo(null);
+    print(
+        "selectedPinnedInfo::::  ${dbProvider.selectedDawerModel?.configId}  ${dbProvider.selectedPinnedInfo?.isPinned}");
     super.initState();
   }
 
@@ -42,6 +54,36 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                 color: Color.fromARGB(255, 255, 255, 255)),
             onPressed: () => Navigator.of(context).pop(),
           ),
+          actions: [
+            ref.selectedPinnedInfo == null
+                ? const SizedBox()
+                : ref.selectedPinnedInfo?.isPinned ?? false
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: InkWell(
+                          onTap: () {
+                            ref.pinUnPinApiCall();
+                          },
+                          child: Image.asset(
+                            "assets/images/unpin_icon.png",
+                            color: Colors.white,
+                            height: 20,
+                          ),
+                        ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: InkWell(
+                          onTap: () {
+                            ref.pinUnPinApiCall();
+                          },
+                          child: const Icon(
+                            Icons.push_pin,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+          ],
           title: Text(
             '${ref.selectedTitle}s',
             style: const TextStyle(
@@ -69,224 +111,353 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
           if (item.id != null) item.id!: item.unreadCount ?? 0
       };
 
-      return Column(
-        children: [
-          Expanded(
-            child: ref.configListLoader
-                ? const Center(
-                    child: SizedBox(
-                      height: 50,
-                      width: 50,
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : ref.drawerListItems.isEmpty
-                    ? Center(
-                        child: Text(
-                          "No ${widget.type} Found..",
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                              height: 65,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 15.0),
-                                child: Container(
+      return GestureDetector(
+        onTap: () {
+          ref.setSelectedPinnedInfo(null);
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: ref.configListLoader
+                  ? const Center(
+                      child: SizedBox(
+                        height: 50,
+                        width: 50,
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : ref.drawerListItems.isEmpty
+                      ? Center(
+                          child: Text(
+                            "No ${widget.type} Found..",
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                                height: 65,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                child: Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey),
-                                    borderRadius: BorderRadius.circular(8),
-                                    color: Colors.white,
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: ref.selectedTitle,
-                                      isExpanded: true,
-                                      onChanged: (newValue) {
-                                        // setState(() {
-                                        //   selectedValue = newValue!;
-                                        // });
-                                        ref.setSelectedTitle(newValue ?? "");
-                                        ref.drawerListApiCall(
-                                            type: newValue ?? "");
-                                      },
-                                      items: ref.drawerItems
-                                          .map<DropdownMenuItem<String>>(
-                                              (item) {
-                                        return DropdownMenuItem<String>(
-                                          value: item.sObjectName,
-                                          child: Text(item.sObjectName ?? ""),
-                                        );
-                                      }).toList(),
+                                      horizontal: 15.0),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.white,
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        value: ref.selectedTitle,
+                                        isExpanded: true,
+                                        onChanged: (newValue) {
+                                          final selectedItem =
+                                              ref.drawerItems.firstWhere(
+                                            (item) =>
+                                                item.sObjectName == newValue,
+                                          );
+                                          ref.setSelectedDrawerItem(
+                                              selectedItem);
+                                          ref.setSelectedTitle(newValue ?? "");
+                                          ref.drawerListApiCall(
+                                              type: newValue ?? "");
+                                        },
+                                        items: ref.drawerItems
+                                            .where((item) =>
+                                                item.sObjectName != "Campaign")
+                                            .map<DropdownMenuItem<String>>(
+                                                (item) {
+                                          return DropdownMenuItem<String>(
+                                            value: item.sObjectName,
+                                            child: Text(item.sObjectName ?? ""),
+                                          );
+                                        }).toList(),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              )),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 15.0),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                    flex: 2,
-                                    child: InkWell(
-                                      onTap: () {
-                                        _showFilterBottomSheet(context);
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black
-                                                    .withOpacity(0.1),
-                                                blurRadius: 2,
-                                                spreadRadius: 2,
-                                                offset: const Offset(1, 1),
-                                              ),
-                                            ],
-                                            color: Colors.white,
-                                            border: Border.all(
-                                                color: AppColor.backgroundGrey),
-                                            borderRadius:
-                                                BorderRadius.circular(12)),
-                                        child: Center(
-                                          child: Stack(
-                                            children: [
-                                              const Padding(
-                                                padding: EdgeInsets.all(10.0),
-                                                child: Icon(
-                                                  Icons.filter_list,
-                                                  color: Color.fromARGB(
-                                                      255, 0, 0, 0),
-                                                  size: 20,
+                                )),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 15.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                      flex: 2,
+                                      child: InkWell(
+                                        onTap: () {
+                                          _showFilterBottomSheet(context);
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withOpacity(0.1),
+                                                  blurRadius: 2,
+                                                  spreadRadius: 2,
+                                                  offset: const Offset(1, 1),
                                                 ),
-                                              ),
-                                              ref.configStatusList.length == 0
-                                                  ? SizedBox()
-                                                  : Positioned(
-                                                      left: 8,
-                                                      top: 5,
-                                                      child: Container(
-                                                        decoration:
-                                                            const BoxDecoration(
-                                                                shape: BoxShape
-                                                                    .circle,
-                                                                color: Colors
-                                                                    .brown),
-                                                        child: Center(
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(4.0),
-                                                            child: Text(
-                                                              ref.configStatusList
-                                                                  .length
-                                                                  .toString(),
-                                                              style: const TextStyle(
+                                              ],
+                                              color: Colors.white,
+                                              border: Border.all(
+                                                  color:
+                                                      AppColor.backgroundGrey),
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                          child: Center(
+                                            child: Stack(
+                                              children: [
+                                                const Padding(
+                                                  padding: EdgeInsets.all(10.0),
+                                                  child: Icon(
+                                                    Icons.filter_list,
+                                                    color: Color.fromARGB(
+                                                        255, 0, 0, 0),
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                                ref.configStatusList.isEmpty
+                                                    ? const SizedBox()
+                                                    : Positioned(
+                                                        left: 8,
+                                                        top: 5,
+                                                        child: Container(
+                                                          decoration:
+                                                              const BoxDecoration(
+                                                                  shape: BoxShape
+                                                                      .circle,
                                                                   color: Colors
-                                                                      .white),
+                                                                      .brown),
+                                                          child: Center(
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(4.0),
+                                                              child: Text(
+                                                                ref.configStatusList
+                                                                    .length
+                                                                    .toString(),
+                                                                style: const TextStyle(
+                                                                    color: Colors
+                                                                        .white),
+                                                              ),
                                                             ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    )
-                                            ],
+                                                      )
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    )),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Expanded(
-                                  flex: 9,
-                                  child: TextField(
-                                    controller: textController,
-                                    onChanged: ref.filterRecs,
-                                    decoration: InputDecoration(
-                                      isDense: true,
-                                      hintText: 'Search...',
-                                      hintStyle: TextStyle(
-                                        color: AppColor.textoriconColor
-                                            .withOpacity(0.6),
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                        borderSide: const BorderSide(
-                                          color: AppColor.navBarIconColor,
-                                          width: 1.5,
+                                      )),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Expanded(
+                                    flex: 9,
+                                    child: TextField(
+                                      controller: textController,
+                                      onChanged: ref.filterRecs,
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                        hintText: 'Search...',
+                                        hintStyle: TextStyle(
+                                          color: AppColor.textoriconColor
+                                              .withOpacity(0.6),
                                         ),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          borderSide: const BorderSide(
+                                            color: AppColor.navBarIconColor,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.all(10),
+                                        disabledBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                              color: AppColor.backgroundGrey),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                              color: AppColor.backgroundGrey),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        prefixIcon: const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            child: Icon(Icons.search)),
                                       ),
-                                      contentPadding: const EdgeInsets.all(10),
-                                      disabledBorder: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                            color: AppColor.backgroundGrey),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderSide: const BorderSide(
-                                            color: AppColor.backgroundGrey),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      prefixIcon: const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 10),
-                                          child: Icon(Icons.search)),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            ref.pinnedConfigItems.isEmpty
+                                ? const SizedBox()
+                                : Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0),
+                                    child: SizedBox(
+                                      height: 90,
+                                      child: ListView.builder(
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount:
+                                              ref.pinnedConfigItems.length,
+                                          itemBuilder: (context, index) {
+                                            return GestureDetector(
+                                              onLongPress: () {
+                                                DashBoardController dbProvider =
+                                                    Provider.of(context,
+                                                        listen: false);
+                                                print(
+                                                    "this is pressisng longgggg");
+
+                                                dbProvider
+                                                    .setSelectedPinnedInfo(
+                                                        ref.pinnedConfigItems[
+                                                            index]);
+                                              },
+                                              onTap: () async {
+                                                String phNum =
+                                                    "${ref.pinnedConfigItems[index].countryCode ?? ""}${ref.pinnedConfigItems[index].whatsappNumber ?? ""}";
+                                                showBlurOnlyLoaderDialog(
+                                                    context);
+                                                ChatMessageController
+                                                    cmProvider = Provider.of(
+                                                        context,
+                                                        listen: false);
+                                                DashBoardController dbProvider =
+                                                    Provider.of(context,
+                                                        listen: false);
+                                                dbProvider
+                                                    .setSelectedPinnedInfo(
+                                                        null);
+
+                                                dbProvider
+                                                    .setSelectedContaactInfo(
+                                                        ref.pinnedConfigItems[
+                                                            index]);
+                                                await cmProvider
+                                                    .messageHistoryApiCall(
+                                                  userNumber: phNum,
+                                                )
+                                                    .then((onValue) {
+                                                  Navigator.pop(context);
+                                                });
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            SfMessageChatScreen(
+                                                              pinnedLeadsList:
+                                                                  dbProvider
+                                                                      .pinnedConfigItems,
+                                                            )));
+                                              },
+                                              child: SizedBox(
+                                                width: 60,
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    CircleAvatar(
+                                                      radius: 20,
+                                                      backgroundColor: AppColor
+                                                          .navBarIconColor,
+                                                      child: Text(
+                                                        ref
+                                                                .pinnedConfigItems[
+                                                                    index]
+                                                                .name!
+                                                                .isNotEmpty
+                                                            ? ref
+                                                                .pinnedConfigItems[
+                                                                    index]
+                                                                .name![0]
+                                                                .toUpperCase()
+                                                            : '?',
+                                                        style: const TextStyle(
+                                                          fontSize: 20,
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 4,
+                                                    ),
+                                                    Text(
+                                                      ref
+                                                              .pinnedConfigItems[
+                                                                  index]
+                                                              .name ??
+                                                          "",
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          }),
                                     ),
                                   ),
-                                )
-                              ],
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 15,
-                          ),
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.5),
-                                    blurRadius: 5,
-                                    spreadRadius: 3,
-                                    offset: const Offset(2, 4),
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.5),
+                                      blurRadius: 5,
+                                      spreadRadius: 3,
+                                      offset: const Offset(2, 4),
+                                    ),
+                                  ],
+                                  color: Colors.white,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(30),
+                                    topRight: Radius.circular(30),
                                   ),
-                                ],
-                                color: Colors.white,
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(30),
-                                  topRight: Radius.circular(30),
                                 ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 4.0, right: 4, top: 15),
-                                child: ListView.builder(
-                                  itemCount: ref.drawerListItems.length,
-                                  itemBuilder: (context, index) {
-                                    final drawerItem =
-                                        ref.drawerListItems[index];
-                                    final count =
-                                        unreadCountMap[drawerItem.id] ?? 0;
-                                    return recordListItem(drawerItem, count);
-                                  },
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 4.0, right: 4, top: 15),
+                                  child: ListView.builder(
+                                    itemCount: ref.drawerListItems.length,
+                                    itemBuilder: (context, index) {
+                                      final drawerItem =
+                                          ref.drawerListItems[index];
+                                      final count =
+                                          unreadCountMap[drawerItem.id] ?? 0;
+                                      return recordListItem(drawerItem, count);
+                                    },
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-          ),
-        ],
+                          ],
+                        ),
+            ),
+          ],
+        ),
       );
     });
   }
@@ -319,13 +490,21 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
       margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
-        child: InkWell(
+        child: GestureDetector(
+          onLongPress: () {
+            DashBoardController dbProvider =
+                Provider.of(context, listen: false);
+            print("this is pressisng longgggg");
+
+            dbProvider.setSelectedPinnedInfo(drawerListItem);
+          },
           onTap: () async {
             showBlurOnlyLoaderDialog(context);
             ChatMessageController cmProvider =
                 Provider.of(context, listen: false);
             DashBoardController dbProvider =
                 Provider.of(context, listen: false);
+            dbProvider.setSelectedPinnedInfo(null);
 
             dbProvider.setSelectedContaactInfo(drawerListItem);
             await cmProvider
@@ -335,8 +514,12 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                 .then((onValue) {
               Navigator.pop(context);
             });
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => SfMessageChatScreen()));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SfMessageChatScreen(
+                          pinnedLeadsList: dbProvider.pinnedConfigItems,
+                        )));
           },
           child: Row(
             children: [
@@ -396,27 +579,34 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                         ),
                       ),
                       const Spacer(),
-                      cnt == 0
-                          ? const SizedBox()
-                          : Container(
-                              decoration: const BoxDecoration(
-                                color: Colors.green,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: Text(
-                                    cnt.toString(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
+                      Column(
+                        children: [
+                          cnt == 0
+                              ? const SizedBox()
+                              : Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.green,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: Text(
+                                        cnt.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            )
+                          drawerListItem.isPinned ?? false
+                              ? const Icon(Icons.push_pin)
+                              : const SizedBox()
+                        ],
+                      )
                     ],
                   ),
                 ),
@@ -509,7 +699,7 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                         // Update selectleadList with the confirmed selections
                         // selectleadList = selected;
                       },
-                      initialValue: [],
+                      initialValue: const [],
                     ),
                     const SizedBox(height: 16),
                     Wrap(

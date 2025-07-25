@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -153,7 +155,7 @@ class SfFileUploadController extends ChangeNotifier {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      var refshtokn = await prefs.getString(
+      var refshtokn = prefs.getString(
             SharedPrefsConstants.sfNodeRefreshToken,
           ) ??
           "";
@@ -173,7 +175,9 @@ class SfFileUploadController extends ChangeNotifier {
       await prefs.setString(SharedPrefsConstants.sfNodeToken, authToken);
       await prefs.setString(SharedPrefsConstants.refreshTokenKey, refreshToken);
       EasyLoading.showToast("Retry again......");
-    } catch (e) {}
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<dynamic> uploadFiledb(

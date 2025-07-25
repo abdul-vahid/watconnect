@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use, avoid_print, use_build_context_synchronously, library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +22,7 @@ class ChangePasswordScreen extends StatefulWidget {
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  bool _isObscured1 = true;
+  // bool _isObscured1 = true;
   bool _isObscured2 = true;
   bool _isObscured3 = true;
   // final TextEditingController _currentPasswordController =
@@ -47,7 +49,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         flexibleSpace: Container(
-          decoration: BoxDecoration(color: AppColor.navBarIconColor),
+          decoration: const BoxDecoration(color: AppColor.navBarIconColor),
         ),
       ),
       body: Padding(
@@ -75,24 +77,26 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.grey[300],
-                    child: Icon(Icons.person, size: 60, color: Colors.black54),
+                    child: const Icon(Icons.person,
+                        size: 60, color: Colors.black54),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(widget.username,
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  Text(widget.phone, style: TextStyle(color: Colors.grey)),
-                  SizedBox(height: 20),
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text(widget.phone,
+                      style: const TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 20),
                   _buildPasswordField(
                       "New Password", _newPasswordController, _isObscured2, () {
                     setState(() => _isObscured2 = !_isObscured2);
                   }),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   _buildPasswordField("Confirm Password",
                       _confirmPasswordController, _isObscured3, () {
                     setState(() => _isObscured3 = !_isObscured3);
                   }),
-                  SizedBox(height: 40),
+                  const SizedBox(height: 40),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -141,12 +145,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 15),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                         backgroundColor: AppColor.navBarIconColor,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: Text("Save & Continue",
+                      child: const Text("Save & Continue",
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.white,

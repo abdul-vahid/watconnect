@@ -23,7 +23,7 @@ class ProfileHeaderClip extends StatelessWidget {
       child: Container(
         height: headerHeight,
         width: size.width,
-        color: Color(0xffE6F4EA),
+        color: const Color(0xffE6F4EA),
         child: Padding(
           padding: EdgeInsets.only(
             left: size.width * 0.06,

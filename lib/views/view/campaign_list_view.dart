@@ -1,6 +1,8 @@
 // // -----------------End Code of Record List Method-------------------------
 // import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 
+// ignore_for_file: avoid_print, deprecated_member_use, unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
@@ -8,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import '../../models/campaign_model/campaign_model.dart';
-import '../../models/user_model/user_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import '../../view_models/campaign_vm.dart';
@@ -41,21 +42,19 @@ class _CampaignListView extends State<CampaignListView> {
   bool nomatchescampaign = false;
   String searchcampaign = "";
   void getProfileData() async {
-    final prefs = await SharedPreferences.getInstance();
     setState(() {
-      UserModel? userModel = AppUtils.getSessionUser(prefs);
+      // UserModel? userModel = AppUtils.getSessionUser(prefs);
     });
   }
 
   List<String> modules = [];
   Future<void> saveNumberData() async {
     final prefs = await SharedPreferences.getInstance();
-    modules = await prefs
-            .getStringList(SharedPrefsConstants.userAvailableMoulesKey) ??
-        [];
+    modules =
+        prefs.getStringList(SharedPrefsConstants.userAvailableMoulesKey) ?? [];
     setState(() {});
 
-    print("modules:::: ${modules}");
+    print("modules:::: $modules");
   }
 
   @override
@@ -221,7 +220,7 @@ class _CampaignListView extends State<CampaignListView> {
                                   selectCampList = selected;
                                 });
                               },
-                              initialValue: [],
+                              initialValue: const [],
                             ),
                             const SizedBox(height: 16),
                             Wrap(
@@ -323,7 +322,7 @@ class _CampaignListView extends State<CampaignListView> {
   }
 
   void _searchLeads(String filter) {
-    print("filyerL:::: ${filter}");
+    print("filyerL:::: $filter");
     searchcampaign = filter.trim().toLowerCase();
     if (searchcampaign.isEmpty) {
       setState(() {
@@ -356,7 +355,7 @@ class _CampaignListView extends State<CampaignListView> {
 
   void _filterLeads(List filter) {
     print(
-        "filter:::::${filter}  ${tempCampaigns.length} ${campginModelList.length}  ${allCampaigns.length}  ${allCampaigns.runtimeType}");
+        "filter:::::$filter  ${tempCampaigns.length} ${campginModelList.length}  ${allCampaigns.length}  ${allCampaigns.runtimeType}");
 
     if (filter.contains('All') || filter.isEmpty) {
       allCampaigns = tempCampaigns;
@@ -436,7 +435,7 @@ class _CampaignListView extends State<CampaignListView> {
                               ),
                             ),
                             selectCampList.isEmpty
-                                ? SizedBox()
+                                ? const SizedBox()
                                 : Container(
                                     decoration: const BoxDecoration(
                                         color: AppColor.navBarIconColor,
@@ -503,7 +502,7 @@ class _CampaignListView extends State<CampaignListView> {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   "${allCampaigns.length} Campaigns Available",
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                   textAlign: TextAlign.left,
                 ),
               ),
@@ -1057,19 +1056,20 @@ class _CampaignListView extends State<CampaignListView> {
 
     final prefs = await SharedPreferences.getInstance();
     number = prefs.getString('phoneNumber');
+    // ignore: use_build_context_synchronously
     await Provider.of<CampaignViewModel>(context, listen: false)
         .fetchCampaign(number: number ?? "");
     print(
         "campaignlistvm.viewModels:: ${campaignlistvm.viewModels}   ${campaignlistvm.viewModels.runtimeType}  ${campaignlistvm.viewModels.length}");
     for (var viewModel in campaignlistvm.viewModels) {
       var campginmodel = viewModel.model;
-      print("campginmodel::::${campginmodel}  ${campginmodel.runtimeType}");
+      print("campginmodel::::$campginmodel  ${campginmodel.runtimeType}");
       if (campginmodel?.records != null) {
         allCampaigns = [];
         for (var record in campginmodel!.records!) {
           if (record.campaignStatus != null) {
             _paymentterms.add(record.campaignStatus!);
-            print("selectedcampaign:::${selectedcampaign}  ${selectCampList}");
+            print("selectedcampaign:::$selectedcampaign  $selectCampList");
             if (selectedcampaign == 'All' ||
                 selectCampList.isEmpty ||
                 selectedcampaign == '') {

@@ -1,4 +1,5 @@
-import 'dart:math';
+// ignore_for_file: avoid_print, deprecated_member_use, file_names
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,7 +44,7 @@ class _NotificationPageState extends State<NotificationPage> {
             }
           }
         }
-        print("dattaaa=>${data}");
+        print("dattaaa=>$data");
       });
     } catch (e) {
       setState(() {
@@ -65,15 +66,6 @@ class _NotificationPageState extends State<NotificationPage> {
   @override
   Widget build(BuildContext context) {
     unreadcountvm = Provider.of<UnreadCountVm>(context);
-    Color getRandomColor() {
-      final random = Random();
-      return Color.fromARGB(
-        255,
-        random.nextInt(128),
-        random.nextInt(128),
-        random.nextInt(128),
-      );
-    }
 
     return Scaffold(
       backgroundColor: AppColor.pageBgGrey,

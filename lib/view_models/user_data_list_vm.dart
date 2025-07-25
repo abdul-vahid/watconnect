@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -61,7 +63,7 @@ class UserDataListViewModel extends BaseListViewModel {
     try {
       var result = await apiService.deleteResponse(url, token);
 
-      if (result != null && result is Map) {
+      if (result is Map) {
         print('User successfully deleted');
       } else {
         print('Failed to delete user');

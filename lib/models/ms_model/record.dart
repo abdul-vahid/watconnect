@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names, avoid_print
+
 import 'dart:convert';
 
 class Record {
@@ -177,7 +179,6 @@ class Record {
         'filetype': filetype,
         'description': description,
         'identifier': identifier,
-        'title': title,
         'body': body,
         'unread_msg_count': unread_msg_count,
         'erormessage': erormessage,

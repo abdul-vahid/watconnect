@@ -1,7 +1,9 @@
-import 'dart:convert';
+// ignore_for_file: use_build_context_synchronously, avoid_print, deprecated_member_use, prefer_typing_uninitialized_variables, non_constant_identifier_names
+
 import 'dart:developer';
 
 import 'package:focus_detector/focus_detector.dart';
+// ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import 'package:flutter/material.dart';
@@ -73,7 +75,6 @@ class _HomeViewState extends State<HomeView> with RouteAware {
   List unreadList = [];
   String? selectedWhatsAppNumber;
   UnreadCountVm? unreadCountVm;
-  // ignore: prefer_typing_uninitialized_variables
   ChartListViewModel? leadListVM;
   LeadCountViewModel? leadCountVM;
   WhatsappSettingViewModel? whatsAppSettingVM;
@@ -117,7 +118,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     return phoneNumber;
   }
 
-  bool _isVisible = false;
+  // bool _isVisible = false;
   String selectedNumber = "";
 
   @override
@@ -137,55 +138,17 @@ class _HomeViewState extends State<HomeView> with RouteAware {
 
   @override
   void dispose() {
-    // disconnectSocket();
-    // routeObserver.unsubscribe(this);
     super.dispose();
   }
-
-  // @override
-  // void dispose() {
-  //   routeObserver.unsubscribe(this);
-  //   disconnectSocket();
-  //   super.dispose();
-  // }
-
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-
-  //   final route = ModalRoute.of(context);
-  //   if (route is PageRoute) {
-  //     routeObserver.subscribe(this, route);
-  //     print(" Subscribed to RouteObserver in HomeView");
-  //   }
-  // }
-
-  // @override
-  // void didPush() {
-  //   super.didPush();
-  //   print(" didPush - HomeView is now visible");
-  //   _onHomeVisible();
-  // }
-
-  /// Called when HomeView comes back to top after popping another screen
-  // @override
-  // void didPopNext() {
-  //   super.didPopNext();
-  //   print("didPopNext - Back to HomeView");
-  //   _onHomeVisible();
-  // }
-
-  /// Called when navigating away from HomeView
 
   List<String> modules = [];
   Future<void> getAvailableModules() async {
     final prefs = await SharedPreferences.getInstance();
-    modules = await prefs
-            .getStringList(SharedPrefsConstants.userAvailableMoulesKey) ??
-        [];
+    modules =
+        prefs.getStringList(SharedPrefsConstants.userAvailableMoulesKey) ?? [];
     setState(() {});
 
-    print("modules:::: ${modules}");
+    print("modules:::: $modules");
   }
 
   void fetch() async {
@@ -193,8 +156,8 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     String? selectedWhatsAppNumber = prefs.getString('phoneNumber');
     await Provider.of<WhatsappSettingViewModel>(context, listen: false).fetch();
     print(
-        "selectedWhatsAppNumber:::::::::::::::::::::::::::: ${selectedWhatsAppNumber}");
-    if (selectedWhatsAppNumber == null || selectedWhatsAppNumber!.isEmpty) {
+        "selectedWhatsAppNumber:::::::::::::::::::::::::::: $selectedWhatsAppNumber");
+    if (selectedWhatsAppNumber == null || selectedWhatsAppNumber.isEmpty) {
       if (Provider.of<WhatsappSettingViewModel>(context, listen: false)
           .viewModels
           .isNotEmpty) {
@@ -206,9 +169,9 @@ class _HomeViewState extends State<HomeView> with RouteAware {
         await prefs.setString('phoneNumber', selectedWhatsAppNumber ?? "");
       }
     } else {
-      selectedNumber = selectedWhatsAppNumber!;
+      selectedNumber = selectedWhatsAppNumber;
     }
-    print("selectedNumber:::>>>> ${selectedNumber}");
+    print("selectedNumber:::>>>> $selectedNumber");
     // setState(() {});
 
     debugPrint('Selected WhatsApp Number: $selectedWhatsAppNumber');
@@ -232,7 +195,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     EasyLoading.dismiss();
   }
 
-  String? _phone;
+  // String? _phone;
   void whatsappSettingNumber(BuildContext context) {
     showDialog(
       context: context,
@@ -350,7 +313,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
           String? unreadCount = data.unreadMsgCount;
 
           if (unreadCount != null) {
-            int count = int.tryParse(unreadCount) ?? 0;
+            // int count = int.tryParse(unreadCount) ?? 0;
             setState(() {
               totalUnreadCount = records.length;
             });
@@ -373,7 +336,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
         },
         child: Scaffold(
           backgroundColor: Colors.white,
-          drawer: AppDrawerWidget(),
+          drawer: const AppDrawerWidget(),
           appBar: AppBar(
             iconTheme:
                 const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
@@ -447,7 +410,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.setString('phoneNumber', value);
 
-                  EasyLoading.showToast("${value} marked as selected",
+                  EasyLoading.showToast("$value marked as selected",
                       toastPosition: EasyLoadingToastPosition.bottom);
                   selectedNumber = value;
                   EasyLoading.show();
@@ -475,12 +438,12 @@ class _HomeViewState extends State<HomeView> with RouteAware {
               : SingleChildScrollView(
                   child: Column(
                     children: [
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
                       // Padding(
 
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 15.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
                         child: Row(
                           children: [
                             HomePageCard(
@@ -529,7 +492,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                       ),
 
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 15.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
                         child: Row(
                           children: [
                             HomePageCard(
@@ -630,8 +593,8 @@ class _HomeViewState extends State<HomeView> with RouteAware {
                                           ],
                                         ),
                                       )
-                                    : SizedBox()
-                                : SizedBox(),
+                                    : const SizedBox()
+                                : const SizedBox(),
                             const SizedBox(
                               height: 20,
                             ),
@@ -768,7 +731,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
         "whatsAppSettingVM!.viewModels:::   ${whatsAppSettingVM!.viewModels}");
     for (var viewModel in whatsAppSettingVM!.viewModels) {
       var nmodel = viewModel.model;
-      print("nmodel::::    ${viewModel}");
+      print("nmodel::::    $viewModel");
       if (nmodel != null) {
         for (var record in nmodel?.record ?? []) {
           allNums.add(record);
@@ -777,7 +740,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
         }
       }
     }
-    print("itemsMap::: ${itemsMap}   ${allNums}");
+    print("itemsMap::: $itemsMap   $allNums");
   }
 
   Future<void> connectSocket() async {
@@ -838,7 +801,7 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     res =
         await Provider.of<LeadListViewModel>(context, listen: false).fetch() ??
             "";
-    print("res:::::::::::  ${res}");
+    print("res:::::::::::  $res");
     await Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number ?? "");
 

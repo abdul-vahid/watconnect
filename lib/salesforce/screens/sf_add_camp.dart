@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -26,8 +28,8 @@ class SfAddCampScreen extends StatefulWidget {
 class _SfAddCampScreenState extends State<SfAddCampScreen> {
   final GlobalKey<FormState> _addCampFormKey = GlobalKey<FormState>();
 
-  TextEditingController campName = new TextEditingController();
-  TextEditingController campDesc = new TextEditingController();
+  TextEditingController campName = TextEditingController();
+  TextEditingController campDesc = TextEditingController();
   TextEditingController fileNameController = TextEditingController();
   TextEditingController templateController = TextEditingController();
 
@@ -43,7 +45,6 @@ class _SfAddCampScreenState extends State<SfAddCampScreen> {
     TemplateController templateController = Provider.of(context, listen: false);
 
     templateController.resetController();
-    // TODO: implement initState
     super.initState();
   }
 
@@ -71,7 +72,7 @@ class _SfAddCampScreenState extends State<SfAddCampScreen> {
                         borderRadius: BorderRadius.circular(8)),
                     child: Center(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: campCntroller.addCampLoader
                             ? const SizedBox(
                                 height: 20,
@@ -176,7 +177,7 @@ class _SfAddCampScreenState extends State<SfAddCampScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                               ))
-                          : SizedBox()
+                          : const SizedBox()
                     ],
                   ),
                   const SizedBox(height: 5),
@@ -289,31 +290,25 @@ class _SfAddCampScreenState extends State<SfAddCampScreen> {
     ];
     String csv = const ListToCsvConverter().convert(rows);
 
-    final Directory? downloadsDir = await getApplicationDocumentsDirectory();
+    final Directory downloadsDir = await getApplicationDocumentsDirectory();
 
-    if (downloadsDir != null) {
-      final String downloadsPath =
-          downloadsDir.path.replaceAll("Android/data", "Download");
-      final file = File('$downloadsPath/sample.csv');
-      await file.create(recursive: true);
-      await file.writeAsString(csv);
+    final String downloadsPath =
+        downloadsDir.path.replaceAll("Android/data", "Download");
+    final file = File('$downloadsPath/sample.csv');
+    await file.create(recursive: true);
+    await file.writeAsString(csv);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text("CSV saved"),
-          action: SnackBarAction(
-            label: "Open",
-            onPressed: () {
-              OpenFilex.open(file.path);
-            },
-          ),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text("CSV saved"),
+        action: SnackBarAction(
+          label: "Open",
+          onPressed: () {
+            OpenFilex.open(file.path);
+          },
         ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Unable to access Downloads directory")),
-      );
-    }
+      ),
+    );
   }
 
   Future<void> addCampaignApiCall() async {
@@ -324,8 +319,8 @@ class _SfAddCampScreenState extends State<SfAddCampScreen> {
       TemplateController templateController =
           Provider.of(context, listen: false);
 
-      var paramToSend = await templateController
-          .buildParamsJson(templateController.tempParamsList);
+      var paramToSend =
+          templateController.buildParamsJson(templateController.tempParamsList);
 
       Map<String, dynamic> body = {
         "name": campName.text.trim(),
@@ -340,8 +335,8 @@ class _SfAddCampScreenState extends State<SfAddCampScreen> {
       List addCampList = [];
       addCampList.add(body);
 
-      SfcampaignController sfcampaignController =
-          Provider.of(context, listen: false);
+      // SfcampaignController sfcampaignController =
+      //     Provider.of(context, listen: false);
 
       // sfcampaignController.sfAddCampaignCall(addCampList).then((onValue) {
       // Navigator.pop(context);

@@ -1,10 +1,11 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, avoid_print
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/views/view/balance_transaction_list_screen.dart';
+import 'package:whatsapp/views/view/call_history_screen.dart';
 import 'package:whatsapp/views/view/tags_list_view.dart';
 import 'package:whatsapp/views/view/templete_list_view.dart';
 import 'package:whatsapp/views/view/whatsap_setting_view.dart';
@@ -47,15 +48,18 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
 
   List<String> modules = [];
   bool hasWallet = false;
+  bool hasCalls = false;
+
   Future<void> getAvailableModules() async {
     final prefs = await SharedPreferences.getInstance();
-    modules = await prefs
-            .getStringList(SharedPrefsConstants.userAvailableMoulesKey) ??
-        [];
-    hasWallet = await prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
+    modules =
+        prefs.getStringList(SharedPrefsConstants.userAvailableMoulesKey) ?? [];
+    hasWallet = prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
+    hasCalls = prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
+
     setState(() {});
 
-    print("modules:::: ${modules}");
+    print("modules:::: $modules");
   }
 
   @override
@@ -285,27 +289,26 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
                       builder: (context) => WhatsapSettingView()));
             },
           ),
-          // ListTile(
-          //   leading: Icon(
-          //     FontAwesomeIcons.user,
-          //     color: AppColor.navBarIconColor,
-          //   ),
-          //   title: Text(
-          //     'User',
-          //     // style: GoogleFonts.montserrat(
-          //     //   fontWeight: FontWeight.bold,
-          //     // ),
-          //   ),
-          //   onTap: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(builder: (context) => UserListView()),
-          //     );
-          //     /* AppUtils.launchTab(context,
-          //         selectedIndex: HomeTabsOptions.profile.index); */
-          //   },
-          // ),
-          // Divider(),
+          modules.contains("Calls") ? Divider() : SizedBox(),
+          modules.contains("Calls")
+              ? ListTile(
+                  leading: Icon(
+                    Icons.ring_volume_rounded,
+                    color: AppColor.navBarIconColor,
+                  ),
+                  title: Text(
+                    'Calls',
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => CallHistoryScreen()),
+                    );
+                  },
+                )
+              : SizedBox(),
+
           // ListTile(
           //   leading: Icon(
           //     Icons.person,

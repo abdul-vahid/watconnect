@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/models/message_history_model/message_history_model.dart';
@@ -6,6 +8,7 @@ import '../../utils/app_color.dart';
 import '../../utils/function_lib.dart';
 import '../../view_models/message_history_vm.dart';
 
+// ignore: must_be_immutable
 class MessageHistorytView extends StatefulWidget {
   MessageHistoryModel? model;
   String? parentId;
@@ -16,6 +19,7 @@ class MessageHistorytView extends StatefulWidget {
 }
 
 class _MessageHistorytView extends State<MessageHistorytView> {
+  // ignore: prefer_typing_uninitialized_variables
   var baseViewModals;
   get model => widget.model;
   String? tcount = '';
@@ -121,7 +125,7 @@ class _MessageHistorytView extends State<MessageHistorytView> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12.0),
-          child: Container(
+          child: SizedBox(
             height: 40,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -153,7 +157,7 @@ class _MessageHistorytView extends State<MessageHistorytView> {
             ),
           ),
         ),
-        SizedBox(
+        const SizedBox(
           height: 10,
         ),
         Expanded(
@@ -236,20 +240,20 @@ class _MessageHistorytView extends State<MessageHistorytView> {
   }
 
   // Function to get the border color based on the delivery status
-  Color _getBorderColor(String deliveryStatus) {
-    switch (deliveryStatus.toLowerCase()) {
-      case "read":
-        return Colors.green;
-      case "failed":
-        return const Color.fromARGB(255, 255, 56, 56);
-      case "sent":
-        return AppColor.navBarIconColor;
-      case "delivered":
-        return AppColor.navBarIconColor;
-      default:
-        return Colors.grey;
-    }
-  }
+  // Color _getBorderColor(String deliveryStatus) {
+  //   switch (deliveryStatus.toLowerCase()) {
+  //     case "read":
+  //       return Colors.green;
+  //     case "failed":
+  //       return const Color.fromARGB(255, 255, 56, 56);
+  //     case "sent":
+  //       return AppColor.navBarIconColor;
+  //     case "delivered":
+  //       return AppColor.navBarIconColor;
+  //     default:
+  //       return Colors.grey;
+  //   }
+  // }
 
   Widget _buildColoredText(String text, Color color) {
     return Container(

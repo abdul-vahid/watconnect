@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -114,7 +116,7 @@ class _WhtsapphoneState extends State<Whtsapphone> {
                     onTap: () async {
                       setState(() {
                         selectedWhatsAppNumber = key;
-                        print("value::: ${value}");
+                        print("value::: $value");
                         String name = removeNumbers(value);
 
                         SharedPreferences.getInstance().then((prefs) {

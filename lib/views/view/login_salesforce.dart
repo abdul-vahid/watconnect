@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously, library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -10,7 +12,7 @@ import 'package:whatsapp/views/widgets/bottomnavigatonbar.dart';
 class WebViewPage extends StatefulWidget {
   final String url;
 
-  WebViewPage({required this.url});
+  const WebViewPage({super.key, required this.url});
 
   @override
   _WebViewPageState createState() => _WebViewPageState();
@@ -71,7 +73,6 @@ class _WebViewPageState extends State<WebViewPage> {
                     "salesforce");
                 dashBoardController.setLoginType(true);
                 Navigator.pushAndRemoveUntil(
-                  // ignore: use_build_context_synchronously
                   context,
                   MaterialPageRoute(
                     builder: (context) => const FooterNavbarPage(),

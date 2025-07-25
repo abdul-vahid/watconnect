@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -15,7 +17,7 @@ class TagsListViewModel extends BaseListViewModel {
 
   Future<void> fetchAllTags() async {
     String url = AppUtils.getUrl(AppConstants.getAllTagsApi);
-    String apiUrl = "${url}";
+    String apiUrl = url;
     await get(url: apiUrl, baseModel: TagsModel());
   }
 
@@ -34,7 +36,7 @@ class TagsListViewModel extends BaseListViewModel {
     print("working.....");
     String url = AppUtils.getUrl(AppConstants.getAllTagsApi);
     print("urll=>$url");
-    String apiurl = "${url}/${tagId}";
+    String apiurl = "$url/$tagId";
     String jsonString = jsonEncode(addTagBody);
     var result = await put(url: apiurl, body: jsonString);
 
