@@ -6,14 +6,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart'
     show InternetConnectionChecker;
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/call_socket.dart';
 import 'package:whatsapp/models/user_model/user_model.dart';
 import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/screens/sf_home_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_profile_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_recent_chat_screen.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/views/view/recent_chats_screen.dart';
 
@@ -53,8 +56,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     getuserrole();
     print("init startwtwtwyw=>${userModelData?.userrole}");
     super.initState();
-    // _controller = NotchBottomBarController();
-    // getConnectivity();s
+
     setState(() {});
   }
 
@@ -72,19 +74,6 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     // subscription.cancel();
     super.dispose();
   }
-
-  // getConnectivity() {
-  //   subscription = Connectivity()
-  //       .onConnectivityChanged
-  //       .listen((ConnectivityResult result) async {
-  //     isDeviceConnected =
-  //         await InternetConnectionChecker._instance.hasConnection;
-  //     if (!isDeviceConnected && !isAlertSet) {
-  //       showDialogBox();
-  //       setState(() => isAlertSet = true);
-  //     }
-  //   });
-  // }
 
   Future<bool> _onWillPop() async {
     return (await showCupertinoDialog(
@@ -112,6 +101,16 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
   void getuserrole() async {
     final prefs = await SharedPreferences.getInstance();
     print("userModelData=>${userModelData?.userrole}");
+
+    bool hasCalls =
+        await prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
+    if (hasCalls) {
+      String tkn = await AppUtils.getToken() ?? "";
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+      var userId = decodedToken;
+
+      CallSocketService().connect(tkn, userId);
+    }
     setState(() {
       userModelData = AppUtils.getSessionUser(prefs);
     });

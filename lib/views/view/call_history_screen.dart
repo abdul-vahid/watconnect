@@ -161,8 +161,9 @@ String formatDuration(int seconds) {
 
 String formatDateTime(int timestamp) {
   // Use the timestamp directly (milliseconds)
-  final dateTime =
-      DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: true);
+  final dateTime = DateTime.fromMillisecondsSinceEpoch(
+    timestamp * 1000,
+  );
   final now = DateTime.now();
 
   final isToday = dateTime.year == now.year &&

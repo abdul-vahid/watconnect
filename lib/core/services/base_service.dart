@@ -19,7 +19,7 @@ class BaseService {
 
   Future<ApiResponse> post({required String url, required String body}) async {
     var token = await AppUtils.getToken();
-    debugLog("Token a == $token");
+    // debugLog("Token a == $token");
     token ??= "";
     // printLongString("body base service send= $body");
     final responseJsonData = await _apiService.postResponse(url, body, token);

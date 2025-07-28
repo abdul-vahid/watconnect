@@ -72,8 +72,8 @@ class _CallPopupDialogState extends State<CallPopupDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(widget.callerName, style: TextStyle(fontSize: 20)),
-          SizedBox(height: 16),
+          Text(widget.callerName, style: const TextStyle(fontSize: 20)),
+          const SizedBox(height: 16),
           if (callAccepted)
             Text(
               "Call Duration: ${formatDuration(_durationSeconds)}",

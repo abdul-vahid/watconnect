@@ -32,6 +32,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
+import 'package:whatsapp/call_socket.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/models/call_history_model.dart';
@@ -88,7 +89,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   List<TextEditingController> controllers = [];
-  ValueNotifier<String> callDurationNotifier = ValueNotifier<String>("00:00");
+  // ValueNotifier<String> callDurationNotifier = ValueNotifier<String>("00:00");
 
   List<String> templateNamesss = [];
   List<String> templateIds = [];
@@ -157,11 +158,15 @@ class _ChatScreenState extends State<ChatScreen> {
 
   IO.Socket? socket;
 
-  IO.Socket? callSocket;
+  // IO.Socket? callSocket;
 
   RTCPeerConnection? _peerConnection;
   MediaStream? _localStream;
   MediaStream? _remoteStream;
+
+  Timer? _callTimer;
+  int _callDurationSeconds = 0;
+  bool _callStarted = false;
 
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
 
@@ -220,6 +225,15 @@ class _ChatScreenState extends State<ChatScreen> {
     final prefs = await SharedPreferences.getInstance();
     hasCalls = await prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
 
+    if (hasCalls) {
+      // CallSocketService().disconnectSocket();
+      // String tkn = await AppUtils.getToken() ?? "";
+      // Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+      // userId = decodedToken;
+      // print("modules contains calls so we are here ::::::::  $userId");
+      // CallSocketService().connect(tkn, userId);
+    }
+
     hasWallet = await prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
     print("hasWallet:::::::::::::::::   $hasWallet");
     setState(() {});
@@ -234,6 +248,9 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _remoteRenderer.dispose();
     _recorder.closeRecorder();
+    _callTimer?.cancel();
+    _peerConnection?.close();
+    _localStream?.dispose();
     _player.closePlayer();
     audioPlayer.dispose();
     _previewPlayerSubscription?.cancel();
@@ -295,15 +312,10 @@ class _ChatScreenState extends State<ChatScreen> {
         onFocusGained: () {
           log('\x1B[95mFCM     Chat Screen focused again::::::::::::::::::::::::::::::::::::::::::::::::::');
 
-          // print("Screen focused again");
           connectSocket();
-          if (hasCalls) {
-            connectCallSocket();
-          }
         },
         onFocusLost: () {
           disconnectSocket();
-          disconnectCallSocket();
         },
         child: SafeArea(
           bottom: true,
@@ -3757,193 +3769,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Future<void> connectCallSocket() async {
-    try {
-      callSocket = IO.io(
-        'https://sandbox.watconnect.com',
-        IO.OptionBuilder()
-            .setTransports(['websocket'])
-            .setPath('/swp/socket.io')
-            .setExtraHeaders({'Authorization': 'Bearer $token'})
-            .build(),
-      );
-
-      callSocket!.connect();
-
-      callSocket!.onConnect((_) {
-        print('✅ Connected to call WebSocket');
-        callSocket!.emit("setup", userId);
-      });
-
-      // Store dialog context
-      BuildContext? dialogContext;
-
-      // Handle call events
-      callSocket!.on("whatsapp_call_event", (data) {
-        log("📞 whatsapp_call_event: evnt ${data['data']['event']}  $data");
-
-        if (data['data']['event'] != "terminate") {
-          if (dialogContext == null) {
-            showDialog(
-              context: context,
-              barrierDismissible: true,
-              barrierColor: Colors.black.withOpacity(0.3),
-              builder: (BuildContext ctx) {
-                dialogContext = ctx;
-                return Center(
-                  child: Container(
-                    width: 320,
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[900],
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Avatar
-                        CircleAvatar(
-                          radius: 36,
-                          backgroundColor: Colors.white,
-                          child: Text(
-                            widget.leadName?.isNotEmpty == true
-                                ? widget.leadName![0].toUpperCase()
-                                : "?",
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Name
-                        Text(
-                          widget.leadName ?? "",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-
-                        // WhatsApp number
-                        Text(
-                          widget.wpnumber ?? "",
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Ringing text
-                        const Text(
-                          "📞 Ringing...",
-                          style: TextStyle(
-                            color: Colors.greenAccent,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Accept / Reject Buttons
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            // Reject Button
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.redAccent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                              ),
-                              onPressed: () {
-                                // Handle reject logic
-                                Navigator.of(dialogContext!).pop();
-                                dialogContext = null;
-                              },
-                              icon: const Icon(Icons.call_end,
-                                  color: Colors.white),
-                              label: const Text(
-                                "Reject",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-
-                            // Accept Button
-                            ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                              ),
-                              onPressed: () {
-                                acceptApiCall(data);
-                                // Handle accept logic
-                                Navigator.of(dialogContext!).pop();
-                                dialogContext = null;
-                              },
-                              icon: const Icon(Icons.call, color: Colors.white),
-                              label: const Text(
-                                "Accept",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          }
-        } else {
-          // terminate event
-          print("📴 Call Terminated");
-          if (dialogContext != null) {
-            Navigator.of(dialogContext!).pop();
-            dialogContext = null;
-          }
-        }
-      });
-
-      // On disconnect
-      callSocket!.onDisconnect((_) {
-        print("❌ WebSocket Disconnected");
-        if (dialogContext != null) {
-          Navigator.of(dialogContext!).pop();
-          dialogContext = null;
-        }
-      });
-
-      // On error
-      callSocket!.onError((error) {
-        print("⚠️ WebSocket Error: $error");
-        if (dialogContext != null) {
-          Navigator.of(dialogContext!).pop();
-          dialogContext = null;
-        }
-      });
-    } catch (error) {
-      print("❌ Error connecting to whatsapp_call_event: $error");
-    }
-  }
-
   void disconnectSocket() {
     if (socket != null) {
       socket!.disconnect();
@@ -3951,12 +3776,12 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void disconnectCallSocket() {
-    if (callSocket != null) {
-      callSocket!.disconnect();
-      print(" WebSocket Disconnected");
-    }
-  }
+  // void disconnectCallSocket() {
+  //   if (callSocket != null) {
+  //     callSocket!.disconnect();
+  //     print(" WebSocket Disconnected");
+  //   }
+  // }
 
   bool isSameDay(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&
@@ -4345,7 +4170,8 @@ class _ChatScreenState extends State<ChatScreen> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           child: Container(
-            constraints: const BoxConstraints(maxHeight: 500), // Set max height
+            width: double.infinity,
+            constraints: const BoxConstraints(maxHeight: 500),
             padding: const EdgeInsets.all(12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -4358,6 +4184,33 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: InkWell(
+                    onTap: () {
+                      _startCall();
+                    },
+                    child: Container(
+                      width: 100,
+                      // constraints: BoxConstraints(minWidth: 100
+                      //     // maxWidth: MediaQuery.of(context).size.width * 0.75,
+                      //     ),
+                      decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 4.0, vertical: 10),
+                          child: Text(
+                            "Call",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: ListView.separated(
                     itemCount: callHistoryList.length,
@@ -4367,6 +4220,18 @@ class _ChatScreenState extends State<ChatScreen> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4.0),
                         child: ListTile(
+                          leading: Transform.rotate(
+                            angle: callHistoryList[index].status == "Incoming"
+                                ? 45
+                                : 180,
+                            child: Icon(
+                              FontAwesomeIcons.arrowDown,
+                              color: callHistoryList[index].status == "Incoming"
+                                  ? Colors.green
+                                  : Colors.red,
+                              size: 16,
+                            ),
+                          ),
                           title: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -4406,87 +4271,181 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Future<void> acceptApiCall(
-    Map<String, dynamic> callData,
-  ) async {
-    try {
-      // 1. Show loading if needed
-      // setState(() => isProcessing = true);
+  // Future<void> acceptApiCall(
+  //   Map<String, dynamic> callData,
+  // ) async {
+  //   try {
+  //     // 1. Show loading if needed
+  //     // setState(() => isProcessing = true);
 
-      // 2. Create Peer Connection
-      final Map<String, dynamic> configuration = {
-        'iceServers': [
-          {'urls': 'stun:stun.l.google.com:19302'},
-        ]
-      };
+  //   } catch (e) {
+  //     print("Error on accept: $e");
+  //     // Cleanup
+  //     _peerConnection?.close();
+  //     _peerConnection = null;
+  //   }
+  // }
 
-      _peerConnection = await createPeerConnection(configuration);
+  String startTimerDuration(int seconds) {
+    final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
+    final secs = (seconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$secs';
+  }
 
-      // 3. Setup remote stream listener
-      _remoteStream = await createLocalMediaStream('remote');
-      _peerConnection!.onTrack = (RTCTrackEvent event) {
-        if (event.streams.isNotEmpty) {
-          _remoteStream = event.streams[0];
-          _remoteRenderer.srcObject = _remoteStream;
+  Future<void> _startCall() async {
+    await _remoteRenderer.initialize();
+
+    _localStream = await navigator.mediaDevices.getUserMedia({
+      'audio': true,
+      'video': false,
+    });
+
+    _peerConnection = await createPeerConnection({
+      'iceServers': [
+        {'urls': 'stun:stun.l.google.com:19302'},
+      ],
+    });
+
+    _localStream!.getAudioTracks().forEach((track) {
+      _peerConnection!.addTrack(track, _localStream!);
+    });
+
+    _peerConnection!.onTrack = (RTCTrackEvent event) {
+      if (event.streams.isNotEmpty) {
+        _remoteRenderer.srcObject = event.streams[0];
+      }
+    };
+
+    _peerConnection!.getSenders().then((senders) {
+      for (var sender in senders) {
+        if (sender.track?.kind == 'video') {
+          _peerConnection!.removeTrack(sender);
         }
-      };
+      }
+    });
 
-      // 4. Set remote SDP offer
-      final offer = RTCSessionDescription(
-        callData['data']['sdp'],
-        'offer',
-      );
-      await _peerConnection!.setRemoteDescription(offer);
+    RTCSessionDescription offer = await _peerConnection!.createOffer({
+      'offerToReceiveAudio': true,
+      'offerToReceiveVideo': false,
+    });
+    await _peerConnection!.setLocalDescription(offer);
 
-      // 5. Get local microphone audio
-      _localStream = await navigator.mediaDevices.getUserMedia({
-        'audio': true,
-        'video': false,
-      });
+    // print("offer::::  ${offer.sdp}");
 
-      // 6. Add local audio tracks
-      _localStream!.getTracks().forEach((track) {
-        _peerConnection!.addTrack(track, _localStream!);
-      });
+    _peerConnection!.onTrack = (event) {
+      if (!_callStarted) {
+        setState(() => _callStarted = true);
+        _startCallTimer();
+      }
+    };
 
-      // 7. Create SDP answer
-      final answer = await _peerConnection!.createAnswer();
-      await _peerConnection!.setLocalDescription(answer);
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+    Map<String, dynamic> acceptBody = {
+      "payload": {
+        "messaging_product": "whatsapp",
+        "to": widget.wpnumber,
+        "action": "connect",
+        "session": {"sdp_type": "offer", "sdp": offer.sdp}
+      },
+      "business_number": number
+    };
+    var callId = "";
 
-      // 8. Modify SDP
-      String modifiedSdp =
-          answer.sdp!.replaceAll("a=setup:actpass", "a=setup:active");
+    await Provider.of<CallsViewModel>(context, listen: false)
+        .callAcceptApi(acceptBody)
+        .then((value) async {
+      var apires = jsonDecode(value ?? "");
+      print("apires['success'] ::::::::  ${apires['success']}");
+      if (apires['success'] == false) {
+        EasyLoading.showToast(apires['meta_response']['error']['message']);
+        return;
+      } else {
+        callId = apires['meta_response']['calls'][0]['id'];
+        print(
+            "value from accept api::::   ${value.runtimeType} $value  $callId  ${apires['meta_response']['calls'][0]['id']}");
 
-      // 9. Prepare payload
-      Map<String, dynamic> payload = {
-        "payload": {
-          "messaging_product": "whatsapp",
-          "call_id": callData['data']['call_id'],
-          "action": "accept",
-          "session": {
-            "sdp_type": "answer",
-            "sdp": modifiedSdp,
-          }
+        Map<String, dynamic> payload = {
+          "name": widget.leadName,
+          "whatsapp_number": widget.wpnumber,
+          "business_number": number,
+          "status": "Outgoing",
+          "event": "connect",
+          "call_id": callId,
+          "start_time":
+              (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
+          "sdp": offer.sdp,
+          "sdp_type": "connect",
+          "direction": "BUSINESS_INITIATED"
+        };
+
+        await Provider.of<CallsViewModel>(context, listen: false)
+            .outgoingCallApi(payload);
+
+        Map<String, dynamic> rejBody = {
+          "call_id": callId,
+          "business_number": number,
+        };
+        _showRingingDialog(rejBody);
+      }
+    });
+  }
+
+  void _startCallTimer() {
+    _callTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() => _callDurationSeconds++);
+    });
+  }
+
+  Future<void> _endCall(Map<String, dynamic> rejectBody) async {
+    await Provider.of<CallsViewModel>(navigatorKey.currentContext!,
+            listen: false)
+        .callRejectApi(rejectBody);
+
+    _peerConnection?.close();
+    _peerConnection = null;
+    // await Helper.setMicrophoneMute(true); // Optional safety
+    await Helper.setSpeakerphoneOn(false);
+    _localStream?.dispose();
+    _localStream = null;
+    // await _audioPlayer.stop();
+    // await _audioPlayer.dispose();
+
+    _remoteStream?.dispose();
+    _remoteStream = null;
+
+    _remoteRenderer.srcObject = null;
+    Navigator.pop(context); // Dismiss the dialog
+    setState(() {
+      _callDurationSeconds = 0;
+      _callStarted = false;
+    });
+  }
+
+  void _showRingingDialog(Map<String, dynamic> rejectBody) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Text(_callStarted ? 'In Call' : 'Ringing...'),
+            content: _callStarted
+                ? Text(
+                    'Call Duration: ${startTimerDuration(_callDurationSeconds)}')
+                : const Text('Waiting for remote to pick up...'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  _endCall(rejectBody);
+                },
+                child: const Text('End Call'),
+              ),
+            ],
+          );
         },
-        "business_number": callData['data']['business_number']
-      };
-
-      // 10. Call Accept API
-      await Provider.of<CallsViewModel>(context, listen: false)
-          .callAcceptApi(payload);
-
-      // 11. Start Call Duration Timer
-      int duration = 0;
-      Timer.periodic(Duration(seconds: 1), (Timer timer) {
-        duration += 1;
-        // onDurationUpdate(duration.toString());
-      });
-    } catch (e) {
-      print("Error on accept: $e");
-      // Cleanup
-      _peerConnection?.close();
-      _peerConnection = null;
-    }
+      ),
+    );
   }
 }
 

@@ -5,6 +5,8 @@ import 'dart:io';
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 
 import '../core/apis/app_exception.dart';
 import '../utils/function_lib.dart';
@@ -36,6 +38,15 @@ class APIService {
         'Authorization': token,
       });
 
+      print(
+          "POST URL ---> $url \nSTATUSCODE ${response.statusCode}---> \nRESPONSE ---> ${response.body}  ");
+      if (url.contains(AppConstants.refreshTokenAPIPath)) {
+        var body = jsonDecode(response.body);
+        String accessToken = body['authToken'];
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(SharedPrefsConstants.accessTokenKey, accessToken);
+      }
       final data = returnResponse(response);
       return ApiResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
@@ -104,7 +115,8 @@ class APIService {
       case 204:
         return {}; // No content
       case 400:
-        throw BadRequestException(response.body.toString());
+        // throw BadRequestException(response.body.toString());
+        return jsonDecode(response.body);
       case 401:
       case 403:
         debug("Unauthorized");

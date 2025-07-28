@@ -23,6 +23,20 @@ class CallsViewModel extends BaseListViewModel {
   Future<String?> callAcceptApi(Map<String, dynamic> body) async {
     String url = AppUtils.getUrl(AppConstants.callAcceptApi);
     var res = await post(url: url, body: jsonEncode(body));
+    print("response::::::of call accept api::::::: ${res.runtimeType}  $res");
+    return jsonEncode(res);
+  }
+
+  Future<String?> outgoingCallApi(Map<String, dynamic> body) async {
+    String url = AppUtils.getUrl(AppConstants.outgoingCall);
+    var res = await post(url: url, body: jsonEncode(body));
+    print("response::::::of call history api:::::::   $res");
+    return res.toString();
+  }
+
+  Future<String?> callRejectApi(Map<String, dynamic> body) async {
+    String url = AppUtils.getUrl(AppConstants.callRejectApi);
+    var res = await post(url: url, body: jsonEncode(body));
     print("response::::::of call history api:::::::   $res");
     return res.toString();
   }
@@ -31,7 +45,7 @@ class CallsViewModel extends BaseListViewModel {
     String url = AppUtils.getUrl(
       AppConstants.initiateCallApi
           .replaceAll("{business_number}", busNum)
-          .replaceAll("{whatsapp_number}", num),
+          .replaceAll("{whatsapp_number}", num.replaceAll("+", '')),
     );
 
     var res = await get(url: url, baseModel: callHistoryModel());

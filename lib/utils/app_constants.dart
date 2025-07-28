@@ -88,6 +88,11 @@ abstract class AppConstants {
 
   static const String baseUrl = "https://sandbox.watconnect.com/swp";
   // static const String baseUrl = "https://admin.watconnect.com/ibs";
+  static const String socketPath = '/swp/socket.io';
+  //  static const String socketPath = '/ibs/socket.io';
+
+  static const String socketUrl = 'https://sandbox.watconnect.com';
+  // static const String socketUrl = 'https://admin.watconnect.com';
 
   static const String baseImgUrl = "https://sandbox.watconnect.com/";
   // static const String baseImgUrl = "https://admin.watconnect.com/";
@@ -218,6 +223,7 @@ abstract class AppConstants {
   static const String callHistoryApi =
       "/api/whatsapp/call?business_number=917240500172&whatsapp_number=";
 
+  static const String outgoingCall = '/api/whatsapp/call';
   static const String callAcceptApi = "/api/whatsapp/call/accept";
 
   static const String callRejectApi = "/api/whatsapp/call/reject";

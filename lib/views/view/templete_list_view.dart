@@ -771,7 +771,7 @@ class _TempleteListView extends State<TempleteListView> {
               }
             } else {
               selecttemplte = null;
-              log("this is the condition which got true");
+
               if (record.status.toString().toLowerCase() == "approved") {
                 if (record.status.toString().toLowerCase() == "approved") {
                   allTemplates.add(record);
@@ -789,8 +789,6 @@ class _TempleteListView extends State<TempleteListView> {
                 return firstName.contains(searchTemp);
               }).toList();
             }
-
-            print("Record templetettetete Status: ${record.status}");
           }
         }
         setState(() {});

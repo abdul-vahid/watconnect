@@ -14,6 +14,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:whatsapp/call_socket.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/datum.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 
@@ -149,6 +150,14 @@ class _HomeViewState extends State<HomeView> with RouteAware {
     setState(() {});
 
     print("modules:::: $modules");
+
+    if (modules.contains("Calls")) {
+      String tkn = await AppUtils.getToken() ?? "";
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+      userId = decodedToken;
+      print("modules contains calls so we are here ::::::::  ${userId}");
+      // CallSocketService().connect(tkn, userId);
+    }
   }
 
   void fetch() async {
