@@ -83,8 +83,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
             content: const Text('Do you want to exit an App'),
             actions: <Widget>[
               TextButton(
-                onPressed: () =>
-                    Navigator.of(context).pop(false), //<-- SEE HERE
+                onPressed: () => Navigator.of(context).pop(false),
                 child: const Text('No',
                     style: TextStyle(color: AppColor.navBarIconColor)),
               ),

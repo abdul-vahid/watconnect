@@ -4382,11 +4382,11 @@ class _ChatScreenState extends State<ChatScreen> {
         await Provider.of<CallsViewModel>(context, listen: false)
             .outgoingCallApi(payload);
 
-        Map<String, dynamic> rejBody = {
-          "call_id": callId,
-          "business_number": number,
-        };
-        _showRingingDialog(rejBody);
+        // Map<String, dynamic> rejBody = {
+        //   "call_id": callId,
+        //   "business_number": number,
+        // };
+        // _showRingingDialog(rejBody);
       }
     });
   }
