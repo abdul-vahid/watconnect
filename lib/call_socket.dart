@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'dart:developer';
-
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -23,7 +22,7 @@ class CallSocketService {
   bool _isConnected = false;
   bool _isStatusConnected = false;
 
-  // Auth & user
+  // User/Auth
   String? token;
   Map<String, dynamic>? user;
   String? busNum;
@@ -34,6 +33,7 @@ class CallSocketService {
   MediaStream? _localStream;
   MediaStream? _remoteStream;
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
+  bool _isRendererInitialized = false;
 
   // UI
   BuildContext? _dialogContext;
@@ -48,14 +48,19 @@ class CallSocketService {
   int _callDuration = 0;
   bool _callAccepted = false;
 
-  // Event Stream
+  // Events
   final _callEventController = StreamController<dynamic>.broadcast();
   Stream<dynamic> get callEvents => _callEventController.stream;
 
-  void dispose() => _callEventController.close();
+  // Public methods
   IO.Socket? get socket => _socket;
 
-  // ===================== SOCKET CONNECTION =====================
+  void dispose() {
+    if (!_callEventController.isClosed) _callEventController.close();
+    _audioPlayer.dispose();
+  }
+
+  // ===================== SOCKET HANDLING =====================
 
   Future<void> connect(String token, dynamic userData) async {
     this.token = token;
@@ -66,19 +71,9 @@ class CallSocketService {
       return;
     }
 
-    _socket = IO.io(
-      'https://sandbox.watconnect.com',
-      IO.OptionBuilder()
-          .setTransports(['websocket'])
-          .setPath('/swp/socket.io')
-          .setExtraHeaders({'Authorization': 'Bearer $token'})
-          .setReconnectionAttempts(10)
-          .setReconnectionDelay(2000)
-          .build(),
-    );
-
-    _socket
-      ?..onConnect((_) {
+    _socket = _createSocket(token);
+    _socket!
+      ..onConnect((_) {
         _isConnected = true;
         debugPrint('✅ Call socket connected');
         _socket?.emit("setup", userData);
@@ -105,28 +100,18 @@ class CallSocketService {
     _socket?.disconnect();
     _socket = null;
     _isConnected = false;
-    print("🧹 WebSocket fully cleaned up");
+    debugPrint("🧹 WebSocket cleaned up");
   }
 
-  void connectStausSocket() {
+  void connectStatusSocket() {
     if (_isStatusConnected && _statusSocket?.connected == true) {
       debugPrint("🔁 Call status socket already connected.");
       return;
     }
 
-    _statusSocket = IO.io(
-      'https://sandbox.watconnect.com',
-      IO.OptionBuilder()
-          .setTransports(['websocket'])
-          .setPath('/swp/socket.io')
-          .setExtraHeaders({'Authorization': 'Bearer $token'})
-          .setReconnectionAttempts(10)
-          .setReconnectionDelay(2000)
-          .build(),
-    );
-
-    _statusSocket
-      ?..onConnect((_) {
+    _statusSocket = _createSocket(token!);
+    _statusSocket!
+      ..onConnect((_) {
         _isStatusConnected = true;
         debugPrint('✅ Call status socket connected');
         _statusSocket?.emit("setup", user);
@@ -139,7 +124,7 @@ class CallSocketService {
       })
       ..onConnectError((err) {
         _isStatusConnected = false;
-        debugPrint('❌ Call status socket connection error: $err');
+        debugPrint('❌ Call status socket error: $err');
       })
       ..onError((data) => debugPrint("⚠️ Status socket error: $data"))
       ..onReconnect((_) => debugPrint("🔁 Reconnecting status socket..."))
@@ -149,29 +134,26 @@ class CallSocketService {
     _setupStatusListeners();
   }
 
-  // ===================== LISTENERS =====================
-
-  void _setupStatusListeners() {
-    _statusSocket?.on("whatsapp_statuses", (data) {
-      final status = data["data"]["status"];
-      log("📥 Call Status Update: $status");
-
-      if (status == "ACCEPTED") {
-        _closePopup();
-        _dialogShown = false;
-        _showActiveCallPopup(navigatorKey.currentContext!, data);
-      } else if (status == "COMPLETED" || status == "TERMINATE") {
-        _closePopup();
-      }
-    });
+  IO.Socket _createSocket(String token) {
+    return IO.io(
+      'https://sandbox.watconnect.com',
+      IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .setPath('/swp/socket.io')
+          .setExtraHeaders({'Authorization': 'Bearer $token'})
+          .setReconnectionAttempts(10)
+          .setReconnectionDelay(2000)
+          .build(),
+    );
   }
+
+  // ===================== LISTENERS =====================
 
   void _setupListeners() {
     _socket?.on("whatsapp_call_event", (data) {
-      log("whatsapp_call_event::::::::::::::    ${data}");
+      _dialogShown = false;
       final event = data['data']['event'];
       final dir = data['data']['direction'];
-      final sdp = data['data']['sdp'] ?? "";
 
       busNum = data['data']['business_number'] ?? "";
 
@@ -180,26 +162,24 @@ class CallSocketService {
         return;
       }
 
-      if (event == "connect" && dir == "BUSINESS_INITIATED") {
-        connectStausSocket();
-        _showOutgoingCallPopup(data);
-        if (sdp.isNotEmpty) handleSdp(sdp);
-        return;
-      }
-
       if (dir != "BUSINESS_INITIATED" && !_dialogShown) {
         _showCallPopup(data);
-        return;
-      }
-
-      if (dir == "BUSINESS_INITIATED") {
-        connectStausSocket();
-        _showOutgoingCallPopup(data);
       }
     });
   }
 
-  // ===================== UI METHODS =====================
+  void _setupStatusListeners() {
+    _statusSocket?.on("whatsapp_statuses", (data) {
+      final status = data["data"]["status"];
+      log("📥 Call Status: $status");
+
+      if (status == "COMPLETED" || status == "TERMINATE") {
+        _closePopup();
+      }
+    });
+  }
+
+  // ===================== UI HANDLING =====================
 
   void _showOverlay(Map<String, dynamic> data) {
     if (_callOverlay != null) return;
@@ -249,51 +229,60 @@ class CallSocketService {
     _callOverlay = null;
   }
 
-  void _closePopup() {
-    if (_dialogContext != null) Navigator.of(_dialogContext!).pop();
+  void _closePopup() async {
+    if (_dialogContext != null && Navigator.canPop(_dialogContext!)) {
+      Navigator.of(_dialogContext!).pop();
+    }
+
+    try {
+      await _audioPlayer.stop();
+    } catch (_) {}
+
+    _statusSocket?.disconnect();
+    _statusSocket = null;
+    _isStatusConnected = false;
 
     _dialogContext = null;
     _dialogShown = false;
     _popupSetState = null;
 
     _callTimer?.cancel();
-    _callTimer = null;
-
     _outcallTimer?.cancel();
+    _callTimer = null;
     _outcallTimer = null;
-
     _callDuration = 0;
-    _removeOverlay();
-  }
 
-  String _formatDuration(int seconds) {
-    final m = (seconds ~/ 60).toString().padLeft(2, '0');
-    final s = (seconds % 60).toString().padLeft(2, '0');
-    return "$m:$s";
+    _cleanUpCallConnection();
+    _removeOverlay();
   }
 
   // ===================== CALL HANDLING =====================
 
   Future<void> acceptApiCall(Map<String, dynamic> callData) async {
     try {
-      final config = {
+      _peerConnection = await createPeerConnection({
         'iceServers': [
           {'urls': 'stun:stun.l.google.com:19302'}
         ]
-      };
+      });
 
-      _peerConnection = await createPeerConnection(config);
+      if (!_isRendererInitialized) {
+        await _remoteRenderer.initialize();
+        _isRendererInitialized = true;
+      }
 
       _remoteStream = await createLocalMediaStream('remote');
+
       _peerConnection!.onTrack = (RTCTrackEvent event) {
-        if (event.streams.isNotEmpty) {
+        if (event.streams.isNotEmpty && _isRendererInitialized) {
           _remoteStream = event.streams[0];
           _remoteRenderer.srcObject = _remoteStream;
         }
       };
 
-      final offer = RTCSessionDescription(callData['data']['sdp'], 'offer');
-      await _peerConnection!.setRemoteDescription(offer);
+      await _peerConnection!.setRemoteDescription(
+        RTCSessionDescription(callData['data']['sdp'], 'offer'),
+      );
 
       _localStream = await navigator.mediaDevices.getUserMedia({
         'audio': true,
@@ -315,10 +304,7 @@ class CallSocketService {
           "messaging_product": "whatsapp",
           "call_id": callData['data']['call_id'],
           "action": "accept",
-          "session": {
-            "sdp_type": "answer",
-            "sdp": modifiedSdp,
-          }
+          "session": {"sdp_type": "answer", "sdp": modifiedSdp}
         },
         "business_number": callData['data']['business_number']
       };
@@ -332,8 +318,8 @@ class CallSocketService {
         _popupSetState?.call(() {});
       });
     } catch (e) {
-      print("❌ Error on accept: $e");
-      _peerConnection?.close();
+      print("❌ Accept failed: $e");
+      await _peerConnection?.close();
       _peerConnection = null;
     }
   }
@@ -348,164 +334,40 @@ class CallSocketService {
       };
 
       _callTimer?.cancel();
-      _callTimer = null;
-
       await Provider.of<CallsViewModel>(navigatorKey.currentContext!,
               listen: false)
           .callRejectApi(payload);
     } catch (e) {
-      print("❌ Error during reject: $e");
+      print("❌ Reject failed: $e");
     } finally {
+      await _audioPlayer.stop();
       _cleanUpCallConnection();
     }
   }
 
   Future<void> _cleanUpCallConnection() async {
-    _peerConnection?.close();
-    _peerConnection = null;
+    log("🧹 Cleaning call connection...");
 
-    await Helper.setSpeakerphoneOn(false);
-    await _audioPlayer.stop();
-
-    _localStream?.dispose();
-    _remoteStream?.dispose();
-    _remoteRenderer.srcObject = null;
-
-    if (_remoteRenderer.textureId != null) {
-      await _remoteRenderer.dispose();
-    }
-  }
-
-  Future<void> handleSdp(String sdp) async {
     try {
-      if (_peerConnection == null) {
-        log("PeerConnection is null. Cannot handle SDP.");
-        return;
-      }
+      await _peerConnection?.close();
+      _peerConnection = null;
 
-      RTCSessionDescription description = RTCSessionDescription(sdp, "answer");
-      await _peerConnection!.setRemoteDescription(description);
-      log("✅ Remote SDP answer set successfully.");
-    } catch (e) {
-      log("❌ Error in handleSDP: $e");
+      _localStream?.getTracks().forEach((track) => track.stop());
+      _localStream = null;
+
+      if (_isRendererInitialized) {
+        _remoteRenderer.srcObject = null;
+        await _remoteRenderer.dispose();
+        _isRendererInitialized = false;
+        //  _isRendererDisposed = false;
+        log("✅ Renderer disposed");
+      }
+    } catch (e, s) {
+      log("❌ Cleanup error: $e\n$s");
     }
   }
 
-  // ===================== POPUP UI METHODS OMITTED =====================
-  // (Leave `_showCallPopup`, `_showOutgoingCallPopup`, `_showActiveCallPopup` as-is unless you want those cleaned up separately)
-  Future<void> _showOutgoingCallPopup(Map<String, dynamic> data) async {
-    if (navigatorKey.currentContext == null || _dialogShown) return;
-    _dialogShown = true;
-
-    showDialog(
-      context: navigatorKey.currentContext!,
-      barrierDismissible: false,
-      builder: (ctx) {
-        _dialogContext = ctx;
-        return AlertDialog(
-          backgroundColor: Colors.black87,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.ring_volume_rounded,
-                  size: 60, color: Colors.greenAccent),
-              const SizedBox(height: 16),
-              Text(
-                "${data['data']['name']}",
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              const Text("Ringing...", style: TextStyle(color: Colors.white70)),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.call_end),
-                label: const Text("Reject"),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                onPressed: () async {
-                  await rejectApiCall(data, isFromRing: true);
-                  Navigator.of(_dialogContext!).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    ).then((_) {
-      _dialogContext = null;
-      _dialogShown = false;
-    });
-  }
-
-  void _showActiveCallPopup(BuildContext context, Map<String, dynamic> data) {
-    _callDuration = 0;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        _dialogContext = ctx;
-
-        // Start call timer
-        _outcallTimer?.cancel();
-        _outcallTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-          _callDuration++;
-          _popupSetState?.call(() {});
-        });
-
-        return StatefulBuilder(
-          builder: (context, setState) {
-            _popupSetState = setState;
-            final durationText = _formatDuration(_callDuration);
-
-            return AlertDialog(
-              backgroundColor: const Color(0xFF1E1E1E),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.call, size: 60, color: Colors.greenAccent),
-                  const SizedBox(height: 12),
-                  Text(
-                    data['data']['name'] ?? 'Unknown',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Call Duration: $durationText",
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  const SizedBox(height: 20),
-                  _popupButton(
-                    label: "End Call",
-                    icon: Icons.call_end,
-                    color: Colors.red,
-                    onPressed: () async {
-                      _outcallTimer?.cancel();
-                      Navigator.of(_dialogContext!).pop();
-                      await rejectApiCall(data, isFromRing: true);
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+  // ===================== POPUP =====================
 
   Future<void> _showCallPopup(Map<String, dynamic> data) async {
     await _audioPlayer.setReleaseMode(ReleaseMode.loop);
@@ -526,7 +388,6 @@ class CallSocketService {
       builder: (ctx) {
         _dialogContext = ctx;
 
-        // Show overlay after dialog is built
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _showOverlay(data);
         });
@@ -616,5 +477,11 @@ class CallSocketService {
       ),
       onPressed: onPressed,
     );
+  }
+
+  String _formatDuration(int seconds) {
+    final m = (seconds ~/ 60).toString().padLeft(2, '0');
+    final s = (seconds % 60).toString().padLeft(2, '0');
+    return "$m:$s";
   }
 }

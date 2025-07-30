@@ -1,0 +1,299 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:developer';
+import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:whatsapp/main.dart';
+import 'package:whatsapp/view_models/call_view_model.dart';
+
+class outgoingCall {
+  RTCPeerConnection? _peerConnection;
+  MediaStream? _localStream;
+
+  bool _callStarted = false;
+
+  final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
+
+  IO.Socket? _socket;
+  IO.Socket? _statusSocket;
+  bool _isConnected = false;
+
+  IO.Socket? get socket => _socket;
+
+  Future<void> connect(String token, dynamic userData) async {
+    if (_isConnected && _socket?.connected == true) {
+      debugPrint("🔁 outgoing Call socket already connected.");
+      return;
+    }
+
+    _socket = IO.io(
+      'https://sandbox.watconnect.com',
+      IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .setPath('/swp/socket.io')
+          .setExtraHeaders({'Authorization': 'Bearer $token'})
+          .setReconnectionAttempts(10)
+          .setReconnectionDelay(2000)
+          .build(),
+    );
+
+    _socket
+      ?..onConnect((_) {
+        _isConnected = true;
+        debugPrint('✅ Call socket connected');
+        _socket?.emit("setup", userData);
+      })
+      ..onDisconnect((_) async {
+        _isConnected = false;
+        debugPrint('❌ Call socket disconnected');
+        await Future.delayed(const Duration(seconds: 2));
+        connect(token, userData);
+      })
+      ..onConnectError((err) {
+        _isConnected = false;
+        debugPrint('❌ Call socket connection error: $err');
+      })
+      ..onError((data) => debugPrint("⚠️ Socket error: $data"))
+      ..onReconnect((_) => debugPrint("🔁 Reconnecting socket..."))
+      ..onReconnectFailed((_) => debugPrint("❌ Reconnect failed"))
+      ..connect();
+
+    _setupListeners(token);
+  }
+
+  void disconnectSocket() {
+    _socket?.disconnect();
+    _socket = null;
+    _isConnected = false;
+    print("🧹 outgoing WebSocket fully cleaned up");
+  }
+
+  Future<void> rejectApiCall(Map<String, dynamic> callData,
+      {bool isFromRing = false}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? busNum = prefs.getString('phoneNumber') ?? "";
+      final payload = {
+        "call_id":
+            isFromRing ? callData['data']['id'] : callData['data']['call_id'],
+        "business_number": busNum
+      };
+
+      await Provider.of<CallsViewModel>(navigatorKey.currentContext!,
+              listen: false)
+          .callRejectApi(payload);
+    } catch (e) {
+      print("❌ Error during reject: $e");
+    } finally {
+      try {} catch (_) {}
+    }
+  }
+
+  startCall(String wpnumber, String leadName) async {
+    await _remoteRenderer.initialize();
+
+    _localStream = await navigator.mediaDevices.getUserMedia({
+      'audio': {
+        'echoCancellation': true,
+        'noiseSuppression': true,
+      },
+      'video': false,
+    });
+
+    _peerConnection = await createPeerConnection({
+      'iceServers': [
+        {'urls': 'stun:stun.l.google.com:19302'},
+      ],
+    });
+
+    _peerConnection?.addTransceiver(
+      kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+      init: RTCRtpTransceiverInit(direction: TransceiverDirection.SendRecv),
+    );
+
+    _localStream!.getAudioTracks().forEach((track) {
+      _peerConnection!.addTrack(track, _localStream!);
+    });
+
+    _peerConnection!.onTrack = (RTCTrackEvent event) {
+      print("Remote track received");
+      if (event.streams.isNotEmpty) {
+        _remoteRenderer.srcObject = event.streams[0];
+        if (!_callStarted) {}
+      }
+    };
+
+    _peerConnection!.getSenders().then((senders) {
+      for (var sender in senders) {
+        if (sender.track?.kind == 'video') {
+          _peerConnection!.removeTrack(sender);
+        }
+      }
+    });
+    RTCSessionDescription offer = await _peerConnection!.createOffer({
+      'offerToReceiveAudio': true,
+      'offerToReceiveVideo': false,
+    });
+
+    await _peerConnection!.setLocalDescription(offer);
+
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+    Map<String, dynamic> acceptBody = {
+      "payload": {
+        "messaging_product": "whatsapp",
+        "to": wpnumber,
+        "action": "connect",
+        "session": {"sdp_type": "offer", "sdp": offer.sdp}
+      },
+      "business_number": number
+    };
+
+    String callId = "";
+
+    await Provider.of<CallsViewModel>(navigatorKey.currentContext!,
+            listen: false)
+        .callAcceptApi(acceptBody)
+        .then((value) async {
+      var apires = jsonDecode(value ?? "");
+      print("apires['success'] ::::::::  ${apires['success']}");
+
+      if (apires['success'] == false) {
+        EasyLoading.showToast(apires['meta_response']['error']['message']);
+        return;
+      } else {
+        callId = apires['meta_response']['calls'][0]['id'];
+        print("Call accepted with ID: $callId");
+
+        Map<String, dynamic> payload = {
+          "name": leadName,
+          "whatsapp_number": wpnumber,
+          "business_number": number,
+          "status": "Outgoing",
+          "event": "connect",
+          "call_id": callId,
+          "start_time":
+              (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
+          "sdp": offer.sdp,
+          "sdp_type": "connect",
+          "direction": "BUSINESS_INITIATED"
+        };
+
+        await Provider.of<CallsViewModel>(navigatorKey.currentContext!,
+                listen: false)
+            .outgoingCallApi(payload);
+      }
+    });
+  }
+
+  void _setupListeners(String tkn) {
+    _socket?.on("whatsapp_call_event", (data) {
+      log("whatsapp_call_event::::::::::::::    ${data}");
+      final event = data['data']['event'];
+      final dir = data['data']['direction'];
+      final sdp = data['data']['sdp'] ?? "";
+
+      print("event and dir::::::::::::::::::::::::::::::  ${event}    ${dir}");
+
+      var busNum = data['data']['business_number'] ?? "";
+
+      // if (event == "terminate") {
+      //   _closePopup();
+      //   return;
+      // }
+
+      if (event == "connect" && dir == "BUSINESS_INITIATED") {
+        connectStausSocket(tkn);
+        // _showOutgoingCallPopup(data);
+        if (sdp.isNotEmpty) {
+          Future.delayed(const Duration(milliseconds: 300), () {
+            safeHandleSdp(sdp);
+          });
+        }
+      }
+    });
+  }
+
+  Future<void> safeHandleSdp(String sdp) async {
+    int retry = 0;
+    while (_peerConnection == null && retry < 10) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      retry++;
+    }
+
+    if (_peerConnection != null) {
+      await handleSdp(sdp);
+    } else {
+      log("❌ PeerConnection still null after waiting.");
+    }
+  }
+
+  Future<void> handleSdp(String sdp) async {
+    print("📞 handleSdp() called");
+
+    if (_peerConnection == null) {
+      log("❌ PeerConnection is null. Cannot handle SDP.");
+      return;
+    }
+
+    try {
+      RTCSessionDescription description = RTCSessionDescription(sdp, "answer");
+      await _peerConnection!.setRemoteDescription(description);
+
+      log("✅ Remote SDP answer set successfully.");
+    } catch (e) {
+      log("❌ Error in handleSDP: $e");
+    }
+  }
+
+  void connectStausSocket(String token) {
+    _statusSocket = IO.io(
+      'https://sandbox.watconnect.com',
+      IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .setPath('/swp/socket.io')
+          .setExtraHeaders({'Authorization': 'Bearer $token'})
+          .setReconnectionAttempts(10)
+          .setReconnectionDelay(2000)
+          .build(),
+    );
+
+    _statusSocket
+      ?..onConnect((_) {
+        debugPrint('✅ Call status socket connected');
+      })
+      ..onDisconnect((_) async {
+        debugPrint('❌ Call status socket disconnected');
+        await Future.delayed(const Duration(seconds: 2));
+      })
+      ..onConnectError((err) {
+        debugPrint('❌ Call status socket connection error: $err');
+      })
+      ..onError((data) => debugPrint("⚠️ Status socket error: $data"))
+      ..onReconnect((_) => debugPrint("🔁 Reconnecting status socket..."))
+      ..onReconnectFailed((_) => debugPrint("❌ Status reconnect failed"))
+      ..connect();
+
+    _setupStatusListeners();
+  }
+
+  void _setupStatusListeners() {
+    _statusSocket?.on("whatsapp_statuses", (data) {
+      final status = data["data"]["status"];
+      log(" Call Status Update: $status");
+
+      if (status == "ACCEPTED") {
+        EasyLoading.showToast("Call accepted");
+      } else if (status == "RINGING") {
+        EasyLoading.showToast("Ringgingggggggggggggg");
+      } else if (status == "COMPLETED" || status == "TERMINATE") {
+        EasyLoading.showToast("Completed or terminated");
+        rejectApiCall(data);
+      }
+    });
+  }
+}

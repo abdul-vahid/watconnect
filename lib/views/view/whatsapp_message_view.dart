@@ -32,6 +32,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
+import 'package:whatsapp/call_outgoing_socket.dart';
 import 'package:whatsapp/call_socket.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
@@ -49,6 +50,7 @@ import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/view_models/wallet_controller.dart';
 import 'package:whatsapp/views/view/call_history_screen.dart';
+import 'package:whatsapp/views/view/call_screen.dart';
 import 'package:whatsapp/views/view/lead_detail_view.dart';
 import 'package:whatsapp/views/view/show_audio.dart';
 import 'package:whatsapp/views/view/show_pdf.dart';
@@ -4293,102 +4295,127 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _startCall() async {
-    await _remoteRenderer.initialize();
+    String tkn = await AppUtils.getToken() ?? "";
+    Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+    var userId = decodedToken;
 
-    _localStream = await navigator.mediaDevices.getUserMedia({
-      'audio': true,
-      'video': false,
-    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CallScreen(
+            token: tkn,
+            userData: userId,
+            wpNumber: widget.wpnumber ?? "",
+            leadName: widget.leadName ?? ""),
+      ),
+    );
 
-    _peerConnection = await createPeerConnection({
-      'iceServers': [
-        {'urls': 'stun:stun.l.google.com:19302'},
-      ],
-    });
+    // await outgoingCall().connect(token, userId).then((onValue) {
+    //   outgoingCall().startCall(widget.wpnumber ?? "", widget.leadName ?? "");
+    // });
 
-    _localStream!.getAudioTracks().forEach((track) {
-      _peerConnection!.addTrack(track, _localStream!);
-    });
+    // await _remoteRenderer.initialize();
 
-    _peerConnection!.onTrack = (RTCTrackEvent event) {
-      if (event.streams.isNotEmpty) {
-        _remoteRenderer.srcObject = event.streams[0];
-      }
-    };
+    // // ✅ Request audio-only stream
+    // _localStream = await navigator.mediaDevices.getUserMedia({
+    //   'audio': {
+    //     'echoCancellation': true,
+    //     'noiseSuppression': true,
+    //   },
+    //   'video': false,
+    // });
 
-    _peerConnection!.getSenders().then((senders) {
-      for (var sender in senders) {
-        if (sender.track?.kind == 'video') {
-          _peerConnection!.removeTrack(sender);
-        }
-      }
-    });
+    // // ✅ Setup peer connection with STUN
+    // _peerConnection = await createPeerConnection({
+    //   'iceServers': [
+    //     {'urls': 'stun:stun.l.google.com:19302'},
+    //   ],
+    // });
 
-    RTCSessionDescription offer = await _peerConnection!.createOffer({
-      'offerToReceiveAudio': true,
-      'offerToReceiveVideo': false,
-    });
-    await _peerConnection!.setLocalDescription(offer);
+    // _peerConnection?.addTransceiver(
+    //   kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+    //   init: RTCRtpTransceiverInit(direction: TransceiverDirection.SendRecv),
+    // );
 
-    // print("offer::::  ${offer.sdp}");
+    // _localStream!.getAudioTracks().forEach((track) {
+    //   _peerConnection!.addTrack(track, _localStream!);
+    // });
 
-    _peerConnection!.onTrack = (event) {
-      if (!_callStarted) {
-        setState(() => _callStarted = true);
-        _startCallTimer();
-      }
-    };
+    // // ✅ Set up receiving remote track (single assignment only!)
+    // _peerConnection!.onTrack = (RTCTrackEvent event) {
+    //   print("Remote track received");
+    //   if (event.streams.isNotEmpty) {
+    //     _remoteRenderer.srcObject = event.streams[0];
+    //     if (!_callStarted) {
+    //       setState(() => _callStarted = true);
+    //       _startCallTimer();
+    //     }
+    //   }
+    // };
 
-    final prefs = await SharedPreferences.getInstance();
-    String? number = prefs.getString('phoneNumber');
-    Map<String, dynamic> acceptBody = {
-      "payload": {
-        "messaging_product": "whatsapp",
-        "to": widget.wpnumber,
-        "action": "connect",
-        "session": {"sdp_type": "offer", "sdp": offer.sdp}
-      },
-      "business_number": number
-    };
-    var callId = "";
+    // // ✅ Remove video tracks from sender if any exist
+    // _peerConnection!.getSenders().then((senders) {
+    //   for (var sender in senders) {
+    //     if (sender.track?.kind == 'video') {
+    //       _peerConnection!.removeTrack(sender);
+    //     }
+    //   }
+    // });
 
-    await Provider.of<CallsViewModel>(context, listen: false)
-        .callAcceptApi(acceptBody)
-        .then((value) async {
-      var apires = jsonDecode(value ?? "");
-      print("apires['success'] ::::::::  ${apires['success']}");
-      if (apires['success'] == false) {
-        EasyLoading.showToast(apires['meta_response']['error']['message']);
-        return;
-      } else {
-        callId = apires['meta_response']['calls'][0]['id'];
-        print(
-            "value from accept api::::   ${value.runtimeType} $value  $callId  ${apires['meta_response']['calls'][0]['id']}");
+    // // ✅ Create audio-only offer
+    // RTCSessionDescription offer = await _peerConnection!.createOffer({
+    //   'offerToReceiveAudio': true,
+    //   'offerToReceiveVideo': false,
+    // });
 
-        Map<String, dynamic> payload = {
-          "name": widget.leadName,
-          "whatsapp_number": widget.wpnumber,
-          "business_number": number,
-          "status": "Outgoing",
-          "event": "connect",
-          "call_id": callId,
-          "start_time":
-              (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
-          "sdp": offer.sdp,
-          "sdp_type": "connect",
-          "direction": "BUSINESS_INITIATED"
-        };
+    // await _peerConnection!.setLocalDescription(offer);
 
-        await Provider.of<CallsViewModel>(context, listen: false)
-            .outgoingCallApi(payload);
+    // // ✅ Send SDP offer via API
+    // final prefs = await SharedPreferences.getInstance();
+    // String? number = prefs.getString('phoneNumber');
+    // Map<String, dynamic> acceptBody = {
+    //   "payload": {
+    //     "messaging_product": "whatsapp",
+    //     "to": widget.wpnumber,
+    //     "action": "connect",
+    //     "session": {"sdp_type": "offer", "sdp": offer.sdp}
+    //   },
+    //   "business_number": number
+    // };
 
-        // Map<String, dynamic> rejBody = {
-        //   "call_id": callId,
-        //   "business_number": number,
-        // };
-        // _showRingingDialog(rejBody);
-      }
-    });
+    // String callId = "";
+
+    // await Provider.of<CallsViewModel>(context, listen: false)
+    //     .callAcceptApi(acceptBody)
+    //     .then((value) async {
+    //   var apires = jsonDecode(value ?? "");
+    //   print("apires['success'] ::::::::  ${apires['success']}");
+
+    //   if (apires['success'] == false) {
+    //     EasyLoading.showToast(apires['meta_response']['error']['message']);
+    //     return;
+    //   } else {
+    //     callId = apires['meta_response']['calls'][0]['id'];
+    //     print("Call accepted with ID: $callId");
+
+    //     Map<String, dynamic> payload = {
+    //       "name": widget.leadName,
+    //       "whatsapp_number": widget.wpnumber,
+    //       "business_number": number,
+    //       "status": "Outgoing",
+    //       "event": "connect",
+    //       "call_id": callId,
+    //       "start_time":
+    //           (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
+    //       "sdp": offer.sdp,
+    //       "sdp_type": "connect",
+    //       "direction": "BUSINESS_INITIATED"
+    //     };
+
+    //     await Provider.of<CallsViewModel>(context, listen: false)
+    //         .outgoingCallApi(payload);
+    //   }
+    // });
   }
 
   void _startCallTimer() {
