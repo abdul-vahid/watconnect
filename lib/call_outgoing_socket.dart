@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
@@ -6,15 +8,15 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/view_models/call_view_model.dart';
 
+// ignore: camel_case_types
 class outgoingCall {
   RTCPeerConnection? _peerConnection;
   MediaStream? _localStream;
-
-  bool _callStarted = false;
 
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
 
@@ -108,7 +110,6 @@ class outgoingCall {
       _statusSocket = null;
 
       _isConnected = false;
-      _callStarted = false;
 
       print("✅ All resources released successfully.");
     } catch (e) {
@@ -240,15 +241,13 @@ class outgoingCall {
 
   void _setupListeners(String tkn) {
     _socket?.on("whatsapp_call_event", (data) {
-      log("whatsapp_call_event::::::::::::::    $data");
+      log('\x1B[32m    outgoing   whatsapp_call_event::::::::::::::    $data');
       final event = data['data']['event'];
       final dir = data['data']['direction'];
       final sdp = data['data']['sdp'] ?? "";
       callId = data['data']['call_id'];
 
-      print("event and dir::::::::::::::::::::::::::::::  $event    $dir");
-
-      // var busNum = data['data']['business_number'] ?? "";
+      print("event ::::::  $event    $dir");
 
       if (event == "terminate" && dir == "BUSINESS_INITIATED") {
         rejectApiCall(data);
@@ -334,7 +333,7 @@ class outgoingCall {
   void _setupStatusListeners() {
     _statusSocket?.on("whatsapp_statuses", (data) {
       final status = data["data"]["status"];
-      log(" Call Status Update: $status");
+      log('\x1B[32m  outgoing Call Status Update:     $status          $data  ');
 
       if (status == "ACCEPTED") {
         EasyLoading.showToast("Call Accepted");

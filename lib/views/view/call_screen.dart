@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -74,7 +76,6 @@ class _CallScreenState extends State<CallScreen> {
 
     return WillPopScope(
       onWillPop: () async {
-        // Prevent pop if call is ongoing or ringing
         if (isCalling ||
             callStatus == 'Connecting...' ||
             callStatus == 'Calling...') {
@@ -181,28 +182,29 @@ class _CallScreenState extends State<CallScreen> {
                         label: const Text("Start Call",
                             style: TextStyle(color: Colors.white)),
                       ),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red.shade600,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      if (isCalling || callStatus == 'Calling...')
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade600,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
+                          onPressed: () {
+                            _callTimer?.cancel();
+                            callService.rejectApiCall(null);
+                            callService.disconnectSocket();
+                            setState(() {
+                              callStatus = 'Call Ended';
+                              isCalling = false;
+                            });
+                          },
+                          icon: const Icon(Icons.call_end, color: Colors.white),
+                          label: const Text("End Call",
+                              style: TextStyle(color: Colors.white)),
                         ),
-                        onPressed: () {
-                          _callTimer?.cancel();
-                          callService.rejectApiCall(null);
-                          callService.disconnectSocket();
-                          setState(() {
-                            callStatus = 'Call Ended';
-                            isCalling = false;
-                          });
-                        },
-                        icon: const Icon(Icons.call_end, color: Colors.white),
-                        label: const Text("End Call",
-                            style: TextStyle(color: Colors.white)),
-                      ),
                     ],
                   ),
 

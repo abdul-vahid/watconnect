@@ -6,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
+// ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import 'package:whatsapp/main.dart';
@@ -45,7 +46,7 @@ class CallSocketService {
   Timer? _callTimer;
   Timer? _outcallTimer;
   int _duration = 0;
-  int _callDuration = 0;
+  // int _callDuration = 0;
   bool _callAccepted = false;
 
   // Events
@@ -151,6 +152,7 @@ class CallSocketService {
 
   void _setupListeners() {
     _socket?.on("whatsapp_call_event", (data) {
+      log('\x1B[32m   incoming call data whatsapp_call_event   $data    ');
       _dialogShown = false;
       final event = data['data']['event'];
       final dir = data['data']['direction'];
@@ -170,6 +172,7 @@ class CallSocketService {
 
   void _setupStatusListeners() {
     _statusSocket?.on("whatsapp_statuses", (data) {
+      log('\x1B[32m    incoming call whatsapp_statuses $data      ');
       final status = data["data"]["status"];
       log("📥 Call Status: $status");
 
@@ -221,7 +224,7 @@ class CallSocketService {
       ),
     );
 
-    Overlay.of(navigatorKey.currentContext!)?.insert(_callOverlay!);
+    Overlay.of(navigatorKey.currentContext!).insert(_callOverlay!);
   }
 
   void _removeOverlay() {
@@ -250,7 +253,7 @@ class CallSocketService {
     _outcallTimer?.cancel();
     _callTimer = null;
     _outcallTimer = null;
-    _callDuration = 0;
+    // _callDuration = 0;
 
     _cleanUpCallConnection();
     _removeOverlay();

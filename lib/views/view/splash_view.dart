@@ -5,15 +5,12 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:whatsapp/call_socket.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
-import 'package:whatsapp/utils/app_utils.dart';
 
 import 'package:whatsapp/views/view/login_view.dart';
 import '../widgets/bottomnavigatonbar.dart';

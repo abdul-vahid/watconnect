@@ -101,8 +101,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     final prefs = await SharedPreferences.getInstance();
     print("userModelData=>${userModelData?.userrole}");
 
-    bool hasCalls =
-        await prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
+    bool hasCalls = prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
     if (hasCalls) {
       String tkn = await AppUtils.getToken() ?? "";
       Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);

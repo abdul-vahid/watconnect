@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -130,7 +132,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
 
       for (var viewModel in callHistoryVm.viewModels) {
         var leadmodel = viewModel.model;
-        print("leadmodel:::::::  ${leadmodel}   ${leadmodel.records}");
+        print("leadmodel:::::::  $leadmodel   ${leadmodel.records}");
         if (leadmodel?.records != null) {
           for (var record in leadmodel!.records!) {
             callHistoryList.add(record);

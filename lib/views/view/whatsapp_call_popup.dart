@@ -37,7 +37,7 @@ class _CallPopupDialogState extends State<CallPopupDialog> {
   }
 
   void startCallTimer() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _durationSeconds++;
       });
@@ -77,29 +77,29 @@ class _CallPopupDialogState extends State<CallPopupDialog> {
           if (callAccepted)
             Text(
               "Call Duration: ${formatDuration(_durationSeconds)}",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
         ],
       ),
       actions: [
         if (!callAccepted)
           ElevatedButton.icon(
-            icon: Icon(Icons.call_end),
+            icon: const Icon(Icons.call_end),
             onPressed: handleReject,
-            label: Text("Reject"),
+            label: const Text("Reject"),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           ),
         if (!callAccepted)
           ElevatedButton.icon(
-            icon: Icon(Icons.call),
+            icon: const Icon(Icons.call),
             onPressed: handleAccept,
-            label: Text("Accept"),
+            label: const Text("Accept"),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
           ),
         if (callAccepted)
           ElevatedButton(
             onPressed: handleReject,
-            child: Text("End Call"),
+            child: const Text("End Call"),
           )
       ],
     );

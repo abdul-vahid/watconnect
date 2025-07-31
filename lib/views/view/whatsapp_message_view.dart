@@ -32,8 +32,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
-import 'package:whatsapp/call_outgoing_socket.dart';
-import 'package:whatsapp/call_socket.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/models/call_history_model.dart';
@@ -164,11 +162,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   RTCPeerConnection? _peerConnection;
   MediaStream? _localStream;
-  MediaStream? _remoteStream;
 
   Timer? _callTimer;
-  int _callDurationSeconds = 0;
-  bool _callStarted = false;
 
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
 
@@ -533,14 +528,6 @@ class _ChatScreenState extends State<ChatScreen> {
             image = null;
             getHistory();
           });
-
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   const SnackBar(
-          //     content: Text('Message sent successfully'),
-          //     duration: Duration(seconds: 3),
-          //     backgroundColor: Colors.green,
-          //   ),
-          // );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

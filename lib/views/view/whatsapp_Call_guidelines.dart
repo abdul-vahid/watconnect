@@ -1,3 +1,5 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
 
 class WhatsAppCallGuidelines extends StatelessWidget {
@@ -18,7 +20,7 @@ class WhatsAppCallGuidelines extends StatelessWidget {
           children: [
             const Row(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Icon(Icons.info_outline, color: Colors.blue),
                 SizedBox(width: 10),
                 Expanded(
@@ -33,7 +35,7 @@ class WhatsAppCallGuidelines extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             bulletPoint(
                 "Users must grant call permission before you can place a call."),
             bulletPoint(
