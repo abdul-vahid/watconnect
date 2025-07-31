@@ -4167,126 +4167,107 @@ class _ChatScreenState extends State<ChatScreen> {
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.2),
       builder: (BuildContext context) {
-        print("call history list length:::    ${callHistoryList.length}");
-        return Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          child: Container(
-            width: double.infinity,
-            constraints: const BoxConstraints(maxHeight: 500),
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Call History",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: InkWell(
-                    onTap: () {
-                      _startCall();
-                    },
-                    child: Container(
-                      width: 100,
-                      // constraints: BoxConstraints(minWidth: 100
-                      //     // maxWidth: MediaQuery.of(context).size.width * 0.75,
-                      //     ),
-                      decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(10)),
-                      child: const Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 4.0, vertical: 10),
-                          child: Text(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 600),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Call History",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    /// Call Button
+                    ElevatedButton(
+                      onPressed: _startCall,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 12.0,
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.call, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text(
                             "Call",
                             style: TextStyle(color: Colors.white),
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: callHistoryList.length,
-                    itemBuilder: (context, index) {
-                      final call = callHistoryList[index];
-                      print("call name:::    ${call.name}");
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: ListTile(
-                          leading: Transform.rotate(
-                            angle: callHistoryList[index].status == "Incoming"
-                                ? 45
-                                : 180,
-                            child: Icon(
-                              FontAwesomeIcons.arrowDown,
-                              color: callHistoryList[index].status == "Incoming"
-                                  ? Colors.green
-                                  : Colors.red,
-                              size: 16,
+                    const SizedBox(height: 10),
+
+                    /// Call History List
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: callHistoryList.length,
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 1, color: Colors.grey),
+                        itemBuilder: (context, index) {
+                          final call = callHistoryList[index];
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 4),
+                            leading: Transform.rotate(
+                              angle: call.status == "Incoming" ? 45 : 180,
+                              child: Icon(
+                                FontAwesomeIcons.arrowDown,
+                                color: call.status == "Incoming"
+                                    ? Colors.green
+                                    : Colors.red,
+                                size: 16,
+                              ),
                             ),
-                          ),
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                call.name ?? call.whatsappNumber ?? "",
-                                style: const TextStyle(
-                                  fontFamily: AppFonts.semiBold,
-                                  fontSize: 17,
-                                ),
+                            title: Text(
+                              call.name ?? call.whatsappNumber ?? "",
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                "${formatDateTime(int.tryParse(call.startTime ?? "") ?? 0)} - "
-                                "${(call.endTime?.isNotEmpty ?? false) ? formatDateTime(int.tryParse(call.endTime!) ?? 0) : "Not Answered"}",
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 15,
-                                ),
+                            ),
+                            subtitle: Text(
+                              "${formatDateTime(int.tryParse(call.startTime ?? "") ?? 0)} - "
+                              "${(call.endTime?.isNotEmpty ?? false) ? formatDateTime(int.tryParse(call.endTime!) ?? 0) : "Not Answered"}",
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
                               ),
-                            ],
-                          ),
-                          trailing: Text(formatDuration(call.duration ?? 0)),
-                        ),
-                      );
-                    },
-                    separatorBuilder: (context, index) => const Divider(
-                      height: 1,
-                      color: Colors.grey,
+                            ),
+                            trailing: Text(
+                              formatDuration(call.duration ?? 0),
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
   }
-
-  // Future<void> acceptApiCall(
-  //   Map<String, dynamic> callData,
-  // ) async {
-  //   try {
-  //     // 1. Show loading if needed
-  //     // setState(() => isProcessing = true);
-
-  //   } catch (e) {
-  //     print("Error on accept: $e");
-  //     // Cleanup
-  //     _peerConnection?.close();
-  //     _peerConnection = null;
-  //   }
-  // }
 
   String startTimerDuration(int seconds) {
     final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
@@ -4299,178 +4280,17 @@ class _ChatScreenState extends State<ChatScreen> {
     Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
     var userId = decodedToken;
 
+    Navigator.pop(context);
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => CallScreen(
             token: tkn,
             userData: userId,
+            parentId: widget.id ?? "",
             wpNumber: widget.wpnumber ?? "",
             leadName: widget.leadName ?? ""),
-      ),
-    );
-
-    // await outgoingCall().connect(token, userId).then((onValue) {
-    //   outgoingCall().startCall(widget.wpnumber ?? "", widget.leadName ?? "");
-    // });
-
-    // await _remoteRenderer.initialize();
-
-    // // ✅ Request audio-only stream
-    // _localStream = await navigator.mediaDevices.getUserMedia({
-    //   'audio': {
-    //     'echoCancellation': true,
-    //     'noiseSuppression': true,
-    //   },
-    //   'video': false,
-    // });
-
-    // // ✅ Setup peer connection with STUN
-    // _peerConnection = await createPeerConnection({
-    //   'iceServers': [
-    //     {'urls': 'stun:stun.l.google.com:19302'},
-    //   ],
-    // });
-
-    // _peerConnection?.addTransceiver(
-    //   kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
-    //   init: RTCRtpTransceiverInit(direction: TransceiverDirection.SendRecv),
-    // );
-
-    // _localStream!.getAudioTracks().forEach((track) {
-    //   _peerConnection!.addTrack(track, _localStream!);
-    // });
-
-    // // ✅ Set up receiving remote track (single assignment only!)
-    // _peerConnection!.onTrack = (RTCTrackEvent event) {
-    //   print("Remote track received");
-    //   if (event.streams.isNotEmpty) {
-    //     _remoteRenderer.srcObject = event.streams[0];
-    //     if (!_callStarted) {
-    //       setState(() => _callStarted = true);
-    //       _startCallTimer();
-    //     }
-    //   }
-    // };
-
-    // // ✅ Remove video tracks from sender if any exist
-    // _peerConnection!.getSenders().then((senders) {
-    //   for (var sender in senders) {
-    //     if (sender.track?.kind == 'video') {
-    //       _peerConnection!.removeTrack(sender);
-    //     }
-    //   }
-    // });
-
-    // // ✅ Create audio-only offer
-    // RTCSessionDescription offer = await _peerConnection!.createOffer({
-    //   'offerToReceiveAudio': true,
-    //   'offerToReceiveVideo': false,
-    // });
-
-    // await _peerConnection!.setLocalDescription(offer);
-
-    // // ✅ Send SDP offer via API
-    // final prefs = await SharedPreferences.getInstance();
-    // String? number = prefs.getString('phoneNumber');
-    // Map<String, dynamic> acceptBody = {
-    //   "payload": {
-    //     "messaging_product": "whatsapp",
-    //     "to": widget.wpnumber,
-    //     "action": "connect",
-    //     "session": {"sdp_type": "offer", "sdp": offer.sdp}
-    //   },
-    //   "business_number": number
-    // };
-
-    // String callId = "";
-
-    // await Provider.of<CallsViewModel>(context, listen: false)
-    //     .callAcceptApi(acceptBody)
-    //     .then((value) async {
-    //   var apires = jsonDecode(value ?? "");
-    //   print("apires['success'] ::::::::  ${apires['success']}");
-
-    //   if (apires['success'] == false) {
-    //     EasyLoading.showToast(apires['meta_response']['error']['message']);
-    //     return;
-    //   } else {
-    //     callId = apires['meta_response']['calls'][0]['id'];
-    //     print("Call accepted with ID: $callId");
-
-    //     Map<String, dynamic> payload = {
-    //       "name": widget.leadName,
-    //       "whatsapp_number": widget.wpnumber,
-    //       "business_number": number,
-    //       "status": "Outgoing",
-    //       "event": "connect",
-    //       "call_id": callId,
-    //       "start_time":
-    //           (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
-    //       "sdp": offer.sdp,
-    //       "sdp_type": "connect",
-    //       "direction": "BUSINESS_INITIATED"
-    //     };
-
-    //     await Provider.of<CallsViewModel>(context, listen: false)
-    //         .outgoingCallApi(payload);
-    //   }
-    // });
-  }
-
-  void _startCallTimer() {
-    _callTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() => _callDurationSeconds++);
-    });
-  }
-
-  Future<void> _endCall(Map<String, dynamic> rejectBody) async {
-    await Provider.of<CallsViewModel>(navigatorKey.currentContext!,
-            listen: false)
-        .callRejectApi(rejectBody);
-
-    _peerConnection?.close();
-    _peerConnection = null;
-    // await Helper.setMicrophoneMute(true); // Optional safety
-    await Helper.setSpeakerphoneOn(false);
-    _localStream?.dispose();
-    _localStream = null;
-    // await _audioPlayer.stop();
-    // await _audioPlayer.dispose();
-
-    _remoteStream?.dispose();
-    _remoteStream = null;
-
-    _remoteRenderer.srcObject = null;
-    Navigator.pop(context); // Dismiss the dialog
-    setState(() {
-      _callDurationSeconds = 0;
-      _callStarted = false;
-    });
-  }
-
-  void _showRingingDialog(Map<String, dynamic> rejectBody) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: Text(_callStarted ? 'In Call' : 'Ringing...'),
-            content: _callStarted
-                ? Text(
-                    'Call Duration: ${startTimerDuration(_callDurationSeconds)}')
-                : const Text('Waiting for remote to pick up...'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  _endCall(rejectBody);
-                },
-                child: const Text('End Call'),
-              ),
-            ],
-          );
-        },
       ),
     );
   }

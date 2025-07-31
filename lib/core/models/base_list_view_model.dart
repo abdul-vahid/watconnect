@@ -63,7 +63,7 @@ class BaseListViewModel extends ChangeNotifier {
 
         // print("execute of the get method ${url}  ${viewModels}  ");
       } catch (e, stackTrace) {
-        print("catching error in parsing :: $e     $stackTrace");
+        print("catching error in parsing :: $url  $e     $stackTrace");
       }
       status = "Completed";
     } on UnauthorisedException {

@@ -22,6 +22,8 @@ class outgoingCall {
   IO.Socket? _statusSocket;
   bool _isConnected = false;
 
+  String callId = "";
+
   IO.Socket? get socket => _socket;
 
   Future<void> connect(String token, dynamic userData) async {
@@ -72,14 +74,56 @@ class outgoingCall {
     print("🧹 outgoing WebSocket fully cleaned up");
   }
 
-  Future<void> rejectApiCall(Map<String, dynamic> callData,
-      {bool isFromRing = false}) async {
+  bool _rendererDisposed = false;
+
+  void disposeAll() async {
+    try {
+      print("🧹 Cleaning up resources...");
+
+      // Stop and dispose local stream
+      if (_localStream != null) {
+        for (var track in _localStream!.getTracks()) {
+          await track.stop();
+        }
+        await _localStream?.dispose();
+        _localStream = null;
+      }
+
+      // Close peer connection
+      await _peerConnection?.close();
+      _peerConnection = null;
+
+      // Dispose remote renderer
+      _remoteRenderer.srcObject = null;
+      await _remoteRenderer.dispose();
+      _rendererDisposed = true;
+
+      // Disconnect sockets
+      _socket?.disconnect();
+      _socket?.dispose();
+      _socket = null;
+
+      _statusSocket?.disconnect();
+      _statusSocket?.dispose();
+      _statusSocket = null;
+
+      _isConnected = false;
+      _callStarted = false;
+
+      print("✅ All resources released successfully.");
+    } catch (e) {
+      print("❌ Error while disposing resources: $e");
+    }
+  }
+
+  Future<void> rejectApiCall(
+    Map<String, dynamic>? callData,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       String? busNum = prefs.getString('phoneNumber') ?? "";
       final payload = {
-        "call_id":
-            isFromRing ? callData['data']['id'] : callData['data']['call_id'],
+        "call_id": callData == null ? callId : callData['data']['call_id'],
         "business_number": busNum
       };
 
@@ -89,7 +133,7 @@ class outgoingCall {
     } catch (e) {
       print("❌ Error during reject: $e");
     } finally {
-      try {} catch (_) {}
+      disposeAll(); // ✅ Cleanup here
     }
   }
 
@@ -120,10 +164,14 @@ class outgoingCall {
     });
 
     _peerConnection!.onTrack = (RTCTrackEvent event) {
-      print("Remote track received");
-      if (event.streams.isNotEmpty) {
-        _remoteRenderer.srcObject = event.streams[0];
-        if (!_callStarted) {}
+      print("📞 onTrack fired");
+
+      if (event.streams.isNotEmpty && !_remoteRenderer.renderVideo) {
+        try {
+          _remoteRenderer.srcObject = event.streams[0];
+        } catch (e) {
+          print("⚠️ Could not set remote stream: $e");
+        }
       }
     };
 
@@ -192,19 +240,21 @@ class outgoingCall {
 
   void _setupListeners(String tkn) {
     _socket?.on("whatsapp_call_event", (data) {
-      log("whatsapp_call_event::::::::::::::    ${data}");
+      log("whatsapp_call_event::::::::::::::    $data");
       final event = data['data']['event'];
       final dir = data['data']['direction'];
       final sdp = data['data']['sdp'] ?? "";
+      callId = data['data']['call_id'];
 
-      print("event and dir::::::::::::::::::::::::::::::  ${event}    ${dir}");
+      print("event and dir::::::::::::::::::::::::::::::  $event    $dir");
 
-      var busNum = data['data']['business_number'] ?? "";
+      // var busNum = data['data']['business_number'] ?? "";
 
-      // if (event == "terminate") {
-      //   _closePopup();
-      //   return;
-      // }
+      if (event == "terminate" && dir == "BUSINESS_INITIATED") {
+        rejectApiCall(data);
+
+        return;
+      }
 
       if (event == "connect" && dir == "BUSINESS_INITIATED") {
         connectStausSocket(tkn);
@@ -287,12 +337,12 @@ class outgoingCall {
       log(" Call Status Update: $status");
 
       if (status == "ACCEPTED") {
-        EasyLoading.showToast("Call accepted");
+        EasyLoading.showToast("Call Accepted");
       } else if (status == "RINGING") {
-        EasyLoading.showToast("Ringgingggggggggggggg");
+        EasyLoading.showToast("Ringing...");
       } else if (status == "COMPLETED" || status == "TERMINATE") {
-        EasyLoading.showToast("Completed or terminated");
-        rejectApiCall(data);
+        EasyLoading.showToast("Call Terminated");
+        // rejectApiCall(data);
       }
     });
   }
