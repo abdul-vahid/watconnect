@@ -19,6 +19,15 @@ class MessageViewModel extends BaseListViewModel {
   BuildContext context;
   MessageViewModel(this.context);
   bool historyExists = false;
+
+  List allMessages = [];
+  File? fileToSend;
+
+  setFileToSend(File? someFile) {
+    fileToSend = someFile;
+    notifyListeners();
+  }
+
   Future Fetchmsghistorydata({required leadnumber, required number}) async {
     try {
       var url = AppUtils.getUrl(
@@ -26,14 +35,24 @@ class MessageViewModel extends BaseListViewModel {
               .replaceAll('{whatsapp_setting_number}', number));
       print("urll= get hisory msg>$url");
       print("AAAAAAA");
-      var response = get(url: url, baseModel: MsModel());
-      print("respone==> $response");
+      var response = await get(url: url, baseModel: MsModel());
+      print("respone= of get hisory msg=> $response");
+      setMsgList(viewModels[0].model.records);
+
       // print("respone encode==>  ${jsonEncode(response)}");
 
       return response;
     } catch (e, stackTrace) {
       debug("Error: $e   $stackTrace");
     }
+  }
+
+  setMsgList(List msgRecs) {
+    allMessages.clear();
+    allMessages.addAll(msgRecs);
+    print("added in the controller list::::::::::    ${allMessages.length}");
+
+    notifyListeners();
   }
 
   Future<dynamic> sendMessage({

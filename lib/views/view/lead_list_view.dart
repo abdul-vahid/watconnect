@@ -17,6 +17,7 @@ import 'package:whatsapp/models/tags_list_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
+import 'package:whatsapp/views/view/whatsapp_chat_screen.dart';
 import 'package:whatsapp/views/view/whatsapp_message_view.dart';
 import '../../models/lead_model.dart';
 import '../../utils/app_color.dart';
@@ -618,7 +619,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                 final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ChatScreen(
+                                    builder: (context) => WhatsappChatScreen(
                                       pinnedLeads: pinnedLeads,
                                       leadName: model.contactname,
                                       wpnumber: model.full_number,
@@ -1151,7 +1152,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ChatScreen(
+                    builder: (context) => WhatsappChatScreen(
                       pinnedLeads: pinnedLeads,
                       leadName: (model.contactname != null &&
                               model.contactname!.isNotEmpty)

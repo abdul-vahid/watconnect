@@ -34,7 +34,7 @@ class MessageController extends ChangeNotifier {
     notifyListeners();
   }
 
-  List allMessages = [];
+  // List allMessages = [];
   setLeadNum(var leadNum) {
     leadNo = leadNum;
     notifyListeners();

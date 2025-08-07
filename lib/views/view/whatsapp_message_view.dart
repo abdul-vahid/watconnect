@@ -222,15 +222,6 @@ class _ChatScreenState extends State<ChatScreen> {
     final prefs = await SharedPreferences.getInstance();
     hasCalls = await prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
 
-    if (hasCalls) {
-      // CallSocketService().disconnectSocket();
-      // String tkn = await AppUtils.getToken() ?? "";
-      // Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
-      // userId = decodedToken;
-      // print("modules contains calls so we are here ::::::::  $userId");
-      // CallSocketService().connect(tkn, userId);
-    }
-
     hasWallet = await prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
     print("hasWallet:::::::::::::::::   $hasWallet");
     setState(() {});
@@ -466,13 +457,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> messagesendd(String text) async {
     print("messagesendd called");
-
     // TempleteListViewModel tm = TempleteListViewModel(context);
     MessageViewModel ms = MessageViewModel(context);
-
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
-
     if (number!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -483,10 +471,8 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       return;
     }
-
     print("wpppp=>${widget.wpnumber}");
     var leadnumber = widget.wpnumber;
-
     Map<String, dynamic> addmsModel = {
       "messaging_product": "whatsapp",
       "recipient_type": "individual",
@@ -511,7 +497,6 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       var value = await ms.sendMessage(number: number, addmsModel: addmsModel);
       print("valueee=>$value");
-
       if (value.isNotEmpty) {
         var messageId = value['messages'];
         print('Message ID: ${messageId[0]['id']}');
@@ -1875,14 +1860,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void singlemsgdelete(List idsToDelete) async {
     print("Single delete attempt for message with ID: $idsToDelete");
-
-    // if (msghistoryid.isEmpty) {
-    //   print("Invalid message ID. Cannot delete.");
-    //   return;
-    // }
-    // var msghistoryidd = msghistoryid;
-    // print("sdhsdhjdhjsdhfdks=>$msghistoryidd");
-
     var bodyy = jsonEncode({"ids": idsToDelete});
 
     print("Request hdshsd jhds body: $bodyy");
@@ -1894,12 +1871,6 @@ class _ChatScreenState extends State<ChatScreen> {
       print("number=>$number");
       await Provider.of<MessageViewModel>(context, listen: false)
           .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
-      // Navigator.of(context).pop();
-      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      //   content: Text("deleted sucefully"),
-      //   backgroundColor: Colors.green,
-      // )
-      // );
       EasyLoading.showToast("Deleted Succeffuly");
 
       MessageController msgController =
@@ -3537,66 +3508,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       builder: (context) => PreviewImage(
                             imgUrl: headerBody,
                           )));
-              // showDialog(
-              //   context: context,
-              //   builder: (BuildContext context) {
-              //     return AlertDialog(
-              //       title: const Text("Image Details"),
-              //       content: Column(
-              //         mainAxisSize: MainAxisSize.min,
-              //         children: [
-              //           Image.network(
-              //             headerBody,
-              //             height: 300,
-              //             width: 300,
-              //             fit: BoxFit.cover,
-              //             loadingBuilder: (BuildContext context, Widget child,
-              //                 ImageChunkEvent? loadingProgress) {
-              //               if (loadingProgress == null) {
-              //                 return child;
-              //               } else {
-              //                 return Center(
-              //                   child: CircularProgressIndicator(
-              //                     value: loadingProgress.expectedTotalBytes !=
-              //                             null
-              //                         ? loadingProgress.cumulativeBytesLoaded /
-              //                             (loadingProgress.expectedTotalBytes ??
-              //                                 1)
-              //                         : null,
-              //                   ),
-              //                 );
-              //               }
-              //             },
-              //             errorBuilder: (context, error, stackTrace) {
-              //               return const SizedBox.shrink();
-              //             },
-              //           ),
-              //         ],
-              //       ),
-              //       actions: <Widget>[
-              //         TextButton(
-              //           onPressed: () {
-              //             Navigator.of(context).pop();
-              //           },
-              //           child: Container(
-              //             padding: const EdgeInsets.symmetric(
-              //                 vertical: 8, horizontal: 16),
-              //             decoration: BoxDecoration(
-              //               color: AppColor.navBarIconColor,
-              //               borderRadius: BorderRadius.circular(8),
-              //             ),
-              //             child: const Text(
-              //               "Close",
-              //               style: TextStyle(
-              //                 color: Colors.white,
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //       ],
-              //     );
-              //   },
-              // );
             },
             child: CachedNetworkImage(
               imageUrl: headerBody,
