@@ -51,11 +51,22 @@ class _CallScreenState extends State<CallScreen> {
 
     try {
       await callService.connect(widget.token, widget.userData);
-      await callService.startCall(widget.wpNumber, widget.leadName);
-      _startCallTimer();
+      bool result =
+          await callService.startCall(widget.wpNumber, widget.leadName);
       setState(() {
         callStatus = 'Calling...';
       });
+      print("result of api call ::::  $result");
+      if (result) {
+        _startCallTimer();
+      } else {
+        setState(() {
+          isCalling = false;
+          callStatus = 'Not Connected';
+        });
+
+        print("chaning the xall status:::::::$callStatus");
+      }
     } catch (e) {
       setState(() {
         callStatus = 'Failed: ${e.toString()}';

@@ -62,7 +62,7 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> with RouteAware {
+class _HomeViewState extends State<HomeView> {
   // List of items for the dropdown
   String? lastAddedId;
   Map<String, String> itemsMap = {};

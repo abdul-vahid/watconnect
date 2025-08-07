@@ -69,6 +69,7 @@ class CallSocketService {
 
     if (_isConnected && _socket?.connected == true) {
       debugPrint("🔁 Call socket already connected.");
+      _setupListeners();
       return;
     }
 
@@ -175,7 +176,6 @@ class CallSocketService {
       log('\x1B[32m    incoming call whatsapp_statuses $data      ');
       final status = data["data"]["status"];
       log("📥 Call Status: $status");
-
       if (status == "COMPLETED" || status == "TERMINATE") {
         _closePopup();
       }

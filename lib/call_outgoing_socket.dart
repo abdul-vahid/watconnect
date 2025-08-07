@@ -104,11 +104,9 @@ class outgoingCall {
       _socket?.disconnect();
       _socket?.dispose();
       _socket = null;
-
       _statusSocket?.disconnect();
       _statusSocket?.dispose();
       _statusSocket = null;
-
       _isConnected = false;
 
       print("✅ All resources released successfully.");
@@ -138,105 +136,120 @@ class outgoingCall {
     }
   }
 
-  startCall(String wpnumber, String leadName) async {
-    await _remoteRenderer.initialize();
+  Future<bool> startCall(String wpnumber, String leadName) async {
+    try {
+      await _remoteRenderer.initialize();
 
-    _localStream = await navigator.mediaDevices.getUserMedia({
-      'audio': {
-        'echoCancellation': true,
-        'noiseSuppression': true,
-      },
-      'video': false,
-    });
+      _localStream = await navigator.mediaDevices.getUserMedia({
+        'audio': {
+          'echoCancellation': true,
+          'noiseSuppression': true,
+        },
+        'video': false,
+      });
 
-    _peerConnection = await createPeerConnection({
-      'iceServers': [
-        {'urls': 'stun:stun.l.google.com:19302'},
-      ],
-    });
+      _peerConnection = await createPeerConnection({
+        'iceServers': [
+          {'urls': 'stun:stun.l.google.com:19302'},
+        ],
+      });
 
-    _peerConnection?.addTransceiver(
-      kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
-      init: RTCRtpTransceiverInit(direction: TransceiverDirection.SendRecv),
-    );
+      _peerConnection?.addTransceiver(
+        kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+        init: RTCRtpTransceiverInit(direction: TransceiverDirection.SendRecv),
+      );
 
-    _localStream!.getAudioTracks().forEach((track) {
-      _peerConnection!.addTrack(track, _localStream!);
-    });
+      _localStream!.getAudioTracks().forEach((track) {
+        _peerConnection!.addTrack(track, _localStream!);
+      });
 
-    _peerConnection!.onTrack = (RTCTrackEvent event) {
-      print("📞 onTrack fired");
+      _peerConnection!.onTrack = (RTCTrackEvent event) {
+        print("📞 onTrack fired");
 
-      if (event.streams.isNotEmpty && !_remoteRenderer.renderVideo) {
-        try {
-          _remoteRenderer.srcObject = event.streams[0];
-        } catch (e) {
-          print("⚠️ Could not set remote stream: $e");
+        if (event.streams.isNotEmpty && !_remoteRenderer.renderVideo) {
+          try {
+            _remoteRenderer.srcObject = event.streams[0];
+          } catch (e) {
+            print("⚠️ Could not set remote stream: $e");
+          }
         }
-      }
-    };
+      };
 
-    _peerConnection!.getSenders().then((senders) {
-      for (var sender in senders) {
-        if (sender.track?.kind == 'video') {
-          _peerConnection!.removeTrack(sender);
+      _peerConnection!.getSenders().then((senders) {
+        for (var sender in senders) {
+          if (sender.track?.kind == 'video') {
+            _peerConnection!.removeTrack(sender);
+          }
         }
+      });
+
+      RTCSessionDescription offer = await _peerConnection!.createOffer({
+        'offerToReceiveAudio': true,
+        'offerToReceiveVideo': false,
+      });
+
+      await _peerConnection!.setLocalDescription(offer);
+
+      final prefs = await SharedPreferences.getInstance();
+      String? number = prefs.getString('phoneNumber');
+      if (number == null) {
+        print("⚠️ Business number not found.");
+        return false;
       }
-    });
-    RTCSessionDescription offer = await _peerConnection!.createOffer({
-      'offerToReceiveAudio': true,
-      'offerToReceiveVideo': false,
-    });
 
-    await _peerConnection!.setLocalDescription(offer);
+      Map<String, dynamic> acceptBody = {
+        "payload": {
+          "messaging_product": "whatsapp",
+          "to": wpnumber,
+          "action": "connect",
+          "session": {"sdp_type": "offer", "sdp": offer.sdp}
+        },
+        "business_number": number
+      };
 
-    final prefs = await SharedPreferences.getInstance();
-    String? number = prefs.getString('phoneNumber');
-    Map<String, dynamic> acceptBody = {
-      "payload": {
-        "messaging_product": "whatsapp",
-        "to": wpnumber,
-        "action": "connect",
-        "session": {"sdp_type": "offer", "sdp": offer.sdp}
-      },
-      "business_number": number
-    };
+      String callId = "";
 
-    String callId = "";
+      final value = await Provider.of<CallsViewModel>(
+        navigatorKey.currentContext!,
+        listen: false,
+      ).callAcceptApi(acceptBody);
 
-    await Provider.of<CallsViewModel>(navigatorKey.currentContext!,
-            listen: false)
-        .callAcceptApi(acceptBody)
-        .then((value) async {
       var apires = jsonDecode(value ?? "");
       print("apires['success'] ::::::::  ${apires['success']}");
 
       if (apires['success'] == false) {
         EasyLoading.showToast(apires['meta_response']['error']['message']);
-        return;
-      } else {
-        callId = apires['meta_response']['calls'][0]['id'];
-        print("Call accepted with ID: $callId");
-
-        Map<String, dynamic> payload = {
-          "name": leadName,
-          "whatsapp_number": wpnumber,
-          "business_number": number,
-          "status": "Outgoing",
-          "event": "connect",
-          "call_id": callId,
-          "start_time":
-              (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
-          "sdp": offer.sdp,
-          "sdp_type": "connect",
-          "direction": "BUSINESS_INITIATED"
-        };
-
-        await Provider.of<CallsViewModel>(navigatorKey.currentContext!,
-                listen: false)
-            .outgoingCallApi(payload);
+        return false;
       }
-    });
+
+      callId = apires['meta_response']['calls'][0]['id'];
+      print("Call accepted with ID: $callId");
+
+      Map<String, dynamic> payload = {
+        "name": leadName,
+        "whatsapp_number": wpnumber,
+        "business_number": number,
+        "status": "Outgoing",
+        "event": "connect",
+        "call_id": callId,
+        "start_time":
+            (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
+        "sdp": offer.sdp,
+        "sdp_type": "connect",
+        "direction": "BUSINESS_INITIATED"
+      };
+
+      await Provider.of<CallsViewModel>(
+        navigatorKey.currentContext!,
+        listen: false,
+      ).outgoingCallApi(payload);
+
+      return true; // ✅ Success
+    } catch (e, stacktrace) {
+      print("❌ Error in startCall: $e");
+      print(stacktrace);
+      return false; // ❌ Failure
+    }
   }
 
   void _setupListeners(String tkn) {
@@ -336,11 +349,11 @@ class outgoingCall {
       log('\x1B[32m  outgoing Call Status Update:     $status          $data  ');
 
       if (status == "ACCEPTED") {
-        EasyLoading.showToast("Call Accepted");
+        // EasyLoading.showToast("Call Accepted");
       } else if (status == "RINGING") {
-        EasyLoading.showToast("Ringing...");
+        // EasyLoading.showToast("Ringing...");
       } else if (status == "COMPLETED" || status == "TERMINATE") {
-        EasyLoading.showToast("Call Terminated");
+        // EasyLoading.showToast("Call Terminated");
         // rejectApiCall(data);
       }
     });
