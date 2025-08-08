@@ -179,6 +179,7 @@ abstract class AppConstants {
 
   static const String imagesend =
       "/api/webhook_template/documentId?whatsapp_setting_number=";
+
   static const String imagesendhistoy = "/api/whatsapp/files?id";
   static const String notificationfcm = "/api/user_device/submitToken";
 // ======================Task Api====================
@@ -230,6 +231,9 @@ abstract class AppConstants {
 
   static const String initiateCallApi =
       "/api/whatsapp/call?business_number={business_number}&whatsapp_number=%2B{whatsapp_number}";
+
+  static const String sendTemplate =
+      "/api/webhook_template/send?whatsapp_setting_number=";
 
   // /whatsapp/
 

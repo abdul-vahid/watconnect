@@ -4,8 +4,16 @@ class Component {
   String? format;
   List<Button>? buttons;
   Example? example;
+  List<CardComponent>? cards; // NEW
 
-  Component({this.type, this.text, this.format, this.buttons, this.example});
+  Component({
+    this.type,
+    this.text,
+    this.format,
+    this.buttons,
+    this.example,
+    this.cards,
+  });
 
   factory Component.fromMap(Map<String, dynamic> data) => Component(
         type: data['type'] as String?,
@@ -17,6 +25,9 @@ class Component {
         example: data['example'] != null
             ? Example.fromMap(data['example'] as Map<String, dynamic>)
             : null,
+        cards: (data['cards'] as List<dynamic>?)
+            ?.map((e) => CardComponent.fromMap(e as Map<String, dynamic>))
+            .toList(), // NEW
       );
 
   Map<String, dynamic> toMap() => {
@@ -25,12 +36,32 @@ class Component {
         'format': format,
         'buttons': buttons?.map((e) => e.toMap()).toList(),
         'example': example?.toMap(),
+        'cards': cards?.map((e) => e.toMap()).toList(), // NEW
       };
 
   @override
   String toString() {
-    return 'Component(type: $type, text: $text, format: $format,buttons: $buttons, example: $example)';
+    return 'Component(type: $type, text: $text, format: $format, buttons: $buttons, example: $example, cards: $cards)';
   }
+}
+
+class CardComponent {
+  List<Component>? components;
+
+  CardComponent({this.components});
+
+  factory CardComponent.fromMap(Map<String, dynamic> data) => CardComponent(
+        components: (data['components'] as List<dynamic>?)
+            ?.map((e) => Component.fromMap(e as Map<String, dynamic>))
+            .toList(),
+      );
+
+  Map<String, dynamic> toMap() => {
+        'components': components?.map((e) => e.toMap()).toList(),
+      };
+
+  @override
+  String toString() => 'CardComponent(components: $components)';
 }
 
 class Example {

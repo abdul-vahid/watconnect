@@ -2,37 +2,40 @@
 
 import 'dart:convert';
 
+// ignore_for_file: avoid_print
+
+import 'dart:convert';
+import 'dart:developer';
+
 String replacePlaceholders(String messageBody, String? bodyTextParamsString) {
-  print("bodyTextParamsString:::::::::::::: $bodyTextParamsString");
+  print("Incoming messageBody: $messageBody");
+  print("Incoming bodyTextParamsString: $bodyTextParamsString");
 
   if (bodyTextParamsString == null || bodyTextParamsString.isEmpty) {
+    print(
+        "bodyTextParamsString is null or empty. Returning original messageBody.");
     return messageBody;
   }
 
   try {
-    // Convert Dart-style map string to JSON-style string
-    final fixedString = bodyTextParamsString
-        .replaceAllMapped(RegExp(r'(\w+):'), (match) => '"${match[1]}":')
-        .replaceAllMapped(RegExp(r':\s*([^,}]+)'), (match) {
-      final value = match[1]!.trim();
-      // If it's already quoted, number, or boolean/null, keep as is
-      if (value.startsWith('"') ||
-          value == 'null' ||
-          value == 'true' ||
-          value == 'false' ||
-          num.tryParse(value) != null) {
-        return ': $value';
-      }
-      return ': "$value"'; // wrap in quotes if plain word
-    });
+    // Try decoding as JSON directly
+    Map<String, dynamic> params = jsonDecode(bodyTextParamsString);
 
-    final Map<String, dynamic> params = jsonDecode(fixedString);
+    for (var entry in params.entries) {
+      final key = entry.key;
+      final value = entry.value;
 
-    params.forEach((key, value) {
-      messageBody = messageBody.replaceAll('{{$key}}', value.toString());
-    });
+      // Skip keys that are not string-number based placeholders
+      if (!RegExp(r'^\d+$').hasMatch(key)) continue;
+
+      final placeholder = '{{$key}}';
+      final replacement = value?.toString() ?? '';
+      messageBody = messageBody.replaceAll(placeholder, replacement);
+    }
   } catch (e) {
-    print('Error decoding or replacing placeholders: $e');
+    log("Error decoding bodyTextParamsString: $e          $messageBody   $bodyTextParamsString  ");
+    // Optional: Show a fallback message or keep the original
+    return messageBody;
   }
 
   return messageBody;

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_sound/public/flutter_sound_player.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
-import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -21,20 +20,16 @@ import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/views/view/lead_detail_view.dart';
 
-import 'package:whatsapp/views/widgets/attachment_widget.dart';
 import 'package:whatsapp/views/widgets/chat_msg_tile.dart';
 import 'package:whatsapp/views/widgets/chat_socket_manager.dart';
-import 'package:whatsapp/views/widgets/custom_chat_button.dart';
 import 'package:whatsapp/views/widgets/delete_dialog.dart';
 import 'package:whatsapp/views/widgets/delete_message_dialog.dart';
 import 'package:whatsapp/views/widgets/file_preview.dart'
     show FilePreviewWidget;
-import 'package:whatsapp/views/widgets/header_widget.dart';
 import 'package:whatsapp/views/widgets/image_picker_sheet.dart';
+import 'package:whatsapp/views/widgets/review_edit_temp_sheet.dart';
 import 'package:whatsapp/views/widgets/show_call_dialog.dart';
 import 'package:path/path.dart' as path;
-
-import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/whatsapp_chat_func.dart';
 
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
@@ -93,11 +88,11 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   var currentTemplate;
   List<Component> components = [];
   String? selectedTemplateName;
-  var selectedLanguage;
-  var selectedHeader;
-  var selectedBody;
-  var selectedFooter;
-  dynamic selectedButtons;
+  // var selectedLanguage;
+  // var selectedHeader;
+  // var selectedBody;
+  // var selectedFooter;
+  // dynamic selectedButtons;
   String? _audioPath;
   File? _audioFile;
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
@@ -105,6 +100,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
 
   StreamSubscription? _previewPlayerSubscription;
   final AudioPlayer audioPlayer = AudioPlayer();
+  List<TextEditingController> controllers = [];
 
   bool _isPlaying = false;
   @override
@@ -112,11 +108,24 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     super.initState();
     getWalletStatus();
     markUnread();
+    setTemplteEmpty();
     _initializeAudio();
     // audioManager.initialize();
     fetchTemplates();
     loadChatHistory();
     scrollToBottom();
+  }
+
+  setTemplteEmpty() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      MessageViewModel messageViewModel = Provider.of(context, listen: false);
+      messageViewModel.setSelectedBody(null);
+      messageViewModel.setSelectedHeader(null);
+      messageViewModel.setSelectedFooter(null);
+      messageViewModel.setSelectedButton(null);
+      messageViewModel.setSelectedTempId(null);
+      messageViewModel.setSelectedTempName(null);
+    });
   }
 
   Future<void> _initializeAudio() async {
@@ -526,14 +535,16 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                         final previousMessage =
                             index > 0 ? allMessages[index - 1] : null;
 
-                        return ChatMessageTile(
-                          message: message,
-                          previousMessage: previousMessage,
-                          userName: userName,
-                          tenetCode: TenetCode,
-                          onTap: msgController.updateDeleteMsgList,
-                          selectedMessages: msgController.msgToDelete,
-                        );
+                        return message.category == "AUTHENTICATION"
+                            ? SizedBox()
+                            : ChatMessageTile(
+                                message: message,
+                                previousMessage: previousMessage,
+                                userName: userName,
+                                tenetCode: TenetCode,
+                                onTap: msgController.updateDeleteMsgList,
+                                selectedMessages: msgController.msgToDelete,
+                              );
                       },
                     ))
                   ],
@@ -933,6 +944,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   }
 
   String? SelectedTemplateCategory;
+  String? SelectedTemplateFilters;
 
   List<dynamic> tempateCategory = [
     'All Categories',
@@ -941,7 +953,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   ];
 
   List<dynamic> tempateFilter = [
-    'All Categories',
+    'All Templates',
     'Template without-Params',
     'Template with-Params',
     'Template with Carousal',
@@ -954,6 +966,8 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     TextEditingController templateController = TextEditingController();
     // int selectedBtnIdx = 0;
     SelectedTemplateCategory = null;
+    SelectedTemplateFilters = null;
+
     selectedTemplateName = null;
     return showModalBottomSheet<void>(
       context: context,
@@ -1006,7 +1020,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                           if (selectedCategory != null) {
                             String categoryKey = selectedCategory.toLowerCase();
 
-                            if (SelectedTemplateCategory != 'All') {
+                            if (SelectedTemplateCategory != 'All Categories') {
                               templateNames = (allTemplatesMap[categoryKey]
                                           ?.values
                                           .toSet()
@@ -1027,12 +1041,15 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                       value: SelectedTemplateCategory,
                     ),
                     const SizedBox(height: 12),
-
                     AppUtils.getDropdown(
                       'Select Filter',
                       data: tempateFilter,
-                      onChanged: (String? selectedCategory) {},
-                      value: SelectedTemplateCategory,
+                      onChanged: (String? selectedCategory) {
+                        setState(() {});
+
+                        SelectedTemplateFilters = selectedCategory;
+                      },
+                      value: SelectedTemplateFilters,
                     ),
                     const SizedBox(height: 12),
                     AppUtils.getDropdown(
@@ -1077,77 +1094,66 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                             );
                           })
                         : const SizedBox(),
-                    // Center(
-                    //   child: Consumer<WalletController>(
-                    //       builder: (context, ref, child) {
-                    //     return ElevatedButton(
-                    //       style: ButtonStyle(
-                    //         minimumSize:
-                    //             WidgetStateProperty.all(const Size(10, 20)),
-                    //         padding: WidgetStateProperty.all(
-                    //             const EdgeInsets.symmetric(
-                    //                 horizontal: 20, vertical: 10)),
-                    //         backgroundColor: WidgetStateProperty.all(
-                    //             AppColor.navBarIconColor),
-                    //       ),
-                    //       onPressed: () {
-                    //         print(
-                    //             "hasBalance::      ::: hasWallet    ::::::   :::::  ${ref.hasBalance}      $hasWallet");
-                    //         if ((hasWallet && ref.hasBalance) ||
-                    //             hasWallet == false) {
-                    //           print(
-                    //               "selectedTemplateName>>> $selectedTemplateName");
-                    //           if (selectedTemplateName == null ||
-                    //               selectedTemplateName ==
-                    //                   "Select Template Name") {
-                    //             EasyLoading.showToast("Select Template Name");
-                    //             return;
-                    //           }
-                    //           log("all comp info >> >>  $selectedHeader  $selectedBody $selectedFooter $selectedButtons}");
-                    //           log("selectedBody['text']>>> ${selectedBody.text}  ");
-                    //           final regex = RegExp(r'\{\{\d+\}\}');
+                    Center(
+                      child: Consumer2<WalletController, MessageViewModel>(
+                          builder: (context, ref, msgViewModel, child) {
+                        return ElevatedButton(
+                          style: ButtonStyle(
+                            minimumSize:
+                                WidgetStateProperty.all(const Size(10, 20)),
+                            padding: WidgetStateProperty.all(
+                                const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10)),
+                            backgroundColor: WidgetStateProperty.all(
+                                AppColor.navBarIconColor),
+                          ),
+                          onPressed: () {
+                            print(
+                                "hasBalance::      ::: hasWallet    ::::::   :::::  ${ref.hasBalance}      $hasWallet");
+                            if ((hasWallet && ref.hasBalance) ||
+                                hasWallet == false) {
+                              print(
+                                  "selectedTemplateName>>> $selectedTemplateName");
+                              if (selectedTemplateName == null ||
+                                  selectedTemplateName ==
+                                      "Select Template Name") {
+                                EasyLoading.showToast("Select Template Name");
+                                return;
+                              }
+                              log("all comp info >> >>  ${msgViewModel.selectedHeader}  ${msgViewModel.selectedBody} ${msgViewModel.selectedFooter} ${msgViewModel.selectedButtons}}");
+                              log("selectedBody['text']>>> ${msgViewModel.selectedBody?.text}  ");
+                              final regex = RegExp(r'\{\{\d+\}\}');
 
-                    //           if (regex.hasMatch(selectedBody.text)) {
-                    //             Navigator.of(context).pop();
-                    //             // _sendTemplateSheet();
-                    //           } else if (selectedHeader == null ||
-                    //               selectedHeader.format == null) {
-                    //             String templateToSend = selectedTemplateName ??
-                    //                 templateController.text;
-                    //             print("Template to send: $templateToSend");
-                    //             // templetesendd(templateToSend, []);
-                    //             Navigator.of(context).pop();
-                    //           } else {
-                    //             if (regex.hasMatch(selectedBody.text) ||
-                    //                 selectedHeader.format != null ||
-                    //                 selectedHeader.format != "TEXT") {
-                    //               Navigator.of(context).pop();
-                    //               // _sendTemplateSheet();
-                    //             } else {
-                    //               String templateToSend =
-                    //                   selectedTemplateName ??
-                    //                       templateController.text;
-                    //               print("Template to send: $templateToSend");
-                    //               // templetesendd(templateToSend, []);
-                    //               if (hasWallet) {
-                    //                 WalletController walletController =
-                    //                     Provider.of(context, listen: false);
-                    //                 walletController.debitWalletBalApiCall();
-                    //               }
-                    //               Navigator.of(context).pop();
-                    //             }
-                    //           }
-                    //         } else {
-                    //           EasyLoading.showToast("Insufficient Balance");
-                    //         }
-                    //       },
-                    //       child: const Text(
-                    //         "Send",
-                    //         style: TextStyle(fontSize: 13, color: Colors.white),
-                    //       ),
-                    //     );
-                    //   }),
-                    // )
+                              // if (regex.hasMatch(
+                              //     msgViewModel.selectedBody?.text ?? "")) {
+                              //   Navigator.of(context).pop();
+                              //   // _sendTemplateSheet();
+                              // }
+                              //  else if (msgViewModel.selectedHeader == null ||
+                              //     msgViewModel.selectedHeader?.format == null) {
+                              //   String templateToSend = selectedTemplateName ??
+                              //       templateController.text;
+                              //   print("Template to send: $templateToSend");
+                              //   // templetesendd(templateToSend, []);
+                              //   Navigator.of(context).pop();
+                              // } else
+                              {
+                                {
+                                  Navigator.of(context).pop();
+                                  _sendTemplateSheet();
+                                }
+                              }
+                            } else {
+                              EasyLoading.showToast("Insufficient Balance");
+                            }
+                          },
+                          child: const Text(
+                            "Send",
+                            style: TextStyle(fontSize: 13, color: Colors.white),
+                          ),
+                        );
+                      }),
+                    )
                   ],
                 ),
               ),
@@ -1162,7 +1168,9 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
 
   Future<void> _setSelectedTemplates() async {
     TempleteListViewModel templeteViewModel =
-        Provider.of<TempleteListViewModel>(context, listen: false);
+        Provider.of(context, listen: false);
+
+    MessageViewModel msgViewModel = Provider.of(context, listen: false);
 
     if (templeteViewModel.viewModels.isNotEmpty) {
       for (var viewModel in templeteViewModel.viewModels) {
@@ -1174,7 +1182,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
               if (selectedTemplateName == record.name) {
                 currentTemplate = record;
                 selectedTemplateId = currentTemplate.id;
-                selectedLanguage = currentTemplate.language;
+                msgViewModel.selectedLanguage = currentTemplate.language;
 
                 if (hasWallet) {
                   WalletController walletController =
@@ -1190,6 +1198,9 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                 }
 
                 log("current template:::  ${currentTemplate.category}   :: $currentTemplate  ${currentTemplate.name}");
+                msgViewModel.setSelectedTempId(currentTemplate.id);
+                msgViewModel.setSelectedTempName(currentTemplate.name);
+
                 print(
                     "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}");
                 components = currentTemplate.components;
@@ -1198,20 +1209,21 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                 for (var e in components) {
                   print("checking the type:: ${e.type}");
                   if (e.type == "HEADER") {
-                    selectedHeader = e;
+                    msgViewModel.setSelectedHeader(e);
+                  }
+                  if (e.type == "CAROUSEL") {
+                    print("this is carousal::::::::: ${e.cards!.length}   ");
+                    msgViewModel.setCarousalList(e.cards);
                   } else if (e.type == "BODY") {
-                    selectedBody = e;
+                    msgViewModel.setSelectedBody(e);
                   } else if (e.type == "FOOTER") {
-                    selectedFooter = e;
+                    msgViewModel.setSelectedFooter(e);
                   } else if (e.type == "BUTTONS") {
-                    selectedButtons = e;
+                    msgViewModel.setSelectedButton(e);
                   }
                 }
 
-// Call setState once after processing all components
-                setState(() {});
-
-                log("components ::: $selectedHeader   $selectedBody  $selectedButtons");
+                // log("components ::: $selectedHeader   $selectedBody  $selectedButtons");
 
                 return;
               }
@@ -1380,6 +1392,21 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Future<void> _sendTemplateSheet() async {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => TemplateSheetHelper(
+        controllers: controllers,
+        leadName: widget.leadName ?? "",
+        leadNum: widget.wpnumber ?? "",
       ),
     );
   }

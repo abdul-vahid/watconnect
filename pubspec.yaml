@@ -103,6 +103,7 @@ dependencies:
   open_filex: ^4.7.0
   flutter_webrtc: ^0.14.2
   audioplayers: ^6.5.0
+  carousel_slider: ^5.1.1
 
 
 

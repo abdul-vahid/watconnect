@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/models/ms_model/message_model.dart';
 import '../core/models/base_list_view_model.dart';
 import 'package:mime/mime.dart';
@@ -23,6 +24,57 @@ class MessageViewModel extends BaseListViewModel {
   List allMessages = [];
   File? fileToSend;
 
+  String? selectedLanguage;
+  String? selectedTempId;
+  String? selectedTempName;
+
+  Component? selectedBody;
+  Component? selectedHeader;
+  Component? selectedFooter;
+  Component? selectedButtons;
+
+  List<CardComponent> carousalList = [];
+
+  setCarousalList(carusals) {
+    carousalList = carusals;
+    notifyListeners();
+  }
+
+  setSelectedLang(var lang) {
+    selectedLanguage = lang;
+    notifyListeners();
+  }
+
+  setSelectedTempId(String? tempId) {
+    selectedTempId = tempId;
+    notifyListeners();
+  }
+
+  setSelectedTempName(String? tempName) {
+    selectedTempName = tempName;
+    notifyListeners();
+  }
+
+  setSelectedButton(Component? button) {
+    selectedButtons = button;
+    notifyListeners();
+  }
+
+  setSelectedFooter(Component? footer) {
+    selectedFooter = footer;
+    notifyListeners();
+  }
+
+  setSelectedBody(Component? body) {
+    selectedBody = body;
+    notifyListeners();
+  }
+
+  setSelectedHeader(Component? header) {
+    selectedHeader = header;
+    notifyListeners();
+  }
+
   setFileToSend(File? someFile) {
     fileToSend = someFile;
     notifyListeners();
@@ -38,6 +90,22 @@ class MessageViewModel extends BaseListViewModel {
       var response = await get(url: url, baseModel: MsModel());
       print("respone= of get hisory msg=> $response");
       setMsgList(viewModels[0].model.records);
+
+      // print("respone encode==>  ${jsonEncode(response)}");
+
+      return response;
+    } catch (e, stackTrace) {
+      debug("Error: $e   $stackTrace");
+    }
+  }
+
+  Future sendTemplateApiCall({required tempBody, required number}) async {
+    try {
+      var url = ("${AppConstants.baseUrl}${AppConstants.sendTemplate}$number");
+      print("urll= send Template Api  >>>> $url");
+
+      var response = await post(url: url, body: tempBody);
+      print("respone= POST send Template Api  >>>> $response");
 
       // print("respone encode==>  ${jsonEncode(response)}");
 

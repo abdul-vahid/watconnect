@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-Widget buildMediaWidget(String format, String content) {
+Widget buildMediaWidget(String format, String content,
+    {bool fromCarousal = false}) {
   // print("format:::::: $format  $content");
   switch (format) {
     case "IMAGE":
@@ -10,7 +12,21 @@ Widget buildMediaWidget(String format, String content) {
               width: 80,
               child: Image.asset("assets/images/img_placeholder.png"),
             )
-          : Image.network(content, fit: BoxFit.cover);
+          : CachedNetworkImage(
+              imageUrl: content ?? '',
+              width: double.infinity,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Image.asset(
+                "assets/images/img_place.png",
+                height: fromCarousal ? 120 : 150,
+                fit: BoxFit.cover,
+              ),
+              errorWidget: (context, url, error) => Image.asset(
+                "assets/images/img_place.png",
+                height: 150,
+                fit: BoxFit.cover,
+              ),
+            );
 
     case "VIDEO":
       return content.isNotEmpty
