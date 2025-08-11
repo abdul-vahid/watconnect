@@ -13,7 +13,7 @@ Widget buildMediaWidget(String format, String content,
               child: Image.asset("assets/images/img_placeholder.png"),
             )
           : CachedNetworkImage(
-              imageUrl: content ?? '',
+              imageUrl: content,
               width: double.infinity,
               fit: BoxFit.cover,
               placeholder: (context, url) => Image.asset(

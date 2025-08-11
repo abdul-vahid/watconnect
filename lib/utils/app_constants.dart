@@ -256,6 +256,7 @@ abstract class AppConstants {
   static const String sfSendFileApi =
       '${baseApi}watconnect/messages?type=document';
   static const String sfMessageHistoryApi = '${baseApi}watconnect/messages?';
+
   static const String getToken =
       "https://test.salesforce.com/services/oauth2/token";
   static const String sfGetTemplates = "${baseApi}watconnect/templates?";
@@ -279,4 +280,6 @@ abstract class AppConstants {
   static const String sfDashBoardReport = "${baseApi}watconnect/report?";
   static const String sfDeviceToken = "${baseApi}watconnect/usermobiledevice";
   static const String sfCreateFile = "${baseApi}watconnect/createfile";
+
+  static const String sfCallHistoryApi = '${baseApi}watconnect/callHistory?';
 }

@@ -100,10 +100,24 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
   void getuserrole() async {
     final prefs = await SharedPreferences.getInstance();
     print("userModelData=>${userModelData?.userrole}");
+    DashBoardController drProvider = Provider.of(context, listen: false);
 
+    if (drProvider.fromSalesForce) {
+      String tkn = "";
+      tkn = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+      var userId = decodedToken;
+
+      CallSocketService().connect(tkn, userId);
+    }
     bool hasCalls = prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
     if (hasCalls) {
-      String tkn = await AppUtils.getToken() ?? "";
+      String tkn = "";
+
+      tkn = await AppUtils.getToken() ?? "";
+
+      print("this is called in sf also and we are connecting the socket");
+
       Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
       var userId = decodedToken;
 

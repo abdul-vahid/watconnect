@@ -3,6 +3,12 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/main.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/utils/app_constants.dart';
+
 import '../../services/api_service.dart';
 import '../../utils/app_utils.dart';
 import '../../utils/function_lib.dart';
@@ -18,7 +24,14 @@ class BaseService {
   }
 
   Future<ApiResponse> post({required String url, required String body}) async {
-    var token = await AppUtils.getToken();
+    DashBoardController drProvider =
+        Provider.of(navigatorKey.currentContext!, listen: false);
+    final prefs = await SharedPreferences.getInstance();
+
+    var token = drProvider.fromSalesForce
+        ? prefs.getString(SharedPrefsConstants.sfNodeToken) ?? ""
+        : await AppUtils.getToken();
+
     // debugLog("Token a == $token");
     token ??= "";
     // printLongString("body base service send= $body");

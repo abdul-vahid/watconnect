@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:whatsapp/salesforce/model/sfCall_history_model.dart';
 import 'package:whatsapp/views/view/call_history_screen.dart'
     show formatDateTime, formatDuration;
-import '../../../models/call_history_model.dart';
 
-void showCallDialog(
+void showSfCallDialog(
   BuildContext context,
-  List<CallHistoryData> callHistoryList,
+  List<SfCallHistoryModel> sfcallHistoryList,
   VoidCallback onCallPressed,
 ) {
   showDialog(
@@ -51,26 +51,26 @@ void showCallDialog(
               const SizedBox(height: 10),
               Expanded(
                 child: ListView.separated(
-                  itemCount: callHistoryList.length,
+                  itemCount: sfcallHistoryList.length,
                   separatorBuilder: (context, index) =>
                       const Divider(height: 1, color: Colors.grey),
                   itemBuilder: (context, index) {
-                    final call = callHistoryList[index];
+                    final call = sfcallHistoryList[index];
                     return ListTile(
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 4, vertical: 4),
                       leading: Transform.rotate(
-                        angle: call.status == "Incoming" ? 45 : 180,
+                        angle: call.StatusC == "Incoming" ? 45 : 180,
                         child: Icon(
                           FontAwesomeIcons.arrowDown,
-                          color: call.status == "Incoming"
+                          color: call.StatusC == "Incoming"
                               ? Colors.green
                               : Colors.red,
                           size: 16,
                         ),
                       ),
                       title: Text(
-                        call.name ?? call.whatsappNumber ?? "",
+                        call.name ?? call.whatsAppNumber ?? "",
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w600,

@@ -4,9 +4,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/call_outgoing_socket.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/message_list_vm.dart';
 import 'package:whatsapp/views/view/whatsapp_Call_guidelines.dart';
 
@@ -15,7 +18,7 @@ class CallScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
   final String wpNumber;
   final String leadName;
-  final String parentId;
+  final String? parentId;
 
   const CallScreen(
       {super.key,
@@ -23,7 +26,7 @@ class CallScreen extends StatefulWidget {
       required this.userData,
       required this.wpNumber,
       required this.leadName,
-      required this.parentId});
+      this.parentId});
 
   @override
   State<CallScreen> createState() => _CallScreenState();
@@ -294,7 +297,18 @@ class _CallScreenState extends State<CallScreen> {
                           onPressed: () async {
                             MessageViewModel ms = MessageViewModel(context);
                             final prefs = await SharedPreferences.getInstance();
-                            String? number = prefs.getString('phoneNumber');
+                            String number = "";
+
+                            DashBoardController drProvider =
+                                Provider.of(context, listen: false);
+
+                            if (drProvider.fromSalesForce) {
+                              number = prefs.getString(
+                                      SharedPrefsConstants.sfBusinessNumber) ??
+                                  "";
+                            } else {
+                              number = prefs.getString('phoneNumber') ?? "";
+                            }
 
                             Map<String, dynamic> body = {
                               "messaging_product": "whatsapp",
@@ -312,28 +326,35 @@ class _CallScreenState extends State<CallScreen> {
                                 .sendMessage(number: number, addmsModel: body)
                                 .then((onValue) async {
                               print("valu:::::::  $onValue");
-                              String msgId = onValue['messages'][0]['id'];
+                              if (widget.parentId != null) {
+                                String msgId = onValue['messages'][0]['id'];
 
-                              Map<String, dynamic> historyMap = {
-                                "parent_id": widget.parentId,
-                                "name": widget.leadName,
-                                "message": permiController.text.trim(),
-                                "whatsapp_number": widget.wpNumber,
-                                "status": "Outgoing",
-                                "recordtypename": "lead",
-                                "is_read": true,
-                                "message_id": msgId,
-                                "business_number": number
-                              };
+                                Map<String, dynamic> historyMap = {
+                                  "parent_id": widget.parentId,
+                                  "name": widget.leadName,
+                                  "message": permiController.text.trim(),
+                                  "whatsapp_number": widget.wpNumber,
+                                  "status": "Outgoing",
+                                  "recordtypename": "lead",
+                                  "is_read": true,
+                                  "message_id": msgId,
+                                  "business_number": number
+                                };
 
-                              await ms
-                                  .sendmsgmobile(msgmobilbody: historyMap)
-                                  .then((onValue) {
+                                await ms
+                                    .sendmsgmobile(msgmobilbody: historyMap)
+                                    .then((onValue) {
+                                  setState(() {
+                                    showPermissionBox = false;
+                                  });
+                                  EasyLoading.showToast("Permission Requested");
+                                });
+                              } else {
                                 setState(() {
                                   showPermissionBox = false;
                                 });
                                 EasyLoading.showToast("Permission Requested");
-                              });
+                              }
                             });
                           },
                           style: ElevatedButton.styleFrom(

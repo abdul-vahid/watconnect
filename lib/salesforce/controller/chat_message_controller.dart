@@ -13,6 +13,7 @@ import 'package:whatsapp/salesforce/controller/network_Services.dart';
 
 import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
 import 'package:whatsapp/salesforce/model/chat_history_model.dart';
+import 'package:whatsapp/salesforce/model/sfCall_history_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 
 class ChatMessageController extends ChangeNotifier {
@@ -20,6 +21,8 @@ class ChatMessageController extends ChangeNotifier {
 
   bool _sendMsgLoader = false;
   bool _chatHistoryLoader = false;
+
+  bool _callHistoryLoader = false;
 
   bool get sendMsgLoader => _sendMsgLoader;
   bool get chatHistoryLoader => _chatHistoryLoader;
@@ -31,6 +34,11 @@ class ChatMessageController extends ChangeNotifier {
 
   void _setChatHistoryLoader(bool val) {
     _chatHistoryLoader = val;
+    notifyListeners();
+  }
+
+  void _setCallHistoryLoader(bool val) {
+    _callHistoryLoader = val;
     notifyListeners();
   }
 
@@ -377,5 +385,32 @@ class ChatMessageController extends ChangeNotifier {
     }
 
     notify();
+  }
+
+  List<SfCallHistoryModel> callHistoryList = [];
+
+  Future<void> callHistoryApiCall({
+    String? userNumber,
+  }) async {
+    _setCallHistoryLoader(true);
+    final prefs = await SharedPreferences.getInstance();
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+
+    final url =
+        "${AppConstants.sfCallHistoryApi}waNumber=$userNumber&businessNumber=$busNum";
+    final response = await NetworkService.makeRequest(
+      url: url,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      callHistoryList
+        ..clear()
+        ..addAll(data.map((e) => SfCallHistoryModel.fromJson(e)));
+      log("Fetched ${callHistoryList.length} call history.");
+      notify();
+    }
+
+    _setCallHistoryLoader(false);
   }
 }
