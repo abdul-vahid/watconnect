@@ -7,8 +7,8 @@ class SfCallHistoryModel {
   String? endTime;
   int? duration;
   String? callStatus;
-  String? Id;
-  String? StatusC;
+  String? id;
+  String? statusC;
 
   SfCallHistoryModel(
       {this.whatsAppNumber,
@@ -19,8 +19,8 @@ class SfCallHistoryModel {
       this.endTime,
       this.duration,
       this.callStatus,
-      this.Id,
-      this.StatusC});
+      this.id,
+      this.statusC});
 
   factory SfCallHistoryModel.fromJson(Map<String, dynamic> json) {
     return SfCallHistoryModel(
@@ -32,7 +32,7 @@ class SfCallHistoryModel {
         endTime: json['End_Time__c'] ?? "",
         duration: json['Duration__c'] ?? 0,
         callStatus: json['Call_Status__c'] ?? "",
-        Id: json['Id'] ?? "",
-        StatusC: json['Status__c'] ?? "");
+        id: json['Id'] ?? "",
+        statusC: json['Status__c'] ?? "");
   }
 }

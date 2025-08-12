@@ -86,7 +86,7 @@ class AttachmentWidget extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: Colors.white,
                     ),
-                    child: Icon(
+                    child: const Icon(
                       // isPlaying
                       //     ? Icons.spatial_audio_off_rounded
                       //     :

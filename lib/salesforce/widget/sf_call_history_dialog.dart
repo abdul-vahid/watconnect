@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:whatsapp/salesforce/model/sfCall_history_model.dart';
@@ -60,10 +62,10 @@ void showSfCallDialog(
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 4, vertical: 4),
                       leading: Transform.rotate(
-                        angle: call.StatusC == "Incoming" ? 45 : 180,
+                        angle: call.statusC == "Incoming" ? 45 : 180,
                         child: Icon(
                           FontAwesomeIcons.arrowDown,
-                          color: call.StatusC == "Incoming"
+                          color: call.statusC == "Incoming"
                               ? Colors.green
                               : Colors.red,
                           size: 16,

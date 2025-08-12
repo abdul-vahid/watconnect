@@ -22,8 +22,6 @@ class ChatMessageController extends ChangeNotifier {
   bool _sendMsgLoader = false;
   bool _chatHistoryLoader = false;
 
-  bool _callHistoryLoader = false;
-
   bool get sendMsgLoader => _sendMsgLoader;
   bool get chatHistoryLoader => _chatHistoryLoader;
 
@@ -38,7 +36,6 @@ class ChatMessageController extends ChangeNotifier {
   }
 
   void _setCallHistoryLoader(bool val) {
-    _callHistoryLoader = val;
     notifyListeners();
   }
 

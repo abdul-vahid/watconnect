@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../../../utils/app_utils.dart';
 import '../../../view_models/unread_count_vm.dart';

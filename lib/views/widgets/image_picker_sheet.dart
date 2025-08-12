@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -9,13 +11,13 @@ class ImagePickerBottomSheet {
     return await showModalBottomSheet<File?>(
       context: context,
       backgroundColor: Colors.black87,
-      builder: (context) => _PickerOptions(),
+      builder: (context) => const _PickerOptions(),
     );
   }
 }
 
 class _PickerOptions extends StatelessWidget {
-  const _PickerOptions({super.key});
+  const _PickerOptions();
 
   Future<void> _handleGalleryPick(BuildContext context) async {
     final pickedFile = await FilePicker.platform.pickFiles(

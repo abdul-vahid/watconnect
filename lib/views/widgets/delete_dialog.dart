@@ -51,7 +51,7 @@ class DeleteConfirmationDialog extends StatelessWidget {
               TextButton(
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white,
-                  backgroundColor: Color(
+                  backgroundColor: const Color(
                       0xFF0D47A1), // Replace with AppColor.navBarIconColor if needed
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

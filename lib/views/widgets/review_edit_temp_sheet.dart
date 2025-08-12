@@ -1,5 +1,8 @@
+// ignore_for_file: deprecated_member_use, avoid_print, use_build_context_synchronously, no_leading_underscores_for_local_identifiers
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
@@ -28,6 +31,9 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
   bool isChecked = false;
   bool isOtherFileSelected = false;
   String imgToShow = "";
+  List<TextEditingController> carousalController = [];
+
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -58,6 +64,16 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     return regex.allMatches(text).length;
   }
 
+  void _scrollToFocused() {
+    Future.delayed(const Duration(milliseconds: 300), () {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -77,7 +93,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                 const SizedBox(height: 5),
                 buildPlaceholderInputs(widget.controllers),
                 _buildTemplateCard(),
-                _buildCarousalCard(),
+                CarousalCard(msgViewModel: msgViewModel),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                   child: Center(
@@ -93,26 +109,78 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                         MessageViewModel msgViewModel =
                             Provider.of(context, listen: false);
 
-                        Map<String, dynamic> body = {
-                          "id": msgViewModel.selectedTempId,
-                          "name": msgViewModel.selectedTempName,
-                          "contact_name": widget.leadName,
-                          "whatsapp_number": widget.leadNum,
-                          "amount":
-                              hasWallet ? walletController.finalAmount : 0,
-                          "parameters": {
-                            ...Map.fromEntries(
-                              widget.controllers.asMap().entries.map(
-                                    (entry) => MapEntry(
-                                      "${entry.key + 1}",
-                                      entry.value.text.trim(),
+                        bool allCarCrtlFilled = carousalController.every(
+                            (controller) => controller.text.trim().isNotEmpty);
+
+                        bool allCrtlFilled = widget.controllers.every(
+                            (controller) => controller.text.trim().isNotEmpty);
+                        if (!allCarCrtlFilled) {
+                          EasyLoading.showToast(
+                              "Fill the values of all carousel placeholders..");
+                          return;
+                        }
+
+                        if (!allCrtlFilled) {
+                          EasyLoading.showToast(
+                              "Fill the values of all placeholders..");
+                          return;
+                        }
+
+                        Map<String, dynamic> body = {};
+
+                        if (carousalController.isEmpty) {
+                          body = {
+                            "id": msgViewModel.selectedTempId,
+                            "name": msgViewModel.selectedTempName,
+                            "contact_name": widget.leadName,
+                            "whatsapp_number": widget.leadNum,
+                            "amount":
+                                hasWallet ? walletController.finalAmount : 0,
+                            "parameters": {
+                              ...Map.fromEntries(
+                                widget.controllers.asMap().entries.map(
+                                      (entry) => MapEntry(
+                                        "${entry.key + 1}",
+                                        entry.value.text.trim(),
+                                      ),
                                     ),
-                                  ),
-                            ),
-                            "sendToAdmin": isChecked,
-                            "file": null,
-                          }
-                        };
+                              ),
+                              "sendToAdmin": isChecked,
+                              "file": null,
+                            }
+                          };
+                        } else {
+                          body = {
+                            "id": msgViewModel.selectedTempId,
+                            "name": msgViewModel.selectedTempName,
+                            "contact_name": widget.leadName,
+                            "whatsapp_number": widget.leadNum,
+                            "amount":
+                                hasWallet ? walletController.finalAmount : 0,
+                            "parameters": {
+                              ...Map.fromEntries(
+                                carousalController.asMap().entries.map(
+                                      (entry) => MapEntry(
+                                        "${entry.key + 1}",
+                                        entry.value.text.trim(),
+                                      ),
+                                    ),
+                              ),
+                              "sendToAdmin": isChecked,
+                              "file": null,
+                            },
+                            "main": {
+                              ...Map.fromEntries(
+                                widget.controllers.asMap().entries.map(
+                                      (entry) => MapEntry(
+                                        "${entry.key + 1}",
+                                        entry.value.text.trim(),
+                                      ),
+                                    ),
+                              ),
+                            }
+                          };
+                        }
                         print("send temp api call body:::  $body");
                       },
                       style: ElevatedButton.styleFrom(
@@ -242,175 +310,275 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
       ),
     );
   }
+}
 
-  Widget _buildCarousalCard() {
-    final CarouselSliderController _carouselController =
-        CarouselSliderController();
-    int _currentIndex = 0;
+Widget buildChatButtonTag(String text) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    decoration: BoxDecoration(
+      color: Colors.grey[400],
+      borderRadius: BorderRadius.circular(4),
+      border: Border.all(color: AppColor.navBarIconColor),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(color: AppColor.navBarIconColor),
+    ),
+  );
+}
 
-    return StatefulBuilder(
-      builder: (context, setState) {
-        return Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 4,
-          margin: const EdgeInsets.all(12),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CarouselSlider(
-                  carouselController: _carouselController,
-                  options: CarouselOptions(
-                    autoPlay: false,
-                    enableInfiniteScroll: false,
-                    viewportFraction: 1,
-                    enlargeCenterPage: true,
-                    height: 460, // You can adjust if needed
-                    onPageChanged: (index, reason) {
-                      setState(() {
-                        _currentIndex = index;
-                      });
-                    },
-                  ),
-                  items: msgViewModel.carousalList.map((i) {
-                    Component? selectedCarousalHeader;
-                    Component? selectedCarousalBody;
-                    Component? selectedCarousalFooter;
-                    Component? selectedCarousalButtons;
+class CarousalCard extends StatefulWidget {
+  final MessageViewModel msgViewModel;
 
-                    List<Component> carousalComp = i.components ?? [];
+  const CarousalCard({Key? key, required this.msgViewModel}) : super(key: key);
 
-                    for (var e in carousalComp) {
-                      switch (e.type) {
-                        case "HEADER":
-                          selectedCarousalHeader = e;
-                          break;
-                        case "BODY":
-                          selectedCarousalBody = e;
-                          break;
-                        case "FOOTER":
-                          selectedCarousalFooter = e;
-                          break;
-                        case "BUTTONS":
-                          selectedCarousalButtons = e;
-                          break;
-                      }
-                    }
+  @override
+  _CarousalCardState createState() => _CarousalCardState();
+}
 
-                    List<TextEditingController> carousalController = [];
+class _CarousalCardState extends State<CarousalCard> {
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
+  int _currentIndex = 0;
 
-                    final placeholderCount =
-                        _countPlaceholders(selectedCarousalBody?.text ?? "");
+  late List<List<TextEditingController>> allCarousalControllers;
+  late List<List<String>> allCarousalPlaceholders;
 
-                    carousalController.clear();
-                    carousalController.addAll(
-                      List.generate(
-                          placeholderCount, (index) => TextEditingController()),
-                    );
+  @override
+  void initState() {
+    super.initState();
+    allCarousalControllers = [];
+    allCarousalPlaceholders = [];
 
-                    return SingleChildScrollView(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
+    for (var i in widget.msgViewModel.carousalList) {
+      Component? selectedCarousalBody = i.components?.firstWhere(
+        (e) => e.type == "BODY",
+        orElse: () => Component(),
+      );
+
+      final placeholders = _getPlaceholders(selectedCarousalBody?.text ?? "");
+
+      allCarousalPlaceholders.add(placeholders);
+
+      allCarousalControllers.add(
+        List.generate(
+          placeholders.length,
+          (_) => TextEditingController(),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var list in allCarousalControllers) {
+      for (var c in list) {
+        c.dispose();
+      }
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
+      margin: const EdgeInsets.all(12),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CarouselSlider(
+              carouselController: _carouselController,
+              options: CarouselOptions(
+                autoPlay: false,
+                enableInfiniteScroll: false,
+                viewportFraction: 1,
+                enlargeCenterPage: true,
+                height: 360,
+                onPageChanged: (index, reason) {
+                  setState(() => _currentIndex = index);
+                },
+              ),
+              items:
+                  widget.msgViewModel.carousalList.asMap().entries.map((entry) {
+                final index = entry.key;
+                final i = entry.value;
+
+                Component? selectedCarousalHeader;
+                Component? selectedCarousalBody;
+                Component? selectedCarousalFooter;
+                Component? selectedCarousalButtons;
+
+                for (var e in i.components ?? []) {
+                  switch (e.type) {
+                    case "HEADER":
+                      selectedCarousalHeader = e;
+                      break;
+                    case "BODY":
+                      selectedCarousalBody = e;
+                      break;
+                    case "FOOTER":
+                      selectedCarousalFooter = e;
+                      break;
+                    case "BUTTONS":
+                      selectedCarousalButtons = e;
+                      break;
+                  }
+                }
+
+                return SingleChildScrollView(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (selectedCarousalHeader != null)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: buildMediaWidget(
+                              selectedCarousalHeader.format ?? "",
+                              selectedCarousalHeader
+                                      .example?.headerHandle?[0] ??
+                                  "",
+                              fromCarousal: true,
+                            ),
+                          ),
+                        const SizedBox(height: 12),
+                        if (selectedCarousalBody?.text != null)
+                          Text(
+                            selectedCarousalBody!.text!,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        // Placeholder Inputs
+                        buildPlaceholderInputs(
+                          allCarousalControllers[index],
+                          allCarousalPlaceholders[index],
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (selectedCarousalHeader != null)
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: buildMediaWidget(
-                                    selectedCarousalHeader.format ?? "",
-                                    selectedCarousalHeader
-                                            .example?.headerHandle?[0] ??
-                                        "",
-                                    fromCarousal: true),
-                              ),
-                            const SizedBox(height: 12),
-                            if (selectedCarousalBody?.text != null)
-                              Text(
-                                selectedCarousalBody!.text!,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            buildPlaceholderInputs(carousalController),
-                            const SizedBox(height: 12),
-                            if (selectedCarousalButtons != null)
-                              Wrap(
-                                spacing: 10,
-                                runSpacing: 10,
-                                children: List.generate(
-                                  selectedCarousalButtons!.buttons!.length,
-                                  (index) {
-                                    return buildChatButtonTag(
-                                      selectedCarousalButtons
-                                              ?.buttons?[index].text ??
-                                          "",
-                                    );
-                                  },
-                                ),
-                              ),
-                            const SizedBox(height: 12),
-                            if (selectedCarousalFooter?.text != null)
-                              Text(
-                                selectedCarousalFooter!.text!,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontStyle: FontStyle.italic,
-                                  color: Colors.grey[700],
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    msgViewModel.carousalList.length,
-                    (index) => AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: _currentIndex == index ? 12 : 8,
-                      height: _currentIndex == index ? 12 : 8,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _currentIndex == index
-                            ? Colors.black87
-                            : Colors.grey[400],
-                      ),
+                        const SizedBox(height: 12),
+                        if (selectedCarousalButtons != null)
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: List.generate(
+                              selectedCarousalButtons.buttons!.length,
+                              (btnIndex) {
+                                return buildChatButtonTag(
+                                  selectedCarousalButtons
+                                          ?.buttons?[btnIndex].text ??
+                                      "",
+                                );
+                              },
+                            ),
+                          ),
+                        const SizedBox(height: 12),
+                        if (selectedCarousalFooter?.text != null)
+                          Text(
+                            selectedCarousalFooter!.text!,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                );
+              }).toList(),
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  for (int i = 0; i < allCarousalControllers.length; i++) {
+                    bool allFilled = allCarousalControllers[i].every(
+                        (controller) => controller.text.trim().isNotEmpty);
+                    print("Slide $i all filled: $allFilled");
+                    for (var c in allCarousalControllers[i]) {
+                      print("Text: ${c.text}");
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.navBarIconColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    side: const BorderSide(color: AppColor.navBarIconColor),
+                  ),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6.0),
+                  child: Text(
+                    "Save Carousal",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.msgViewModel.carousalList.length,
+                (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: _currentIndex == index ? 12 : 8,
+                  height: _currentIndex == index ? 12 : 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentIndex == index
+                        ? Colors.black87
+                        : Colors.grey[400],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget buildChatButtonTag(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey[400],
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: AppColor.navBarIconColor),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(color: AppColor.navBarIconColor),
-      ),
+  Widget buildPlaceholderInputs(
+    List<TextEditingController> controllers,
+    List<String> placeholders,
+  ) {
+    return Column(
+      children: List.generate(controllers.length, (index) {
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: TextField(
+            controller: controllers[index],
+            decoration: InputDecoration(
+              labelText: 'Placeholder ${index + 1}',
+              hintText: placeholders[index],
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+            ),
+          ),
+        );
+      }),
     );
+  }
+
+  List<String> _getPlaceholders(String text) {
+    final regex = RegExp(r'\{\{.*?\}\}|\{.*?\}');
+    return regex.allMatches(text).map((m) => m.group(0) ?? '').toList();
   }
 }

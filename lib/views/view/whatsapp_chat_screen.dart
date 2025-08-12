@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, await_only_futures, use_build_context_synchronously, unnecessary_brace_in_string_interps, no_leading_underscores_for_local_identifiers, non_constant_identifier_names
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
@@ -78,21 +80,16 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   List<CallHistoryData> callHistoryList = [];
   final ScrollController _scrollController = ScrollController();
   final TextEditingController sendMsgController = TextEditingController();
-  // final audioManager = AudioManager();
+
   final socketManager = SocketManager();
   Map<String, Map<String, dynamic>> allTemplatesMap = {};
   String userName = "";
   String TenetCode = "";
-  // File? image;
   bool _isPlayingPreview = false;
   var currentTemplate;
   List<Component> components = [];
   String? selectedTemplateName;
-  // var selectedLanguage;
-  // var selectedHeader;
-  // var selectedBody;
-  // var selectedFooter;
-  // dynamic selectedButtons;
+
   String? _audioPath;
   File? _audioFile;
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
@@ -179,7 +176,9 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
 
   Future<void> getWalletStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    hasCalls = prefs.getBool('hasCallsKey') ?? false;
+    hasCalls = await prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
+    print(
+        "prefs.getBool('hasCallsKey'):::::  ${prefs.getBool(SharedPrefsConstants.hasCallsKey)}");
     hasWallet = prefs.getBool('hasWalletKey') ?? false;
     Provider.of<WalletController>(context, listen: false)
         .templateRatesApiCall();
@@ -328,7 +327,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                 scrollDirection: Axis.horizontal,
                                 itemCount: widget.pinnedLeads!.length,
                                 itemBuilder: (context, index) {
-                                  var model = widget.pinnedLeads![index];
+                                  // var model = widget.pinnedLeads![index];
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 10.0),
                                     child: InkWell(
@@ -536,7 +535,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                             index > 0 ? allMessages[index - 1] : null;
 
                         return message.category == "AUTHENTICATION"
-                            ? SizedBox()
+                            ? const SizedBox()
                             : ChatMessageTile(
                                 message: message,
                                 previousMessage: previousMessage,
@@ -1061,12 +1060,10 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                           templateController.text = newValue ?? '';
                           if (newValue != null) {
                             int selectedIndex = templateNames.indexOf(newValue);
-
                             if (selectedIndex >= 0 &&
                                 selectedIndex < templateIds.length) {
                               String selectedTemplateId =
                                   templateIds[selectedIndex];
-
                               print(
                                   "Selected Template ID: $selectedTemplateId");
                             } else {
@@ -1207,7 +1204,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                 print("Component info:: ${components.length} $components");
 
                 for (var e in components) {
-                  print("checking the type:: ${e.type}");
+                  print("checking the type::   ${e.type}");
                   if (e.type == "HEADER") {
                     msgViewModel.setSelectedHeader(e);
                   }
@@ -1403,10 +1400,17 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => TemplateSheetHelper(
-        controllers: controllers,
-        leadName: widget.leadName ?? "",
-        leadNum: widget.wpnumber ?? "",
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SafeArea(
+          child: TemplateSheetHelper(
+            controllers: controllers,
+            leadName: widget.leadName ?? "",
+            leadNum: widget.wpnumber ?? "",
+          ),
+        ),
       ),
     );
   }
