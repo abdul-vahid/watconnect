@@ -33,6 +33,14 @@ class MessageViewModel extends BaseListViewModel {
   Component? selectedFooter;
   Component? selectedButtons;
 
+  Map<String, dynamic> mainBodyParams = {};
+
+  setMainBodyParams(Map<String, dynamic> body) {
+    mainBodyParams = body;
+    print("mainBodyParams: are now set:::::::   $mainBodyParams ");
+    notifyListeners();
+  }
+
   List<CardComponent> carousalList = [];
 
   setCarousalList(carusals) {
@@ -104,7 +112,7 @@ class MessageViewModel extends BaseListViewModel {
       var url = ("${AppConstants.baseUrl}${AppConstants.sendTemplate}$number");
       print("urll= send Template Api  >>>> $url");
 
-      var response = await post(url: url, body: tempBody);
+      var response = await post(url: url, body: jsonEncode(tempBody));
       print("respone= POST send Template Api  >>>> $response");
 
       // print("respone encode==>  ${jsonEncode(response)}");

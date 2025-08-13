@@ -164,7 +164,7 @@ class ChatMessageTile extends StatelessWidget {
                               if (message.header != null && imageUrl.isEmpty)
                                 HeaderMediaWidget(
                                   header: message.header!,
-                                  headerBody: message.headerBody,
+                                  headerBody: message?.headerBody ?? "",
                                 ),
                               if (message.message?.isNotEmpty ?? false)
                                 Text(

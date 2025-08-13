@@ -224,6 +224,9 @@ class WalletController extends ChangeNotifier {
       var data = jsonDecode(response.body);
       if (response.statusCode == 200) {
         res = data["success"];
+        if (res == false) {
+          EasyLoading.showToast(data['message']);
+        }
         // var transactionData = data["transaction"];
       } else {
         log(" debit wallet balance API failed [${response.statusCode}]: ${response.body}");

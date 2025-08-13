@@ -179,7 +179,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     hasCalls = await prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
     print(
         "prefs.getBool('hasCallsKey'):::::  ${prefs.getBool(SharedPrefsConstants.hasCallsKey)}");
-    hasWallet = prefs.getBool('hasWalletKey') ?? false;
+    hasWallet = prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
     Provider.of<WalletController>(context, listen: false)
         .templateRatesApiCall();
 
@@ -1058,20 +1058,21 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                         setState(() {
                           selectedTemplateName = newValue;
                           templateController.text = newValue ?? '';
-                          if (newValue != null) {
-                            int selectedIndex = templateNames.indexOf(newValue);
-                            if (selectedIndex >= 0 &&
-                                selectedIndex < templateIds.length) {
-                              String selectedTemplateId =
-                                  templateIds[selectedIndex];
-                              print(
-                                  "Selected Template ID: $selectedTemplateId");
-                            } else {
-                              print("Invalid index for the selected template.");
-                            }
-                          }
+                          // if (newValue != null) {
+                          // int selectedIndex = templateNames.indexOf(newValue);
+                          // print(
+                          //     "selectedIndex:::::::   ${selectedIndex}    ${templateIds.length}");
+                          // if (selectedIndex >= 0 &&
+                          //     selectedIndex < templateNames.length) {
+                          //   String selectedTemplateId =
+                          //       templateNames[selectedIndex];
+                          //   print(
+                          //       "Selected Template ID: $selectedTemplateId");
+                          // } else {
+                          //   print("Invalid index for the selected template.");
+                          // }
+                          // }
                         });
-
                         _setSelectedTemplates();
                       },
                       value: selectedTemplateName,
@@ -1137,6 +1138,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                               {
                                 {
                                   Navigator.of(context).pop();
+                                  msgViewModel.setMainBodyParams({});
                                   _sendTemplateSheet();
                                 }
                               }
@@ -1164,70 +1166,85 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   String? selectedTemplateId;
 
   Future<void> _setSelectedTemplates() async {
-    TempleteListViewModel templeteViewModel =
-        Provider.of(context, listen: false);
+    try {
+      // if (!mounted) return; // prevent using context if widget is disposed
 
-    MessageViewModel msgViewModel = Provider.of(context, listen: false);
+      final templeteViewModel = context.read<TempleteListViewModel>();
+      final msgViewModel = context.read<MessageViewModel>();
 
-    if (templeteViewModel.viewModels.isNotEmpty) {
+      // If there are no templates, nothing to do
+      print(
+          "templeteViewModel.viewModels is empty ${templeteViewModel.viewModels.isEmpty}");
+      if (templeteViewModel.viewModels.isEmpty) return;
+
       for (var viewModel in templeteViewModel.viewModels) {
-        var campaignModel = viewModel.model;
-        if (campaignModel?.data != null) {
-          for (var record in campaignModel!.data!) {
-            if (record.status != null) {
-              // print("rec name ::${record.name}  ${selectedTemplateName}");
-              if (selectedTemplateName == record.name) {
-                currentTemplate = record;
-                selectedTemplateId = currentTemplate.id;
-                msgViewModel.selectedLanguage = currentTemplate.language;
+        final campaignModel = viewModel.model;
 
-                if (hasWallet) {
-                  WalletController walletController =
-                      Provider.of(context, listen: false);
+        // if (campaignModel?.data?.isEmpty ?? true) {
+        //   continue;
+        // }
 
-                  if (widget.model == null) {
-                    walletController.calculateAmount(
-                        currentTemplate.category, widget.contryCode ?? "+91");
-                  } else {
-                    walletController.calculateAmount(currentTemplate.category,
-                        widget.model?.countryCode ?? "");
-                  }
-                }
+        print(
+            "selectedTemplateName: while sel temp::    ${selectedTemplateName}");
 
-                log("current template:::  ${currentTemplate.category}   :: $currentTemplate  ${currentTemplate.name}");
-                msgViewModel.setSelectedTempId(currentTemplate.id);
-                msgViewModel.setSelectedTempName(currentTemplate.name);
+        for (var record in campaignModel!.data!) {
+          print(
+              "record.status?:::::::::  ${record.status}  rec name ${record.name}  ");
+          if (record.status == "APPROVED" &&
+              selectedTemplateName == record.name) {
+            currentTemplate = record;
+            selectedTemplateId = currentTemplate.id;
+            msgViewModel.selectedLanguage = currentTemplate.language;
+            print("hasWallet while seketing temp ${hasWallet}");
+            if (hasWallet) {
+              final walletController = context.read<WalletController>();
 
-                print(
-                    "other info:: ${currentTemplate.components}   ${currentTemplate.components.runtimeType}");
-                components = currentTemplate.components;
-                print("Component info:: ${components.length} $components");
+              final countryCode =
+                  widget.model?.countryCode ?? widget.contryCode ?? "+91";
 
-                for (var e in components) {
-                  print("checking the type::   ${e.type}");
-                  if (e.type == "HEADER") {
-                    msgViewModel.setSelectedHeader(e);
-                  }
-                  if (e.type == "CAROUSEL") {
-                    print("this is carousal::::::::: ${e.cards!.length}   ");
-                    msgViewModel.setCarousalList(e.cards);
-                  } else if (e.type == "BODY") {
-                    msgViewModel.setSelectedBody(e);
-                  } else if (e.type == "FOOTER") {
-                    msgViewModel.setSelectedFooter(e);
-                  } else if (e.type == "BUTTONS") {
-                    msgViewModel.setSelectedButton(e);
-                  }
-                }
+              walletController.calculateAmount(
+                currentTemplate.category,
+                countryCode,
+              );
+            }
 
-                // log("components ::: $selectedHeader   $selectedBody  $selectedButtons");
+            log("Selected template category: ${currentTemplate.category}");
+            msgViewModel.setSelectedTempId(currentTemplate.id);
+            msgViewModel.setSelectedTempName(currentTemplate.name);
 
-                return;
+            components = currentTemplate.components ?? [];
+            debugPrint("Component count: ${components.length} -> $components");
+
+            for (var e in components) {
+              debugPrint("Component type: ${e.type}");
+
+              switch (e.type) {
+                case "HEADER":
+                  msgViewModel.setSelectedHeader(e);
+                  break;
+                case "CAROUSEL":
+                  debugPrint(
+                      "Carousel detected: ${e.cards?.length ?? 0} cards");
+                  msgViewModel.setCarousalList(e.cards);
+                  break;
+                case "BODY":
+                  msgViewModel.setSelectedBody(e);
+                  break;
+                case "FOOTER":
+                  msgViewModel.setSelectedFooter(e);
+                  break;
+                case "BUTTONS":
+                  msgViewModel.setSelectedButton(e);
+                  break;
               }
             }
+
+            return;
           }
         }
       }
+    } catch (e, stackTrace) {
+      print("some error in seletcing temp ::::::::     $e   $stackTrace");
     }
   }
 
@@ -1409,6 +1426,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
             controllers: controllers,
             leadName: widget.leadName ?? "",
             leadNum: widget.wpnumber ?? "",
+            ledid: widget.id ?? "",
           ),
         ),
       ),

@@ -1,12 +1,18 @@
 // ignore_for_file: deprecated_member_use, avoid_print, use_build_context_synchronously, no_leading_underscores_for_local_identifiers
 
+import 'dart:convert';
+import 'dart:io';
+import 'package:path/path.dart' as p;
+
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/message_list_vm.dart';
 import 'package:whatsapp/view_models/wallet_controller.dart';
 import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/build_media_widget.dart';
@@ -15,12 +21,14 @@ class TemplateSheetHelper extends StatefulWidget {
   final List<TextEditingController> controllers;
   String leadName;
   String leadNum;
+  String ledid;
 
   TemplateSheetHelper(
       {super.key,
       required this.controllers,
       required this.leadName,
-      required this.leadNum});
+      required this.leadNum,
+      required this.ledid});
 
   @override
   State<TemplateSheetHelper> createState() => _TemplateSheetHelperState();
@@ -91,16 +99,23 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                 _buildHeaderRow(),
                 const Divider(thickness: 1),
                 const SizedBox(height: 5),
-                buildPlaceholderInputs(widget.controllers),
                 _buildTemplateCard(),
-                CarousalCard(msgViewModel: msgViewModel),
+                msgViewModel.carousalList.isEmpty
+                    ? const SizedBox()
+                    : CarousalCard(
+                        msgViewModel: msgViewModel,
+                        wpleadNum: widget.leadNum,
+                        leadId: widget.ledid,
+                      ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                   child: Center(
                     child: ElevatedButton(
                       onPressed: () async {
                         final prefs = await SharedPreferences.getInstance();
-                        bool hasWallet = prefs.getBool('hasWalletKey') ?? false;
+                        bool hasWallet =
+                            prefs.getBool(SharedPrefsConstants.hasWalletKey) ??
+                                false;
                         WalletController walletController =
                             Provider.of(context, listen: false);
                         if (hasWallet) {
@@ -128,7 +143,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
 
                         Map<String, dynamic> body = {};
 
-                        if (carousalController.isEmpty) {
+                        if (msgViewModel.mainBodyParams.isEmpty) {
                           body = {
                             "id": msgViewModel.selectedTempId,
                             "name": msgViewModel.selectedTempName,
@@ -146,42 +161,60 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                                     ),
                               ),
                               "sendToAdmin": isChecked,
-                              "file": null,
+                              // "file": null,
                             }
                           };
                         } else {
-                          body = {
+                          Map<String, dynamic> param =
+                              msgViewModel.mainBodyParams;
+
+                          Map<String, dynamic> mainparam = {
+                            ...Map.fromEntries(
+                              widget.controllers.asMap().entries.map(
+                                    (entry) => MapEntry(
+                                      "${entry.key + 1}",
+                                      entry.value.text.trim(),
+                                    ),
+                                  ),
+                            ),
+                          };
+
+                          Map<String, dynamic> finalBody = {
                             "id": msgViewModel.selectedTempId,
                             "name": msgViewModel.selectedTempName,
                             "contact_name": widget.leadName,
                             "whatsapp_number": widget.leadNum,
                             "amount":
                                 hasWallet ? walletController.finalAmount : 0,
-                            "parameters": {
-                              ...Map.fromEntries(
-                                carousalController.asMap().entries.map(
-                                      (entry) => MapEntry(
-                                        "${entry.key + 1}",
-                                        entry.value.text.trim(),
-                                      ),
-                                    ),
-                              ),
-                              "sendToAdmin": isChecked,
-                              "file": null,
-                            },
-                            "main": {
-                              ...Map.fromEntries(
-                                widget.controllers.asMap().entries.map(
-                                      (entry) => MapEntry(
-                                        "${entry.key + 1}",
-                                        entry.value.text.trim(),
-                                      ),
-                                    ),
-                              ),
-                            }
                           };
+
+                          Map<String, dynamic> finalParameters = {};
+
+                          if (param["parameters"] != null) {
+                            finalParameters.addAll(
+                                Map<String, dynamic>.from(param["parameters"]));
+                          }
+                          if (mainparam.isNotEmpty) {
+                            finalParameters["main"] =
+                                Map<String, dynamic>.from(mainparam);
+                          }
+
+                          body = {...finalBody, "parameters": finalParameters};
                         }
                         print("send temp api call body:::  $body");
+                        // final prefs = await SharedPreferences.getInstance();
+                        final phoneNumber = prefs.getString('phoneNumber');
+
+                        msgViewModel
+                            .sendTemplateApiCall(
+                                tempBody: body, number: phoneNumber)
+                            .then((onValue) {
+                          print("onValue of send template:::   ${onValue}");
+                          if (onValue['success'] == false) {
+                          } else {
+                            Navigator.pop(context);
+                          }
+                        });
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColor.navBarIconColor,
@@ -251,23 +284,40 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
 
   Widget _buildTemplateCard() {
     return Card(
-      elevation: 5,
-      color: const Color(0xffE3FFC9).withOpacity(0.5),
-      shadowColor: Colors.black38,
+      elevation: 6,
+      shadowColor: Colors.black26,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      color: const Color(0xffE3FFC9).withOpacity(0.4),
       child: Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Body text
             if (msgViewModel.selectedBody != null)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(msgViewModel.selectedBody!.text ?? ""),
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: Text(
+                  msgViewModel.selectedBody!.text ?? "",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
               ),
-            const SizedBox(height: 10),
+
+            // Placeholder inputs
+            buildPlaceholderInputs(widget.controllers),
+            const SizedBox(height: 12),
+
+            // Buttons (chips style)
             if (msgViewModel.selectedButtons != null)
               Wrap(
-                spacing: 10,
+                spacing: 8,
+                runSpacing: 8,
                 children: List.generate(
                   msgViewModel.selectedButtons!.buttons!.length,
                   (index) {
@@ -277,30 +327,72 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                   },
                 ),
               ),
-            const SizedBox(height: 15),
+
+            const SizedBox(height: 16),
+
+            // Footer
             if (msgViewModel.selectedFooter != null)
               Text(
                 msgViewModel.selectedFooter?.text ?? "",
-                style: const TextStyle(color: Colors.grey),
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
-            const SizedBox(height: 15),
+
+            const SizedBox(height: 16),
+
+            // Media preview
             if (msgViewModel.selectedHeader != null)
-              buildMediaWidget(msgViewModel.selectedHeader!.format ?? "",
-                  msgViewModel.selectedHeader?.example?.headerHandle?[0] ?? ""),
-            const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 8,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: buildMediaWidget(
+                    msgViewModel.selectedHeader!.format ?? "",
+                    msgViewModel.selectedHeader?.example?.headerHandle?[0] ??
+                        "",
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 14),
+
+            // if (msgViewModel.selectedHeader != null)
+
+            // Checkbox
             Row(
               children: [
-                Checkbox(
-                  value: isChecked,
-                  onChanged: (bool? value) => setState(() {
-                    isChecked = value!;
-                  }),
+                Transform.scale(
+                  scale: 1.2,
+                  child: Checkbox(
+                    activeColor: Colors.green[700],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    value: isChecked,
+                    onChanged: (bool? value) => setState(() {
+                      isChecked = value ?? false;
+                    }),
+                  ),
                 ),
+                const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
                     "Send on login user WhatsApp number also",
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                 ),
               ],
@@ -316,7 +408,7 @@ Widget buildChatButtonTag(String text) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     decoration: BoxDecoration(
-      color: Colors.grey[400],
+      color: Colors.grey[200],
       borderRadius: BorderRadius.circular(4),
       border: Border.all(color: AppColor.navBarIconColor),
     ),
@@ -329,8 +421,15 @@ Widget buildChatButtonTag(String text) {
 
 class CarousalCard extends StatefulWidget {
   final MessageViewModel msgViewModel;
+  final String wpleadNum;
+  final String leadId;
 
-  const CarousalCard({Key? key, required this.msgViewModel}) : super(key: key);
+  CarousalCard(
+      {Key? key,
+      required this.msgViewModel,
+      required this.wpleadNum,
+      required this.leadId})
+      : super(key: key);
 
   @override
   _CarousalCardState createState() => _CarousalCardState();
@@ -343,6 +442,7 @@ class _CarousalCardState extends State<CarousalCard> {
 
   late List<List<TextEditingController>> allCarousalControllers;
   late List<List<String>> allCarousalPlaceholders;
+  List<File?> carousalFiles = []; // allow null to mean "no file"
 
   @override
   void initState() {
@@ -357,15 +457,15 @@ class _CarousalCardState extends State<CarousalCard> {
       );
 
       final placeholders = _getPlaceholders(selectedCarousalBody?.text ?? "");
-
       allCarousalPlaceholders.add(placeholders);
-
       allCarousalControllers.add(
         List.generate(
           placeholders.length,
           (_) => TextEditingController(),
         ),
       );
+
+      carousalFiles.add(null); // prepare slot for this slide
     }
   }
 
@@ -381,12 +481,14 @@ class _CarousalCardState extends State<CarousalCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 4,
-      margin: const EdgeInsets.all(12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 6,
+      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 2),
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -397,7 +499,7 @@ class _CarousalCardState extends State<CarousalCard> {
                 enableInfiniteScroll: false,
                 viewportFraction: 1,
                 enlargeCenterPage: true,
-                height: 360,
+                height: 380,
                 onPageChanged: (index, reason) {
                   setState(() => _currentIndex = index);
                 },
@@ -430,102 +532,165 @@ class _CarousalCardState extends State<CarousalCard> {
                 }
 
                 return SingleChildScrollView(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (selectedCarousalHeader != null)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: buildMediaWidget(
-                              selectedCarousalHeader.format ?? "",
-                              selectedCarousalHeader
-                                      .example?.headerHandle?[0] ??
-                                  "",
-                              fromCarousal: true,
-                            ),
-                          ),
-                        const SizedBox(height: 12),
-                        if (selectedCarousalBody?.text != null)
-                          Text(
-                            selectedCarousalBody!.text!,
-                            style: const TextStyle(
-                              fontSize: 16,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (selectedCarousalBody != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            selectedCarousalBody.text ?? "",
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
                               color: Colors.black87,
                             ),
                           ),
-                        // Placeholder Inputs
-                        buildPlaceholderInputs(
-                          allCarousalControllers[index],
-                          allCarousalPlaceholders[index],
                         ),
-                        const SizedBox(height: 12),
-                        if (selectedCarousalButtons != null)
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: List.generate(
-                              selectedCarousalButtons.buttons!.length,
-                              (btnIndex) {
-                                return buildChatButtonTag(
-                                  selectedCarousalButtons
-                                          ?.buttons?[btnIndex].text ??
+
+                      if (selectedCarousalHeader != null)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: carousalFiles[index] == null
+                              ? buildMediaWidget(
+                                  selectedCarousalHeader.format ?? "",
+                                  selectedCarousalHeader
+                                          .example?.headerHandle?[0] ??
                                       "",
-                                );
-                              },
-                            ),
+                                  fromCarousal: true,
+                                )
+                              : selectedCarousalHeader.format == "IMAGE"
+                                  ? Image.file(carousalFiles[index]!,
+                                      fit: BoxFit.cover)
+                                  : Container(
+                                      height: 180,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(Icons.play_arrow_rounded,
+                                            color: Colors.white, size: 40),
+                                      ),
+                                    ),
+                        ),
+
+                      const SizedBox(height: 12),
+
+                      // Placeholder Inputs
+                      buildPlaceholderInputs(
+                        allCarousalControllers[index],
+                        allCarousalPlaceholders[index],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      if (selectedCarousalButtons != null)
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: List.generate(
+                            selectedCarousalButtons.buttons!.length,
+                            (btnIndex) {
+                              return buildChatButtonTag(
+                                selectedCarousalButtons
+                                        ?.buttons?[btnIndex].text ??
+                                    "",
+                              );
+                            },
                           ),
-                        const SizedBox(height: 12),
-                        if (selectedCarousalFooter?.text != null)
-                          Text(
-                            selectedCarousalFooter!.text!,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontStyle: FontStyle.italic,
-                              color: Colors.grey[700],
-                            ),
+                        ),
+
+                      const SizedBox(height: 20),
+
+                      // Pick File Button
+                      Center(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            print(
+                                "Selected format: ${selectedCarousalHeader?.format}");
+                            final allowedExtensions =
+                                selectedCarousalHeader?.format == 'IMAGE'
+                                    ? ["jpg", "jpeg", "png"]
+                                    : ["mp4", "mkv", "mov"];
+
+                            final pickedFile =
+                                await FilePicker.platform.pickFiles(
+                              allowMultiple: false,
+                              type: FileType.custom,
+                              allowedExtensions: allowedExtensions,
+                            );
+
+                            if (pickedFile != null) {
+                              EasyLoading.showToast("Picked Successfully");
+                              setState(() {
+                                carousalFiles[index] =
+                                    File(pickedFile.files.first.path!);
+                              });
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.upload_file,
+                            size: 20,
+                            color: Colors.white,
                           ),
-                      ],
-                    ),
+                          label: const Text(
+                            "Pick File",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            backgroundColor: AppColor.navBarIconColor,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      if (selectedCarousalFooter?.text != null)
+                        Text(
+                          selectedCarousalFooter!.text!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                    ],
                   ),
                 );
               }).toList(),
             ),
+
             const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
+
+            // Save Button
+            SizedBox(
+              width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  for (int i = 0; i < allCarousalControllers.length; i++) {
-                    bool allFilled = allCarousalControllers[i].every(
-                        (controller) => controller.text.trim().isNotEmpty);
-                    print("Slide $i all filled: $allFilled");
-                    for (var c in allCarousalControllers[i]) {
-                      print("Text: ${c.text}");
-                    }
-                  }
-                },
+                onPressed: _saveCarousal,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.navBarIconColor,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                    side: const BorderSide(color: AppColor.navBarIconColor),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 6.0),
-                  child: Text(
-                    "Save Carousal",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
+                child: const Text(
+                  "Save Carousel",
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white),
                 ),
               ),
             ),
+
+            const SizedBox(height: 8),
+
+            // Dots Indicator
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -538,7 +703,7 @@ class _CarousalCardState extends State<CarousalCard> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _currentIndex == index
-                        ? Colors.black87
+                        ? AppColor.navBarIconColor
                         : Colors.grey[400],
                   ),
                 ),
@@ -548,6 +713,102 @@ class _CarousalCardState extends State<CarousalCard> {
         ),
       ),
     );
+  }
+
+  Future<void> _saveCarousal() async {
+    // Validate text inputs for each carousel
+    for (int i = 0; i < allCarousalControllers.length; i++) {
+      bool allFilled = allCarousalControllers[i]
+          .every((controller) => controller.text.trim().isNotEmpty);
+      if (!allFilled) {
+        EasyLoading.showToast("Please fill the value of all placeholders");
+        return;
+      }
+    }
+
+    // Validate files for each carousel
+    for (int index = 0; index < carousalFiles.length; index++) {
+      if (carousalFiles[index] == null) {
+        EasyLoading.showToast("Please pick files for all Carousel");
+        return;
+      }
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final phoneNumber = prefs.getString('phoneNumber');
+
+    Map<String, dynamic> parameters = {}; // Final map to send in API
+
+    for (int index = 0; index < carousalFiles.length; index++) {
+      final file = carousalFiles[index]!;
+      final allowedExts = ['jpg', 'jpeg', 'png'];
+      final ext = p.extension(file.path).replaceFirst('.', '').toLowerCase();
+      final isImg = allowedExts.contains(ext);
+
+      // Upload file
+      final uploadResponse =
+          await widget.msgViewModel.uploadFile(file, phoneNumber);
+      if (uploadResponse == null) {
+        debugPrint('Upload failed: No response');
+        return;
+      }
+
+      final documentId = jsonDecode(uploadResponse)['id'];
+      String type = isImg ? "image" : "video";
+
+      // Send to WhatsApp API
+      Map<String, dynamic> body = {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": widget.wpleadNum,
+        "type": type,
+        type: {
+          "id": documentId,
+        },
+      };
+      await widget.msgViewModel.uploadimagewithdoucmentid(
+        bodyy: body,
+        number: phoneNumber,
+      );
+
+      // Upload to internal DB
+      final leadId = widget.leadId;
+      final dbResponse =
+          await widget.msgViewModel.uploadFiledb(file, phoneNumber, leadId);
+      final fileId = jsonDecode(dbResponse)['records']?[0]?['id'];
+
+      // Build map entry for this carousel index
+      Map<String, dynamic> carousalData = {};
+
+      // Add placeholder values (1, 2, etc.)
+      for (int placeholderIndex = 0;
+          placeholderIndex < allCarousalControllers[index].length;
+          placeholderIndex++) {
+        carousalData["${placeholderIndex + 1}"] =
+            allCarousalControllers[index][placeholderIndex].text.trim();
+      }
+
+      // Add file details
+      carousalData.addAll({
+        "file": {},
+        // "fileURL": file.path, // Or actual file URL if you have it
+        "fileType": type,
+        "file_id": fileId ?? "",
+        "file_title": p.basename(file.path),
+      });
+
+      // Add to parameters map
+      parameters["$index"] = carousalData;
+    }
+
+    // Final API payload
+    Map<String, dynamic> payload = {
+      "parameters": parameters,
+    };
+
+    widget.msgViewModel.setMainBodyParams(payload);
+
+    debugPrint("Final Payload: of the parameters ${jsonEncode(payload)}");
   }
 
   Widget buildPlaceholderInputs(
