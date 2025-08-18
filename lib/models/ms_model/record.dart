@@ -8,6 +8,7 @@ class Record {
   String? parentId;
   String? name;
   String? messageTemplateId;
+  String? templateType;
   String? whatsappNumber;
   String? message;
   String? status;
@@ -43,6 +44,7 @@ class Record {
   String? unread_msg_count;
   String? erormessage;
   List<dynamic>? buttons;
+  List<dynamic>? templateCards;
   dynamic filetype;
   dynamic description;
 
@@ -52,6 +54,7 @@ class Record {
       this.parentId,
       this.name,
       this.messageTemplateId,
+      this.templateType,
       this.whatsappNumber,
       this.message,
       this.status,
@@ -77,6 +80,7 @@ class Record {
       this.bodyTextParams,
       this.footer,
       this.buttons,
+      this.templateCards,
       this.title,
       this.filetype,
       this.description,
@@ -107,6 +111,7 @@ class Record {
         lastmodifieddate: parseDate(data['lastmodifieddate'] as String?),
         isRead: data['is_read'] as bool?,
         businessNumber: data['business_number'] as String?,
+        templateType: data['template_type'] as String?,
         messageId: data['message_id'] as String?,
         deliveryStatus: data['delivery_status'] as String?,
         chatmsg: data['chatmsg'] as String?,
@@ -130,7 +135,8 @@ class Record {
         title: data['title'],
         body: data['body'],
         unread_msg_count: data['unread_msg_count'],
-        buttons: data['buttons'] as List<dynamic>?,
+        buttons: (data['buttons'] as List<dynamic>?) ?? [],
+        templateCards: (data['template_cards'] as List<dynamic>?) ?? [],
         filetype: data['filetype'] as dynamic,
         description: data['description'] as dynamic,
         erormessage: data['err_message'] as String?,
@@ -173,6 +179,7 @@ class Record {
         'header_body': headerBody,
         'message_body': messageBody,
         'example_body_text': exampleBodyText,
+        'template_type': templateType,
         'footer': footer,
         'buttons': buttons,
         'title': title,
@@ -182,6 +189,7 @@ class Record {
         'body': body,
         'unread_msg_count': unread_msg_count,
         'erormessage': erormessage,
+        'template_cards': templateCards
       };
 
   String toJson() => json.encode(toMap());

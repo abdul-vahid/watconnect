@@ -48,6 +48,12 @@ class MessageViewModel extends BaseListViewModel {
     notifyListeners();
   }
 
+  setCarousalListEmpty() {
+    carousalList = [];
+    carousalList.clear();
+    notifyListeners();
+  }
+
   setSelectedLang(var lang) {
     selectedLanguage = lang;
     notifyListeners();
@@ -96,8 +102,14 @@ class MessageViewModel extends BaseListViewModel {
       print("urll= get hisory msg>$url");
       print("AAAAAAA");
       var response = await get(url: url, baseModel: MsModel());
-      print("respone= of get hisory msg=> $response");
-      setMsgList(viewModels[0].model.records);
+      print(
+          "respone= of get hisory msg=> $response   ${viewModels[0].model.records}");
+
+      if (viewModels[0].model.records != null) {
+        setMsgList(viewModels[0].model.records);
+      } else {
+        setMsgList([]);
+      }
 
       // print("respone encode==>  ${jsonEncode(response)}");
 
@@ -124,8 +136,15 @@ class MessageViewModel extends BaseListViewModel {
   }
 
   setMsgList(List msgRecs) {
+    print("checking the list before setting::::    $msgRecs");
     allMessages.clear();
-    allMessages.addAll(msgRecs);
+    if (msgRecs.isEmpty || msgRecs == null) {
+      allMessages.clear();
+      allMessages = [];
+    } else {
+      allMessages.addAll(msgRecs);
+    }
+
     print("added in the controller list::::::::::    ${allMessages.length}");
 
     notifyListeners();

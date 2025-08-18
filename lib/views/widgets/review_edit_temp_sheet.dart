@@ -40,7 +40,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
   bool isOtherFileSelected = false;
   String imgToShow = "";
   List<TextEditingController> carousalController = [];
-
+  File? mainContentFile;
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -111,111 +111,6 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                   child: Center(
                     child: ElevatedButton(
-                      onPressed: () async {
-                        final prefs = await SharedPreferences.getInstance();
-                        bool hasWallet =
-                            prefs.getBool(SharedPrefsConstants.hasWalletKey) ??
-                                false;
-                        WalletController walletController =
-                            Provider.of(context, listen: false);
-                        if (hasWallet) {
-                          walletController.debitWalletBalApiCall();
-                        }
-                        MessageViewModel msgViewModel =
-                            Provider.of(context, listen: false);
-
-                        bool allCarCrtlFilled = carousalController.every(
-                            (controller) => controller.text.trim().isNotEmpty);
-
-                        bool allCrtlFilled = widget.controllers.every(
-                            (controller) => controller.text.trim().isNotEmpty);
-                        if (!allCarCrtlFilled) {
-                          EasyLoading.showToast(
-                              "Fill the values of all carousel placeholders..");
-                          return;
-                        }
-
-                        if (!allCrtlFilled) {
-                          EasyLoading.showToast(
-                              "Fill the values of all placeholders..");
-                          return;
-                        }
-
-                        Map<String, dynamic> body = {};
-
-                        if (msgViewModel.mainBodyParams.isEmpty) {
-                          body = {
-                            "id": msgViewModel.selectedTempId,
-                            "name": msgViewModel.selectedTempName,
-                            "contact_name": widget.leadName,
-                            "whatsapp_number": widget.leadNum,
-                            "amount":
-                                hasWallet ? walletController.finalAmount : 0,
-                            "parameters": {
-                              ...Map.fromEntries(
-                                widget.controllers.asMap().entries.map(
-                                      (entry) => MapEntry(
-                                        "${entry.key + 1}",
-                                        entry.value.text.trim(),
-                                      ),
-                                    ),
-                              ),
-                              "sendToAdmin": isChecked,
-                              // "file": null,
-                            }
-                          };
-                        } else {
-                          Map<String, dynamic> param =
-                              msgViewModel.mainBodyParams;
-
-                          Map<String, dynamic> mainparam = {
-                            ...Map.fromEntries(
-                              widget.controllers.asMap().entries.map(
-                                    (entry) => MapEntry(
-                                      "${entry.key + 1}",
-                                      entry.value.text.trim(),
-                                    ),
-                                  ),
-                            ),
-                          };
-
-                          Map<String, dynamic> finalBody = {
-                            "id": msgViewModel.selectedTempId,
-                            "name": msgViewModel.selectedTempName,
-                            "contact_name": widget.leadName,
-                            "whatsapp_number": widget.leadNum,
-                            "amount":
-                                hasWallet ? walletController.finalAmount : 0,
-                          };
-
-                          Map<String, dynamic> finalParameters = {};
-
-                          if (param["parameters"] != null) {
-                            finalParameters.addAll(
-                                Map<String, dynamic>.from(param["parameters"]));
-                          }
-                          if (mainparam.isNotEmpty) {
-                            finalParameters["main"] =
-                                Map<String, dynamic>.from(mainparam);
-                          }
-
-                          body = {...finalBody, "parameters": finalParameters};
-                        }
-                        print("send temp api call body:::  $body");
-                        // final prefs = await SharedPreferences.getInstance();
-                        final phoneNumber = prefs.getString('phoneNumber');
-
-                        msgViewModel
-                            .sendTemplateApiCall(
-                                tempBody: body, number: phoneNumber)
-                            .then((onValue) {
-                          print("onValue of send template:::   ${onValue}");
-                          if (onValue['success'] == false) {
-                          } else {
-                            Navigator.pop(context);
-                          }
-                        });
-                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColor.navBarIconColor,
                         shape: RoundedRectangleBorder(
@@ -224,16 +119,73 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                               const BorderSide(color: AppColor.navBarIconColor),
                         ),
                       ),
+                      onPressed: () async {
+                        final msgViewModel = Provider.of<MessageViewModel>(
+                            context,
+                            listen: false);
+                        final walletController = Provider.of<WalletController>(
+                            context,
+                            listen: false);
+                        final prefs = await SharedPreferences.getInstance();
+                        final phoneNumber = prefs.getString('phoneNumber');
+                        final hasWallet =
+                            prefs.getBool(SharedPrefsConstants.hasWalletKey) ??
+                                false;
+
+                        // 1. Validate file requirements
+                        if (_requiresFile(msgViewModel) &&
+                            mainContentFile == null) {
+                          EasyLoading.showToast(
+                              "Please pick a file to send this template");
+                          return;
+                        }
+
+                        //  2. Debit wallet if available
+                        if (hasWallet) walletController.debitWalletBalApiCall();
+
+                        //  3. Validate placeholders
+                        // if (!_allFilled(carousalController)) {
+                        //   EasyLoading.showToast(
+                        //       "Fill the values of all carousel placeholders..");
+                        //   return;
+                        // }
+                        if (!_allFilled(widget.controllers)) {
+                          EasyLoading.showToast(
+                              "Fill the values of all placeholders..");
+                          return;
+                        }
+
+                        //  4. Build request body
+                        final body = await _buildBody(
+                          msgViewModel: msgViewModel,
+                          phoneNumber: phoneNumber,
+                          hasWallet: hasWallet,
+                          walletController: walletController,
+                        );
+
+                        debugPrint("send temp api call body::: $body");
+
+                        // ✅ 5. Send API call
+                        final response = await msgViewModel.sendTemplateApiCall(
+                          tempBody: body,
+                          number: phoneNumber,
+                        );
+
+                        debugPrint("onValue of send template::: $response");
+
+                        if (response['success'] == true) {
+                          Navigator.pop(context);
+                        }
+                      },
                       child: const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 6.0),
-                        child: Text(
-                          "Send",
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                        ),
+                        child: Text("Send",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 16)),
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -283,6 +235,8 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
   }
 
   Widget _buildTemplateCard() {
+    print(
+        "msgViewModel.selectedHeade::::::      ${msgViewModel.selectedHeader}");
     return Card(
       elevation: 6,
       shadowColor: Colors.black26,
@@ -345,25 +299,93 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
 
             // Media preview
             if (msgViewModel.selectedHeader != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  decoration: BoxDecoration(
+              Column(
+                children: [
+                  ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 8,
-                        offset: Offset(0, 3),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 8,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
                       ),
-                    ],
+                      child: buildMediaWidget(
+                        msgViewModel.selectedHeader!.format ?? "",
+                        msgViewModel
+                                .selectedHeader?.example?.headerHandle?[0] ??
+                            "",
+                      ),
+                    ),
                   ),
-                  child: buildMediaWidget(
-                    msgViewModel.selectedHeader!.format ?? "",
-                    msgViewModel.selectedHeader?.example?.headerHandle?[0] ??
-                        "",
-                  ),
-                ),
+                  if (msgViewModel.selectedHeader!.format == "IMAGE" ||
+                      msgViewModel.selectedHeader!.format == "VIDEO" ||
+                      msgViewModel.selectedHeader!.format == "DOCUMENT")
+                    Center(
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          print(
+                              "Selected format: ${msgViewModel.selectedHeader!.format}");
+                          // final allowedExtensions =
+                          //     msgViewModel.selectedHeader!.format == 'IMAGE'
+                          //         ? ["jpg", "jpeg", "png"]
+                          //         : ["mp4", "mkv", "mov"];
+
+                          final format = msgViewModel.selectedHeader!.format;
+
+                          final allowedExtensions = format == 'IMAGE'
+                              ? ["jpg", "jpeg", "png"]
+                              : format == 'VIDEO'
+                                  ? ["mp4", "mkv", "mov"]
+                                  : [
+                                      "pdf",
+                                      "doc",
+                                      "docx",
+                                      "xls",
+                                      "xlsx",
+                                      "ppt",
+                                      "pptx"
+                                    ];
+
+                          final pickedFile =
+                              await FilePicker.platform.pickFiles(
+                            allowMultiple: false,
+                            type: FileType.custom,
+                            allowedExtensions: allowedExtensions,
+                          );
+
+                          if (pickedFile != null) {
+                            EasyLoading.showToast("Picked Successfully");
+                            setState(() {
+                              mainContentFile =
+                                  File(pickedFile.files.first.path!);
+                            });
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.upload_file,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          "Pick File",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          backgroundColor: AppColor.navBarIconColor,
+                        ),
+                      ),
+                    ),
+                ],
               ),
 
             const SizedBox(height: 14),
@@ -401,6 +423,116 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
         ),
       ),
     );
+  }
+
+  bool _requiresFile(MessageViewModel msgViewModel) {
+    final format = msgViewModel.selectedHeader?.format;
+    return format == 'IMAGE' || format == 'VIDEO' || format == 'DOCUMENT';
+  }
+
+  bool _allFilled(List<TextEditingController> controllers) {
+    return controllers.every((c) => c.text.trim().isNotEmpty);
+  }
+
+  Future<Map<String, dynamic>> _buildBody({
+    required MessageViewModel msgViewModel,
+    required String? phoneNumber,
+    required bool hasWallet,
+    required WalletController walletController,
+  }) async {
+    Map<String, dynamic> body = {};
+    String? fileId;
+    String? fileTitle;
+
+    if (msgViewModel.mainBodyParams.isEmpty) {
+      // 🔹 Handle file upload if exists
+      if (mainContentFile != null && phoneNumber != null) {
+        final fileType = _getFileType(mainContentFile!.path);
+        final uploadResponse =
+            await msgViewModel.uploadFile(mainContentFile!, phoneNumber);
+
+        if (uploadResponse == null) {
+          debugPrint('Upload failed: No response');
+          return {};
+        }
+
+        final documentId = jsonDecode(uploadResponse)['id'];
+        debugPrint('Uploaded File ID: $documentId');
+
+        final dbResponse = await msgViewModel.uploadFiledb(
+            mainContentFile!, phoneNumber, widget.ledid);
+        fileId = jsonDecode(dbResponse)['records']?[0]?['id'];
+        fileTitle = p.basename(mainContentFile!.path);
+
+        debugPrint("Uploaded to DB. File ID: $fileId");
+        print("file id and title after uploading ::: $fileId   $fileTitle");
+      }
+
+      body = {
+        "id": msgViewModel.selectedTempId,
+        "name": msgViewModel.selectedTempName,
+        "contact_name": widget.leadName,
+        "whatsapp_number": widget.leadNum,
+        "amount": hasWallet ? walletController.finalAmount : 0,
+        "parameters": <String, dynamic>{
+          ..._mapControllers(widget.controllers),
+          "sendToAdmin": isChecked,
+        },
+      };
+    } else {
+      // 🔹 Merge params with main inputs
+      final Map<String, dynamic> finalParams = {};
+
+      if (msgViewModel.mainBodyParams["parameters"] != null) {
+        finalParams.addAll(
+          Map<String, dynamic>.from(
+            msgViewModel.mainBodyParams["parameters"] as Map,
+          ),
+        );
+      }
+
+      final mainInputs = _mapControllers(widget.controllers);
+      if (mainInputs.isNotEmpty) {
+        finalParams["main"] = mainInputs;
+      }
+
+      body = {
+        "id": msgViewModel.selectedTempId,
+        "name": msgViewModel.selectedTempName,
+        "contact_name": widget.leadName,
+        "whatsapp_number": widget.leadNum,
+        "amount": hasWallet ? walletController.finalAmount : 0,
+        "parameters": finalParams,
+      };
+    }
+
+    // ✅ Safely add file data into parameters
+    if (mainContentFile != null && fileId != null && fileTitle != null) {
+      (body["parameters"] as Map<String, dynamic>).addAll({
+        "file": <String, dynamic>{},
+        "file_id": fileId,
+        "file_title": fileTitle,
+      });
+    }
+
+    return body;
+  }
+
+  Map<String, String> _mapControllers(List<TextEditingController> controllers) {
+    return Map.fromEntries(
+      controllers.asMap().entries.map(
+            (entry) => MapEntry("${entry.key + 1}", entry.value.text.trim()),
+          ),
+    );
+  }
+
+  String _getFileType(String path) {
+    final ext = p.extension(path).replaceFirst('.', '').toLowerCase();
+    if (["jpg", "jpeg", "png"].contains(ext)) return "image";
+    if (["mp4", "mkv", "mov"].contains(ext)) return "video";
+    if (["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"].contains(ext))
+      return "document";
+    return "UNKNOWN";
   }
 }
 

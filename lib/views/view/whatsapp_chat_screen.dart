@@ -103,13 +103,14 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   @override
   void initState() {
     super.initState();
+    loadChatHistory();
     getWalletStatus();
     markUnread();
     setTemplteEmpty();
     _initializeAudio();
     // audioManager.initialize();
     fetchTemplates();
-    loadChatHistory();
+
     scrollToBottom();
   }
 
@@ -172,118 +173,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
         );
       },
     );
-  }
-
-  Future<void> getWalletStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    hasCalls = await prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
-    print(
-        "prefs.getBool('hasCallsKey'):::::  ${prefs.getBool(SharedPrefsConstants.hasCallsKey)}");
-    hasWallet = prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
-    Provider.of<WalletController>(context, listen: false)
-        .templateRatesApiCall();
-
-    userName = prefs.getString('userName') ?? "Me";
-    TenetCode = prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
-    setState(() {});
-  }
-
-  Future<void> markUnread() async {
-    final prefs = await SharedPreferences.getInstance();
-    final number = prefs.getString('phoneNumber');
-    final bodydata = {"whatsapp_number": widget.wpnumber ?? ""};
-    await Provider.of<UnreadCountVm>(context, listen: false).marksreadcountmsg(
-        leadnumber: widget.wpnumber ?? "", number: number, bodydata: bodydata);
-  }
-
-  Future<void> loadChatHistory() async {
-    final prefs = await SharedPreferences.getInstance();
-    final number = prefs.getString('phoneNumber');
-    final messageVM = Provider.of<MessageViewModel>(context, listen: false);
-    messageVM.setFileToSend(null);
-    messageVM.Fetchmsghistorydata(
-        leadnumber: widget.wpnumber ?? '', number: number);
-  }
-
-  void scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
-  Future<void> fetchTemplates() async {
-    TempleteListViewModel templeteViewModel =
-        Provider.of<TempleteListViewModel>(context, listen: false);
-
-    // Check if templeteViewModel is not null and contains viewModels
-    if (templeteViewModel.viewModels.isNotEmpty) {
-      for (var viewModel in templeteViewModel.viewModels) {
-        var campaignModel = viewModel.model;
-        if (campaignModel?.data != null) {
-          for (var record in campaignModel!.data!) {
-            if (record.status != null) {
-              if (record.name != null && record.category != null) {
-                String categoryKey = record.category!.toLowerCase();
-
-                allTemplatesMap.putIfAbsent(categoryKey, () => {});
-                allTemplatesMap[categoryKey]?[record.id] = (record.name!);
-              }
-              setState(() {
-                templateNames.add(record.name);
-                // print("Templates => $templateNames");
-              });
-            }
-          }
-        }
-      }
-    }
-  }
-
-  Future<void> initiateCall() async {
-    final prefs = await SharedPreferences.getInstance();
-    final number = prefs.getString('phoneNumber');
-    final callVM = Provider.of<CallsViewModel>(context, listen: false);
-
-    await callVM.startCallApi(number!, widget.wpnumber ?? "");
-    callHistoryList = callVM.viewModels
-        .expand((vm) => (vm.model?.records ?? []) as List<CallHistoryData>)
-        .toList();
-
-    if (!mounted) return;
-    showCallDialog(context, callHistoryList, () => _startCall());
-  }
-
-  Future<void> _startCall() async {
-    final token = await AppUtils.getToken() ?? "";
-    final decoded = JwtDecoder.decode(token);
-    Navigator.pop(context);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CallScreen(
-          token: token,
-          userData: decoded,
-          parentId: widget.id ?? "",
-          wpNumber: widget.wpnumber ?? "",
-          leadName: widget.leadName ?? "",
-        ),
-      ),
-    );
-  }
-
-  Future<void> _pullRefresh() async {
-    var leadnumber = widget.wpnumber;
-    print("leadnumber$leadnumber");
-    final prefs = await SharedPreferences.getInstance();
-    String? number = prefs.getString('phoneNumber');
-    await Provider.of<MessageViewModel>(context, listen: false)
-        .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
   }
 
   Widget _pageBody() {
@@ -525,27 +414,42 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                       ),
                     ),
                     const Divider(),
-                    Expanded(
-                        child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: allMessages.length,
-                      itemBuilder: (context, index) {
-                        final message = allMessages[index];
-                        final previousMessage =
-                            index > 0 ? allMessages[index - 1] : null;
+                    allMessages.isEmpty
+                        ? const Expanded(
+                            child: Center(
+                            child: Text(
+                              "No Chats Available...",
+                              style: TextStyle(
+                                  fontFamily: AppFonts.medium, fontSize: 16),
+                            ),
+                          ))
+                        : Expanded(
+                            child: ListView.builder(
+                            controller: _scrollController,
+                            itemCount: allMessages.length,
+                            itemBuilder: (context, index) {
+                              final message = allMessages[index];
+                              final previousMessage =
+                                  index > 0 ? allMessages[index - 1] : null;
 
-                        return message.category == "AUTHENTICATION"
-                            ? const SizedBox()
-                            : ChatMessageTile(
-                                message: message,
-                                previousMessage: previousMessage,
-                                userName: userName,
-                                tenetCode: TenetCode,
-                                onTap: msgController.updateDeleteMsgList,
-                                selectedMessages: msgController.msgToDelete,
-                              );
-                      },
-                    ))
+                              return message.category == "AUTHENTICATION"
+                                  ? const SizedBox()
+                                  : ConstrainedBox(
+                                      constraints:
+                                          const BoxConstraints(minHeight: 0),
+                                      child: ChatMessageTile(
+                                        message: message,
+                                        previousMessage: previousMessage,
+                                        userName: userName,
+                                        tenetCode: TenetCode,
+                                        onTap:
+                                            msgController.updateDeleteMsgList,
+                                        selectedMessages:
+                                            msgController.msgToDelete,
+                                      ),
+                                    );
+                            },
+                          ))
                   ],
                 ),
               ),
@@ -555,6 +459,118 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
         ),
       );
     });
+  }
+
+  Future<void> getWalletStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    hasCalls = await prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
+    print(
+        "prefs.getBool('hasCallsKey'):::::  ${prefs.getBool(SharedPrefsConstants.hasCallsKey)}");
+    hasWallet = prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
+    Provider.of<WalletController>(context, listen: false)
+        .templateRatesApiCall();
+
+    userName = prefs.getString('userName') ?? "Me";
+    TenetCode = prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
+    setState(() {});
+  }
+
+  Future<void> markUnread() async {
+    final prefs = await SharedPreferences.getInstance();
+    final number = prefs.getString('phoneNumber');
+    final bodydata = {"whatsapp_number": widget.wpnumber ?? ""};
+    await Provider.of<UnreadCountVm>(context, listen: false).marksreadcountmsg(
+        leadnumber: widget.wpnumber ?? "", number: number, bodydata: bodydata);
+  }
+
+  Future<void> loadChatHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final number = prefs.getString('phoneNumber');
+    final messageVM = Provider.of<MessageViewModel>(context, listen: false);
+    messageVM.setFileToSend(null);
+    messageVM.Fetchmsghistorydata(
+        leadnumber: widget.wpnumber ?? '', number: number);
+  }
+
+  void scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> fetchTemplates() async {
+    TempleteListViewModel templeteViewModel =
+        Provider.of<TempleteListViewModel>(context, listen: false);
+
+    // Check if templeteViewModel is not null and contains viewModels
+    if (templeteViewModel.viewModels.isNotEmpty) {
+      for (var viewModel in templeteViewModel.viewModels) {
+        var campaignModel = viewModel.model;
+        if (campaignModel?.data != null) {
+          for (var record in campaignModel!.data!) {
+            if (record.status != null) {
+              if (record.name != null && record.category != null) {
+                String categoryKey = record.category!.toLowerCase();
+
+                allTemplatesMap.putIfAbsent(categoryKey, () => {});
+                allTemplatesMap[categoryKey]?[record.id] = (record.name!);
+              }
+              setState(() {
+                templateNames.add(record.name);
+                // print("Templates => $templateNames");
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Future<void> initiateCall() async {
+    final prefs = await SharedPreferences.getInstance();
+    final number = prefs.getString('phoneNumber');
+    final callVM = Provider.of<CallsViewModel>(context, listen: false);
+
+    await callVM.startCallApi(number!, widget.wpnumber ?? "");
+    callHistoryList = callVM.viewModels
+        .expand((vm) => (vm.model?.records ?? []) as List<CallHistoryData>)
+        .toList();
+
+    if (!mounted) return;
+    showCallDialog(context, callHistoryList, () => _startCall());
+  }
+
+  Future<void> _startCall() async {
+    final token = await AppUtils.getToken() ?? "";
+    final decoded = JwtDecoder.decode(token);
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CallScreen(
+          token: token,
+          userData: decoded,
+          parentId: widget.id ?? "",
+          wpNumber: widget.wpnumber ?? "",
+          leadName: widget.leadName ?? "",
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pullRefresh() async {
+    var leadnumber = widget.wpnumber;
+    print("leadnumber$leadnumber");
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+    await Provider.of<MessageViewModel>(context, listen: false)
+        .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
   }
 
   Widget _buildMessageInputArea() {
@@ -632,6 +648,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                       child: IconButton(
                         icon: const Icon(Icons.code, color: Colors.white),
                         onPressed: () {
+                          messageViewModel.setCarousalListEmpty();
                           WalletController wc =
                               Provider.of(context, listen: false);
                           wc.setFinalAmt("");
