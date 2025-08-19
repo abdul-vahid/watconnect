@@ -39,9 +39,10 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
   bool isChecked = false;
   bool isOtherFileSelected = false;
   String imgToShow = "";
+  bool isSendingTemplate = false;
   List<TextEditingController> carousalController = [];
   File? mainContentFile;
-  final ScrollController _scrollController = ScrollController();
+  // final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -72,15 +73,15 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     return regex.allMatches(text).length;
   }
 
-  void _scrollToFocused() {
-    Future.delayed(const Duration(milliseconds: 300), () {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    });
-  }
+  // void _scrollToFocused() {
+  //   Future.delayed(const Duration(milliseconds: 300), () {
+  //     _scrollController.animateTo(
+  //       _scrollController.position.maxScrollExtent,
+  //       duration: const Duration(milliseconds: 300),
+  //       curve: Curves.easeInOut,
+  //     );
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +121,9 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                         ),
                       ),
                       onPressed: () async {
+                        setState(() {
+                          isSendingTemplate = true;
+                        });
                         final msgViewModel = Provider.of<MessageViewModel>(
                             context,
                             listen: false);
@@ -132,7 +136,6 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                             prefs.getBool(SharedPrefsConstants.hasWalletKey) ??
                                 false;
 
-                        // 1. Validate file requirements
                         if (_requiresFile(msgViewModel) &&
                             mainContentFile == null) {
                           EasyLoading.showToast(
@@ -140,15 +143,8 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                           return;
                         }
 
-                        //  2. Debit wallet if available
                         if (hasWallet) walletController.debitWalletBalApiCall();
 
-                        //  3. Validate placeholders
-                        // if (!_allFilled(carousalController)) {
-                        //   EasyLoading.showToast(
-                        //       "Fill the values of all carousel placeholders..");
-                        //   return;
-                        // }
                         if (!_allFilled(widget.controllers)) {
                           EasyLoading.showToast(
                               "Fill the values of all placeholders..");
@@ -165,7 +161,12 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
 
                         debugPrint("send temp api call body::: $body");
 
-                        // ✅ 5. Send API call
+                        if (body.isEmpty) {
+                          setState(() {
+                            isSendingTemplate = false;
+                          });
+                          return;
+                        }
                         final response = await msgViewModel.sendTemplateApiCall(
                           tempBody: body,
                           number: phoneNumber,
@@ -173,16 +174,30 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
 
                         debugPrint("onValue of send template::: $response");
 
+                        setState(() {
+                          isSendingTemplate = false;
+                        });
                         if (response['success'] == true) {
+                          await msgViewModel.Fetchmsghistorydata(
+                              leadnumber: widget.leadNum, number: phoneNumber);
                           Navigator.pop(context);
                         }
                       },
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 6.0),
-                        child: Text("Send",
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 16)),
-                      ),
+                      child: isSendingTemplate
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 6.0),
+                              child: Text("Send",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 16)),
+                            ),
                     ),
                   ),
                 ),
@@ -444,10 +459,10 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     String? fileId;
     String? fileTitle;
 
-    if (msgViewModel.mainBodyParams.isEmpty) {
+    if (msgViewModel.carousalList.isEmpty) {
       // 🔹 Handle file upload if exists
       if (mainContentFile != null && phoneNumber != null) {
-        final fileType = _getFileType(mainContentFile!.path);
+        // final fileType = _getFileType(mainContentFile!.path);
         final uploadResponse =
             await msgViewModel.uploadFile(mainContentFile!, phoneNumber);
 
@@ -480,7 +495,12 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
         },
       };
     } else {
+      if (msgViewModel.mainBodyParams["parameters"] == null) {
+        EasyLoading.showToast("Save Template before sending...");
+        return {};
+      }
       // 🔹 Merge params with main inputs
+
       final Map<String, dynamic> finalParams = {};
 
       if (msgViewModel.mainBodyParams["parameters"] != null) {
@@ -526,14 +546,15 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     );
   }
 
-  String _getFileType(String path) {
-    final ext = p.extension(path).replaceFirst('.', '').toLowerCase();
-    if (["jpg", "jpeg", "png"].contains(ext)) return "image";
-    if (["mp4", "mkv", "mov"].contains(ext)) return "video";
-    if (["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"].contains(ext))
-      return "document";
-    return "UNKNOWN";
-  }
+  // String _getFileType(String path) {
+  //   final ext = p.extension(path).replaceFirst('.', '').toLowerCase();
+  //   if (["jpg", "jpeg", "png"].contains(ext)) return "image";
+  //   if (["mp4", "mkv", "mov"].contains(ext)) return "video";
+  //   if (["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"].contains(ext)) {
+  //     return "document";
+  //   }
+  //   return "UNKNOWN";
+  // }
 }
 
 Widget buildChatButtonTag(String text) {
@@ -556,7 +577,7 @@ class CarousalCard extends StatefulWidget {
   final String wpleadNum;
   final String leadId;
 
-  CarousalCard(
+  const CarousalCard(
       {Key? key,
       required this.msgViewModel,
       required this.wpleadNum,
@@ -575,7 +596,7 @@ class _CarousalCardState extends State<CarousalCard> {
   late List<List<TextEditingController>> allCarousalControllers;
   late List<List<String>> allCarousalPlaceholders;
   List<File?> carousalFiles = []; // allow null to mean "no file"
-
+  bool isSavingCarousal = false;
   @override
   void initState() {
     super.initState();
@@ -810,13 +831,22 @@ class _CarousalCardState extends State<CarousalCard> {
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
-                child: const Text(
-                  "Save Carousel",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white),
-                ),
+                child: isSavingCarousal
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        "Save Carousel",
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white),
+                      ),
               ),
             ),
 
@@ -848,6 +878,9 @@ class _CarousalCardState extends State<CarousalCard> {
   }
 
   Future<void> _saveCarousal() async {
+    setState(() {
+      isSavingCarousal = true;
+    });
     // Validate text inputs for each carousel
     for (int i = 0; i < allCarousalControllers.length; i++) {
       bool allFilled = allCarousalControllers[i]
@@ -939,6 +972,9 @@ class _CarousalCardState extends State<CarousalCard> {
     };
 
     widget.msgViewModel.setMainBodyParams(payload);
+    setState(() {
+      isSavingCarousal = false;
+    });
 
     debugPrint("Final Payload: of the parameters ${jsonEncode(payload)}");
   }

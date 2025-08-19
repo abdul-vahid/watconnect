@@ -43,8 +43,9 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
 
   String _getDayLabel(DateTime istTime, DateTime now) {
     if (_isSameDay(istTime, now)) return 'Today';
-    if (_isSameDay(istTime, now.subtract(const Duration(days: 1))))
+    if (_isSameDay(istTime, now.subtract(const Duration(days: 1)))) {
       return 'Yesterday';
+    }
     return DateFormat('d MMMM yyyy').format(istTime);
   }
 
@@ -120,8 +121,9 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
           ),
         GestureDetector(
           onTap: () {
-            if (widget.selectedMessages.isNotEmpty)
+            if (widget.selectedMessages.isNotEmpty) {
               widget.onTap(widget.message.id ?? "");
+            }
           },
           onLongPress: () => widget.onTap(widget.message.id ?? ""),
           child: Align(
@@ -298,7 +300,7 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                         enableInfiniteScroll: false,
                         viewportFraction: 0.98,
                         enlargeCenterPage: true,
-                        height: 400,
+                        height: 350,
                         onPageChanged: (index, reason) {
                           setState(() {
                             _currentCarouselIndex = index;
@@ -332,7 +334,6 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                       }).toList(),
                     ),
                   ],
-                  // Timestamp Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [

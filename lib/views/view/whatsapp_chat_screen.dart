@@ -17,9 +17,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
+import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/utils/function_lib.dart';
+import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/views/view/lead_detail_view.dart';
 
 import 'package:whatsapp/views/widgets/chat_msg_tile.dart';
@@ -99,7 +101,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   final AudioPlayer audioPlayer = AudioPlayer();
   List<TextEditingController> controllers = [];
 
-  bool _isPlaying = false;
+  // bool _isPlaying = false;
   @override
   void initState() {
     super.initState();
@@ -112,6 +114,18 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     fetchTemplates();
 
     scrollToBottom();
+  }
+
+  void scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   setTemplteEmpty() {
@@ -179,6 +193,17 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     return Consumer2<MessageController, MessageViewModel>(
         builder: (context, msgController, mviewModel, child) {
       List allMessages = mviewModel.allMessages;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients && allMessages.isNotEmpty) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+
       print("all msg in the main screen::::::::::   ${allMessages.length}");
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7.0),
@@ -216,68 +241,65 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                 scrollDirection: Axis.horizontal,
                                 itemCount: widget.pinnedLeads!.length,
                                 itemBuilder: (context, index) {
-                                  // var model = widget.pinnedLeads![index];
+                                  var model = widget.pinnedLeads![index];
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 10.0),
                                     child: InkWell(
                                       onTap: () async {
-                                        // Navigator.pop(context);
-                                        // var num = "";
-                                        // num = "${model.full_number}";
-                                        // print(
-                                        //     "model  finalResult=>${model.full_number}");
-                                        // if (model.full_number != null) {
-                                        //   _marksread(num);
-                                        //   final result = await Navigator.push(
-                                        //     context,
-                                        //     MaterialPageRoute(
-                                        //       builder: (context) => ChatScreen(
-                                        //         pinnedLeads:
-                                        //             widget.pinnedLeads!,
-                                        //         leadName:
-                                        //             model.contactname ?? "",
-                                        //         wpnumber: model.full_number,
-                                        //         id: model.id,
-                                        //         model: widget.model == null
-                                        //             ? null
-                                        //             : model,
-                                        //       ),
-                                        //     ),
-                                        //   ).then((onValue) {
-                                        //     _marksread(num);
-                                        //     _getUnreadCount();
-                                        //   });
-                                        //   if (result == true) {
-                                        //     print(
-                                        //         "is result getting true.........?");
-                                        //     _getUnreadCount();
+                                        Navigator.pop(context);
+                                        var num = "";
+                                        num = "${model.full_number}";
+                                        print(
+                                            "model  finalResult=>${model.full_number}");
+                                        if (model.full_number != null) {
+                                          _marksread(num);
+                                          final result = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  WhatsappChatScreen(
+                                                pinnedLeads:
+                                                    widget.pinnedLeads!,
+                                                leadName:
+                                                    model.contactname ?? "",
+                                                wpnumber: model.full_number,
+                                                id: model.id,
+                                                model: widget.model == null
+                                                    ? null
+                                                    : model,
+                                              ),
+                                            ),
+                                          ).then((onValue) {
+                                            _marksread(num);
+                                            _getUnreadCount();
+                                          });
+                                          if (result == true) {
+                                            print(
+                                                "is result getting true.........?");
+                                            _getUnreadCount();
+                                          }
 
-                                        //   }
-
-                                        //   _getUnreadCount();
-                                        //   final prefs = await SharedPreferences
-                                        //       .getInstance();
-                                        //   var number =
-                                        //       prefs.getString('phoneNumber');
-                                        //   Provider.of<UnreadCountVm>(context,
-                                        //           listen: false)
-                                        //       .fetchunreadcount(
-                                        //           number: number ?? "");
-                                        //   setState(() {
-
-                                        //   });
-
-                                        // } else {
-                                        //   ScaffoldMessenger.of(context)
-                                        //       .showSnackBar(
-                                        //     const SnackBar(
-                                        //       content: Text('No Phone Number '),
-                                        //       duration: Duration(seconds: 3),
-                                        //       backgroundColor:
-                                        //           AppColor.motivationCar1Color,
-                                        //     ),
-                                        //   );
-                                        // }
+                                          _getUnreadCount();
+                                          final prefs = await SharedPreferences
+                                              .getInstance();
+                                          var number =
+                                              prefs.getString('phoneNumber');
+                                          Provider.of<UnreadCountVm>(context,
+                                                  listen: false)
+                                              .fetchunreadcount(
+                                                  number: number ?? "");
+                                          setState(() {});
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text('No Phone Number '),
+                                              duration: Duration(seconds: 3),
+                                              backgroundColor:
+                                                  AppColor.motivationCar1Color,
+                                            ),
+                                          );
+                                        }
                                       },
                                       child: SizedBox(
                                         width: 60,
@@ -492,18 +514,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
         leadnumber: widget.wpnumber ?? '', number: number);
   }
 
-  void scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
   Future<void> fetchTemplates() async {
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
@@ -606,6 +616,9 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                         Expanded(
                           child: TextField(
                             controller: sendMsgController,
+                            keyboardType: TextInputType.multiline,
+                            minLines: 1,
+                            maxLines: 3,
                             decoration: InputDecoration(
                               hintText: 'Type a message...',
                               border: OutlineInputBorder(
@@ -1075,20 +1088,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                         setState(() {
                           selectedTemplateName = newValue;
                           templateController.text = newValue ?? '';
-                          // if (newValue != null) {
-                          // int selectedIndex = templateNames.indexOf(newValue);
-                          // print(
-                          //     "selectedIndex:::::::   ${selectedIndex}    ${templateIds.length}");
-                          // if (selectedIndex >= 0 &&
-                          //     selectedIndex < templateNames.length) {
-                          //   String selectedTemplateId =
-                          //       templateNames[selectedIndex];
-                          //   print(
-                          //       "Selected Template ID: $selectedTemplateId");
-                          // } else {
-                          //   print("Invalid index for the selected template.");
-                          // }
-                          // }
                         });
                         _setSelectedTemplates();
                       },
@@ -1137,21 +1136,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                               }
                               log("all comp info >> >>  ${msgViewModel.selectedHeader}  ${msgViewModel.selectedBody} ${msgViewModel.selectedFooter} ${msgViewModel.selectedButtons}}");
                               log("selectedBody['text']>>> ${msgViewModel.selectedBody?.text}  ");
-                              final regex = RegExp(r'\{\{\d+\}\}');
 
-                              // if (regex.hasMatch(
-                              //     msgViewModel.selectedBody?.text ?? "")) {
-                              //   Navigator.of(context).pop();
-                              //   // _sendTemplateSheet();
-                              // }
-                              //  else if (msgViewModel.selectedHeader == null ||
-                              //     msgViewModel.selectedHeader?.format == null) {
-                              //   String templateToSend = selectedTemplateName ??
-                              //       templateController.text;
-                              //   print("Template to send: $templateToSend");
-                              //   // templetesendd(templateToSend, []);
-                              //   Navigator.of(context).pop();
-                              // } else
                               {
                                 {
                                   Navigator.of(context).pop();
@@ -1448,5 +1433,24 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
         ),
       ),
     );
+  }
+
+  UnreadCountVm? unreadCountVm;
+  List unreadList = [];
+  Future<void> _getUnreadCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    var number = prefs.getString('phoneNumber');
+
+    if (!mounted) return;
+    Provider.of<LeadListViewModel>(context, listen: false).fetch();
+    await Provider.of<UnreadCountVm>(context, listen: false)
+        .fetchunreadcount(number: number ?? "");
+
+    var unreadMsgModel;
+    for (var unreadModel in unreadCountVm?.viewModels ?? []) {
+      unreadMsgModel = unreadModel.model as UnreadMsgModel;
+    }
+    unreadList = unreadMsgModel.records ?? [];
+    setState(() {});
   }
 }

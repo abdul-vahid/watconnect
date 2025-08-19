@@ -138,7 +138,7 @@ class MessageViewModel extends BaseListViewModel {
   setMsgList(List msgRecs) {
     print("checking the list before setting::::    $msgRecs");
     allMessages.clear();
-    if (msgRecs.isEmpty || msgRecs == null) {
+    if (msgRecs.isEmpty) {
       allMessages.clear();
       allMessages = [];
     } else {
