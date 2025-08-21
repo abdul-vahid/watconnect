@@ -67,6 +67,26 @@ class SfFileUploadController extends ChangeNotifier {
     notify();
   }
 
+  Future<void> getReactCredApiCall() async {
+    String apiUrl = AppConstants.sfGetReactLoginCredApi;
+    final response = await NetworkService.makeRequest(
+      url: apiUrl,
+      method: 'GET',
+    );
+    if (response != null && response.statusCode == 200) {
+      var body = jsonDecode(response.body);
+      print(
+          "response  sfGetReactLoginCredApi      ${response.body}  $body  ${body['password']}");
+
+      sfNodeLoginRequest(
+        body['username'],
+        body['password'],
+        body['company_name'],
+      );
+    }
+    notify();
+  }
+
   Future<bool> sfNodeLoginRequest(
       String username, String password, String tcode) async {
     // Email regex validation

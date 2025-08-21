@@ -67,10 +67,10 @@ class _WebViewPageState extends State<WebViewPage> {
                 SfFileUploadController sfFileUploadController =
                     Provider.of(context, listen: false);
 
-                sfFileUploadController.sfNodeLoginRequest(
-                    "shivani.m+s@ibirdsservices.com",
-                    "Admin@123",
-                    "salesforce");
+                await sfFileUploadController.getReactCredApiCall();
+                // "shivani.m+s@ibirdsservices.com",
+                // "Admin@123",
+                // "salesforce");
                 dashBoardController.setLoginType(true);
                 Navigator.pushAndRemoveUntil(
                   context,

@@ -11,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 // ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:whatsapp/main.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/call_view_model.dart';
 
 // ignore: camel_case_types
@@ -28,11 +30,19 @@ class outgoingCall {
 
   IO.Socket? get socket => _socket;
 
-  Future<void> connect(String token, dynamic userData) async {
+  Future<void> connect(String token, Map<String, dynamic> userData,
+      String devId, String busNum) async {
     if (_isConnected && _socket?.connected == true) {
       debugPrint("🔁 outgoing Call socket already connected.");
       return;
     }
+    print("devId:::::::  ${devId}         ${busNum}");
+    userData.addAll({
+      'deviceId': devId,
+      'business_number': busNum,
+    });
+
+    log("outgoing call user data :: :   $userData");
 
     _socket = IO.io(
       'https://sandbox.watconnect.com',
@@ -48,14 +58,14 @@ class outgoingCall {
     _socket
       ?..onConnect((_) {
         _isConnected = true;
-        debugPrint('✅ Call socket connected');
+        debugPrint('✅ Call socket connected for outgoing call');
         _socket?.emit("setup", userData);
       })
       ..onDisconnect((_) async {
         _isConnected = false;
         debugPrint('❌ Call socket disconnected');
         await Future.delayed(const Duration(seconds: 2));
-        connect(token, userData);
+        connect(token, userData, devId, busNum);
       })
       ..onConnectError((err) {
         _isConnected = false;
@@ -115,24 +125,46 @@ class outgoingCall {
     }
   }
 
-  Future<void> rejectApiCall(
-    Map<String, dynamic>? callData,
-  ) async {
+  Future<bool> rejectApiCall(Map<String, dynamic>? callData) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      String? busNum = prefs.getString('phoneNumber') ?? "";
+
+      final context = navigatorKey.currentContext;
+      if (context == null) {
+        print("❌ No context found for rejectApiCall");
+        return false;
+      }
+
+      final drProvider =
+          Provider.of<DashBoardController>(context, listen: false);
+
+      final number = drProvider.fromSalesForce
+          ? (prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "")
+          : (prefs.getString('phoneNumber') ?? "");
+
       final payload = {
-        "call_id": callData == null ? callId : callData['data']['call_id'],
-        "business_number": busNum
+        "call_id": callData?['data']?['call_id'] ?? callId,
+        "business_number": number,
       };
 
-      await Provider.of<CallsViewModel>(navigatorKey.currentContext!,
-              listen: false)
-          .callRejectApi(payload);
-    } catch (e) {
-      print("❌ Error during reject: $e");
+      final callsViewModel =
+          Provider.of<CallsViewModel>(context, listen: false);
+      final response = await callsViewModel.callRejectApi(payload);
+
+      if (response == null) {
+        print("❌ callRejectApi returned null");
+        return false;
+      }
+
+      final decodedResponse = jsonDecode(response);
+      print("✅ rejectApiCall response: $decodedResponse");
+
+      return decodedResponse['success'] == true;
+    } catch (e, st) {
+      print("❌ Error during reject: $e\n$st");
+      return false;
     } finally {
-      disposeAll(); // ✅ Cleanup here
+      disposeAll();
     }
   }
 
@@ -191,7 +223,16 @@ class outgoingCall {
       await _peerConnection!.setLocalDescription(offer);
 
       final prefs = await SharedPreferences.getInstance();
-      String? number = prefs.getString('phoneNumber');
+      String? number = "";
+
+      DashBoardController drProvider =
+          Provider.of(navigatorKey.currentContext!, listen: false);
+      if (drProvider.fromSalesForce) {
+        number = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+      } else {
+        number = prefs.getString('phoneNumber');
+      }
+
       if (number == null) {
         print("⚠️ Business number not found.");
         return false;
@@ -218,7 +259,12 @@ class outgoingCall {
       print("apires['success'] ::::::::  ${apires['success']}");
 
       if (apires['success'] == false) {
-        EasyLoading.showToast(apires['meta_response']['error']['message']);
+        EasyLoading.showToast(apires['meta_response']['error']['message'])
+            .then((onValue) {
+          EasyLoading.showToast(
+              apires['meta_response']['error']['error_user_msg']);
+        });
+
         return false;
       }
 

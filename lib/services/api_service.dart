@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
@@ -30,7 +31,7 @@ class APIService {
   }
 
   Future<ApiResponse> postResponse(String url, var body, String token) async {
-    print("POST URL ---> $url\nBODY ---> $body");
+    log("POST URL ---> $url\nBODY ---> $body");
     try {
       final response = await http.post(Uri.parse(url), body: body, headers: {
         'Content-Type': 'application/json',

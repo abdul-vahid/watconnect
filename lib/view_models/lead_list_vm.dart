@@ -93,4 +93,15 @@ class LeadListViewModel extends BaseListViewModel {
     print("rssssssssssssss=>$result");
     return result;
   }
+
+  Future<dynamic> deleteBulkLead(Map deleteLeadBody) async {
+    print("working.....");
+    String url = AppUtils.getUrl(AppConstants.deleteBulkLeads);
+    print("urll=>$url");
+    String jsonString = jsonEncode(deleteLeadBody);
+    var result = await post(url: url, body: jsonString);
+    print("result=>$result");
+
+    return result;
+  }
 }

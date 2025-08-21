@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use, avoid_print, use_build_context_synchronously, prefer_typing_uninitialized_variables
 
 import 'dart:developer';
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
 
 import 'package:flutter/material.dart';
 import 'package:focus_detector/focus_detector.dart';
@@ -45,6 +46,8 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   TextEditingController textController = TextEditingController();
   var leadlistvm;
   var userlistvm;
+
+  List<String> idsToDelete = [];
 
   List leadModelList = [];
   List tempLeadModelList = [];
@@ -141,6 +144,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   }
 
   bool showPin = false;
+  bool showBulkBin = false;
   bool isPinned = false;
   String pinnedLeadId = "";
 
@@ -166,7 +170,24 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           actions: [
             Row(
               children: [
-                showPin
+                idsToDelete.isNotEmpty
+                    ? InkWell(
+                        onTap: () {
+                          Map<String, dynamic> body = {"ids": idsToDelete};
+                          print("list to dlete :::  $body");
+                          // Provider.of<LeadListViewModel>(context, listen: false)
+                          //     .deleteBulkLead(body)
+                          //     .then((onValue) {
+                          //    print("onval:::   $onValue");
+                          //    idsToDelete.clear();
+                          // });
+                        },
+                        child: const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ))
+                    : const SizedBox.shrink(),
+                showPin && idsToDelete.length > 1
                     ? InkWell(
                         onTap: () {
                           if (isPinned) {
@@ -186,6 +207,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                           }
                           setState(() {
                             showPin = false;
+                            idsToDelete.clear();
                             pinnedLeadId = "";
                           });
                         },
@@ -253,6 +275,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
             setState(() {
               pinnedLeadId = "";
               showPin = false;
+              idsToDelete.clear();
               isPinned = false;
             });
           },
@@ -482,6 +505,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                         pinnedLeadId = "";
                         showPin = false;
                         isPinned = false;
+                        idsToDelete.clear();
                       });
                       _showFilterBottomSheet(context);
                     },
@@ -601,6 +625,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                               setState(() {
                                 pinnedLeadId = "";
                                 showPin = false;
+                                idsToDelete.clear();
                                 isPinned = false;
                               });
                               var num = "";
@@ -747,6 +772,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                         selectedFilterId = index;
                                         pinnedLeadId = "";
                                         showPin = false;
+                                        idsToDelete.clear();
                                         isPinned = false;
                                       });
                                       if (index == 1) {
@@ -862,6 +888,8 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                                                 pinnedLeadId =
                                                                     "";
                                                                 showPin = false;
+                                                                idsToDelete
+                                                                    .clear();
                                                                 isPinned =
                                                                     false;
                                                               });
@@ -1103,6 +1131,10 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       onLongPress: () {
         setState(() {
           showPin = true;
+
+          showBulkBin = true;
+          addToDeleteList(model.lead_id ?? "");
+          // idsToDelete.add(model.lead_id ?? "");
           pinnedLeadId = model.lead_id ?? "";
           isPinned = model.pinned ?? false;
         });
@@ -1136,6 +1168,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
               setState(() {
                 pinnedLeadId = "";
                 showPin = false;
+                idsToDelete.clear();
                 isPinned = false;
               });
               var num = "";
@@ -1519,5 +1552,14 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       //   }
       setState(() {});
     });
+  }
+
+  void addToDeleteList(String leadId) {
+    if (idsToDelete.contains(leadId)) {
+      idsToDelete.remove(leadId);
+    } else {
+      idsToDelete.add(leadId);
+    }
+    setState(() {});
   }
 }

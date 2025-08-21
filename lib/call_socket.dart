@@ -6,10 +6,13 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import 'package:whatsapp/main.dart';
+import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/call_view_model.dart';
 
 class CallSocketService {
@@ -25,6 +28,8 @@ class CallSocketService {
 
   // User/Auth
   String? token;
+
+  String? devId;
   Map<String, dynamic>? user;
   String? busNum;
 
@@ -55,17 +60,26 @@ class CallSocketService {
 
   // Public methods
   IO.Socket? get socket => _socket;
-
   void dispose() {
+    // disconnectSocket();
+    _statusSocket?.disconnect();
+    _statusSocket = null;
+    _isStatusConnected = false;
+
+    _cleanUpCallConnection();
+
     if (!_callEventController.isClosed) _callEventController.close();
     _audioPlayer.dispose();
   }
 
   // ===================== SOCKET HANDLING =====================
 
-  Future<void> connect(String token, dynamic userData) async {
+  Future<void> connect(
+      String token, dynamic userData, String devId, String busNum) async {
     this.token = token;
     user = userData;
+    this.devId = devId;
+    this.busNum = busNum;
 
     if (_isConnected && _socket?.connected == true) {
       debugPrint("🔁 Call socket already connected.");
@@ -78,13 +92,23 @@ class CallSocketService {
       ..onConnect((_) {
         _isConnected = true;
         debugPrint('✅ Call socket connected');
+
+        // Add file details
+        userData.addAll({
+          'deviceId': devId,
+          'business_number': busNum,
+        });
+
+        log("before we connect socket userdata::::   $userData   devi id :::  $devId busNum:::  $busNum ");
+
+        // _socket?.emit("setup", userData);
         _socket?.emit("setup", userData);
       })
       ..onDisconnect((_) async {
         _isConnected = false;
         debugPrint('❌ Call socket disconnected');
         await Future.delayed(const Duration(seconds: 2));
-        connect(token, userData);
+        connect(token, userData, devId, busNum);
       })
       ..onConnectError((err) {
         _isConnected = false;
@@ -122,7 +146,7 @@ class CallSocketService {
         _isStatusConnected = false;
         debugPrint('❌ Call status socket disconnected');
         await Future.delayed(const Duration(seconds: 2));
-        connect(token!, user);
+        connect(token!, user, devId!, busNum!);
       })
       ..onConnectError((err) {
         _isStatusConnected = false;
@@ -152,23 +176,64 @@ class CallSocketService {
   // ===================== LISTENERS =====================
 
   void _setupListeners() {
-    _socket?.on("whatsapp_call_event", (data) {
+    var callData;
+    _socket?.on("whatsapp_call_event", (data) async {
       log('\x1B[32m   incoming call data whatsapp_call_event   $data    ');
       _dialogShown = false;
+      callData = data;
       final event = data['data']['event'];
       final dir = data['data']['direction'];
 
       busNum = data['data']['business_number'] ?? "";
 
-      if (event == "terminate") {
+      final prefs = await SharedPreferences.getInstance();
+      DashBoardController drProvider =
+          Provider.of(navigatorKey.currentContext!, listen: false);
+      String selectedBusinessNumber = "";
+      if (drProvider.fromSalesForce) {
+        selectedBusinessNumber =
+            prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+      } else {
+        selectedBusinessNumber = prefs.getString('phoneNumber') ?? "";
+      }
+
+      print(
+          "busNum call datat   :::   $busNum      selectedBusinessNumber     ${selectedBusinessNumber}");
+      if (busNum != selectedBusinessNumber) {
         _closePopup();
         return;
       }
 
+      if (event == "terminate") {
+        _closePopup();
+        return;
+      }
+      print("_dialogShown:::::::   be4 shoing popup        $_dialogShown");
       if (dir != "BUSINESS_INITIATED" && !_dialogShown) {
         _showCallPopup(data);
+        _removeOverlay();
       }
     });
+
+    void callAcceptedElsewhereHandler(dynamic payload) async {
+      final prefs = await SharedPreferences.getInstance();
+      final myDeviceId = prefs.getString(SharedPrefsConstants.deviceId) ?? "";
+
+      log('\x1B[32m      payload of CALL_ACCEPT elsewhere::::: $payload');
+      log('\x1B[32m    payload callData:: call_accepted_elsewhere ::: $callData');
+
+      if (payload["call_id"] == callData['data']['call_id'] &&
+          payload["business_number"] == callData['data']['business_number'] &&
+          payload["accepted_by"] != myDeviceId) {
+        _closePopup();
+
+        _socket?.off("call_accepted_elsewhere", callAcceptedElsewhereHandler);
+      } else {
+        _socket?.off("call_accepted_elsewhere", callAcceptedElsewhereHandler);
+      }
+    }
+
+    _socket?.on("call_accepted_elsewhere", callAcceptedElsewhereHandler);
   }
 
   void _setupStatusListeners() {
@@ -262,6 +327,7 @@ class CallSocketService {
   // ===================== CALL HANDLING =====================
 
   Future<void> acceptApiCall(Map<String, dynamic> callData) async {
+    log("call data receving just before accept api call     $callData");
     try {
       _peerConnection = await createPeerConnection({
         'iceServers': [
@@ -279,7 +345,7 @@ class CallSocketService {
       _peerConnection!.onTrack = (RTCTrackEvent event) {
         if (event.streams.isNotEmpty && _isRendererInitialized) {
           _remoteStream = event.streams[0];
-          _remoteRenderer.srcObject = _remoteStream;
+          // _remoteRenderer.srcObject = _remoteStream;
         }
       };
 
@@ -315,6 +381,15 @@ class CallSocketService {
       await Provider.of<CallsViewModel>(navigatorKey.currentContext!,
               listen: false)
           .callAcceptApi(payload);
+      final prefs = await SharedPreferences.getInstance();
+      String deviId =
+          await prefs.getString(SharedPrefsConstants.deviceId) ?? "";
+
+      _socket?.emit("accept_call", {
+        "call_id": callData['data']['call_id'],
+        "business_number": callData['data']['business_number'],
+        "deviceId": deviId
+      });
 
       _callTimer ??= Timer.periodic(const Duration(seconds: 1), (_) {
         _duration++;
@@ -349,25 +424,25 @@ class CallSocketService {
   }
 
   Future<void> _cleanUpCallConnection() async {
-    log("🧹 Cleaning call connection...");
+    // Stop local tracks
+    _localStream?.getTracks().forEach((track) => track.stop());
+    await _localStream?.dispose();
 
-    try {
-      await _peerConnection?.close();
-      _peerConnection = null;
+    // Stop remote tracks
+    _remoteStream?.getTracks().forEach((track) => track.stop());
+    await _remoteStream?.dispose();
 
-      _localStream?.getTracks().forEach((track) => track.stop());
-      _localStream = null;
+    // Stop sender tracks
+    final senders = await _peerConnection?.getSenders();
+    senders?.forEach((s) => s.track?.stop());
 
-      if (_isRendererInitialized) {
-        _remoteRenderer.srcObject = null;
-        await _remoteRenderer.dispose();
-        _isRendererInitialized = false;
-        //  _isRendererDisposed = false;
-        log("✅ Renderer disposed");
-      }
-    } catch (e, s) {
-      log("❌ Cleanup error: $e\n$s");
-    }
+    // Stop receiver tracks
+    final receivers = await _peerConnection?.getReceivers();
+    receivers?.forEach((r) => r.track?.stop());
+
+    // Close peer connection
+    await _peerConnection?.close();
+    _peerConnection = null;
   }
 
   // ===================== POPUP =====================

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:whatsapp/salesforce/model/sfCall_history_model.dart';
 import 'package:whatsapp/views/view/call_history_screen.dart'
     show formatDateTime, formatDuration;
@@ -79,8 +80,8 @@ void showSfCallDialog(
                         ),
                       ),
                       subtitle: Text(
-                        "${formatDateTime(int.tryParse(call.startTime ?? "") ?? 0)} - "
-                        "${(call.endTime?.isNotEmpty ?? false) ? formatDateTime(int.tryParse(call.endTime!) ?? 0) : "Not Answered"}",
+                        "${sfFromatCallDate(call.startTime ?? "")} - "
+                        "${(call.endTime?.isNotEmpty ?? false) ? sfFromatCallDate(call.endTime!) : "Not Answered"}",
                         style:
                             const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
@@ -98,4 +99,15 @@ void showSfCallDialog(
       );
     },
   );
+}
+
+String sfFromatCallDate(String isoString) {
+  try {
+    DateTime dateTime = DateTime.parse(isoString).toLocal();
+
+    // Format: 1 Jan, 5:30
+    return DateFormat("d MMM, h:mm").format(dateTime);
+  } catch (e) {
+    return isoString; // fallback if parsing fails
+  }
 }

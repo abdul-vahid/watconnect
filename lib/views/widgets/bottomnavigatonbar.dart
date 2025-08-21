@@ -107,8 +107,14 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       tkn = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
       Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
       var userId = decodedToken;
+      ////////////from salesfore
+      ///
+      String deviId =
+          await prefs.getString(SharedPrefsConstants.deviceId) ?? "";
 
-      CallSocketService().connect(tkn, userId);
+      final busNum =
+          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+      CallSocketService().connect(tkn, userId, deviId, busNum);
     }
     bool hasCalls = prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
     if (hasCalls) {
@@ -121,7 +127,13 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
       var userId = decodedToken;
 
-      CallSocketService().connect(tkn, userId);
+      String deviId =
+          await prefs.getString(SharedPrefsConstants.deviceId) ?? "";
+      print("device id which we are getting form info +   $deviId");
+
+      String busPhNum = prefs.getString('phoneNumber') ?? "";
+
+      CallSocketService().connect(tkn, userId, deviId, busPhNum);
     }
     setState(() {
       userModelData = AppUtils.getSessionUser(prefs);

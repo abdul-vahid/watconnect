@@ -197,6 +197,10 @@ class NotificationUtil {
       }
       String deviceId = await getDeviceId();
 
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      prefs.setString(SharedPrefsConstants.deviceId, deviceId);
+
       final context = navigatorKey.currentContext;
       if (context == null) {
         debug("Navigator context is null");

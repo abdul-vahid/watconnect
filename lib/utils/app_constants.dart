@@ -16,6 +16,8 @@ abstract class SharedPrefsConstants {
   static const String hasWalletKey = "hasWallet";
   static const String hasCallsKey = "hasCalls";
 
+  static const String deviceId = "deviceId";
+
   static const String userAvailableMoulesKey = "modules";
   static const String userrolekey = "userrole";
 
@@ -235,6 +237,8 @@ abstract class AppConstants {
   static const String sendTemplate =
       "/api/webhook_template/send?whatsapp_setting_number=";
 
+  static const String deleteBulkLeads = "/api/leads/bulk-delete";
+
   // /whatsapp/
 
 //=========================================================================================================================================================================================
@@ -282,4 +286,7 @@ abstract class AppConstants {
   static const String sfCreateFile = "${baseApi}watconnect/createfile";
 
   static const String sfCallHistoryApi = '${baseApi}watconnect/callHistory?';
+
+  static const String sfGetReactLoginCredApi =
+      '${baseApi}watconnect/logindetails';
 }

@@ -713,6 +713,9 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                     Expanded(
                       child: TextField(
                         controller: msgController,
+                        maxLines: 3,
+                        minLines: 1,
+                        keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
                             hintText: 'Type a message...',
                             border: OutlineInputBorder(

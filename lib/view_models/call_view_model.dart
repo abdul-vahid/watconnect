@@ -32,15 +32,16 @@ class CallsViewModel extends BaseListViewModel {
   Future<String?> outgoingCallApi(Map<String, dynamic> body) async {
     String url = AppUtils.getUrl(AppConstants.outgoingCall);
     var res = await post(url: url, body: jsonEncode(body));
-    print("response::::::of call history api:::::::   $res");
+    print("response::::::of call outgoingCallApi api:::::::   $res");
     return res.toString();
   }
 
   Future<String?> callRejectApi(Map<String, dynamic> body) async {
     String url = AppUtils.getUrl(AppConstants.callRejectApi);
     var res = await post(url: url, body: jsonEncode(body));
-    print("response::::::of call history api:::::::   $res");
-    return res.toString();
+    print(
+        "response::::::of call history callRejectApi api:::::::   $res          ${res.runtimeType}");
+    return jsonEncode(res);
   }
 
   Future<String?> startCallApi(String busNum, String num) async {
