@@ -47,76 +47,84 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
       ),
       body: updateLoader
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.only(top: 28.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.5),
-                      blurRadius: 5,
-                      spreadRadius: 3,
-                      offset: const Offset(2, 4),
-                    ),
-                  ],
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
+          : callHistoryList.isEmpty
+              ? const Center(
+                  child: Text(
+                    "No Call History Available...",
+                    style: TextStyle(fontFamily: AppFonts.medium, fontSize: 16),
                   ),
-                ),
-                child: ListView.separated(
-                  itemCount: callHistoryList.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: ListTile(
-                        leading: Transform.rotate(
-                          angle: callHistoryList[index].status == "Incoming"
-                              ? 45
-                              : 180,
-                          child: Icon(
-                            FontAwesomeIcons.arrowDown,
-                            color: callHistoryList[index].status == "Incoming"
-                                ? Colors.green
-                                : Colors.red,
-                            size: 16,
-                          ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.only(top: 28.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 5,
+                          spreadRadius: 3,
+                          offset: const Offset(2, 4),
                         ),
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              callHistoryList[index].name ??
-                                  callHistoryList[index].whatsappNumber ??
-                                  "",
-                              style: const TextStyle(
-                                fontFamily: AppFonts.semiBold,
-                                fontSize: 17,
+                      ],
+                      color: Colors.white,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: ListView.separated(
+                      itemCount: callHistoryList.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: ListTile(
+                            leading: Transform.rotate(
+                              angle: callHistoryList[index].status == "Incoming"
+                                  ? 45
+                                  : 180,
+                              child: Icon(
+                                FontAwesomeIcons.arrowDown,
+                                color:
+                                    callHistoryList[index].status == "Incoming"
+                                        ? Colors.green
+                                        : Colors.red,
+                                size: 16,
                               ),
                             ),
-                            const SizedBox(
-                              height: 2,
+                            title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  callHistoryList[index].name ??
+                                      callHistoryList[index].whatsappNumber ??
+                                      "",
+                                  style: const TextStyle(
+                                    fontFamily: AppFonts.semiBold,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 2,
+                                ),
+                                Text(
+                                  "${formatDateTime(int.parse(callHistoryList[index].startTime ?? ""))} - ${callHistoryList[index].endTime?.isNotEmpty == true ? formatDateTime(int.parse(callHistoryList[index].endTime!)) : "Not Answered"}",
+                                  style: const TextStyle(
+                                      color: Colors.grey, fontSize: 15),
+                                ),
+                              ],
                             ),
-                            Text(
-                              "${formatDateTime(int.parse(callHistoryList[index].startTime ?? ""))} - ${callHistoryList[index].endTime?.isNotEmpty == true ? formatDateTime(int.parse(callHistoryList[index].endTime!)) : "Not Answered"}",
-                              style: const TextStyle(
-                                  color: Colors.grey, fontSize: 15),
-                            ),
-                          ],
-                        ),
-                        trailing: Text(formatDuration(
-                            callHistoryList[index].duration ?? 0)),
+                            trailing: Text(formatDuration(
+                                callHistoryList[index].duration ?? 0)),
+                          ),
+                        );
+                      },
+                      separatorBuilder: (context, index) => const Divider(
+                        height: 1,
+                        color: Colors.grey,
                       ),
-                    );
-                  },
-                  separatorBuilder: (context, index) => const Divider(
-                    height: 1,
-                    color: Colors.grey,
+                    ),
                   ),
                 ),
-              ),
-            ),
     );
   }
 

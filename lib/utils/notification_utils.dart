@@ -14,13 +14,13 @@ import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/views/view/whatsapp_chat_screen.dart';
 
 import 'function_lib.dart';
 import '../models/lead_model.dart';
 import '../services/notifications/local_notification_service.dart';
 import '../view_models/lead_list_vm.dart';
 import '../view_models/user_list_vm.dart';
-import '../views/view/whatsapp_message_view.dart';
 
 class NotificationUtil {
   static FirebaseMessaging? _firebaseMessaging;
@@ -258,7 +258,7 @@ class NotificationUtil {
     Navigator.push(
       cntxt,
       MaterialPageRoute(
-        builder: (_) => ChatScreen(
+        builder: (_) => WhatsappChatScreen(
           pinnedLeads: pinnedLeads,
           leadName:
               "${matchedModel!.firstname ?? ""} ${matchedModel.lastname ?? ""}",

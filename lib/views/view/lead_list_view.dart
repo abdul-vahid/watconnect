@@ -1,7 +1,6 @@
 // ignore_for_file: deprecated_member_use, avoid_print, use_build_context_synchronously, prefer_typing_uninitialized_variables
 
 import 'dart:developer';
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
 
 import 'package:flutter/material.dart';
 import 'package:focus_detector/focus_detector.dart';
@@ -785,242 +784,286 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                         });
                                       } else {
                                         showModalBottomSheet(
-                                            context: context,
-                                            useSafeArea: true,
-                                            isScrollControlled: true,
-                                            enableDrag: false,
-                                            builder: (context) {
-                                              String selectedOption = 'AND';
-                                              return StatefulBuilder(builder:
-                                                  (BuildContext context,
-                                                      StateSetter setState) {
-                                                return SizedBox(
-                                                  height: MediaQuery.of(context)
-                                                          .size
-                                                          .height *
-                                                      .55,
-                                                  child: Column(
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(15.0),
-                                                        child: Row(
-                                                          children: [
-                                                            const Text(
-                                                              "Filter Tags",
-                                                              style: TextStyle(
-                                                                  fontFamily:
-                                                                      AppFonts
-                                                                          .bold,
-                                                                  fontSize: 17),
-                                                            ),
-                                                            const Spacer(),
-                                                            IconButton(
-                                                                onPressed: () {
-                                                                  Navigator.pop(
-                                                                      context);
-                                                                },
-                                                                icon: const Icon(
-                                                                    Icons
-                                                                        .close_rounded))
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      const Divider(),
-                                                      Row(
+                                          context: context,
+                                          useSafeArea: true,
+                                          isScrollControlled: true,
+                                          enableDrag: false,
+                                          builder: (context) {
+                                            String selectedOption = 'AND';
+                                            return StatefulBuilder(
+                                              builder: (BuildContext context,
+                                                  StateSetter setState) {
+                                                return Padding(
+                                                  padding: EdgeInsets.only(
+                                                    bottom:
+                                                        MediaQuery.of(context)
+                                                            .viewInsets
+                                                            .bottom,
+                                                  ),
+                                                  child: ConstrainedBox(
+                                                    constraints: BoxConstraints(
+                                                      maxHeight:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .height *
+                                                              0.85,
+                                                    ),
+                                                    child:
+                                                        SingleChildScrollView(
+                                                      child: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
                                                         children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(15.0),
+                                                            child: Row(
+                                                              children: [
+                                                                const Text(
+                                                                  "Filter Tags",
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontFamily:
+                                                                        AppFonts
+                                                                            .bold,
+                                                                    fontSize:
+                                                                        17,
+                                                                  ),
+                                                                ),
+                                                                const Spacer(),
+                                                                IconButton(
+                                                                  onPressed:
+                                                                      () {
+                                                                    Navigator.pop(
+                                                                        context);
+                                                                  },
+                                                                  icon: const Icon(
+                                                                      Icons
+                                                                          .close_rounded),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          const Divider(),
                                                           Row(
                                                             children: [
-                                                              Radio<String>(
-                                                                value: 'AND',
-                                                                groupValue:
-                                                                    selectedOption,
-                                                                onChanged:
-                                                                    (value) {
-                                                                  setState(() {
-                                                                    selectedOption =
-                                                                        value!;
-                                                                  });
-                                                                },
+                                                              Row(
+                                                                children: [
+                                                                  Radio<String>(
+                                                                    value:
+                                                                        'AND',
+                                                                    groupValue:
+                                                                        selectedOption,
+                                                                    onChanged:
+                                                                        (value) {
+                                                                      setState(
+                                                                          () {
+                                                                        selectedOption =
+                                                                            value!;
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                  const Text(
+                                                                      'AND'),
+                                                                ],
                                                               ),
-                                                              const Text('AND'),
+                                                              const SizedBox(
+                                                                  width: 20),
+                                                              Row(
+                                                                children: [
+                                                                  Radio<String>(
+                                                                    value: 'OR',
+                                                                    groupValue:
+                                                                        selectedOption,
+                                                                    onChanged:
+                                                                        (value) {
+                                                                      setState(
+                                                                          () {
+                                                                        selectedOption =
+                                                                            value!;
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                  const Text(
+                                                                      'OR'),
+                                                                ],
+                                                              ),
                                                             ],
                                                           ),
                                                           const SizedBox(
-                                                              width: 20),
-                                                          Row(
-                                                            children: [
-                                                              Radio<String>(
-                                                                value: 'OR',
-                                                                groupValue:
-                                                                    selectedOption,
-                                                                onChanged:
-                                                                    (value) {
-                                                                  setState(() {
-                                                                    selectedOption =
-                                                                        value!;
-                                                                  });
-                                                                },
-                                                              ),
-                                                              const Text('OR'),
-                                                            ],
+                                                              height: 10),
+                                                          LayoutBuilder(
+                                                            builder: (context,
+                                                                constraints) {
+                                                              return SingleChildScrollView(
+                                                                child: Wrap(
+                                                                  spacing: 8.0,
+                                                                  runSpacing:
+                                                                      8.0,
+                                                                  children: tags
+                                                                      .map(
+                                                                          (tag) {
+                                                                    return InkWell(
+                                                                      onTap:
+                                                                          () {
+                                                                        if (selectTagFilterList
+                                                                            .contains(tag)) {
+                                                                          selectTagFilterList
+                                                                              .remove(tag);
+                                                                        } else {
+                                                                          selectTagFilterList
+                                                                              .add(tag);
+                                                                        }
+                                                                        setState(
+                                                                            () {
+                                                                          pinnedLeadId =
+                                                                              "";
+                                                                          showPin =
+                                                                              false;
+                                                                          idsToDelete
+                                                                              .clear();
+                                                                          isPinned =
+                                                                              false;
+                                                                        });
+                                                                      },
+                                                                      child:
+                                                                          Chip(
+                                                                        label: Text(
+                                                                            tag),
+                                                                        backgroundColor: Colors
+                                                                            .blue
+                                                                            .withOpacity(0.2),
+                                                                        labelStyle:
+                                                                            const TextStyle(color: Colors.blue),
+                                                                        side:
+                                                                            BorderSide(
+                                                                          color: selectTagFilterList.contains(tag)
+                                                                              ? Colors.black
+                                                                              : Colors.transparent,
+                                                                          width: selectTagFilterList.contains(tag)
+                                                                              ? 2
+                                                                              : 0,
+                                                                        ),
+                                                                      ),
+                                                                    );
+                                                                  }).toList(),
+                                                                ),
+                                                              );
+                                                            },
+                                                          ),
+                                                          const SizedBox(
+                                                              height: 20),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(15.0),
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .end,
+                                                              children: [
+                                                                InkWell(
+                                                                  onTap: () {
+                                                                    setState(
+                                                                        () {
+                                                                      allLeads =
+                                                                          tempLeadModelList;
+                                                                      selectTagFilterList
+                                                                          .clear();
+                                                                    });
+                                                                    Navigator.pop(
+                                                                        context);
+                                                                  },
+                                                                  child:
+                                                                      Container(
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              8),
+                                                                      color: AppColor
+                                                                          .navBarIconColor,
+                                                                    ),
+                                                                    child:
+                                                                        const Center(
+                                                                      child:
+                                                                          Padding(
+                                                                        padding:
+                                                                            EdgeInsets.symmetric(
+                                                                          vertical:
+                                                                              10.0,
+                                                                          horizontal:
+                                                                              20,
+                                                                        ),
+                                                                        child:
+                                                                            Text(
+                                                                          "Clear",
+                                                                          style:
+                                                                              TextStyle(
+                                                                            color:
+                                                                                Colors.white,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                    width: 20),
+                                                                InkWell(
+                                                                  onTap: () {
+                                                                    tagBasedFilter(
+                                                                        selectedOption);
+                                                                    Navigator.pop(
+                                                                        context);
+                                                                  },
+                                                                  child:
+                                                                      Container(
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              8),
+                                                                      color: AppColor
+                                                                          .navBarIconColor,
+                                                                    ),
+                                                                    child:
+                                                                        const Center(
+                                                                      child:
+                                                                          Padding(
+                                                                        padding:
+                                                                            EdgeInsets.symmetric(
+                                                                          vertical:
+                                                                              10.0,
+                                                                          horizontal:
+                                                                              20,
+                                                                        ),
+                                                                        child:
+                                                                            Text(
+                                                                          "Apply",
+                                                                          style:
+                                                                              TextStyle(
+                                                                            color:
+                                                                                Colors.white,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
                                                           ),
                                                         ],
                                                       ),
-                                                      Wrap(
-                                                        spacing: 8.0,
-                                                        children:
-                                                            tags.map((tag) {
-                                                          return InkWell(
-                                                            onTap: () {
-                                                              if (selectTagFilterList
-                                                                  .contains(
-                                                                      tag)) {
-                                                                selectTagFilterList
-                                                                    .remove(
-                                                                        tag);
-                                                              } else {
-                                                                selectTagFilterList
-                                                                    .add(tag);
-                                                              }
-                                                              setState(() {
-                                                                pinnedLeadId =
-                                                                    "";
-                                                                showPin = false;
-                                                                idsToDelete
-                                                                    .clear();
-                                                                isPinned =
-                                                                    false;
-                                                              });
-                                                            },
-                                                            child: Chip(
-                                                              label: Text(tag),
-                                                              backgroundColor:
-                                                                  Colors.blue
-                                                                      .withOpacity(
-                                                                          0.2),
-                                                              labelStyle:
-                                                                  const TextStyle(
-                                                                      color: Colors
-                                                                          .blue),
-                                                              side: BorderSide(
-                                                                  color: selectTagFilterList.contains(
-                                                                          tag)
-                                                                      ? Colors
-                                                                          .black
-                                                                      : Colors
-                                                                          .transparent,
-                                                                  width: selectTagFilterList
-                                                                          .contains(
-                                                                              tag)
-                                                                      ? 2
-                                                                      : 0),
-                                                            ),
-                                                          );
-                                                        }).toList(),
-                                                      ),
-                                                      const Spacer(),
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(15.0),
-                                                        child: Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .end,
-                                                          children: [
-                                                            InkWell(
-                                                              onTap: () {
-                                                                setState(() {
-                                                                  allLeads =
-                                                                      tempLeadModelList;
-                                                                  selectTagFilterList
-                                                                      .clear();
-                                                                });
-
-                                                                Navigator.pop(
-                                                                    context);
-                                                              },
-                                                              child: Container(
-                                                                decoration: BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(
-                                                                                8),
-                                                                    color: AppColor
-                                                                        .navBarIconColor),
-                                                                child:
-                                                                    const Center(
-                                                                  child:
-                                                                      Padding(
-                                                                    padding: EdgeInsets.symmetric(
-                                                                        vertical:
-                                                                            10.0,
-                                                                        horizontal:
-                                                                            20),
-                                                                    child: Text(
-                                                                      "Clear",
-                                                                      style:
-                                                                          TextStyle(
-                                                                        color: Colors
-                                                                            .white,
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                              width: 20,
-                                                            ),
-                                                            InkWell(
-                                                              onTap: () {
-                                                                // 1. Perform filtering (synchronously)
-
-                                                                tagBasedFilter(
-                                                                    selectedOption);
-                                                                Navigator.pop(
-                                                                    context);
-                                                              },
-                                                              child: Container(
-                                                                decoration: BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(
-                                                                                8),
-                                                                    color: AppColor
-                                                                        .navBarIconColor),
-                                                                child:
-                                                                    const Center(
-                                                                  child:
-                                                                      Padding(
-                                                                    padding: EdgeInsets.symmetric(
-                                                                        vertical:
-                                                                            10.0,
-                                                                        horizontal:
-                                                                            20),
-                                                                    child: Text(
-                                                                      "Apply",
-                                                                      style:
-                                                                          TextStyle(
-                                                                        color: Colors
-                                                                            .white,
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            )
-                                                          ],
-                                                        ),
-                                                      )
-                                                    ],
+                                                    ),
                                                   ),
                                                 );
-                                              });
-                                            });
-                                        // getTagBasedList(tags[index]);
+                                              },
+                                            );
+                                          },
+                                        );
                                       }
                                     },
                                     child: Padding(
@@ -1422,10 +1465,10 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       // print("Token: $token");
 
       socket = IO.io(
-        'https://sandbox.watconnect.com',
+        'https://admin.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
-            .setPath('/swp/socket.io')
+            .setPath('/ibs/socket.io')
             .setExtraHeaders({'Authorization': 'Bearer $token'})
             .build(),
       );
@@ -1533,7 +1576,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       tags = [];
       leadlistvm = Provider.of<LeadListViewModel>(context, listen: false);
 
-      tags.clear(); // Clear if it's reused
+      tags.clear();
 
       for (var viewModel in leadlistvm.viewModels) {
         var leadmodel = viewModel.model;

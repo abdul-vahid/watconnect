@@ -1,0 +1,2 @@
+C:/Users/iBirds/Desktop/watconnect/android/app/.cxx/Debug/2d4k123t/x86/CMakeFiles/edit_cache.dir
+C:/Users/iBirds/Desktop/watconnect/android/app/.cxx/Debug/2d4k123t/x86/CMakeFiles/rebuild_cache.dir

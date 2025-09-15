@@ -36,12 +36,10 @@ class FooterNavbarPage extends StatefulWidget {
 class _FooterNavbarPageState extends State<FooterNavbarPage> {
   final PageController _pageController = PageController();
   UserModel? userModelData;
-  // late StreamSubscription subscription;
   int selectedPage = 0;
   bool isDeviceConnected = false;
   bool isAlertSet = false;
   int selected = 0;
-  // late NotchBottomBarController _controller;
 
   @override
   void initState() {
@@ -50,19 +48,14 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     SharedPreferences.getInstance().then((prefs) {
       userModelData = AppUtils.getSessionUser(prefs);
       print("userModelData initrole ${userModelData?.userrole}");
-      // userModel ?? AppUtils.logout(context);
     });
     getBusNumApiCall();
     getuserrole();
-    print("init startwtwtwyw=>${userModelData?.userrole}");
     super.initState();
-
-    setState(() {});
   }
 
   getBusNumApiCall() async {
     DashBoardController drProvider = Provider.of(context, listen: false);
-
     if (drProvider.fromSalesForce) {
       BusinessNumberController busNumCtrl = Provider.of(context, listen: false);
       await busNumCtrl.getBusinessNumberApiCall();
@@ -71,7 +64,6 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
 
   @override
   void dispose() {
-    // subscription.cancel();
     super.dispose();
   }
 
@@ -88,7 +80,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
                     style: TextStyle(color: AppColor.navBarIconColor)),
               ),
               TextButton(
-                  onPressed: () => exit(0), // <-- SEE HERE
+                  onPressed: () => exit(0),
                   child: const Text('Yes',
                       style: TextStyle(color: AppColor.navBarIconColor))),
             ],
@@ -99,46 +91,31 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
 
   void getuserrole() async {
     final prefs = await SharedPreferences.getInstance();
-    print("userModelData=>${userModelData?.userrole}");
     DashBoardController drProvider = Provider.of(context, listen: false);
 
     if (drProvider.fromSalesForce) {
-      String tkn = "";
-      tkn = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
+      String tkn = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
       Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
       var userId = decodedToken;
-      ////////////from salesfore
-      ///
-      String deviId =
-          await prefs.getString(SharedPrefsConstants.deviceId) ?? "";
-
+      String deviId = prefs.getString(SharedPrefsConstants.deviceId) ?? "";
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
       CallSocketService().connect(tkn, userId, deviId, busNum);
     }
+
     bool hasCalls = prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
     if (hasCalls) {
-      String tkn = "";
-
-      tkn = await AppUtils.getToken() ?? "";
-
-      print("this is called in sf also and we are connecting the socket");
-
+      String tkn = await AppUtils.getToken() ?? "";
       Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
       var userId = decodedToken;
-
-      String deviId =
-          await prefs.getString(SharedPrefsConstants.deviceId) ?? "";
-      print("device id which we are getting form info +   $deviId");
-
+      String deviId = prefs.getString(SharedPrefsConstants.deviceId) ?? "";
       String busPhNum = prefs.getString('phoneNumber') ?? "";
-
       CallSocketService().connect(tkn, userId, deviId, busPhNum);
     }
+
     setState(() {
       userModelData = AppUtils.getSessionUser(prefs);
     });
-    print("dsfggggggg=>${userModelData?.userrole}");
   }
 
   showDialogBox() => showCupertinoDialog<String>(
@@ -163,11 +140,28 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
           ],
         ),
       );
+
   @override
   Widget build(BuildContext context) {
     DashBoardController drProvider = Provider.of(context, listen: false);
-    print(
-        "drProvider::::: from salesforce:::::::  ${drProvider.fromSalesForce}");
+
+    // Create items list with visibility
+    final List<Map<String, dynamic>> items = [
+      {'icon': Icons.home, 'label': 'Home', 'visible': true},
+      {'icon': Icons.person, 'label': 'Profile', 'visible': true},
+      {
+        'icon': Icons.people,
+        'label': 'Users',
+        'visible': userModelData?.userrole == "ADMIN"
+      },
+      {'icon': Icons.chat, 'label': 'Chats', 'visible': true},
+    ];
+
+    // Get visible items only
+    final visibleItems =
+        items.where((item) => item['visible'] == true).toList();
+
+    // Create page options that match the visible items
     final pageOptions = [
       drProvider.fromSalesForce ? const SfHomeScreen() : HomeView(),
       drProvider.fromSalesForce ? const SfProfileScreen() : ProfileView(),
@@ -175,158 +169,76 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       drProvider.fromSalesForce
           ? const SfRecentChatScreen()
           : const RecentChatView(),
-    ];
+      // ignore: unnecessary_null_comparison
+    ].where((page) => page != null).toList();
 
-    final List<Map<String, dynamic>> items = [
-      {'icon': Icons.home_filled, 'label': 'Home'},
-      {'icon': Icons.account_circle, 'label': 'Profile'},
-      if (userModelData?.userrole == "ADMIN")
-        {'icon': Icons.settings_accessibility_outlined, 'label': 'Users'},
-      {'icon': Icons.chat, 'label': 'Chats'},
-    ];
     return WillPopScope(
-        onWillPop: _onWillPop,
-        child: Scaffold(
-          body: PageView(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            onPageChanged: (index) => setState(() => selected = index),
-            children: pageOptions,
-          ),
-          bottomNavigationBar: buildBottomNavigationBar(
-            selected: selected,
-            items: items,
-            context: context,
-            onItemTap: (index) {
-              setState(() => selected = index);
-              _pageController.jumpToPage(index);
-            },
-          ),
-        )
-
-        // Scaffold(
-        //   body: _pageOptions[selected],
-        //   bottomNavigationBar: StylishBottomBar(
-        //     backgroundColor: AppColor.navBarIconColor,
-        //     option: DotBarOptions(
-        //       dotStyle: DotStyle.tile,
-        //       gradient: const LinearGradient(
-        //         colors: [Colors.white, Colors.white],
-        //         begin: Alignment.topLeft,
-        //         end: Alignment.bottomRight,
-        //       ),
-        //     ),
-
-        //     hasNotch: true,
-        //     currentIndex: selected,
-        //     onTap: (index) {
-        //       setState(() {
-        //         selected = index;
-        //       });
-        //     },
-        //   ),
-        // ),
-        );
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        body: PageView(
+          controller: _pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          onPageChanged: (index) => setState(() => selected = index),
+          children: pageOptions,
+        ),
+        bottomNavigationBar: _buildSimpleBottomNavigationBar(
+          selected: selected,
+          items: visibleItems,
+          onItemTap: (index) {
+            setState(() => selected = index);
+            _pageController.jumpToPage(index);
+          },
+        ),
+      ),
+    );
   }
-}
 
-Widget buildBottomNavigationBar({
-  required int selected,
-  required List<Map<String, dynamic>> items,
-  required Function(int) onItemTap,
-  required BuildContext context,
-}) {
-  return SizedBox(
-    height: 60,
-    child: Stack(
-      clipBehavior: Clip.none,
-      children: [
-        // Blue nav bar background
-        Container(
-          height: 60,
-          decoration: const BoxDecoration(
-            color: AppColor.navBarIconColor,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(8),
-              topRight: Radius.circular(8),
-            ),
+  Widget _buildSimpleBottomNavigationBar({
+    required int selected,
+    required List<Map<String, dynamic>> items,
+    required Function(int) onItemTap,
+  }) {
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        color: AppColor.navBarIconColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, -2),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(items.length, (index) {
-              final isSelected = selected == index;
-              return GestureDetector(
-                onTap: () => onItemTap(index),
-                child: SizedBox(
-                  width: 60,
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: isSelected
-                              ? const SizedBox()
-                              : Icon(
-                                  items[index]['icon'],
-                                  color: Colors.white,
-                                  size: 25,
-                                ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Text(
-                          items[index]['label'] as String,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(items.length, (index) {
+          final isSelected = selected == index;
+          return GestureDetector(
+            onTap: () => onItemTap(index),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  items[index]['icon'] as IconData,
+                  color: isSelected ? Colors.white : Colors.grey,
+                  size: 24,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  items[index]['label'] as String,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.grey,
+                    fontSize: 12,
+                    fontWeight:
+                        isSelected ? FontWeight.w500 : FontWeight.normal,
                   ),
                 ),
-              );
-            }),
-          ),
-        ),
-
-        // Animated white notch
-        AnimatedPositioned(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
-          top: -20,
-          left: MediaQuery.of(context).size.width / items.length * selected +
-              (MediaQuery.of(context).size.width / items.length - 50) / 2,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 550),
-            switchInCurve: Curves.easeIn,
-            switchOutCurve: Curves.easeIn,
-            transitionBuilder: (child, animation) =>
-                ScaleTransition(scale: animation, child: child),
-            child: Container(
-              key: ValueKey<int>(selected),
-              height: 50,
-              width: 50,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(
-                items[selected]['icon'],
-                size: 24,
-                color: AppColor.navBarIconColor,
-              ),
+              ],
             ),
-          ),
-        ),
-      ],
-    ),
-  );
+          );
+        }),
+      ),
+    );
+  }
 }

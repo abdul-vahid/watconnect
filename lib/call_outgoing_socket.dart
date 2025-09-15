@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'dart:async';
 import 'dart:convert';
@@ -36,7 +36,7 @@ class outgoingCall {
       debugPrint("🔁 outgoing Call socket already connected.");
       return;
     }
-    print("devId:::::::  ${devId}         ${busNum}");
+    print("devId:::::::  $devId         $busNum");
     userData.addAll({
       'deviceId': devId,
       'business_number': busNum,
@@ -45,10 +45,10 @@ class outgoingCall {
     log("outgoing call user data :: :   $userData");
 
     _socket = IO.io(
-      'https://sandbox.watconnect.com',
+      'https://admin.watconnect.com',
       IO.OptionBuilder()
           .setTransports(['websocket'])
-          .setPath('/swp/socket.io')
+          .setPath('/ibs/socket.io')
           .setExtraHeaders({'Authorization': 'Bearer $token'})
           .setReconnectionAttempts(10)
           .setReconnectionDelay(2000)
@@ -360,10 +360,10 @@ class outgoingCall {
 
   void connectStausSocket(String token) {
     _statusSocket = IO.io(
-      'https://sandbox.watconnect.com',
+      'https://admin.watconnect.com',
       IO.OptionBuilder()
           .setTransports(['websocket'])
-          .setPath('/swp/socket.io')
+          .setPath('/ibs/socket.io')
           .setExtraHeaders({'Authorization': 'Bearer $token'})
           .setReconnectionAttempts(10)
           .setReconnectionDelay(2000)

@@ -9,7 +9,7 @@ class MessageController extends ChangeNotifier {
 
   List msgToDelete = [];
 
-  updateDeleteMsgList(String val) {
+  updateDeleteMsgList(String val) async {
     if (msgToDelete.contains(val)) {
       msgToDelete.remove(val);
     } else {
@@ -17,31 +17,35 @@ class MessageController extends ChangeNotifier {
     }
 
     print("msgToDelete>::>>:>>>:::>>>>  $msgToDelete");
-
+    await Future.delayed(Duration.zero);
     notifyListeners();
   }
 
-  clearDeleteList() {
+  clearDeleteList() async {
     msgToDelete.clear();
     msgToDelete = [];
+    await Future.delayed(Duration.zero);
     notifyListeners();
   }
 
-  setUsrProfile(str) {
+  setUsrProfile(str) async {
     userProfile = "";
     userProfile = str;
     print("setting the user prifiel:::::$userProfile");
+    await Future.delayed(Duration.zero);
     notifyListeners();
   }
 
   // List allMessages = [];
-  setLeadNum(var leadNum) {
+  setLeadNum(var leadNum) async {
     leadNo = leadNum;
+    await Future.delayed(Duration.zero);
     notifyListeners();
   }
 
-  setPhoneNum(var phNum) {
+  setPhoneNum(var phNum) async {
     phNo = phNum;
+    await Future.delayed(Duration.zero);
     notifyListeners();
   }
 }

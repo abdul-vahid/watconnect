@@ -13,7 +13,7 @@ import 'package:whatsapp/models/recent_chat_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
 import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
-import 'package:whatsapp/views/view/whatsapp_message_view.dart';
+import 'package:whatsapp/views/view/whatsapp_chat_screen.dart';
 import '../../models/lead_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
@@ -323,7 +323,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ChatScreen(
+                                    builder: (context) => WhatsappChatScreen(
                                       pinnedLeads: pinnedLeads,
                                       leadName: model.contactname ?? "",
                                       wpnumber: model.full_number,
@@ -616,7 +616,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ChatScreen(
+                    builder: (context) => WhatsappChatScreen(
                       pinnedLeads: pinnedLeads,
                       leadName: model.contactname ?? "",
                       wpnumber: model.full_number,

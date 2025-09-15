@@ -451,14 +451,7 @@ class _LeadDetailViewState extends State<LeadDetailView> {
     LeadListViewModel(context).deleteById(leadidd).then((value) {
       print("working enter");
 
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(
-      //     content: Text('Lead deleted successfully.'),
-      //     backgroundColor: Colors.green,
-      //   ),
-      // );
-
-      EasyLoading.showToast("Deleted Succeffuly");
+      EasyLoading.showToast("Deleted Successfully");
 
       Provider.of<LeadListViewModel>(context, listen: false).fetch();
       Provider.of<LeadCountViewModel>(context, listen: false).countNewLead();

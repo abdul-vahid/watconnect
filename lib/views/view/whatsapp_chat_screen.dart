@@ -107,6 +107,8 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     super.initState();
     loadChatHistory();
     getWalletStatus();
+    MessageController msgController = Provider.of(context, listen: false);
+    msgController.clearDeleteList();
     markUnread();
     setTemplteEmpty();
     _initializeAudio();
@@ -189,20 +191,25 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     );
   }
 
+  int _lastMessageCount = 0;
   Widget _pageBody() {
     return Consumer2<MessageController, MessageViewModel>(
         builder: (context, msgController, mviewModel, child) {
       List allMessages = mviewModel.allMessages;
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scrollController.hasClients && allMessages.isNotEmpty) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeOut,
-          );
-        }
-      });
+      // only scroll if new message(s) arrived
+      if (allMessages.length > _lastMessageCount) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
+      _lastMessageCount = allMessages.length;
 
       print("all msg in the main screen::::::::::   ${allMessages.length}");
       return Padding(
@@ -459,15 +466,26 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                   : ConstrainedBox(
                                       constraints:
                                           const BoxConstraints(minHeight: 0),
-                                      child: ChatMessageTile(
-                                        message: message,
-                                        previousMessage: previousMessage,
-                                        userName: userName,
-                                        tenetCode: TenetCode,
-                                        onTap:
-                                            msgController.updateDeleteMsgList,
-                                        selectedMessages:
-                                            msgController.msgToDelete,
+                                      child: Padding(
+                                        padding:
+                                            const EdgeInsets.only(bottom: 8.0),
+                                        child: Container(
+                                          color: msgController.msgToDelete
+                                                  .contains(
+                                                      allMessages[index].id)
+                                              ? Colors.grey.shade300
+                                              : Colors.transparent,
+                                          child: ChatMessageTile(
+                                            message: message,
+                                            previousMessage: previousMessage,
+                                            userName: userName,
+                                            tenetCode: TenetCode,
+                                            onTap: msgController
+                                                .updateDeleteMsgList,
+                                            selectedMessages:
+                                                msgController.msgToDelete,
+                                          ),
+                                        ),
                                       ),
                                     );
                             },
@@ -726,7 +744,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
       print("number=>$number");
       await Provider.of<MessageViewModel>(context, listen: false)
           .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
-      EasyLoading.showToast("Deleted Succeffuly");
+      EasyLoading.showToast("Deleted Successfully");
 
       msgController.clearDeleteList();
 
@@ -1070,17 +1088,17 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                       value: SelectedTemplateCategory,
                     ),
                     const SizedBox(height: 12),
-                    AppUtils.getDropdown(
-                      'Select Filter',
-                      data: tempateFilter,
-                      onChanged: (String? selectedCategory) {
-                        setState(() {});
+                    // AppUtils.getDropdown(
+                    //   'Select Filter',
+                    //   data: tempateFilter,
+                    //   onChanged: (String? selectedCategory) {
+                    //     setState(() {});
 
-                        SelectedTemplateFilters = selectedCategory;
-                      },
-                      value: SelectedTemplateFilters,
-                    ),
-                    const SizedBox(height: 12),
+                    //     SelectedTemplateFilters = selectedCategory;
+                    //   },
+                    //   value: SelectedTemplateFilters,
+                    // ),
+                    // const SizedBox(height: 12),
                     AppUtils.getDropdown(
                       'Select Template Name',
                       data: templateNames,
@@ -1169,12 +1187,9 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
 
   Future<void> _setSelectedTemplates() async {
     try {
-      // if (!mounted) return; // prevent using context if widget is disposed
-
       final templeteViewModel = context.read<TempleteListViewModel>();
       final msgViewModel = context.read<MessageViewModel>();
 
-      // If there are no templates, nothing to do
       print(
           "templeteViewModel.viewModels is empty ${templeteViewModel.viewModels.isEmpty}");
       if (templeteViewModel.viewModels.isEmpty) return;

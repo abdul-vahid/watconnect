@@ -1,6 +1,7 @@
-// ignore_for_file: deprecated_member_use, prefer_typing_uninitialized_variables
+// ignore_for_file: deprecated_member_use, prefer_typing_uninitialized_variables, avoid_print
 
 import 'dart:convert';
+import 'dart:developer';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -194,10 +195,10 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Text(
-                        widget.message.erormessage!,
-                        style: const TextStyle(
+                        "Error: ${widget.message.erormessage!}",
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Colors.red,
+                          color: Colors.red.shade400,
                         ),
                       ),
                     ),
@@ -214,10 +215,21 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                         final card = entry.value;
 
                         final regex = RegExp(r'\{\{\d+\}\}');
-                        String result = card['body']['text'];
+                        log("card::::  $card");
+                        log("card body::::  ${card['body']}");
+
+                        String result = "";
+
+                        if (card['body'] == null ||
+                            card['body']['text'] == null) {
+                          result = "";
+                        } else {
+                          result = card['body']['text'] ?? "";
+                        }
+
                         var carousalPams =
                             jsonEncode(widget.message.bodyTextParams['$index']);
-                        result = widget.message.messageBody ?? "";
+                        // result = widget.message.messageBody ?? "";
                         if (regex.hasMatch(result)) {
                           result = replacePlaceholders(result, carousalPams);
                         }
@@ -230,7 +242,6 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                           bodyParams = widget.message.bodyTextParams['$index'];
                         }
 
-                        // Image/video URL
                         String carImageUrl = "";
                         if (bodyParams != null &&
                             bodyParams['file_title'] != null &&
@@ -276,8 +287,14 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                                           horizontal: 6.0, vertical: 10),
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(12),
-                                        child: AttachmentWidget(
-                                          url: carImageUrl,
+                                        child: InkWell(
+                                          onTap: () {
+                                            print(
+                                                "printing the url of attachment:::  $carImageUrl");
+                                          },
+                                          child: AttachmentWidget(
+                                            url: carImageUrl,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -300,7 +317,7 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                         enableInfiniteScroll: false,
                         viewportFraction: 0.98,
                         enlargeCenterPage: true,
-                        height: 350,
+                        height: 300,
                         onPageChanged: (index, reason) {
                           setState(() {
                             _currentCarouselIndex = index;

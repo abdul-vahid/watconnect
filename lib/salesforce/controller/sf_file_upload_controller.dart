@@ -112,7 +112,7 @@ class SfFileUploadController extends ChangeNotifier {
         headers: headers,
         body: body,
       );
-      log(" login api in SF response.statusCode:::::: ${response.statusCode}   ${response.body}");
+      log(" login api in SF response.statusCode:::::: $url   ${response.statusCode}  $body  ${response.body}");
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);

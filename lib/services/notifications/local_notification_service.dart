@@ -17,7 +17,7 @@ import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
-import 'package:whatsapp/views/view/whatsapp_message_view.dart';
+import 'package:whatsapp/views/view/whatsapp_chat_screen.dart';
 
 class LocalNotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
@@ -253,7 +253,7 @@ class LocalNotificationService {
     Navigator.push(
       cntxt,
       MaterialPageRoute(
-        builder: (_) => ChatScreen(
+        builder: (_) => WhatsappChatScreen(
           pinnedLeads: pinnedLeads,
           leadName:
               "${matchedModel!.firstname ?? ""} ${matchedModel.lastname ?? ""}",

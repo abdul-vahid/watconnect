@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:whatsapp/view_models/message_list_vm.dart';
 import '../../../utils/app_utils.dart';
 import '../../../view_models/unread_count_vm.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,11 @@ class SocketManager {
       _socket!.on("receivedwhatsappmessage", (data) async {
         log("New WhatsApp message received: $data");
         if (wpNumber != null) {
+          final messageVM =
+              Provider.of<MessageViewModel>(context, listen: false);
+          messageVM.setFileToSend(null);
+          messageVM.Fetchmsghistorydata(leadnumber: wpNumber, number: number);
+
           Map<String, String> bodydata = {"whatsapp_number": wpNumber};
           await Provider.of<UnreadCountVm>(navigatorKey.currentContext!,
                   listen: false)

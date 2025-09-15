@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/ibirdstesting/Documents/FlutterDev/sdk/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/ibirdstesting/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/ibirdstesting/Documents/watconnect/watconnect-1/android/app/.cxx/Debug/1820h536/armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/ibirdstesting/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/ibirdstesting/Documents/watconnect/watconnect-1/android/app/.cxx/Debug/1820h536/armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}
