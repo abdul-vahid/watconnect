@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -44,6 +45,7 @@ class SfMessageChatScreen extends StatefulWidget {
 class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   TextEditingController msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  int _previousChatLength = 0;
   // File? _audioFile;
 
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
@@ -80,228 +82,18 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     super.dispose();
   }
 
-  Future<void> _stopRecording() async {
-    try {
-      String? recordedPath = await _recorder.stopRecorder();
-      if (recordedPath != null) {
-        File audioFile = File(recordedPath);
-
-        ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
-        chatMsgCtrl.setSelectedFile(audioFile);
-
-        chatMsgCtrl.setRecordingStatus(false);
-
-        await Future.delayed(const Duration(milliseconds: 300));
-        _showPreviewDialog();
-      }
-    } catch (e) {
-      debugPrint("Stop recording error: $e");
-      EasyLoading.showToast("Failed to stop recording");
-    }
-  }
-
-  Future<void> _startRecording(BuildContext context) async {
-    ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
-    chatMsgCtrl.setSelectedFile(null);
-
-    var status = await Permission.microphone.status;
-
-    if (status.isGranted) {
-      // Start recording immediately
-      await _beginRecording();
-      return;
-    }
-
-    PermissionStatus status1 = await Permission.microphone.status;
-    print('Microphone permission status: $status1');
-
-    if (status.isDenied) {
-      // Request permission (system dialog may show)
-      status = await Permission.microphone.request();
-
-      if (status.isGranted) {
-        await _beginRecording();
-        return;
-      }
-      // If still denied or permanently denied, show dialog
-      if (status.isPermanentlyDenied || status.isDenied) {
-        _showPermissionDialog(context);
-        return;
-      }
-    }
-
-    if (status.isPermanentlyDenied) {
-      // User permanently denied permission, must open settings manually
-      _showPermissionDialog(context);
-      return;
-    }
-
-    if (status.isRestricted || status.isLimited) {
-      EasyLoading.showToast("Microphone access is restricted or limited.");
-      return;
-    }
-  }
-
-  Future<void> _beginRecording() async {
-    try {
-      final Directory tempDir = await getTemporaryDirectory();
-      final String filePath =
-          '${tempDir.path}/voice_msg_${DateTime.now().millisecondsSinceEpoch}.aac';
-      _audioPath = filePath;
-
-      await _recorder.startRecorder(
-        toFile: filePath,
-        codec: fs.Codec.aacADTS,
-      );
-      ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
-      chatMsgCtrl.setRecordingStatus(true);
-    } catch (e) {
-      debugPrint("Recording error: $e");
-      EasyLoading.showToast("Failed to start recording");
-    }
-  }
-
-  void _showPermissionDialog(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Microphone Access Needed"),
-        content: Platform.isIOS
-            ? const Text(
-                "Microphone access is disabled. Please enable it from Settings > Privacy > Microphone.")
-            : const Text(
-                "Permission permanently denied. Please enable it in Settings."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              openAppSettings();
-            },
-            child: const Text("Open Settings"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _showPreviewDialog() async {
-    if (_audioPath == null) return;
-    // Get duration using just_audio
-    final audioPlayerForDuration = AudioPlayer();
-    Duration? audioDuration;
-
-    try {
-      await audioPlayerForDuration.setFilePath(_audioPath!);
-      audioDuration = audioPlayerForDuration.duration;
-    } catch (e) {
-      print("catching errer in show audio preview dialog:::::::::   $e");
-    } finally {
-      await audioPlayerForDuration.dispose();
-    }
-    if (audioDuration == null || audioDuration.inSeconds < 3) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Audio must be at least 3 seconds long."),
-        ),
-      );
-      return;
-    }
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return Consumer<ChatMessageController>(
-          builder: (context, chatController, child) {
-            Future<void> startPlayer() async {
-              await _player.startPlayer(
-                fromURI: _audioPath!,
-                codec: fs.Codec.aacADTS,
-                whenFinished: () {
-                  chatController.setPlayPreviewStatus(false);
-                },
-              );
-
-              chatController.setPlayPreviewStatus(true);
-
-              _previewPlayerSubscription?.cancel();
-              _previewPlayerSubscription =
-                  _player.onProgress?.listen((event) {});
-            }
-
-            Future<void> stopPlayer() async {
-              await _player.stopPlayer();
-              _previewPlayerSubscription?.cancel();
-
-              chatController.setPlayPreviewStatus(false);
-            }
-
-            return AlertDialog(
-              title: const Text('Voice Message Preview'),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      chatController.isPlayingPreview
-                          ? Icons.pause_circle_filled
-                          : Icons.play_circle_fill,
-                      size: 48,
-                      color: AppColor.navBarIconColor,
-                    ),
-                    onPressed: () {
-                      chatController.isPlayingPreview
-                          ? stopPlayer()
-                          : startPlayer();
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () async {
-                    stopPlayer();
-
-                    if (chatController.selectedFile != null) {
-                      await sendFile();
-                    }
-                    EasyLoading.showToast("Sending audio...");
-
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Send'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    stopPlayer();
-                    chatController.setPlayPreviewStatus(false);
-                    chatController.setSelectedFile(null);
-                    chatController.setRecordingStatus(false);
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Cancel'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  // String _formatDuration(Duration duration) {
-  //   String twoDigits(int n) => n.toString().padLeft(2, '0');
-  //   return "${twoDigits(duration.inMinutes)}:${twoDigits(duration.inSeconds.remainder(60))}";
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<ChatMessageController>(builder: (context, ref, child) {
+      final currentLength = ref.chatHistoryList.length;
+
+      if (currentLength > _previousChatLength && ref.msgDeleteList.isEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToBottom();
+        });
+      }
+
+      _previousChatLength = currentLength;
       return SafeArea(
         bottom: true,
         child: Scaffold(
@@ -340,11 +132,11 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
 
   _pageBody() {
     return Consumer<ChatMessageController>(builder: (context, ref, child) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (ref.msgDeleteList.isEmpty) {
-          _scrollToBottom();
-        }
-      });
+      // WidgetsBinding.instance.addPostFrameCallback((_) {
+      //   if (ref.msgDeleteList.isEmpty) {
+      //     _scrollToBottom();
+      //   }
+      // });
 
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -404,7 +196,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                                 });
                               }
 
-                              _scrollToBottom();
+                              // _scrollToBottom();
                             },
                             child: SizedBox(
                               width: 60,
@@ -668,6 +460,220 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     });
   }
 
+  Future<void> _stopRecording() async {
+    try {
+      String? recordedPath = await _recorder.stopRecorder();
+      if (recordedPath != null) {
+        File audioFile = File(recordedPath);
+
+        ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
+        chatMsgCtrl.setSelectedFile(audioFile);
+
+        chatMsgCtrl.setRecordingStatus(false);
+
+        await Future.delayed(const Duration(milliseconds: 300));
+        _showPreviewDialog();
+      }
+    } catch (e) {
+      debugPrint("Stop recording error: $e");
+      EasyLoading.showToast("Failed to stop recording");
+    }
+  }
+
+  Future<void> _startRecording(BuildContext context) async {
+    ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
+    chatMsgCtrl.setSelectedFile(null);
+
+    var status = await Permission.microphone.status;
+
+    if (status.isGranted) {
+      // Start recording immediately
+      await _beginRecording();
+      return;
+    }
+
+    PermissionStatus status1 = await Permission.microphone.status;
+    print('Microphone permission status: $status1');
+
+    if (status.isDenied) {
+      // Request permission (system dialog may show)
+      status = await Permission.microphone.request();
+
+      if (status.isGranted) {
+        await _beginRecording();
+        return;
+      }
+      // If still denied or permanently denied, show dialog
+      if (status.isPermanentlyDenied || status.isDenied) {
+        _showPermissionDialog(context);
+        return;
+      }
+    }
+
+    if (status.isPermanentlyDenied) {
+      // User permanently denied permission, must open settings manually
+      _showPermissionDialog(context);
+      return;
+    }
+
+    if (status.isRestricted || status.isLimited) {
+      EasyLoading.showToast("Microphone access is restricted or limited.");
+      return;
+    }
+  }
+
+  Future<void> _beginRecording() async {
+    try {
+      final Directory tempDir = await getTemporaryDirectory();
+      final String filePath =
+          '${tempDir.path}/voice_msg_${DateTime.now().millisecondsSinceEpoch}.aac';
+      _audioPath = filePath;
+
+      await _recorder.startRecorder(
+        toFile: filePath,
+        codec: fs.Codec.aacADTS,
+      );
+      ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
+      chatMsgCtrl.setRecordingStatus(true);
+    } catch (e) {
+      debugPrint("Recording error: $e");
+      EasyLoading.showToast("Failed to start recording");
+    }
+  }
+
+  void _showPermissionDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Microphone Access Needed"),
+        content: Platform.isIOS
+            ? const Text(
+                "Microphone access is disabled. Please enable it from Settings > Privacy > Microphone.")
+            : const Text(
+                "Permission permanently denied. Please enable it in Settings."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              openAppSettings();
+            },
+            child: const Text("Open Settings"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showPreviewDialog() async {
+    if (_audioPath == null) return;
+    // Get duration using just_audio
+    final audioPlayerForDuration = AudioPlayer();
+    Duration? audioDuration;
+
+    try {
+      await audioPlayerForDuration.setFilePath(_audioPath!);
+      audioDuration = audioPlayerForDuration.duration;
+    } catch (e) {
+      print("catching errer in show audio preview dialog:::::::::   $e");
+    } finally {
+      await audioPlayerForDuration.dispose();
+    }
+    if (audioDuration == null || audioDuration.inSeconds < 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Audio must be at least 3 seconds long."),
+        ),
+      );
+      return;
+    }
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return Consumer<ChatMessageController>(
+          builder: (context, chatController, child) {
+            Future<void> startPlayer() async {
+              await _player.startPlayer(
+                fromURI: _audioPath!,
+                codec: fs.Codec.aacADTS,
+                whenFinished: () {
+                  chatController.setPlayPreviewStatus(false);
+                },
+              );
+
+              chatController.setPlayPreviewStatus(true);
+
+              _previewPlayerSubscription?.cancel();
+              _previewPlayerSubscription =
+                  _player.onProgress?.listen((event) {});
+            }
+
+            Future<void> stopPlayer() async {
+              await _player.stopPlayer();
+              _previewPlayerSubscription?.cancel();
+
+              chatController.setPlayPreviewStatus(false);
+            }
+
+            return AlertDialog(
+              title: const Text('Voice Message Preview'),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      chatController.isPlayingPreview
+                          ? Icons.pause_circle_filled
+                          : Icons.play_circle_fill,
+                      size: 48,
+                      color: AppColor.navBarIconColor,
+                    ),
+                    onPressed: () {
+                      chatController.isPlayingPreview
+                          ? stopPlayer()
+                          : startPlayer();
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    stopPlayer();
+
+                    if (chatController.selectedFile != null) {
+                      await sendFile();
+                    }
+                    EasyLoading.showToast("Sending audio...");
+
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Send'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    stopPlayer();
+                    chatController.setPlayPreviewStatus(false);
+                    chatController.setSelectedFile(null);
+                    chatController.setRecordingStatus(false);
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Cancel'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   _buildMessageInputArea() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
@@ -791,7 +797,8 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                 onTap: () {
                   ChatMessageController chatMsgCtrl =
                       Provider.of(context, listen: false);
-                  if (msgController.text.isNotEmpty) {
+                  if (msgController.text.isNotEmpty &&
+                      chatMsgCtrl.selectedFile == null) {
                     sendMsg(msgController.text.trim());
                   }
                   if (chatMsgCtrl.selectedFile != null) {
@@ -873,10 +880,12 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
       await sfFileController.uploadFiledb(chatMsgCtrl.selectedFile!, code,
           msgController.text.trim(), usrNumber);
     }
+    msgController.clear();
   }
 }
 
 String replaceTemplateParams(String templateBody, String paramsJsonString) {
+  log("replacing template params:::   $templateBody   $paramsJsonString");
   try {
     final List<dynamic> paramsList = paramsJsonString.isNotEmpty
         ? List<Map<String, dynamic>>.from((jsonDecode(paramsJsonString) as List)
@@ -884,10 +893,13 @@ String replaceTemplateParams(String templateBody, String paramsJsonString) {
         : [];
 
     for (var param in paramsList) {
+      print(
+          "param['label'] :::  ${param['name']}  param['value']::: ${param['value']} ");
       final name = param['name']?.toString() ?? '';
       final value = param['value']?.toString() ?? '';
       if (name.isNotEmpty) {
         templateBody = templateBody.replaceAll(name, value);
+        log("templateBody after replace::::    $templateBody");
       }
     }
   } catch (e) {

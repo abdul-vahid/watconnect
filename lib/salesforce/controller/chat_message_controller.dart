@@ -15,6 +15,7 @@ import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
 import 'package:whatsapp/salesforce/model/chat_history_model.dart';
 import 'package:whatsapp/salesforce/model/sfCall_history_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/utils/app_utils.dart';
 
 class ChatMessageController extends ChangeNotifier {
   final List<SfChatHistoryModel> chatHistoryList = [];
@@ -55,8 +56,12 @@ class ChatMessageController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
     if (isFirstTime) _setChatHistoryLoader(true);
-    final url =
-        "${AppConstants.sfMessageHistoryApi}businessnumber=$busNum&userwhatsappnumber=$userNumber&sortby=createdDate";
+    // final url =
+    //     "${AppConstants.sfMessageHistoryApi}businessnumber=$busNum&userwhatsappnumber=$userNumber&sortby=createdDate";
+
+    String url = await AppUtils.getSFUrl(
+        "${AppConstants.sfMessageHistoryApi}businessnumber=$busNum&userwhatsappnumber=$userNumber&sortby=createdDate");
+
     final response = await NetworkService.makeRequest(
       url: url,
       method: 'GET',
@@ -96,7 +101,10 @@ class ChatMessageController extends ChangeNotifier {
       "messageBody": msg,
     };
     _setSendMsgLoader(true);
-    const url = (AppConstants.sfSendMessageApi);
+    // var url = (AppConstants.sfSendMessageApi);
+
+    String url = await AppUtils.getSFUrl(AppConstants.sfSendMessageApi);
+
     final response =
         await NetworkService.makeRequest(url: url, method: 'POST', body: body);
 
@@ -160,9 +168,11 @@ class ChatMessageController extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         final parsedJson = jsonDecode(response.body);
-        // print("parsedJson:::::::   $parsedJson");
+        log("parsedJson:::::::   $parsedJson");
         final accessToken = parsedJson["access_token"] ?? "";
         final refreshToken = parsedJson['refresh_token'] ?? "";
+
+        final instaceUrl = parsedJson['instance_url'] ?? "";
 
         if (accessToken.isNotEmpty) {
           final prefs = await SharedPreferences.getInstance();
@@ -171,6 +181,9 @@ class ChatMessageController extends ChangeNotifier {
 
           await prefs.setString(
               SharedPrefsConstants.sfRefreshToken, refreshToken);
+
+          await prefs.setString(SharedPrefsConstants.sfBaseUrl, instaceUrl);
+
           log("Access token stored successfully.");
           return true;
         }
@@ -187,13 +200,14 @@ class ChatMessageController extends ChangeNotifier {
   Future<void> deleteHistoryApiCall(String wpNum) async {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-    String apiUrl =
-        "${AppConstants.sfDeleteChatHistory}businessnumber=$busNum&whatsAppNumber=$wpNum";
+
+    String url = await AppUtils.getSFUrl(
+        "${AppConstants.sfDeleteChatHistory}businessnumber=$busNum&whatsAppNumber=$wpNum");
 
     // final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
 
     final response = await NetworkService.makeRequest(
-      url: apiUrl,
+      url: url,
       method: 'DELETE',
     );
 
@@ -242,13 +256,16 @@ class ChatMessageController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
     String ids = msgDeleteList.join(",");
-    String apiUrl =
-        "${AppConstants.sfDeleteChatMsg}businessnumber=$busNum&whatsAppNumber=$wpNum&metaMessageId=$ids";
+    // String apiUrl =
+    //     "${AppConstants.sfDeleteChatMsg}businessnumber=$busNum&whatsAppNumber=$wpNum&metaMessageId=$ids";
+
+    String url = await AppUtils.getSFUrl(
+        "${AppConstants.sfDeleteChatMsg}businessnumber=$busNum&whatsAppNumber=$wpNum&metaMessageId=$ids");
 
     // final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
 
     final response = await NetworkService.makeRequest(
-      url: apiUrl,
+      url: url,
       method: 'DELETE',
     );
 
@@ -393,8 +410,12 @@ class ChatMessageController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
 
-    final url =
-        "${AppConstants.sfCallHistoryApi}waNumber=$userNumber&businessNumber=$busNum";
+    // final url =
+    //     "${AppConstants.sfCallHistoryApi}waNumber=$userNumber&businessNumber=$busNum";
+
+    String url = await AppUtils.getSFUrl(
+        "${AppConstants.sfCallHistoryApi}waNumber=$userNumber&businessNumber=$busNum");
+
     final response = await NetworkService.makeRequest(
       url: url,
       method: 'GET',

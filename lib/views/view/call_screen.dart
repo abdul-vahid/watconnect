@@ -872,7 +872,7 @@ class _CallScreenState extends State<CallScreen> {
 
   Timer? _callTimer;
   int _callDurationInSeconds = 0;
-  bool _isCallRecording = false;
+  // bool _isCallRecording = false;
   String _callId = "";
 
   // Permission request state

@@ -468,150 +468,150 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
     Color statusColor;
     statusColor = Colors.lightBlue.withOpacity(0.7);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border(
-          left: BorderSide(
-            color: statusColor,
-            width: 5,
+    return GestureDetector(
+      onLongPress: () {
+        DashBoardController dbProvider = Provider.of(context, listen: false);
+        print("this is pressisng longgggg");
+
+        dbProvider.setSelectedPinnedInfo(drawerListItem);
+      },
+      onTap: () async {
+        showBlurOnlyLoaderDialog(context);
+        ChatMessageController cmProvider = Provider.of(context, listen: false);
+        DashBoardController dbProvider = Provider.of(context, listen: false);
+        dbProvider.setSelectedPinnedInfo(null);
+
+        dbProvider.setSelectedContaactInfo(drawerListItem);
+        await cmProvider
+            .messageHistoryApiCall(
+          userNumber: phNum,
+        )
+            .then((onValue) {
+          Navigator.pop(context);
+        });
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => SfMessageChatScreen(
+                      pinnedLeadsList: dbProvider.pinnedConfigItems,
+                    )));
+      },
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border(
+            left: BorderSide(
+              color: statusColor,
+              width: 5,
+            ),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 5,
+              spreadRadius: 3,
+              offset: const Offset(2, 4),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 5,
-            spreadRadius: 3,
-            offset: const Offset(2, 4),
-          ),
-        ],
-      ),
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
-        child: GestureDetector(
-          onLongPress: () {
-            DashBoardController dbProvider =
-                Provider.of(context, listen: false);
-            print("this is pressisng longgggg");
-
-            dbProvider.setSelectedPinnedInfo(drawerListItem);
-          },
-          onTap: () async {
-            showBlurOnlyLoaderDialog(context);
-            ChatMessageController cmProvider =
-                Provider.of(context, listen: false);
-            DashBoardController dbProvider =
-                Provider.of(context, listen: false);
-            dbProvider.setSelectedPinnedInfo(null);
-
-            dbProvider.setSelectedContaactInfo(drawerListItem);
-            await cmProvider
-                .messageHistoryApiCall(
-              userNumber: phNum,
-            )
-                .then((onValue) {
-              Navigator.pop(context);
-            });
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SfMessageChatScreen(
-                          pinnedLeadsList: dbProvider.pinnedConfigItems,
-                        )));
-          },
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: AppColor.navBarIconColor,
-                child: Text(
-                  drawerListItem.name?.isNotEmpty == true
-                      ? drawerListItem.name![0].toUpperCase()
-                      : '?',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
+          child: GestureDetector(
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: AppColor.navBarIconColor,
+                  child: Text(
+                    drawerListItem.name?.isNotEmpty == true
+                        ? drawerListItem.name![0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${drawerListItem.name}",
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontFamily: AppFonts.semiBold,
-                                fontWeight: FontWeight.bold,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${drawerListItem.name}",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontFamily: AppFonts.semiBold,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            drawerListItem.status!.isEmpty
-                                ? const SizedBox()
-                                : Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 3.0),
-                                    child: Text(
-                                      drawerListItem.status ?? "",
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: AppColor.navBarIconColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                            Text(
-                              phNum,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
-                      Column(
-                        children: [
-                          cnt == 0
-                              ? const SizedBox()
-                              : Container(
-                                  decoration: const BoxDecoration(
-                                    color: Colors.green,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(5.0),
+                              drawerListItem.status!.isEmpty
+                                  ? const SizedBox()
+                                  : Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 3.0),
                                       child: Text(
-                                        cnt.toString(),
+                                        drawerListItem.status ?? "",
                                         style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
+                                          fontSize: 13,
+                                          color: AppColor.navBarIconColor,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
+                              Text(
+                                phNum,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        Column(
+                          children: [
+                            cnt == 0
+                                ? const SizedBox()
+                                : Container(
+                                    decoration: const BoxDecoration(
+                                      color: Colors.green,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: Text(
+                                          cnt.toString(),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                          drawerListItem.isPinned ?? false
-                              ? const Icon(Icons.push_pin)
-                              : const SizedBox()
-                        ],
-                      )
-                    ],
+                            drawerListItem.isPinned ?? false
+                                ? const Icon(Icons.push_pin)
+                                : const SizedBox()
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

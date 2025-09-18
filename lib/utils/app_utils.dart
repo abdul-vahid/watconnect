@@ -378,6 +378,14 @@ class AppUtils {
     return AppConstants.baseUrl + path;
   }
 
+  static Future<String> getSFUrl(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedUrl = prefs.getString(SharedPrefsConstants.sfBaseUrl) ?? "";
+    String finalUrl = "$storedUrl/services/apexrest/WatConnect/";
+
+    return finalUrl + path;
+  }
+
   static void onError(BuildContext context, error, {title = "Error Alert"}) {
     Navigator.pop(context);
 

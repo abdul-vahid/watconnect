@@ -10,6 +10,7 @@ import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/controller/network_Services.dart';
 import 'package:whatsapp/salesforce/model/business_number_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/utils/app_utils.dart';
 
 class BusinessNumberController extends ChangeNotifier {
   List<BusinessNumberModel> businessNumbers = [];
@@ -20,9 +21,10 @@ class BusinessNumberController extends ChangeNotifier {
   }
 
   Future<void> getBusinessNumberApiCall() async {
-    String apiUrl = AppConstants.sfGetBusinessNumbs;
+    String url = await AppUtils.getSFUrl(AppConstants.sfGetBusinessNumbs);
+    // String apiUrl = AppConstants.sfGetBusinessNumbs;
     final response = await NetworkService.makeRequest(
-      url: apiUrl,
+      url: url,
       method: 'GET',
     );
     if (response != null && response.statusCode == 200) {
@@ -48,9 +50,12 @@ class BusinessNumberController extends ChangeNotifier {
   }
 
   Future<void> setBusinessNumberApiCall({required String busNumber}) async {
-    String apiUrl = "${AppConstants.sfSetBusinessNumb}${busNumber}";
+    // String apiUrl = "${AppConstants.sfSetBusinessNumb}${busNumber}";
+    String url = await AppUtils.getSFUrl(
+        "${AppConstants.sfSetBusinessNumb}${busNumber}");
+
     final response = await NetworkService.makeRequest(
-      url: apiUrl,
+      url: url,
       method: 'POST',
     );
     if (response != null && response.statusCode == 200) {

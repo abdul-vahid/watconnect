@@ -38,6 +38,7 @@ class _WebViewPageState extends State<WebViewPage> {
             print("Final loaded URL: $url");
 
             Uri uri = Uri.parse(url);
+            print("uri::::::::::  $uri");
 
             String? authCode = uri.queryParameters["code"];
 
@@ -47,12 +48,12 @@ class _WebViewPageState extends State<WebViewPage> {
               Map<String, String> body = {
                 "grant_type": "authorization_code",
                 "client_id":
-                    "3MVG9HDaKRUgW3VrsUI_RKn2LNBUcxtribjudS7kOePtrSPn9mK.aWox_5gvqxOTD50qyOmRcRWV6jp3jwTOs",
+                    "3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ",
                 "client_secret":
-                    "A34A06D1DD329F2DCEED942971BF62FC3758588B2DF22EB4FF86FA1A0B6A5C87",
+                    "195E44ED6BAFD4F6F5CB20343F7FFC169616D9C417B3C51089B00F6487E0F459",
                 "code": authCode,
                 "redirect_uri":
-                    "https://test.salesforce.com/services/oauth2/success",
+                    "https://login.salesforce.com/services/oauth2/success",
               };
 
               ChatMessageController chatMessageController =
@@ -68,9 +69,7 @@ class _WebViewPageState extends State<WebViewPage> {
                     Provider.of(context, listen: false);
 
                 await sfFileUploadController.getReactCredApiCall();
-                // "shivani.m+s@ibirdsservices.com",
-                // "Admin@123",
-                // "salesforce");
+
                 dashBoardController.setLoginType(true);
                 Navigator.pushAndRemoveUntil(
                   context,
@@ -97,9 +96,14 @@ class _WebViewPageState extends State<WebViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          leading: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
+          leading: InkWell(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+            ),
           ),
           title: const Text(
             "Salesforce Login",

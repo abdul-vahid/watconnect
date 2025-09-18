@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/utils/app_utils.dart';
 
 class NetworkService {
   static Future<http.Response?> makeRequest({
@@ -32,6 +33,8 @@ class NetworkService {
       };
 
       http.Response response;
+
+      log("api url , body , header :::::  $url   $body  $fullHeaders");
 
       final uri = Uri.parse(url);
       final encodedBody = body != null ? jsonEncode(body) : null;
@@ -110,21 +113,25 @@ class NetworkService {
     Map<String, String> body = {
       "grant_type": "refresh_token",
       "client_id":
-          "3MVG9HDaKRUgW3VrsUI_RKn2LNBUcxtribjudS7kOePtrSPn9mK.aWox_5gvqxOTD50qyOmRcRWV6jp3jwTOs",
+          "3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ",
       "client_secret":
-          "A34A06D1DD329F2DCEED942971BF62FC3758588B2DF22EB4FF86FA1A0B6A5C87",
+          "195E44ED6BAFD4F6F5CB20343F7FFC169616D9C417B3C51089B00F6487E0F459",
       "refresh_token": refreshToken,
-      "redirect_uri": "https://test.salesforce.com/services/oauth2/success",
+      "redirect_uri": "https://login.salesforce.com/services/oauth2/success",
     };
     try {
       log("refresh token req body:::    $body");
       final encodedBody = Uri(queryParameters: body).query;
 
+      String url = await AppUtils.getSFUrl(AppConstants.getToken);
+
       final response = await http.post(
-        Uri.parse(AppConstants.getToken),
+        Uri.parse(url),
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: encodedBody,
       );
+
+      log("refresh token response body:::    $response");
 
       if (response.statusCode == 200) {
         final parsedJson = jsonDecode(response.body);

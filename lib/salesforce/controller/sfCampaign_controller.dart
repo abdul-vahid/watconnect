@@ -8,6 +8,7 @@ import 'package:whatsapp/salesforce/controller/network_Services.dart';
 import 'package:whatsapp/salesforce/model/campaign_history_model.dart';
 import 'package:whatsapp/salesforce/model/campaign_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/utils/app_utils.dart';
 
 class SfcampaignController extends ChangeNotifier {
   Future<void> notify() async {
@@ -52,7 +53,11 @@ class SfcampaignController extends ChangeNotifier {
     setGetCampLoader(true);
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-    String apiUrl = "${AppConstants.sfGetCampaign}businessnumber=$busNum";
+    // String apiUrl = "${AppConstants.sfGetCampaign}businessnumber=$busNum";
+
+    String apiUrl = await AppUtils.getSFUrl(
+        "${AppConstants.sfGetCampaign}businessnumber=$busNum");
+
     final response = await NetworkService.makeRequest(
       url: apiUrl,
       method: 'GET',
@@ -82,8 +87,11 @@ class SfcampaignController extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-    String apiUrl =
-        "${AppConstants.sfGetCampaignHistory}bussinesnumber=$busNum&campaignid=${selectedCampaign?.id ?? ""}";
+    // String apiUrl =
+    //     "${AppConstants.sfGetCampaignHistory}bussinesnumber=$busNum&campaignid=${selectedCampaign?.id ?? ""}";
+
+    String apiUrl = await AppUtils.getSFUrl(
+        "${AppConstants.sfGetCampaignHistory}bussinesnumber=$busNum&campaignid=${selectedCampaign?.id ?? ""}");
 
     final response = await NetworkService.makeRequest(
       url: apiUrl,

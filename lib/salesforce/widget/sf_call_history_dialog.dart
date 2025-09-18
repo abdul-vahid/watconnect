@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:whatsapp/salesforce/model/sfCall_history_model.dart';
-import 'package:whatsapp/views/view/call_history_screen.dart'
-    show formatDateTime, formatDuration;
+import 'package:whatsapp/views/view/call_history_screen.dart';
+// show formatDateTime, formatDuration;
 
 void showSfCallDialog(
   BuildContext context,

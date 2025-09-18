@@ -68,7 +68,10 @@ class SfFileUploadController extends ChangeNotifier {
   }
 
   Future<void> getReactCredApiCall() async {
-    String apiUrl = AppConstants.sfGetReactLoginCredApi;
+    // String apiUrl = AppConstants.sfGetReactLoginCredApi;
+
+    String apiUrl =
+        await AppUtils.getSFUrl(AppConstants.sfGetReactLoginCredApi);
     final response = await NetworkService.makeRequest(
       url: apiUrl,
       method: 'GET',
@@ -89,7 +92,6 @@ class SfFileUploadController extends ChangeNotifier {
 
   Future<bool> sfNodeLoginRequest(
       String username, String password, String tcode) async {
-    // Email regex validation
     final emailRegex =
         RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
     if (!emailRegex.hasMatch(username)) {
@@ -363,8 +365,11 @@ class SfFileUploadController extends ChangeNotifier {
       "document_type": type
     };
 
+    log("send file api request body::::  $body");
+    String apiUrl = await AppUtils.getSFUrl(AppConstants.sfSendFileApi);
+
     final response = await NetworkService.makeRequest(
-        url: AppConstants.sfSendFileApi, method: 'POST', body: body);
+        url: apiUrl, method: 'POST', body: body);
     if (response != null && response.statusCode == 200) {
       ChatMessageController chatMessageController =
           Provider.of(navigatorKey.currentContext!, listen: false);

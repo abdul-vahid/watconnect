@@ -157,11 +157,9 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       {'icon': Icons.chat, 'label': 'Chats', 'visible': true},
     ];
 
-    // Get visible items only
     final visibleItems =
         items.where((item) => item['visible'] == true).toList();
 
-    // Create page options that match the visible items
     final pageOptions = [
       drProvider.fromSalesForce ? const SfHomeScreen() : HomeView(),
       drProvider.fromSalesForce ? const SfProfileScreen() : ProfileView(),

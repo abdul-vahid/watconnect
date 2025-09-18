@@ -382,8 +382,7 @@ class CallSocketService {
               listen: false)
           .callAcceptApi(payload);
       final prefs = await SharedPreferences.getInstance();
-      String deviId =
-          await prefs.getString(SharedPrefsConstants.deviceId) ?? "";
+      String deviId = prefs.getString(SharedPrefsConstants.deviceId) ?? "";
 
       _socket?.emit("accept_call", {
         "call_id": callData['data']['call_id'],

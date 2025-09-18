@@ -15,6 +15,7 @@ import 'package:whatsapp/salesforce/model/sf_profile_model.dart';
 import 'package:whatsapp/salesforce/model/sf_report_models.dart';
 import 'package:whatsapp/salesforce/screens/sf_home_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/utils/app_utils.dart';
 
 class DashBoardController extends ChangeNotifier {
   List<SfDrawerModel> drawerItems = [];
@@ -49,7 +50,10 @@ class DashBoardController extends ChangeNotifier {
   List<Templatedata> sfTemplatedata = [];
 
   Future<void> drawerApiCall() async {
-    const url = AppConstants.getDrawerItemsApi;
+    // var url = AppConstants.getDrawerItemsApi;
+
+    String url = await AppUtils.getSFUrl("${AppConstants.getDrawerItemsApi}");
+
     final response = await NetworkService.makeRequest(
       url: url,
       method: 'GET',
@@ -99,7 +103,10 @@ class DashBoardController extends ChangeNotifier {
     if (showLoading) {
       setConfigListLoader(true);
     }
-    var url = "${AppConstants.sfGetDrawerList}$type";
+
+    String url =
+        await AppUtils.getSFUrl("${AppConstants.sfGetDrawerList}$type");
+    // var url = "${AppConstants.sfGetDrawerList}$type";
     final response = await NetworkService.makeRequest(
       url: url,
       method: 'GET',
@@ -132,8 +139,11 @@ class DashBoardController extends ChangeNotifier {
     // }
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-    var url =
-        "${AppConstants.sfGetDrawerUnreadList}$type&businessnumber=$busNum&recordlimit=50";
+    // var url =
+    //     "${AppConstants.sfGetDrawerUnreadList}$type&businessnumber=$busNum&recordlimit=50";
+    String url = await AppUtils.getSFUrl(
+        "${AppConstants.sfGetDrawerUnreadList}$type&businessnumber=$busNum&recordlimit=50");
+
     final response = await NetworkService.makeRequest(
       url: url,
       method: 'GET',
@@ -164,7 +174,10 @@ class DashBoardController extends ChangeNotifier {
   SfProfileModel? sfUserData;
 
   Future<void> getProfileApiCall() async {
-    var url = AppConstants.sfGetProfile;
+    // var url = AppConstants.sfGetProfile;
+
+    String url = await AppUtils.getSFUrl("${AppConstants.sfGetProfile}");
+
     final response = await NetworkService.makeRequest(
       url: url,
       method: 'GET',
@@ -195,10 +208,13 @@ class DashBoardController extends ChangeNotifier {
     }
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-    String apiUrl =
-        "${AppConstants.sfRecentChat}?businessnumber=$busNum&recordlimit=5000&objectname=$selectedTitle";
+    // String apiUrl =
+    //     "${AppConstants.sfRecentChat}?businessnumber=$busNum&recordlimit=5000&objectname=$selectedTitle";
+    String url = await AppUtils.getSFUrl(
+        "${AppConstants.sfRecentChat}?businessnumber=$busNum&recordlimit=5000&objectname=$selectedTitle");
+
     final response = await NetworkService.makeRequest(
-      url: apiUrl,
+      url: url,
       method: 'GET',
     );
     if (response != null && response.statusCode == 200) {
@@ -236,13 +252,16 @@ class DashBoardController extends ChangeNotifier {
       {bool isFromChat = true}) async {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-    String apiUrl = AppConstants.sfRecentChat;
+    // String apiUrl = AppConstants.sfRecentChat;
+
+    String url = await AppUtils.getSFUrl("${AppConstants.sfRecentChat}");
+
     Map<String, dynamic> body = {
       "Business Number": busNum,
       "Customer Number": custNum
     };
     final response = await NetworkService.makeRequest(
-      url: apiUrl,
+      url: url,
       body: body,
       method: 'POST',
     );
@@ -264,10 +283,12 @@ class DashBoardController extends ChangeNotifier {
   Future<void> getDasBoardReportApiCall() async {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-    String apiUrl = "${AppConstants.sfDashBoardReport}businessnumber=$busNum";
+    // String apiUrl = "${AppConstants.sfDashBoardReport}businessnumber=$busNum";
 
+    String url = await AppUtils.getSFUrl(
+        "${AppConstants.sfDashBoardReport}businessnumber=$busNum");
     final response = await NetworkService.makeRequest(
-      url: apiUrl,
+      url: url,
       method: 'GET',
     );
     if (response != null && response.statusCode == 200) {
@@ -324,7 +345,9 @@ class DashBoardController extends ChangeNotifier {
   }
 
   Future<void> sfDeviceTokenApiCall(String usrId) async {
-    String apiUrl = "${AppConstants.sfDeviceToken}";
+    // String apiUrl = "${AppConstants.sfDeviceToken}";
+
+    String url = await AppUtils.getSFUrl("${AppConstants.sfDeviceToken}");
 
     FirebaseMessaging messaging = FirebaseMessaging.instance;
     String? fcmtoken = await messaging.getToken();
@@ -334,7 +357,7 @@ class DashBoardController extends ChangeNotifier {
       "fcmToken": fcmtoken
     };
     final response = await NetworkService.makeRequest(
-      url: apiUrl,
+      url: url,
       body: body,
       method: 'POST',
     );
@@ -356,10 +379,14 @@ class DashBoardController extends ChangeNotifier {
     setSfNotificationListLoader(true);
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-    String apiUrl =
-        "${AppConstants.sfNotificationHistory}?businessnumber=$busNum";
+    // String apiUrl =
+    //     "${AppConstants.sfNotificationHistory}?businessnumber=$busNum";
+
+    String url = await AppUtils.getSFUrl(
+        "${AppConstants.sfNotificationHistory}?businessnumber=$busNum");
+
     final response = await NetworkService.makeRequest(
-      url: apiUrl,
+      url: url,
       method: 'GET',
     );
     if (response != null && response.statusCode == 200) {
@@ -405,9 +432,13 @@ class DashBoardController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
 
-    var url = isFromRecentChat
+    // var url = isFromRecentChat
+    //     ? "${AppConstants.sfRecentChat}?businessnumber=$busNum&recordlimit=5000&objectname=$selectedTitle"
+    //     : AppConstants.getDrawerItemsApi;
+
+    String url = await AppUtils.getSFUrl(isFromRecentChat
         ? "${AppConstants.sfRecentChat}?businessnumber=$busNum&recordlimit=5000&objectname=$selectedTitle"
-        : AppConstants.getDrawerItemsApi;
+        : AppConstants.getDrawerItemsApi);
 
     print("selectedPinnedInfo name :::    ${selectedPinnedInfo?.name}");
     Map<String, dynamic> body = {};

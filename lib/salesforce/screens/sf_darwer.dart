@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/screens/confige_listing_screen.dart';
+import 'package:whatsapp/salesforce/screens/sf_campaign_listing_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 
 import '../../models/user_model/user_model.dart';
@@ -72,17 +73,25 @@ class _SfAppDrawerWidgetState extends State<SfAppDrawerWidget> {
                     children: [
                       ListTile(
                         onTap: () {
-                          ref.setSelectedTitle(category.sObjectName ?? "");
-                          ref.drawerListApiCall(
-                              type: category.sObjectName ?? "");
-
-                          // ref.setSelectedDrawerItem(ref.drawerItems);
-                          Navigator.push(
+                          if (category.sObjectName == 'Campaign') {
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => ConfigListingScreen(
-                                        type: category.sObjectName ?? "",
-                                      )));
+                                  builder: (context) =>
+                                      const SfCampaignScreen()),
+                            );
+                          } else {
+                            ref.setSelectedTitle(category.sObjectName ?? "");
+                            ref.drawerListApiCall(
+                                type: category.sObjectName ?? "");
+
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ConfigListingScreen(
+                                          type: category.sObjectName ?? "",
+                                        )));
+                          }
                         },
                         leading: Icon(
                           category.sObjectName == "Lead"

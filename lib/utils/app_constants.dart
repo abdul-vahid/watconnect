@@ -30,6 +30,7 @@ abstract class SharedPrefsConstants {
   ////SALESFORCE /////////////
 
   static const String sfInstanceurl = "instanceurl";
+  static const String sfBaseUrl = "sfBaseUrl";
   static const String sfAccessToken = "accessToken";
   static const String sfRefreshToken = "refreshToken";
   static const String sfBusinessNumber = "sfBusinessNumber";
@@ -246,47 +247,38 @@ abstract class AppConstants {
   ///  Sales force api
   ///
 
-  static const String baseApi =
-      "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/";
-  static const String getDrawerItemsApi = '${baseApi}watconnect/objectconfig';
-  static const String sfGetDrawerList =
-      '${baseApi}watconnect/objectconfig?sobjectname=';
+  // static const String baseApi =
+  //     "https://d09000001kou9eao--partial.sandbox.my.site.com/whatsapp/services/apexrest/";
+  static const String getDrawerItemsApi = 'watconnect/objectconfig';
+  static const String sfGetDrawerList = 'watconnect/objectconfig?sobjectname=';
 
   static const String sfGetDrawerUnreadList =
-      '${baseApi}watconnect/objectconfig?objectname=';
+      'watconnect/objectconfig?objectname=';
 
-  static const String sfSendMessageApi =
-      '${baseApi}watconnect/messages?type=text';
-  static const String sfSendFileApi =
-      '${baseApi}watconnect/messages?type=document';
-  static const String sfMessageHistoryApi = '${baseApi}watconnect/messages?';
+  static const String sfSendMessageApi = 'watconnect/messages?type=text';
+  static const String sfSendFileApi = 'watconnect/messages?type=document';
+  static const String sfMessageHistoryApi = 'watconnect/messages?';
 
   static const String getToken =
-      "https://test.salesforce.com/services/oauth2/token";
-  static const String sfGetTemplates = "${baseApi}watconnect/templates?";
-  static const String sfDeleteChatHistory =
-      "${baseApi}watconnect/messages/delete?";
+      "https://login.salesforce.com/services/oauth2/token";
+  static const String sfGetTemplates = "watconnect/templates?";
+  static const String sfDeleteChatHistory = "watconnect/messages/delete?";
   static const String sfDeleteChatMsg =
-      "${baseApi}watconnect/messages/selectdMessageDelete?";
-  static const String sfSendTemplate =
-      "${baseApi}watconnect/messages?type=Template";
-  static const String sfGetBusinessNumbs = "${baseApi}watconnect/setting";
-  static const String sfSetBusinessNumb =
-      "${baseApi}watconnect/setting?phoneNumber=";
-  static const String sfGetCampaign = "${baseApi}watconnect/campaign?";
-  static const String sfGetCampaignHistory =
-      "${baseApi}watconnect/campaign/history?";
-  static const String sfAddCampaign = "${baseApi}watconnect/campaign";
-  static const String sfGetProfile = "${baseApi}watconnect/Profile";
-  static const String sfRecentChat = "${baseApi}watconnect/Recentchat";
-  static const String sfNotificationHistory =
-      "${baseApi}watconnect/whatsappNotification";
-  static const String sfDashBoardReport = "${baseApi}watconnect/report?";
-  static const String sfDeviceToken = "${baseApi}watconnect/usermobiledevice";
-  static const String sfCreateFile = "${baseApi}watconnect/createfile";
+      "watconnect/messages/selectdMessageDelete?";
+  static const String sfSendTemplate = "watconnect/messages?type=Template";
+  static const String sfGetBusinessNumbs = "watconnect/setting";
+  static const String sfSetBusinessNumb = "watconnect/setting?phoneNumber=";
+  static const String sfGetCampaign = "watconnect/campaign?";
+  static const String sfGetCampaignHistory = "watconnect/campaign/history?";
+  static const String sfAddCampaign = "watconnect/campaign";
+  static const String sfGetProfile = "watconnect/Profile";
+  static const String sfRecentChat = "watconnect/Recentchat";
+  static const String sfNotificationHistory = "watconnect/whatsappNotification";
+  static const String sfDashBoardReport = "watconnect/report?";
+  static const String sfDeviceToken = "watconnect/usermobiledevice";
+  static const String sfCreateFile = "watconnect/createfile";
 
-  static const String sfCallHistoryApi = '${baseApi}watconnect/callHistory?';
+  static const String sfCallHistoryApi = 'watconnect/callHistory?';
 
-  static const String sfGetReactLoginCredApi =
-      '${baseApi}watconnect/logindetails';
+  static const String sfGetReactLoginCredApi = 'watconnect/logindetails';
 }

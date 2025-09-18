@@ -42,7 +42,7 @@ class ChatButtons extends StatelessWidget {
               ),
             ),
             child: Text(
-              button.label ?? "",
+              button.label ?? "Button",
               style: const TextStyle(
                 color: AppColor.navBarIconColor,
                 fontWeight: FontWeight.w700,

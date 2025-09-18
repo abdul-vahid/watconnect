@@ -10,6 +10,7 @@ import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/network_Services.dart';
 import 'package:whatsapp/salesforce/model/template_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/utils/app_utils.dart';
 
 class TemplateController extends ChangeNotifier {
   Future<void> notify() async {
@@ -88,10 +89,14 @@ class TemplateController extends ChangeNotifier {
     }
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-    String apiUrl =
-        "${AppConstants.sfGetTemplates}businessnumber=${busNum}&category=$category";
+    // String apiUrl =
+    //     "${AppConstants.sfGetTemplates}businessnumber=${busNum}&category=$category";
+
+    String url = await AppUtils.getSFUrl(
+        "${AppConstants.sfGetTemplates}businessnumber=${busNum}&category=$category");
+
     final response = await NetworkService.makeRequest(
-      url: apiUrl,
+      url: url,
       method: 'GET',
     );
     if (response != null && response.statusCode == 200) {
@@ -128,7 +133,10 @@ class TemplateController extends ChangeNotifier {
       String? url,
       String? mimetyp}) async {
     setSentTempLoader(true);
-    String apiUrl = AppConstants.sfSendTemplate;
+    // String apiUrl = AppConstants.sfSendTemplate;
+
+    String apiUrl = await AppUtils.getSFUrl(AppConstants.sfSendTemplate);
+
     final prefs = await SharedPreferences.getInstance();
     // final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
