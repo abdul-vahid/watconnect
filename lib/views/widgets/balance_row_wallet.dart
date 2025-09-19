@@ -45,10 +45,11 @@ class BalanceRow extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             offset: const Offset(0, 3),
-            blurRadius: 6,
+            blurRadius: 4,
           ),
         ],
-        color: const Color(0xffE6E6E6),
+        // color: const Color(0xffE6E6E6),
+        color: Colors.white70,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(

@@ -145,7 +145,6 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
   Widget build(BuildContext context) {
     DashBoardController drProvider = Provider.of(context, listen: false);
 
-    // Create items list with visibility
     final List<Map<String, dynamic>> items = [
       {'icon': Icons.home, 'label': 'Home', 'visible': true},
       {'icon': Icons.person, 'label': 'Profile', 'visible': true},

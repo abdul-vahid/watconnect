@@ -28,7 +28,8 @@ class _BalanceTransactionListScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      // backgroundColor: Colors.white,
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         iconTheme:
             const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),

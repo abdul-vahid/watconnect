@@ -66,6 +66,7 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
   Widget build(BuildContext context) {
     debug('userdetails===${userModel?.username}');
     return Drawer(
+      backgroundColor: Colors.white,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
@@ -453,24 +454,83 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Logout"),
-          content: Text("Are you sure you want to logout?"),
-          actions: [
-            TextButton(
-              child: Text("Cancel"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text("Logout"),
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await logoutUser();
-                // Navigate to login screen or do post-logout cleanup
-              },
-            ),
-          ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColor.navBarIconColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.exit_to_app,
+                    color: AppColor.navBarIconColor, size: 40),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Logout",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Are you sure you want to logout?",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade400),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text("Cancel",
+                          style: TextStyle(color: Colors.black87)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.navBarIconColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text("Logout"),
+                        ),
+                      ),
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await logoutUser();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
+            ],
+          ),
         );
       },
     );

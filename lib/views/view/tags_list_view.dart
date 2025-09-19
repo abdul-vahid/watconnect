@@ -31,6 +31,7 @@ class _TagsListViewState extends State<TagsListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
       appBar: AppBar(
         actions: [
           Padding(

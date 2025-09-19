@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -24,7 +23,7 @@ class LocalNotificationService {
       FlutterLocalNotificationsPlugin();
 
   static void initialize() {
-    print("inititalise is called");
+    debugPrint("Local notifications initialized");
 
     const androidInit = AndroidInitializationSettings("@mipmap/ic_launcher");
     const iOSInit = DarwinInitializationSettings();
@@ -36,108 +35,103 @@ class LocalNotificationService {
 
     _notificationsPlugin.initialize(
       initSettings,
-      onDidReceiveNotificationResponse: (details) async {
-        debugPrint("Notification tapped");
-        // var dc = jsonDecode(details.payload!);
-        debugPrint(
-            "Payload:   $details  ${details.data} ${details.payload}   ${details.payload.runtimeType} ");
-        debugPrint("Action ID: ${details.actionId}    ${details.data}");
-        debugPrint("Notification ID: ${details.id}");
-
-        if (details.payload == null || details.payload!.isEmpty) {
-          return;
-        }
-
-        Map<String, dynamic> finJson = {};
-        try {
-          finJson = jsonDecode(details.payload!);
-        } catch (e) {
-          debugPrint("Failed to decode payload: $e");
-          return;
-        }
-
-        debugPrint("finJson::::: $finJson");
-
-        if (finJson.containsKey('lead_id')) {
-          String leadId = finJson['lead_id']?.toString() ?? '';
-          if (leadId.isEmpty) {
-            debugPrint("No lead_id found in payload.");
-            return;
-          }
-
-          final ctx = navigatorKey.currentContext!;
-          await Provider.of<LeadListViewModel>(ctx, listen: false)
-              .fetch()
-              .then((val) {
-            NavigationFunc(leadId, ctx);
-          });
-        } else {
-          final ctx = navigatorKey.currentContext!;
-          final leadId = finJson['RecordId'];
-          final objName = finJson['sObjectName'];
-
-          DashBoardController dashBoardController =
-              Provider.of(ctx, listen: false);
-          await dashBoardController.drawerListApiCall(type: objName);
-
-          List<SfDrawerItemModel> pinnedConfigItems = [];
-          pinnedConfigItems.addAll(
-            dashBoardController.drawerListItems
-                .where((item) => item.isPinned == true),
-          );
-          for (var item in dashBoardController.drawerListItems) {
-            print(
-                "item ids::::::::::::::::::::::::::::::::::::::::::::  ${item.id}");
-            if (item.id == leadId) {
-              var drawerListItem = item;
-
-              ChatMessageController cmProvider =
-                  Provider.of(ctx, listen: false);
-              DashBoardController dbProvider = Provider.of(ctx, listen: false);
-              String phNum =
-                  "${drawerListItem.countryCode ?? ""}${drawerListItem.whatsappNumber ?? ""}";
-              dbProvider.setSelectedContaactInfo(drawerListItem);
-              await cmProvider.messageHistoryApiCall(
-                userNumber: phNum,
-              );
-              Navigator.push(
-                  ctx,
-                  MaterialPageRoute(
-                      builder: (context) => SfMessageChatScreen(
-                            pinnedLeadsList: pinnedConfigItems,
-                          )));
-
-              return;
-            }
-          }
-        }
-      },
+      onDidReceiveNotificationResponse: _onNotificationResponse,
     );
   }
 
+  static Future<void> _onNotificationResponse(
+      NotificationResponse details) async {
+    debugPrint("Notification tapped: ${details.payload}");
+
+    if (details.payload == null || details.payload!.isEmpty) {
+      return;
+    }
+
+    Map<String, dynamic> finJson;
+    try {
+      finJson = jsonDecode(details.payload!);
+    } catch (e) {
+      debugPrint("Failed to decode payload: $e");
+      return;
+    }
+
+    debugPrint("Notification payload: $finJson");
+
+    try {
+      if (finJson.containsKey('lead_id')) {
+        await _handleLeadNotification(finJson);
+      } else {
+        await _handleSfNotification(finJson);
+      }
+    } catch (e, stackTrace) {
+      debugPrint("Error handling notification response: $e, $stackTrace");
+    }
+  }
+
+  static Future<void> _handleLeadNotification(
+      Map<String, dynamic> finJson) async {
+    final leadId = finJson['lead_id']?.toString() ?? '';
+    if (leadId.isEmpty) {
+      debugPrint("No lead_id found in payload.");
+      return;
+    }
+
+    final ctx = navigatorKey.currentContext;
+    if (ctx != null && ctx.mounted) {
+      await Provider.of<LeadListViewModel>(ctx, listen: false).fetch();
+      NavigationFunc(leadId, ctx);
+    }
+  }
+
+  static Future<void> _handleSfNotification(
+      Map<String, dynamic> finJson) async {
+    final leadId = finJson['RecordId'];
+    final objName = finJson['sObjectName'];
+
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null || !ctx.mounted) return;
+
+    final dashBoardController =
+        Provider.of<DashBoardController>(ctx, listen: false);
+    await dashBoardController.drawerListApiCall(type: objName);
+
+    final pinnedConfigItems = dashBoardController.drawerListItems
+        .where((item) => item.isPinned == true)
+        .toList();
+
+    final matchedItem = dashBoardController.drawerListItems.firstWhere(
+      (item) => item.id == leadId,
+    );
+
+    if (ctx.mounted) {
+      final cmProvider = Provider.of<ChatMessageController>(ctx, listen: false);
+      final dbProvider = Provider.of<DashBoardController>(ctx, listen: false);
+
+      final phNum =
+          "${matchedItem.countryCode ?? ""}${matchedItem.whatsappNumber ?? ""}";
+      dbProvider.setSelectedContaactInfo(matchedItem);
+      await cmProvider.messageHistoryApiCall(userNumber: phNum);
+
+      if (ctx.mounted) {
+        Navigator.push(
+          ctx,
+          MaterialPageRoute(
+            builder: (context) =>
+                SfMessageChatScreen(pinnedLeadsList: pinnedConfigItems),
+          ),
+        );
+      }
+    }
+  }
+
   static Future<void> displayNotification(RemoteMessage message) async {
-    print("is this called once::::::::::::::::::::");
     try {
       final int id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-      String? imageUrl;
       BigPictureStyleInformation? bigPictureStyle;
 
-      if (message.data.containsKey('fileUrl')) {
-        try {
-          var urls = (message.data['fileUrl']);
-          if (urls.isNotEmpty) {
-            imageUrl = urls;
-          }
-        } catch (e) {
-          debugPrint("Error decoding image URL: $e");
-        }
-      }
-
+      final imageUrl = message.data['fileUrl'];
       if (imageUrl != null && imageUrl.isNotEmpty) {
-        final String? filePath =
-            await _downloadAndSaveFile(imageUrl, 'notif_img.jpg');
-
+        final filePath = await _downloadAndSaveFile(imageUrl, 'notif_img.jpg');
         if (filePath != null) {
           bigPictureStyle = BigPictureStyleInformation(
             FilePathAndroidBitmap(filePath),
@@ -145,12 +139,10 @@ class LocalNotificationService {
             contentTitle: message.notification?.title ?? "",
             summaryText: message.notification?.body ?? "",
           );
-        } else {
-          debugPrint("Image download failed or returned null.");
         }
       }
 
-      final NotificationDetails notificationDetails = NotificationDetails(
+      final notificationDetails = NotificationDetails(
         android: AndroidNotificationDetails(
           'spark',
           'Spark',
@@ -165,7 +157,6 @@ class LocalNotificationService {
         iOS: const DarwinNotificationDetails(),
       );
 
-      print("message>>> data>>> ${message.data}");
       await _notificationsPlugin.show(
         id,
         message.notification?.title ?? 'New Notification',
@@ -174,28 +165,28 @@ class LocalNotificationService {
         payload: jsonEncode(message.data),
       );
 
-      debugPrint("Notification shown ");
-    } catch (e) {
-      debugPrint("Error displaying notinfication: $e");
+      debugPrint("Notification displayed successfully");
+    } catch (e, stackTrace) {
+      debugPrint("Error displaying notification: $e, $stackTrace");
     }
   }
 
   static Future<String?> _downloadAndSaveFile(
       String url, String fileName) async {
     try {
-      final Directory directory = await getApplicationDocumentsDirectory();
-      final String filePath = '${directory.path}/$fileName';
-      final http.Response response = await http.get(Uri.parse(url));
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/$fileName';
+      final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        final File file = File(filePath);
+        final file = File(filePath);
         await file.writeAsBytes(response.bodyBytes);
         return filePath;
-      } else {
-        debugPrint(
-            "Failed to download image. Status Code: ${response.statusCode}");
-        return null;
       }
+
+      debugPrint(
+          "Failed to download image. Status Code: ${response.statusCode}");
+      return null;
     } catch (e) {
       debugPrint("Error downloading image: $e");
       return null;
@@ -204,40 +195,26 @@ class LocalNotificationService {
 
   static FlutterLocalNotificationsPlugin get instance => _notificationsPlugin;
 
-  static List pinnedLeads = [];
-  // ignore: non_constant_identifier_names
   static void NavigationFunc(String leadId, BuildContext cntxt) {
-    print("NavigationFunc ::: 1");
-    debug("NavigationFunc called with leadId dsfcsf: $leadId");
+    debug("NavigationFunc called with leadId: $leadId");
+
+    if (!cntxt.mounted) return;
+
+    final leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
     LeadModel? matchedModel;
-    var leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
+    final List<LeadModel> pinnedLeads = [];
 
-    pinnedLeads = [];
-
+    // Find pinned leads and matching lead
     for (var viewModel in leadlistvm.viewModels) {
-      var leadmodel = viewModel.model;
-      print("leadmodel:::::   ::   $leadmodel");
-      print(
-          "leadmodel?.records:::::::::: ${leadmodel?.records}  ${leadmodel?.records.length}");
+      final leadmodel = viewModel.model;
+
       if (leadmodel?.records != null) {
         for (var record in leadmodel!.records!) {
           if (record.pinned == true) {
             pinnedLeads.add(record);
           }
-        }
-      }
-    }
-
-    for (var viewModel in leadlistvm.viewModels) {
-      var leadmodel = viewModel.model;
-      print("leadmodel:::::   ::   $leadmodel");
-      print(
-          "leadmodel?.records:::::::::: ${leadmodel?.records}  ${leadmodel?.records.length}");
-      if (leadmodel?.records != null) {
-        for (var record in leadmodel!.records!) {
           if (record.id.toString() == leadId) {
             matchedModel = record;
-            break;
           }
         }
       }
@@ -246,21 +223,22 @@ class LocalNotificationService {
     if (matchedModel == null) {
       debug("No matching lead found for ID: $leadId");
       return;
-    } else {
-      print("model found::::::::::: ${matchedModel.firstname}");
     }
-    print("From Page ::: 1");
+
+    final wpNumber = matchedModel.whatsappNumber ?? "";
+    final formattedWpNumber = wpNumber.contains("+")
+        ? wpNumber
+        : "${matchedModel.countryCode}$wpNumber";
+
     Navigator.push(
       cntxt,
       MaterialPageRoute(
         builder: (_) => WhatsappChatScreen(
           pinnedLeads: pinnedLeads,
           leadName:
-              "${matchedModel!.firstname ?? ""} ${matchedModel.lastname ?? ""}",
-          wpnumber: matchedModel.whatsappNumber!.contains("+")
-              ? matchedModel.whatsappNumber ?? ""
-              : "${matchedModel.countryCode}${matchedModel.whatsappNumber ?? ""}",
-          id: matchedModel.id,
+              "${matchedModel?.firstname ?? ""} ${matchedModel?.lastname ?? ""}",
+          wpnumber: formattedWpNumber,
+          id: matchedModel?.id,
           model: matchedModel,
         ),
       ),
