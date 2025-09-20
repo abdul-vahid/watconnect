@@ -30,14 +30,14 @@ class NotificationUtil {
   void initialize() {
     if (isInitialized) return;
 
-    LocalNotificationService.initialize();
+    // LocalNotificationService.initialize();
     registerToken();
 
     _firebaseMessaging = FirebaseMessaging.instance;
     _firebaseMessaging?.requestPermission();
 
-    _setupMessageHandlers();
-    isInitialized = true;
+    // _setupMessageHandlers();
+    // isInitialized = true;
   }
 
   void _setupMessageHandlers() {
@@ -68,11 +68,11 @@ class NotificationUtil {
             await downloadAndSaveImage(imageUrl, 'notif_image.jpg');
         await showImageNotification(remoteMessage, filePath);
       } else {
-        LocalNotificationService.displayNotification(remoteMessage);
+        // LocalNotificationService.displayNotification(remoteMessage);
       }
     } catch (e) {
       debugPrint("Image download failed, fallback to text notification: $e");
-      LocalNotificationService.displayNotification(remoteMessage);
+      // LocalNotificationService.displayNotification(remoteMessage);
     }
   }
 
@@ -293,15 +293,15 @@ Future<void> showImageNotification(
     final platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
-    await LocalNotificationService.instance.show(
-      0,
-      message.notification?.title,
-      message.notification?.body,
-      platformChannelSpecifics,
-    );
+    // await LocalNotificationService.instance.show(
+    //   0,
+    //   message.notification?.title,
+    //   message.notification?.body,
+    //   platformChannelSpecifics,
+    // );
   } catch (e) {
     debugPrint("Error showing image notification: $e");
     // Fallback to regular notification
-    LocalNotificationService.displayNotification(message);
+    // LocalNotificationService.displayNotification(message);
   }
 }

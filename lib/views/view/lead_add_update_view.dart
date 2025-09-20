@@ -676,6 +676,18 @@ class _Forms extends State<LeadAddView> {
                               onSaved: (email) {
                                 _email = email;
                               },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter email';
+                                }
+
+                                // final emailRegex =
+                                //     RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                                // if (!emailRegex.hasMatch(value)) {
+                                //   return 'Please enter a valid email';
+                                // }
+                                return null;
+                              },
                             ),
 
                             const SizedBox(height: 10),
@@ -1070,6 +1082,23 @@ class _Forms extends State<LeadAddView> {
 
       _getleadData?.addlead(body).then((value) {
         debug("value#### $value");
+        if (value['success'] == false) {
+          var error = value['errors'];
+          String message;
+
+          if (error is List) {
+            message = "Something went wrong";
+            // message = error.join(", ");
+          } else if (error is String) {
+            message = error;
+          } else {
+            message = "Something went wrong";
+          }
+
+          EasyLoading.showToast(message);
+          return;
+        }
+
         Navigator.pop(context);
         Navigator.pop(context);
         if (value.isNotEmpty) {

@@ -885,7 +885,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
 }
 
 String replaceTemplateParams(String templateBody, String paramsJsonString) {
-  log("replacing template params:::   $templateBody   $paramsJsonString");
+  // log("replacing template params:::   $templateBody   $paramsJsonString");
   try {
     final List<dynamic> paramsList = paramsJsonString.isNotEmpty
         ? List<Map<String, dynamic>>.from((jsonDecode(paramsJsonString) as List)

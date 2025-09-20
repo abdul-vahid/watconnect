@@ -22,107 +22,108 @@ class LocalNotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  static void initialize() {
-    debugPrint("Local notifications initialized");
+  // static void initialize() {
+  //   debugPrint("Local notifications initialized");
 
-    const androidInit = AndroidInitializationSettings("@mipmap/ic_launcher");
-    const iOSInit = DarwinInitializationSettings();
+  //   const androidInit = AndroidInitializationSettings("@mipmap/ic_launcher");
+  //   const iOSInit = DarwinInitializationSettings();
 
-    const initSettings = InitializationSettings(
-      android: androidInit,
-      iOS: iOSInit,
-    );
+  //   const initSettings = InitializationSettings(
+  //     android: androidInit,
+  //     iOS: iOSInit,
+  //   );
 
-    _notificationsPlugin.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: _onNotificationResponse,
-    );
-  }
+  //   _notificationsPlugin.initialize(
+  //     initSettings,
+  //     onDidReceiveNotificationResponse: _onNotificationResponse,
+  //   );
+  // }
 
-  static Future<void> _onNotificationResponse(
-      NotificationResponse details) async {
-    debugPrint("Notification tapped: ${details.payload}");
+  // static Future<void> _onNotificationResponse(
+  //     NotificationResponse details) async {
+  //   debugPrint(
+  //       "Notification tapped: ${details.payload}    ${details.data}  ${details.notificationResponseType}");
 
-    if (details.payload == null || details.payload!.isEmpty) {
-      return;
-    }
+  //   if (details.payload == null || details.payload!.isEmpty) {
+  //     return;
+  //   }
 
-    Map<String, dynamic> finJson;
-    try {
-      finJson = jsonDecode(details.payload!);
-    } catch (e) {
-      debugPrint("Failed to decode payload: $e");
-      return;
-    }
+  //   Map<String, dynamic> finJson;
+  //   try {
+  //     finJson = jsonDecode(details.payload!);
+  //   } catch (e) {
+  //     debugPrint("Failed to decode payload: $e");
+  //     return;
+  //   }
 
-    debugPrint("Notification payload: $finJson");
+  //   debugPrint("Notification payload: $finJson");
 
-    try {
-      if (finJson.containsKey('lead_id')) {
-        await _handleLeadNotification(finJson);
-      } else {
-        await _handleSfNotification(finJson);
-      }
-    } catch (e, stackTrace) {
-      debugPrint("Error handling notification response: $e, $stackTrace");
-    }
-  }
+  //   try {
+  //     if (finJson.containsKey('lead_id')) {
+  //       await _handleLeadNotification(finJson);
+  //     } else {
+  //       await _handleSfNotification(finJson);
+  //     }
+  //   } catch (e, stackTrace) {
+  //     debugPrint("Error handling notification response: $e, $stackTrace");
+  //   }
+  // }
 
-  static Future<void> _handleLeadNotification(
-      Map<String, dynamic> finJson) async {
-    final leadId = finJson['lead_id']?.toString() ?? '';
-    if (leadId.isEmpty) {
-      debugPrint("No lead_id found in payload.");
-      return;
-    }
+  // static Future<void> _handleLeadNotification(
+  //     Map<String, dynamic> finJson) async {
+  //   final leadId = finJson['lead_id']?.toString() ?? '';
+  //   if (leadId.isEmpty) {
+  //     debugPrint("No lead_id found in payload.");
+  //     return;
+  //   }
 
-    final ctx = navigatorKey.currentContext;
-    if (ctx != null && ctx.mounted) {
-      await Provider.of<LeadListViewModel>(ctx, listen: false).fetch();
-      NavigationFunc(leadId, ctx);
-    }
-  }
+  //   final ctx = navigatorKey.currentContext;
+  //   if (ctx != null && ctx.mounted) {
+  //     await Provider.of<LeadListViewModel>(ctx, listen: false).fetch();
+  //     NavigationFunc(leadId, ctx);
+  //   }
+  // }
 
-  static Future<void> _handleSfNotification(
-      Map<String, dynamic> finJson) async {
-    final leadId = finJson['RecordId'];
-    final objName = finJson['sObjectName'];
+  // static Future<void> _handleSfNotification(
+  //     Map<String, dynamic> finJson) async {
+  //   final leadId = finJson['RecordId'];
+  //   final objName = finJson['sObjectName'];
 
-    final ctx = navigatorKey.currentContext;
-    if (ctx == null || !ctx.mounted) return;
+  //   final ctx = navigatorKey.currentContext;
+  //   if (ctx == null || !ctx.mounted) return;
 
-    final dashBoardController =
-        Provider.of<DashBoardController>(ctx, listen: false);
-    await dashBoardController.drawerListApiCall(type: objName);
+  //   final dashBoardController =
+  //       Provider.of<DashBoardController>(ctx, listen: false);
+  //   await dashBoardController.drawerListApiCall(type: objName);
 
-    final pinnedConfigItems = dashBoardController.drawerListItems
-        .where((item) => item.isPinned == true)
-        .toList();
+  //   final pinnedConfigItems = dashBoardController.drawerListItems
+  //       .where((item) => item.isPinned == true)
+  //       .toList();
 
-    final matchedItem = dashBoardController.drawerListItems.firstWhere(
-      (item) => item.id == leadId,
-    );
+  //   final matchedItem = dashBoardController.drawerListItems.firstWhere(
+  //     (item) => item.id == leadId,
+  //   );
 
-    if (ctx.mounted) {
-      final cmProvider = Provider.of<ChatMessageController>(ctx, listen: false);
-      final dbProvider = Provider.of<DashBoardController>(ctx, listen: false);
+  //   if (ctx.mounted) {
+  //     final cmProvider = Provider.of<ChatMessageController>(ctx, listen: false);
+  //     final dbProvider = Provider.of<DashBoardController>(ctx, listen: false);
 
-      final phNum =
-          "${matchedItem.countryCode ?? ""}${matchedItem.whatsappNumber ?? ""}";
-      dbProvider.setSelectedContaactInfo(matchedItem);
-      await cmProvider.messageHistoryApiCall(userNumber: phNum);
+  //     final phNum =
+  //         "${matchedItem.countryCode ?? ""}${matchedItem.whatsappNumber ?? ""}";
+  //     dbProvider.setSelectedContaactInfo(matchedItem);
+  //     await cmProvider.messageHistoryApiCall(userNumber: phNum);
 
-      if (ctx.mounted) {
-        Navigator.push(
-          ctx,
-          MaterialPageRoute(
-            builder: (context) =>
-                SfMessageChatScreen(pinnedLeadsList: pinnedConfigItems),
-          ),
-        );
-      }
-    }
-  }
+  //     if (ctx.mounted) {
+  //       Navigator.push(
+  //         ctx,
+  //         MaterialPageRoute(
+  //           builder: (context) =>
+  //               SfMessageChatScreen(pinnedLeadsList: pinnedConfigItems),
+  //         ),
+  //       );
+  //     }
+  //   }
+  // }
 
   static Future<void> displayNotification(RemoteMessage message) async {
     try {
@@ -193,55 +194,55 @@ class LocalNotificationService {
     }
   }
 
-  static FlutterLocalNotificationsPlugin get instance => _notificationsPlugin;
+  // static FlutterLocalNotificationsPlugin get instance => _notificationsPlugin;
 
-  static void NavigationFunc(String leadId, BuildContext cntxt) {
-    debug("NavigationFunc called with leadId: $leadId");
+  // static void NavigationFunc(String leadId, BuildContext cntxt) {
+  //   debug("NavigationFunc called with leadId: $leadId");
 
-    if (!cntxt.mounted) return;
+  //   if (!cntxt.mounted) return;
 
-    final leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
-    LeadModel? matchedModel;
-    final List<LeadModel> pinnedLeads = [];
+  //   final leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
+  //   LeadModel? matchedModel;
+  //   final List<LeadModel> pinnedLeads = [];
 
-    // Find pinned leads and matching lead
-    for (var viewModel in leadlistvm.viewModels) {
-      final leadmodel = viewModel.model;
+  //   // Find pinned leads and matching lead
+  //   for (var viewModel in leadlistvm.viewModels) {
+  //     final leadmodel = viewModel.model;
 
-      if (leadmodel?.records != null) {
-        for (var record in leadmodel!.records!) {
-          if (record.pinned == true) {
-            pinnedLeads.add(record);
-          }
-          if (record.id.toString() == leadId) {
-            matchedModel = record;
-          }
-        }
-      }
-    }
+  //     if (leadmodel?.records != null) {
+  //       for (var record in leadmodel!.records!) {
+  //         if (record.pinned == true) {
+  //           pinnedLeads.add(record);
+  //         }
+  //         if (record.id.toString() == leadId) {
+  //           matchedModel = record;
+  //         }
+  //       }
+  //     }
+  //   }
 
-    if (matchedModel == null) {
-      debug("No matching lead found for ID: $leadId");
-      return;
-    }
+  //   if (matchedModel == null) {
+  //     debug("No matching lead found for ID: $leadId");
+  //     return;
+  //   }
 
-    final wpNumber = matchedModel.whatsappNumber ?? "";
-    final formattedWpNumber = wpNumber.contains("+")
-        ? wpNumber
-        : "${matchedModel.countryCode}$wpNumber";
+  //   final wpNumber = matchedModel.whatsappNumber ?? "";
+  //   final formattedWpNumber = wpNumber.contains("+")
+  //       ? wpNumber
+  //       : "${matchedModel.countryCode}$wpNumber";
 
-    Navigator.push(
-      cntxt,
-      MaterialPageRoute(
-        builder: (_) => WhatsappChatScreen(
-          pinnedLeads: pinnedLeads,
-          leadName:
-              "${matchedModel?.firstname ?? ""} ${matchedModel?.lastname ?? ""}",
-          wpnumber: formattedWpNumber,
-          id: matchedModel?.id,
-          model: matchedModel,
-        ),
-      ),
-    );
-  }
+  //   Navigator.push(
+  //     cntxt,
+  //     MaterialPageRoute(
+  //       builder: (_) => WhatsappChatScreen(
+  //         pinnedLeads: pinnedLeads,
+  //         leadName:
+  //             "${matchedModel?.firstname ?? ""} ${matchedModel?.lastname ?? ""}",
+  //         wpnumber: formattedWpNumber,
+  //         id: matchedModel?.id,
+  //         model: matchedModel,
+  //       ),
+  //     ),
+  //   );
+  // }
 }

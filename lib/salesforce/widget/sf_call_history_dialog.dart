@@ -53,45 +53,54 @@ void showSfCallDialog(
               ),
               const SizedBox(height: 10),
               Expanded(
-                child: ListView.separated(
-                  itemCount: sfcallHistoryList.length,
-                  separatorBuilder: (context, index) =>
-                      const Divider(height: 1, color: Colors.grey),
-                  itemBuilder: (context, index) {
-                    final call = sfcallHistoryList[index];
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 4),
-                      leading: Transform.rotate(
-                        angle: call.statusC == "Incoming" ? 45 : 180,
-                        child: Icon(
-                          FontAwesomeIcons.arrowDown,
-                          color: call.statusC == "Incoming"
-                              ? Colors.green
-                              : Colors.red,
-                          size: 16,
-                        ),
-                      ),
-                      title: Text(
-                        call.name ?? call.whatsAppNumber ?? "",
-                        style: const TextStyle(
+                child: sfcallHistoryList.isEmpty
+                    ? const Center(
+                        child: Text(
+                        "No Call History Available",
+                        style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
                         ),
+                      ))
+                    : ListView.separated(
+                        itemCount: sfcallHistoryList.length,
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 1, color: Colors.grey),
+                        itemBuilder: (context, index) {
+                          final call = sfcallHistoryList[index];
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 4),
+                            leading: Transform.rotate(
+                              angle: call.statusC == "Incoming" ? 45 : 180,
+                              child: Icon(
+                                FontAwesomeIcons.arrowDown,
+                                color: call.statusC == "Incoming"
+                                    ? Colors.green
+                                    : Colors.red,
+                                size: 16,
+                              ),
+                            ),
+                            title: Text(
+                              call.name ?? call.whatsAppNumber ?? "",
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            subtitle: Text(
+                              "${sfFromatCallDate(call.startTime ?? "")} - "
+                              "${(call.endTime?.isNotEmpty ?? false) ? sfFromatCallDate(call.endTime!) : "Not Answered"}",
+                              style: const TextStyle(
+                                  color: Colors.grey, fontSize: 14),
+                            ),
+                            trailing: Text(
+                              formatDuration(call.duration ?? 0),
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          );
+                        },
                       ),
-                      subtitle: Text(
-                        "${sfFromatCallDate(call.startTime ?? "")} - "
-                        "${(call.endTime?.isNotEmpty ?? false) ? sfFromatCallDate(call.endTime!) : "Not Answered"}",
-                        style:
-                            const TextStyle(color: Colors.grey, fontSize: 14),
-                      ),
-                      trailing: Text(
-                        formatDuration(call.duration ?? 0),
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    );
-                  },
-                ),
               ),
             ],
           ),
