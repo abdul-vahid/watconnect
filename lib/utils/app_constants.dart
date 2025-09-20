@@ -39,6 +39,8 @@ abstract class SharedPrefsConstants {
   static const String sfNodeRefreshToken = "sfNodeRefreshToken";
 
   static const String sfNodeTennatCode = "sfNodeTennatCode";
+
+  static const String sfEnv = "sfEnv";
 }
 
 abstract class ResultStatus {
@@ -261,6 +263,10 @@ abstract class AppConstants {
 
   static const String getToken =
       "https://login.salesforce.com/services/oauth2/token";
+
+  static const String getTestToken =
+      "https://test.salesforce.com/services/oauth2/token";
+
   static const String sfGetTemplates = "watconnect/templates?";
   static const String sfDeleteChatHistory = "watconnect/messages/delete?";
   static const String sfDeleteChatMsg =

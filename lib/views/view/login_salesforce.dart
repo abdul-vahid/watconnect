@@ -2,17 +2,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/views/widgets/bottomnavigatonbar.dart';
 // import 'package:whatsapp/salesforce/screens/sf_dashboard.dart';
 
 class WebViewPage extends StatefulWidget {
   final String url;
+  final String env;
 
-  const WebViewPage({super.key, required this.url});
+  const WebViewPage({super.key, required this.url, required this.env});
 
   @override
   _WebViewPageState createState() => _WebViewPageState();
@@ -44,7 +47,8 @@ class _WebViewPageState extends State<WebViewPage> {
 
             if (authCode != null) {
               print("Extracted Authorization Code: $authCode");
-
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString(SharedPrefsConstants.sfEnv, widget.env);
               Map<String, String> body = {
                 "grant_type": "authorization_code",
                 "client_id":
@@ -52,8 +56,9 @@ class _WebViewPageState extends State<WebViewPage> {
                 "client_secret":
                     "195E44ED6BAFD4F6F5CB20343F7FFC169616D9C417B3C51089B00F6487E0F459",
                 "code": authCode,
-                "redirect_uri":
-                    "https://login.salesforce.com/services/oauth2/success",
+                "redirect_uri": widget.env == 'Test'
+                    ? "https://test.salesforce.com/services/oauth2/success"
+                    : "https://login.salesforce.com/services/oauth2/success",
               };
 
               ChatMessageController chatMessageController =

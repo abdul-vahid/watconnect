@@ -177,21 +177,152 @@ class _LoginViewState extends State<LoginView> {
                                       icon: const Icon(Icons.cloud,
                                           color: Colors.white),
                                       onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (_) => const WebViewPage(
-                                                  url:
-                                                      "https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ&redirect_uri=https://login.salesforce.com/services/oauth2/success")
-                                              // "https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9PwZx9R6_UreQjtbTa_HQIRT0vGO9oKRm1vvYigaXJdMOt0xNGJzv6nfaXazvy6sTACP1WoZ2144f0ZDK&redirect_uri=https://login.salesforce.com/services/oauth2/success"
-                                              // "https://test.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9HDaKRUgW3VrsUI_RKn2LNBUcxtribjudS7kOePtrSPn9mK.aWox_5gvqxOTD50qyOmRcRWV6jp3jwTOs&redirect_uri=https://test.salesforce.com/services/oauth2/success&scope=&state=random123"),
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder: (BuildContext context) {
+                                            return Container(
+                                              decoration: const BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.vertical(
+                                                  top: Radius.circular(24),
+                                                ),
                                               ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(20.0),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Center(
+                                                      child: Container(
+                                                        width: 40,
+                                                        height: 4,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color:
+                                                              Colors.grey[300],
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(2),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 16),
+
+                                                    // Header
+                                                    const Text(
+                                                      "Login to Salesforce",
+                                                      style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color:
+                                                            Color(0xFF080707),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 8),
+                                                    const Text(
+                                                      "Choose your environment to continue",
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 24),
+
+                                                    _LoginOptionTile(
+                                                      icon: Icons.public,
+                                                      iconColor: const Color(
+                                                          0xFF0176D3),
+                                                      title: "Production",
+                                                      subtitle:
+                                                          "login.salesforce.com",
+                                                      onTap: () {
+                                                        Navigator.pop(context);
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (_) =>
+                                                                const WebViewPage(
+                                                              env: "Prod",
+                                                              url:
+                                                                  "https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ&redirect_uri=https://login.salesforce.com/services/oauth2/success",
+                                                            ),
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                    const SizedBox(height: 16),
+
+                                                    _LoginOptionTile(
+                                                      icon: Icons.science,
+                                                      iconColor: const Color(
+                                                          0xFF4BC076),
+                                                      title:
+                                                          "Sandbox / Testing",
+                                                      subtitle:
+                                                          "test.salesforce.com",
+                                                      onTap: () {
+                                                        Navigator.pop(context);
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (_) =>
+                                                                const WebViewPage(
+                                                              env: "Test",
+                                                              url:
+                                                                  "https://test.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ&redirect_uri=https://test.salesforce.com/services/oauth2/success",
+                                                            ),
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                    const SizedBox(height: 24),
+
+                                                    SizedBox(
+                                                      width: double.infinity,
+                                                      child: TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                                context),
+                                                        style: TextButton
+                                                            .styleFrom(
+                                                          foregroundColor:
+                                                              Colors.grey[700],
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  vertical: 16),
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        6),
+                                                          ),
+                                                        ),
+                                                        child: const Text(
+                                                            "Cancel"),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
                                         );
                                       },
-                                      label: const Text("Salesforce",
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.white)),
+                                      label: const Text(
+                                        "Salesforce",
+                                        style: TextStyle(
+                                            fontSize: 16, color: Colors.white),
+                                      ),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
                                             const Color(0xFF233A73),
@@ -288,5 +419,74 @@ class _LoginViewState extends State<LoginView> {
           shape: BoxShape.circle,
         ),
         child: Image.asset(icon));
+  }
+}
+
+// Custom widget for login options
+class _LoginOptionTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _LoginOptionTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+          ],
+        ),
+      ),
+    );
   }
 }

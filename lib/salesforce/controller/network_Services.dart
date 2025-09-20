@@ -106,7 +106,7 @@ class NetworkService {
 
   static Future<bool> getSfRefreshTokenApiApiCall() async {
     final prefs = await SharedPreferences.getInstance();
-
+    final env = await prefs.getString(SharedPrefsConstants.sfEnv);
     final refreshToken =
         prefs.getString(SharedPrefsConstants.sfRefreshToken) ?? "";
 
@@ -117,13 +117,17 @@ class NetworkService {
       "client_secret":
           "195E44ED6BAFD4F6F5CB20343F7FFC169616D9C417B3C51089B00F6487E0F459",
       "refresh_token": refreshToken,
-      "redirect_uri": "https://login.salesforce.com/services/oauth2/success",
+      "redirect_uri": env == 'Test'
+          ? "https://test.salesforce.com/services/oauth2/success"
+          : "https://login.salesforce.com/services/oauth2/success",
     };
     try {
       log("refresh token req body:::    $body");
       final encodedBody = Uri(queryParameters: body).query;
 
-      String url = await AppUtils.getSFUrl(AppConstants.getToken);
+      String url = env == 'Test'
+          ? await AppUtils.getSFUrl(AppConstants.getTestToken)
+          : await AppUtils.getSFUrl(AppConstants.getToken);
 
       final response = await http.post(
         Uri.parse(url),

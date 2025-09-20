@@ -158,10 +158,15 @@ class ChatMessageController extends ChangeNotifier {
 
   Future<bool> getSfAccessTokenApiCall(Map<String, dynamic> body) async {
     try {
-      final encodedBody = Uri(queryParameters: body).query;
+      final prefs = await SharedPreferences.getInstance();
+      final env = await prefs.getString(SharedPrefsConstants.sfEnv);
 
+      String url =
+          env == 'Test' ? AppConstants.getTestToken : AppConstants.getToken;
+      final encodedBody = Uri(queryParameters: body).query;
+      print("salesfoce token get api req body--- $body    $url");
       final response = await http.post(
-        Uri.parse(AppConstants.getToken),
+        Uri.parse(url),
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: encodedBody,
       );
