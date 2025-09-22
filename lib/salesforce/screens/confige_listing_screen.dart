@@ -53,10 +53,10 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
     return Consumer<DashBoardController>(builder: (context, ref, child) {
       return FocusDetector(
         onFocusLost: () {
-          DashBoardController dbProvider = Provider.of(context, listen: false);
-          if (dbProvider.configUnreadCountList.isNotEmpty) {
-            dbProvider.drawerListUnreadCountApiCall(
-                type: dbProvider.selectedTitle);
+          
+          if (ref.configUnreadCountList.isNotEmpty) {
+            ref.drawerListUnreadCountApiCall(
+                type: ref.selectedTitle);
           }
         },
         child: Scaffold(

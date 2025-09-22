@@ -74,11 +74,24 @@ void main() async {
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+       
+  const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  const InitializationSettings initializationSettings =
-      InitializationSettings(android: initializationSettingsAndroid);
+  final DarwinInitializationSettings initializationSettingsDarwin =
+      DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+    // onDidReceiveLocalNotification: (int id, String? title, String? body, String? payload) async {
+    //   // Handle iOS foreground notification tap here
+    //   print("iOS Notification received: $payload");
+    // },
+  );
+
+  final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsDarwin,
+  );
 
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
@@ -93,6 +106,9 @@ void main() async {
 
   runApp(const MyApp());
 }
+
+
+
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});

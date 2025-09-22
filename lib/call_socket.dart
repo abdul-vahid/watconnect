@@ -80,7 +80,7 @@ class CallSocketService {
     user = userData;
     this.devId = devId;
     this.busNum = busNum;
-
+print("its trying to connect to socket:::::::::::::::  🔁 Call socket ");
     if (_isConnected && _socket?.connected == true) {
       debugPrint("🔁 Call socket already connected.");
       _setupListeners();

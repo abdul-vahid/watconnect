@@ -93,7 +93,7 @@ class _LoginViewState extends State<LoginView> {
                                   hintText: "Enter Company Code",
                                   prefixIcon: const Icon(Icons.code,
                                       color: Color(0xFF233A73)),
-                                  filled: true,
+                                  filled: true, 
                                   fillColor: Colors.white,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(15),
