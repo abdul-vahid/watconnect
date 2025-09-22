@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +26,8 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
   void initState() {
     SfcampaignController campController = Provider.of(context, listen: false);
     campController.getCampaignApiCall();
+
+    campController.setCampStatusList([]);
     super.initState();
   }
 
@@ -63,182 +66,168 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
       return Column(
         children: [
           Expanded(
-            child: campController.getCampLoader
-                ? const Center(
-                    child: SizedBox(
-                      height: 50,
-                      width: 50,
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : campController.sfCampaignList.isEmpty
-                    ? const Center(
-                        child: Text(
-                          "No Campaigns Found..",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Consumer<SfcampaignController>(
-                              builder: (context, ref, child) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12.0, vertical: 10),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                      flex: 2,
-                                      child: InkWell(
-                                        onTap: () {
-                                          _showFilterBottomSheet(context);
-                                        },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black
-                                                      .withOpacity(0.1),
-                                                  blurRadius: 2,
-                                                  spreadRadius: 2,
-                                                  offset: const Offset(1, 1),
-                                                ),
-                                              ],
-                                              color: Colors.white,
-                                              border: Border.all(
-                                                  color:
-                                                      AppColor.backgroundGrey),
-                                              borderRadius:
-                                                  BorderRadius.circular(12)),
-                                          child: Center(
-                                            child: Stack(
-                                              children: [
-                                                const Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Icon(
-                                                    Icons.filter_list,
-                                                    color: Color.fromARGB(
-                                                        255, 0, 0, 0),
-                                                    size: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Consumer<SfcampaignController>(builder: (context, ref, child) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0, vertical: 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            flex: 2,
+                            child: InkWell(
+                              onTap: () {
+                                _showFilterBottomSheet(context);
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 2,
+                                        spreadRadius: 2,
+                                        offset: const Offset(1, 1),
+                                      ),
+                                    ],
+                                    color: Colors.white,
+                                    border: Border.all(
+                                        color: AppColor.backgroundGrey),
+                                    borderRadius: BorderRadius.circular(12)),
+                                child: Center(
+                                  child: Stack(
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Icon(
+                                          Icons.filter_list,
+                                          color: Color.fromARGB(255, 0, 0, 0),
+                                          size: 20,
+                                        ),
+                                      ),
+                                      ref.campaignStatusList.isEmpty
+                                          ? const SizedBox()
+                                          : Positioned(
+                                              left: 8,
+                                              top: 5,
+                                              child: Container(
+                                                decoration: const BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: Colors.brown),
+                                                child: Center(
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            4.0),
+                                                    child: Text(
+                                                      ref.campaignStatusList
+                                                          .length
+                                                          .toString(),
+                                                      style: const TextStyle(
+                                                          color: Colors.white),
+                                                    ),
                                                   ),
                                                 ),
-                                                ref.campaignStatusList.isEmpty
-                                                    ? const SizedBox()
-                                                    : Positioned(
-                                                        left: 8,
-                                                        top: 5,
-                                                        child: Container(
-                                                          decoration:
-                                                              const BoxDecoration(
-                                                                  shape: BoxShape
-                                                                      .circle,
-                                                                  color: Colors
-                                                                      .brown),
-                                                          child: Center(
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(4.0),
-                                                              child: Text(
-                                                                ref.campaignStatusList
-                                                                    .length
-                                                                    .toString(),
-                                                                style: const TextStyle(
-                                                                    color: Colors
-                                                                        .white),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      )
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      )),
-                                  const SizedBox(
-                                    width: 10,
+                                              ),
+                                            )
+                                    ],
                                   ),
-                                  Expanded(
-                                    flex: 9,
-                                    child: TextField(
-                                      controller: searchController,
-                                      onChanged: ref.searchCamp,
-                                      decoration: InputDecoration(
-                                        isDense: true,
-                                        hintText: 'Search...',
-                                        hintStyle: TextStyle(
-                                          color: AppColor.textoriconColor
-                                              .withOpacity(0.6),
-                                        ),
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          borderSide: const BorderSide(
-                                            color: AppColor.navBarIconColor,
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                        contentPadding:
-                                            const EdgeInsets.all(10),
-                                        disabledBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: AppColor.backgroundGrey),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        border: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: AppColor.backgroundGrey),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        prefixIcon: const Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 10),
-                                            child: Icon(Icons.search)),
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            );
-                          }),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12.0, vertical: 5),
-                            child: Text(
-                              "${campController.sfCampaignList.length} Campaigns Available",
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.5),
-                                    blurRadius: 5,
-                                    spreadRadius: 3,
-                                    offset: const Offset(2, 4),
-                                  ),
-                                ],
-                                color: Colors.white,
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(30),
-                                  topRight: Radius.circular(30),
                                 ),
                               ),
-                              child: Padding(
+                            )),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Expanded(
+                          flex: 9,
+                          child: TextField(
+                            controller: searchController,
+                            onChanged: ref.searchCamp,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              hintText: 'Search...',
+                              hintStyle: TextStyle(
+                                color:
+                                    AppColor.textoriconColor.withOpacity(0.6),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(
+                                  color: AppColor.navBarIconColor,
+                                  width: 1.5,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.all(10),
+                              disabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                    color: AppColor.backgroundGrey),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              border: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                    color: AppColor.backgroundGrey),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              prefixIcon: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 10),
+                                  child: Icon(Icons.search)),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  );
+                }),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5),
+                  child: Text(
+                    "${campController.sfCampaignList.length} Campaigns Available",
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 5,
+                          spreadRadius: 3,
+                          offset: const Offset(2, 4),
+                        ),
+                      ],
+                      color: Colors.white,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: campController.getCampLoader
+                        ? const Center(
+                            child: SizedBox(
+                              height: 50,
+                              width: 50,
+                              child: CircularProgressIndicator(),
+                            ),
+                          )
+                        : campController.sfCampaignList.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  "No Campaigns Found..",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              )
+                            : Padding(
                                 padding: const EdgeInsets.only(
                                     top: 10.0, left: 3, right: 3),
                                 child: ListView.builder(
@@ -254,10 +243,10 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
                                   },
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       );
@@ -448,7 +437,7 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
                           style: TextStyle(fontSize: 18),
                         ),
                       ),
-                      buttonText: const Text("Select Leads Status"),
+                      buttonText: const Text("Select Campaign Status"),
                       searchable: true,
                       dialogWidth: 300,
                       dialogHeight: 250,
@@ -463,6 +452,7 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
                         // Update selectleadList with the confirmed selections
                         // selectleadList = selected;
                       },
+                      chipDisplay: MultiSelectChipDisplay.none(),
                       initialValue: const [],
                     ),
                     const SizedBox(height: 16),

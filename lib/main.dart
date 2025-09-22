@@ -1,8 +1,7 @@
 // ignore_for_file: avoid_print
 
-import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +59,16 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 void main() async {
   tz.initializeTimeZones();
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Center(
+      child: Text(
+        "Something went wrong",
+        style: TextStyle(color: Colors.red, fontSize: 18),
+        textAlign: TextAlign.center,
+      ),
+    );
+  };
+
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -277,7 +286,7 @@ Future<void> _handleSfNotification(Map<String, dynamic> finalJson) async {
     final objName = finJson['sObjectName'] ?? "";
 
     print(
-        "finJson['RecordId']   ${finJson}     ${finJson.runtimeType}    :: ${finJson['sObjectName']}");
+        "finJson['RecordId']   $finJson     ${finJson.runtimeType}    :: ${finJson['sObjectName']}");
 
     final ctx = navigatorKey.currentContext;
     log("ctx::::::::: $finJson   $leadId   $objName   ");

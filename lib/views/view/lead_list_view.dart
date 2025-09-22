@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
@@ -368,9 +369,9 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                   color: Colors.grey,
                                 ),
                               ),
+                              chipDisplay: MultiSelectChipDisplay.none(),
                               onConfirm: (List<String> selected) {
                                 setState(() {
-                                  // Update selectleadList with the confirmed selections
                                   selectleadList = selected;
                                 });
                               },
@@ -403,7 +404,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                         ElevatedButton(
                           onPressed: () {
                             selectleadList = [];
-                            filterLeads(selectleadList);
+                            filterLeads(['All']);
                             Navigator.pop(context);
                             // Navigator.of(context).pop();
                           },
@@ -477,13 +478,18 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   }
 
   Future<void> _pullRefresh() async {
+    // Clear all lists first
     leads?.viewModels.clear();
+    tempLeadModelList.clear();
+    allLeads.clear();
+    pinnedLeads.clear();
 
-    Provider.of<LeadListViewModel>(context, listen: false).fetch();
-
-    Provider.of<UnreadCountVm>(context, listen: false)
+    await Provider.of<LeadListViewModel>(context, listen: false).fetch();
+    await Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number);
-    getLeadList();
+
+    getLeadList(showLoading: false);
+
     isRefresh = true;
     return Future<void>.delayed(const Duration(seconds: 1));
   }
@@ -1376,78 +1382,81 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
 
   tagBasedFilter(String selOption) {
     List filteredLeads = [];
-    List tempLead = [];
-    allLeads.clear();
-    allLeads = [];
-    print(
-        "tempLeadModelList:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::    ${tempLeadModelList.length}");
-    tempLead = tempLeadModelList;
+
+    // Always use tempLeadModelList as source
     if (selectTagFilterList.isEmpty) {
-      filteredLeads = tempLead;
+      filteredLeads = List.from(tempLeadModelList);
     } else {
       if (selOption == "AND") {
-        print("selectTagFilterList::::::::::::::  $selectTagFilterList");
-        filteredLeads = tempLead.where((lead) {
+        filteredLeads = tempLeadModelList.where((lead) {
           final leadTagNames = lead.tagNames.map((tag) => tag.name).toSet();
-          print("leadTagNames::::::AND::::::  $leadTagNames");
           return selectTagFilterList.every(
             (tagName) => leadTagNames.contains(tagName),
           );
         }).toList();
       } else if (selOption == "OR") {
-        filteredLeads = tempLead.where((lead) {
-          final leadTagNames = lead.tagNames
-              .map((tag) => tag.name.toLowerCase())
-              .toSet(); // normalize to lowercase
-          print("leadTagNames::::::OR::::::  $leadTagNames");
-
+        filteredLeads = tempLeadModelList.where((lead) {
+          final leadTagNames =
+              lead.tagNames.map((tag) => tag.name.toLowerCase()).toSet();
           return selectTagFilterList
               .map((e) => e.toLowerCase())
               .any((tagName) => leadTagNames.contains(tagName));
         }).toList();
       }
     }
-    print(":::::::::::   ${filteredLeads.length} ");
-    setState(() {
-      allLeads = filteredLeads;
-    });
+
+    // Remove duplicates
+    var uniqueFilteredLeads = filteredLeads
+        .fold<Map<String, dynamic>>({}, (map, lead) {
+          if (!map.containsKey(lead.id)) {
+            map[lead.id] = lead;
+          }
+          return map;
+        })
+        .values
+        .toList();
+
+    allLeads.clear();
+    allLeads.addAll(uniqueFilteredLeads);
+
+    setState(() {});
   }
 
   filterLeads(List filter) {
-    print("filter::: $filter");
-    print("empty :::  ${tempLeadModelList.length}");
-    leadModelList = tempLeadModelList;
-    if (filter.isEmpty) {
-      leadModelList = tempLeadModelList;
-      allLeads = tempLeadModelList;
+    print("tempLeadModelList::::::::: ${tempLeadModelList} ");
+
+    if (filter.isEmpty || filter.contains('All')) {
+      allLeads.clear();
+      allLeads.addAll(tempLeadModelList);
       setState(() {
-        allLeads = tempLeadModelList;
         noRecordFound = false;
       });
+      return;
     }
 
-    if (filter.contains('All')) {
-      print("it was here in all ");
+    List<dynamic> matchleads = tempLeadModelList.where((lead) {
+      return filter
+          .map((e) => e.toLowerCase())
+          .contains(lead.leadstatus?.toLowerCase());
+    }).toList();
 
-      setState(() {
-        allLeads = tempLeadModelList;
-        noRecordFound = false;
-      });
-    } else {
-      List<dynamic> matchleads = leadModelList.where((lead) {
-        return filter
-            .map((e) => e.toLowerCase())
-            .contains(lead.leadstatus?.toLowerCase());
-      }).toList();
+    // Remove duplicates
+    var uniqueMatchleads = matchleads
+        .fold<Map<String, dynamic>>({}, (map, lead) {
+          if (!map.containsKey(lead.id)) {
+            map[lead.id] = lead;
+          }
+          return map;
+        })
+        .values
+        .toList();
 
-      setState(() {
-        allLeads = matchleads;
-        noRecordFound = matchleads.isEmpty;
-      });
+    allLeads.clear();
+    allLeads.addAll(uniqueMatchleads);
 
-      print("tempLeadModelList:::::::::::::  ${tempLeadModelList.length}");
-      print("matchleadsmatchleads$matchleads");
-    }
+    setState(() {
+      noRecordFound = uniqueMatchleads.isEmpty;
+    });
   }
 
   Future<void> connectSocket() async {
@@ -1512,20 +1521,29 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
         updateLoader = true;
       });
     }
+
+    // CLEAR LISTS FIRST
+    tempLeadModelList.clear();
+    allLeads.clear();
+    pinnedLeads.clear();
+
     await Provider.of<LeadListViewModel>(context, listen: false)
         .fetch()
         .then((onValue) {
-      allLeads = [];
-      pinnedLeads = [];
-      print(
-          " leadlistvm.viewModels::::::adding to the list:::::::::::: ${leadlistvm.viewModels}");
       for (var viewModel in leadlistvm.viewModels) {
         var leadmodel = viewModel.model;
         if (leadmodel?.records != null) {
           for (var record in leadmodel!.records!) {
-            tempLeadModelList.add(record);
-            allLeads.add(record);
-            if (record.pinned) {
+            if (!tempLeadModelList.any((item) => item.id == record.id)) {
+              tempLeadModelList.add(record);
+            }
+
+            if (!allLeads.any((item) => item.id == record.id)) {
+              allLeads.add(record);
+            }
+
+            if (record.pinned &&
+                !pinnedLeads.any((item) => item.id == record.id)) {
               pinnedLeads.add(record);
             }
           }
@@ -1535,7 +1553,6 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       setState(() {
         updateLoader = false;
       });
-      setState(() {});
     });
 
     setState(() {

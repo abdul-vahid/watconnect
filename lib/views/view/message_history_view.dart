@@ -179,11 +179,21 @@ class _MessageHistorytView extends State<MessageHistorytView> {
             ),
             child: Padding(
               padding: const EdgeInsets.only(top: 18.0),
-              child: ListView.builder(
-                  itemCount: msgHistoryList.length,
-                  itemBuilder: (context, index) {
-                    return msgHistItem(msgHistoryList[index]);
-                  }),
+              child: msgHistoryList.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "No History Found",
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: msgHistoryList.length,
+                      itemBuilder: (context, index) {
+                        return msgHistItem(msgHistoryList[index]);
+                      }),
             ),
           ),
           // child: ListView(
@@ -340,6 +350,9 @@ class _MessageHistorytView extends State<MessageHistorytView> {
                       fontSize: 12,
                       color: Color.fromARGB(255, 255, 56, 56),
                     ),
+                  ),
+                  const SizedBox(
+                    height: 5,
                   ),
                 ],
               ),

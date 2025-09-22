@@ -7,16 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
-import 'package:whatsapp/main.dart';
-import 'package:whatsapp/models/lead_model.dart';
-import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
-import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
-import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
-import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
-import 'package:whatsapp/utils/function_lib.dart';
-import 'package:whatsapp/view_models/lead_list_vm.dart';
-import 'package:whatsapp/views/view/whatsapp_chat_screen.dart';
 
 class LocalNotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =

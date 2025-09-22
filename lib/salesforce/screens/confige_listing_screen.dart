@@ -3,6 +3,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:focus_detector/focus_detector.dart';
+import 'package:multi_select_flutter/chip_display/multi_select_chip_display.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +27,8 @@ class ConfigListingScreen extends StatefulWidget {
 class _ConfigListingScreenState extends State<ConfigListingScreen> {
   final TextEditingController textController = TextEditingController();
   String selectedValue = "";
+  String _messageFilter = 'All';
+
   @override
   void initState() {
     selectedValue = widget.type;
@@ -36,6 +40,8 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
       }
     }
 
+    dbProvider.setConfigStatusList([]);
+
     dbProvider.setSelectedPinnedInfo(null);
     print(
         "selectedPinnedInfo::::  ${dbProvider.selectedDawerModel?.configId}  ${dbProvider.selectedPinnedInfo?.isPinned}");
@@ -45,56 +51,65 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
   @override
   Widget build(BuildContext context) {
     return Consumer<DashBoardController>(builder: (context, ref, child) {
-      return Scaffold(
-        backgroundColor: AppColor.pageBgGrey,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back,
-                color: Color.fromARGB(255, 255, 255, 255)),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          actions: [
-            ref.selectedPinnedInfo == null
-                ? const SizedBox()
-                : ref.selectedPinnedInfo?.isPinned ?? false
-                    ? Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: InkWell(
-                          onTap: () {
-                            ref.pinUnPinApiCall();
-                          },
-                          child: Image.asset(
-                            "assets/images/unpin_icon.png",
-                            color: Colors.white,
-                            height: 20,
+      return FocusDetector(
+        onFocusLost: () {
+          DashBoardController dbProvider = Provider.of(context, listen: false);
+          if (dbProvider.configUnreadCountList.isNotEmpty) {
+            dbProvider.drawerListUnreadCountApiCall(
+                type: dbProvider.selectedTitle);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppColor.pageBgGrey,
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back,
+                  color: Color.fromARGB(255, 255, 255, 255)),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            actions: [
+              ref.selectedPinnedInfo == null
+                  ? const SizedBox()
+                  : ref.selectedPinnedInfo?.isPinned ?? false
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: InkWell(
+                            onTap: () {
+                              ref.pinUnPinApiCall();
+                            },
+                            child: Image.asset(
+                              "assets/images/unpin_icon.png",
+                              color: Colors.white,
+                              height: 20,
+                            ),
                           ),
-                        ),
-                      )
-                    : Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: InkWell(
-                          onTap: () {
-                            ref.pinUnPinApiCall();
-                          },
-                          child: const Icon(
-                            Icons.push_pin,
-                            color: Colors.white,
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: InkWell(
+                            onTap: () {
+                              ref.pinUnPinApiCall();
+                            },
+                            child: const Icon(
+                              Icons.push_pin,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                      )
-          ],
-          title: Text(
-            '${ref.selectedTitle}s',
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w600),
+                        )
+            ],
+            title: Text(
+              '${ref.selectedTitle}s',
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w600),
+            ),
+            centerTitle: true,
+            elevation: 5,
           ),
-          centerTitle: true,
-          elevation: 5,
-        ),
-        body: RefreshIndicator(
-          onRefresh: _pullRefresh,
-          child: _pageBody(),
+          body: RefreshIndicator(
+            onRefresh: _pullRefresh,
+            child: _pageBody(),
+          ),
         ),
       );
     });
@@ -111,6 +126,14 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
           if (item.id != null) item.id!: item.unreadCount ?? 0
       };
 
+      List<SfDrawerItemModel> filteredDrawerListItems = ref.drawerListItems;
+      if (_messageFilter == 'Unread') {
+        filteredDrawerListItems = ref.drawerListItems.where((item) {
+          final count = unreadCountMap[item.id] ?? 0;
+          return count > 0;
+        }).toList();
+      }
+
       return GestureDetector(
         onTap: () {
           ref.setSelectedPinnedInfo(null);
@@ -118,348 +141,349 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
         child: Column(
           children: [
             Expanded(
-              child: ref.configListLoader
-                  ? const Center(
-                      child: SizedBox(
-                        height: 50,
-                        width: 50,
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  : ref.drawerListItems.isEmpty
-                      ? Center(
-                          child: Text(
-                            "No ${widget.type} Found..",
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                      height: 65,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white,
                           ),
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                                height: 65,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 15.0),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(8),
-                                      color: Colors.white,
-                                    ),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<String>(
-                                        value: ref.selectedTitle,
-                                        isExpanded: true,
-                                        onChanged: (newValue) {
-                                          final selectedItem =
-                                              ref.drawerItems.firstWhere(
-                                            (item) =>
-                                                item.sObjectName == newValue,
-                                          );
-                                          ref.setSelectedDrawerItem(
-                                              selectedItem);
-                                          ref.setSelectedTitle(newValue ?? "");
-                                          ref.drawerListApiCall(
-                                              type: newValue ?? "");
-                                        },
-                                        items: ref.drawerItems
-                                            .where((item) =>
-                                                item.sObjectName != "Campaign")
-                                            .map<DropdownMenuItem<String>>(
-                                                (item) {
-                                          return DropdownMenuItem<String>(
-                                            value: item.sObjectName,
-                                            child: Text(item.sObjectName ?? ""),
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ),
-                                  ),
-                                )),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 15.0),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                      flex: 2,
-                                      child: InkWell(
-                                        onTap: () {
-                                          _showFilterBottomSheet(context);
-                                        },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black
-                                                      .withOpacity(0.1),
-                                                  blurRadius: 2,
-                                                  spreadRadius: 2,
-                                                  offset: const Offset(1, 1),
-                                                ),
-                                              ],
-                                              color: Colors.white,
-                                              border: Border.all(
-                                                  color:
-                                                      AppColor.backgroundGrey),
-                                              borderRadius:
-                                                  BorderRadius.circular(12)),
-                                          child: Center(
-                                            child: Stack(
-                                              children: [
-                                                const Padding(
-                                                  padding: EdgeInsets.all(10.0),
-                                                  child: Icon(
-                                                    Icons.filter_list,
-                                                    color: Color.fromARGB(
-                                                        255, 0, 0, 0),
-                                                    size: 20,
-                                                  ),
-                                                ),
-                                                ref.configStatusList.isEmpty
-                                                    ? const SizedBox()
-                                                    : Positioned(
-                                                        left: 8,
-                                                        top: 5,
-                                                        child: Container(
-                                                          decoration:
-                                                              const BoxDecoration(
-                                                                  shape: BoxShape
-                                                                      .circle,
-                                                                  color: Colors
-                                                                      .brown),
-                                                          child: Center(
-                                                            child: Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(4.0),
-                                                              child: Text(
-                                                                ref.configStatusList
-                                                                    .length
-                                                                    .toString(),
-                                                                style: const TextStyle(
-                                                                    color: Colors
-                                                                        .white),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      )
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      )),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  Expanded(
-                                    flex: 9,
-                                    child: TextField(
-                                      controller: textController,
-                                      onChanged: ref.filterRecs,
-                                      decoration: InputDecoration(
-                                        isDense: true,
-                                        hintText: 'Search...',
-                                        hintStyle: TextStyle(
-                                          color: AppColor.textoriconColor
-                                              .withOpacity(0.6),
-                                        ),
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          borderSide: const BorderSide(
-                                            color: AppColor.navBarIconColor,
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                        contentPadding:
-                                            const EdgeInsets.all(10),
-                                        disabledBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: AppColor.backgroundGrey),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        border: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: AppColor.backgroundGrey),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        prefixIcon: const Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 10),
-                                            child: Icon(Icons.search)),
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: ref.selectedTitle,
+                              isExpanded: true,
+                              onChanged: (newValue) {
+                                final selectedItem = ref.drawerItems.firstWhere(
+                                  (item) => item.sObjectName == newValue,
+                                );
+                                ref.setSelectedDrawerItem(selectedItem);
+                                ref.setSelectedTitle(newValue ?? "");
+                                ref.drawerListApiCall(type: newValue ?? "");
+                                setState(() {
+                                  _messageFilter = 'All';
+                                });
+                              },
+                              items: ref.drawerItems
+                                  .where(
+                                      (item) => item.sObjectName != "Campaign")
+                                  .map<DropdownMenuItem<String>>((item) {
+                                return DropdownMenuItem<String>(
+                                  value: item.sObjectName,
+                                  child: Text(item.sObjectName ?? ""),
+                                );
+                              }).toList(),
                             ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            ref.pinnedConfigItems.isEmpty
-                                ? const SizedBox()
-                                : Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12.0),
-                                    child: SizedBox(
-                                      height: 90,
-                                      child: ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount:
-                                              ref.pinnedConfigItems.length,
-                                          itemBuilder: (context, index) {
-                                            return GestureDetector(
-                                              onLongPress: () {
-                                                DashBoardController dbProvider =
-                                                    Provider.of(context,
-                                                        listen: false);
-                                                print(
-                                                    "this is pressisng longgggg");
-
-                                                dbProvider
-                                                    .setSelectedPinnedInfo(
-                                                        ref.pinnedConfigItems[
-                                                            index]);
-                                              },
-                                              onTap: () async {
-                                                String phNum =
-                                                    "${ref.pinnedConfigItems[index].countryCode ?? ""}${ref.pinnedConfigItems[index].whatsappNumber ?? ""}";
-                                                showBlurOnlyLoaderDialog(
-                                                    context);
-                                                ChatMessageController
-                                                    cmProvider = Provider.of(
-                                                        context,
-                                                        listen: false);
-                                                DashBoardController dbProvider =
-                                                    Provider.of(context,
-                                                        listen: false);
-                                                dbProvider
-                                                    .setSelectedPinnedInfo(
-                                                        null);
-
-                                                dbProvider
-                                                    .setSelectedContaactInfo(
-                                                        ref.pinnedConfigItems[
-                                                            index]);
-                                                await cmProvider
-                                                    .messageHistoryApiCall(
-                                                  userNumber: phNum,
-                                                )
-                                                    .then((onValue) {
-                                                  Navigator.pop(context);
-                                                });
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            SfMessageChatScreen(
-                                                              pinnedLeadsList:
-                                                                  dbProvider
-                                                                      .pinnedConfigItems,
-                                                            )));
-                                              },
-                                              child: SizedBox(
-                                                width: 60,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    CircleAvatar(
-                                                      radius: 20,
-                                                      backgroundColor: AppColor
-                                                          .navBarIconColor,
-                                                      child: Text(
-                                                        ref
-                                                                .pinnedConfigItems[
-                                                                    index]
-                                                                .name!
-                                                                .isNotEmpty
-                                                            ? ref
-                                                                .pinnedConfigItems[
-                                                                    index]
-                                                                .name![0]
-                                                                .toUpperCase()
-                                                            : '?',
-                                                        style: const TextStyle(
-                                                          fontSize: 20,
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 4,
-                                                    ),
-                                                    Text(
-                                                      ref
-                                                              .pinnedConfigItems[
-                                                                  index]
-                                                              .name ??
-                                                          "",
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          }),
-                                    ),
-                                  ),
-                            Expanded(
+                          ),
+                        ),
+                      )),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            flex: 2,
+                            child: InkWell(
+                              onTap: () {
+                                _showFilterBottomSheet(context);
+                              },
                               child: Container(
                                 decoration: BoxDecoration(
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.5),
-                                      blurRadius: 5,
-                                      spreadRadius: 3,
-                                      offset: const Offset(2, 4),
-                                    ),
-                                  ],
-                                  color: Colors.white,
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(30),
-                                    topRight: Radius.circular(30),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 2,
+                                        spreadRadius: 2,
+                                        offset: const Offset(1, 1),
+                                      ),
+                                    ],
+                                    color: Colors.white,
+                                    border: Border.all(
+                                        color: AppColor.backgroundGrey),
+                                    borderRadius: BorderRadius.circular(12)),
+                                child: Center(
+                                  child: Stack(
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.all(10.0),
+                                        child: Icon(
+                                          Icons.filter_list,
+                                          color: Color.fromARGB(255, 0, 0, 0),
+                                          size: 20,
+                                        ),
+                                      ),
+                                      ref.configStatusList.isEmpty
+                                          ? const SizedBox()
+                                          : Positioned(
+                                              left: 8,
+                                              top: 5,
+                                              child: Container(
+                                                decoration: const BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: Colors.brown),
+                                                child: Center(
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            4.0),
+                                                    child: Text(
+                                                      ref.configStatusList
+                                                          .length
+                                                          .toString(),
+                                                      style: const TextStyle(
+                                                          color: Colors.white),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                    ],
                                   ),
                                 ),
-                                child: Padding(
+                              ),
+                            )),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Expanded(
+                          flex: 9,
+                          child: TextField(
+                            controller: textController,
+                            onChanged: ref.filterRecs,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              hintText: 'Search...',
+                              hintStyle: TextStyle(
+                                color:
+                                    AppColor.textoriconColor.withOpacity(0.6),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(
+                                  color: AppColor.navBarIconColor,
+                                  width: 1.5,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.all(10),
+                              disabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                    color: AppColor.backgroundGrey),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              border: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                    color: AppColor.backgroundGrey),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              prefixIcon: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 10),
+                                  child: Icon(Icons.search)),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  ref.pinnedConfigItems.isEmpty
+                      ? const SizedBox()
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: SizedBox(
+                            height: 80,
+                            child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: ref.pinnedConfigItems.length,
+                                itemBuilder: (context, index) {
+                                  return GestureDetector(
+                                    onLongPress: () {
+                                      DashBoardController dbProvider =
+                                          Provider.of(context, listen: false);
+                                      print("this is pressisng longgggg");
+
+                                      dbProvider.setSelectedPinnedInfo(
+                                          ref.pinnedConfigItems[index]);
+                                    },
+                                    onTap: () async {
+                                      String phNum =
+                                          "${ref.pinnedConfigItems[index].countryCode ?? ""}${ref.pinnedConfigItems[index].whatsappNumber ?? ""}";
+                                      showBlurOnlyLoaderDialog(context);
+                                      ChatMessageController cmProvider =
+                                          Provider.of(context, listen: false);
+                                      DashBoardController dbProvider =
+                                          Provider.of(context, listen: false);
+                                      dbProvider.setSelectedPinnedInfo(null);
+
+                                      dbProvider.setSelectedContaactInfo(
+                                          ref.pinnedConfigItems[index]);
+                                      await cmProvider
+                                          .messageHistoryApiCall(
+                                        userNumber: phNum,
+                                      )
+                                          .then((onValue) {
+                                        Navigator.pop(context);
+                                      });
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  SfMessageChatScreen(
+                                                    pinnedLeadsList: dbProvider
+                                                        .pinnedConfigItems,
+                                                  )));
+                                    },
+                                    child: SizedBox(
+                                      width: 60,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 20,
+                                            backgroundColor:
+                                                AppColor.navBarIconColor,
+                                            child: Text(
+                                              ref.pinnedConfigItems[index].name!
+                                                      .isNotEmpty
+                                                  ? ref.pinnedConfigItems[index]
+                                                      .name![0]
+                                                      .toUpperCase()
+                                                  : '?',
+                                              style: const TextStyle(
+                                                fontSize: 20,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 4,
+                                          ),
+                                          Text(
+                                            ref.pinnedConfigItems[index].name ??
+                                                "",
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
+                          ),
+                        ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                    child: Row(
+                      children: [
+                        _buildFilterOption('All'),
+                        const SizedBox(width: 10),
+                        _buildFilterOption('Unread'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 5,
+                            spreadRadius: 3,
+                            offset: const Offset(2, 4),
+                          ),
+                        ],
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        ),
+                      ),
+                      child: ref.configListLoader
+                          ? const Center(
+                              child: SizedBox(
+                                height: 50,
+                                width: 50,
+                                child: CircularProgressIndicator(),
+                              ),
+                            )
+                          : filteredDrawerListItems.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    "No ${widget.type} Found..",
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                )
+                              : Padding(
                                   padding: const EdgeInsets.only(
                                       left: 4.0, right: 4, top: 15),
                                   child: ListView.builder(
-                                    itemCount: ref.drawerListItems.length,
+                                    itemCount: filteredDrawerListItems.length,
                                     itemBuilder: (context, index) {
                                       final drawerItem =
-                                          ref.drawerListItems[index];
+                                          filteredDrawerListItems[index];
                                       final count =
                                           unreadCountMap[drawerItem.id] ?? 0;
                                       return recordListItem(drawerItem, count);
                                     },
                                   ),
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       );
     });
+  }
+
+  Widget _buildFilterOption(String option) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _messageFilter = option;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+          color: _messageFilter == option
+              ? AppColor.navBarIconColor
+              : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: AppColor.navBarIconColor,
+          ),
+        ),
+        child: Text(
+          option,
+          style: TextStyle(
+            color: _messageFilter == option
+                ? Colors.white
+                : AppColor.navBarIconColor,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
   }
 
   recordListItem(SfDrawerItemModel drawerListItem, int cnt) {
@@ -700,6 +724,7 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
                         // selectleadList = selected;
                       },
                       initialValue: const [],
+                      chipDisplay: MultiSelectChipDisplay.none(),
                     ),
                     const SizedBox(height: 16),
                     Wrap(

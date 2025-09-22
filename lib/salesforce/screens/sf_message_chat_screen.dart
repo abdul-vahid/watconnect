@@ -724,6 +724,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                         keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
                             hintText: 'Type a message...',
+                            hintMaxLines: 1,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: BorderSide.none,

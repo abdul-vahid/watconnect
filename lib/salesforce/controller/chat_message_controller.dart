@@ -193,6 +193,8 @@ class ChatMessageController extends ChangeNotifier {
           return true;
         }
       } else {
+        var val = jsonDecode(response.body);
+        EasyLoading.showToast(val['error_description']);
         log("Token fetch failed [${response.statusCode}]: ${response.body}");
       }
     } catch (e) {
@@ -415,22 +417,40 @@ class ChatMessageController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
 
-    // final url =
-    //     "${AppConstants.sfCallHistoryApi}waNumber=$userNumber&businessNumber=$busNum";
-
     String url = await AppUtils.getSFUrl(
-        "${AppConstants.sfCallHistoryApi}waNumber=$userNumber&businessNumber=$busNum");
+        "${AppConstants.sfCallHistoryApi}?whatsAppNumber=$userNumber&bussinessNumber=$busNum");
 
     final response = await NetworkService.makeRequest(
       url: url,
       method: 'GET',
     );
     if (response != null && response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
+      final List<dynamic> data = jsonDecode(jsonDecode(response.body));
+
       callHistoryList
         ..clear()
         ..addAll(data.map((e) => SfCallHistoryModel.fromJson(e)));
       log("Fetched ${callHistoryList.length} call history.");
+      notify();
+    }
+
+    _setCallHistoryLoader(false);
+  }
+
+  Future<void> createCallHistoryApi(
+      {required Map<String, dynamic> body}) async {
+    _setCallHistoryLoader(true);
+
+    String url = await AppUtils.getSFUrl(AppConstants.sfCallHistoryApi);
+
+    final response =
+        await NetworkService.makeRequest(url: url, method: 'POST', body: body);
+    if (response != null && response.statusCode == 200) {
+      // final List<dynamic> data = jsonDecode(   response.body);
+      // callHistoryList
+      //   ..clear()
+      //   ..addAll(data.map((e) => SfCallHistoryModel.fromJson(e)));
+      // log("Fetched ${callHistoryList.length} call history.");
       notify();
     }
 

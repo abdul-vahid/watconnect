@@ -18,18 +18,34 @@ void showSfCallDialog(
     barrierColor: Colors.black.withOpacity(0.2),
     builder: (BuildContext context) {
       return Dialog(
+        insetPadding: EdgeInsets.all(20),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
         child: Container(
+          width: MediaQuery.of(context).size.width * 0.95,
           constraints: const BoxConstraints(maxHeight: 600),
           padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                "Call History",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  Spacer(),
+                  const Text(
+                    "Call History",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  Spacer(),
+                  InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Icon(
+                        Icons.cancel_outlined,
+                        color: Colors.black,
+                      ))
+                ],
               ),
               const SizedBox(height: 16),
               ElevatedButton(

@@ -639,6 +639,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                             maxLines: 3,
                             decoration: InputDecoration(
                               hintText: 'Type a message...',
+                              hintMaxLines: 1,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20),
                                 borderSide: BorderSide.none,

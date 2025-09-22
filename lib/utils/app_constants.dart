@@ -284,7 +284,7 @@ abstract class AppConstants {
   static const String sfDeviceToken = "watconnect/usermobiledevice";
   static const String sfCreateFile = "watconnect/createfile";
 
-  static const String sfCallHistoryApi = 'watconnect/callHistory?';
+  static const String sfCallHistoryApi = 'callhistory';
 
   static const String sfGetReactLoginCredApi = 'watconnect/logindetails';
 }

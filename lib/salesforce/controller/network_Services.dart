@@ -110,6 +110,8 @@ class NetworkService {
     final refreshToken =
         prefs.getString(SharedPrefsConstants.sfRefreshToken) ?? "";
 
+    print("refreshToken::::::    $refreshToken");
+
     Map<String, String> body = {
       "grant_type": "refresh_token",
       "client_id":
@@ -125,9 +127,12 @@ class NetworkService {
       log("refresh token req body:::    $body");
       final encodedBody = Uri(queryParameters: body).query;
 
-      String url = env == 'Test'
-          ? await AppUtils.getSFUrl(AppConstants.getTestToken)
-          : await AppUtils.getSFUrl(AppConstants.getToken);
+      String url =
+          env == 'Test' ? AppConstants.getTestToken : AppConstants.getToken;
+      // ?  await AppUtils.getSFUrl(AppConstants.getTestToken)
+      // : await AppUtils.getSFUrl(AppConstants.getToken);
+
+      print("url:::  refresh token:: $url");
 
       final response = await http.post(
         Uri.parse(url),

@@ -814,12 +814,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:intl/intl.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
@@ -1144,6 +1146,27 @@ class _CallScreenState extends State<CallScreen> {
       };
 
       await callsViewModel.outgoingCallApi(payload);
+
+      String busNum = "";
+
+      if (drProvider.fromSalesForce) {
+        busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+
+        Map<String, dynamic> body = {
+          "name": widget.leadName,
+          "whatsapp_number": widget.wpNumber,
+          "business_number": busNum,
+          "event": "call_started",
+          "call_id": _callId,
+          "start_time": DateTime.now().toUtc().toIso8601String(),
+          "sdp": offer.sdp,
+        };
+
+        ChatMessageController chatMessageController =
+            Provider.of(context, listen: false);
+        chatMessageController.createCallHistoryApi(body: body);
+      }
+
       _trackCallEvent('call_initiated');
 
       return true;
@@ -1212,6 +1235,7 @@ class _CallScreenState extends State<CallScreen> {
     switch (status) {
       case "ACCEPTED":
         _startCallTimer();
+        // _createHistoryApi(data);
         _updateCallState(CallState.inCall, "In Call");
         break;
       case "RINGING":
@@ -1555,6 +1579,8 @@ class _CallScreenState extends State<CallScreen> {
       ],
     );
   }
+
+  Future<void> _createHistoryApi(dynamic data) async {}
 }
 
 String _formatDuration(int seconds) {

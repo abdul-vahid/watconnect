@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously, library_private_types_in_public_api
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,7 +40,7 @@ class _WebViewPageState extends State<WebViewPage> {
           },
           onPageFinished: (String url) async {
             setState(() => visitedUrl = url);
-            print("Final loaded URL: $url");
+            log("Final loaded URL: $url");
 
             Uri uri = Uri.parse(url);
             print("uri::::::::::  $uri");
@@ -56,9 +58,11 @@ class _WebViewPageState extends State<WebViewPage> {
                 "client_secret":
                     "195E44ED6BAFD4F6F5CB20343F7FFC169616D9C417B3C51089B00F6487E0F459",
                 "code": authCode,
-                "redirect_uri": widget.env == 'Test'
-                    ? "https://test.salesforce.com/services/oauth2/success"
-                    : "https://login.salesforce.com/services/oauth2/success",
+                "redirect_uri":
+                    // widget.env == 'Test'
+                    //     ? "https://test.salesforce.com/services/oauth2/success"
+                    //     :
+                    "https://login.salesforce.com/services/oauth2/success",
               };
 
               ChatMessageController chatMessageController =
