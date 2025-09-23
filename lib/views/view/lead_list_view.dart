@@ -1459,61 +1459,6 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     });
   }
 
-  Future<void> connectSocket() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? number = prefs.getString('phoneNumber');
-
-    String tkn = await AppUtils.getToken() ?? "";
-    Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
-
-    token = tkn;
-    phNum = number ?? "";
-    userId = decodedToken;
-
-    try {
-      // print("Token: $token");
-
-      socket = IO.io(
-        'https://admin.watconnect.com',
-        IO.OptionBuilder()
-            .setTransports(['websocket'])
-            .setPath('/ibs/socket.io')
-            .setExtraHeaders({'Authorization': 'Bearer $token'})
-            .build(),
-      );
-      socket!.connect();
-      socket!.onConnect((_) {
-        print('Connected to WebSocket Leadlist');
-        socket!.emit("setup", userId);
-      });
-      socket!.on("connected", (_) {
-        // print(" WebSocket setup complete");
-      });
-
-      socket!.on("receivedwhatsappmessage", (data) {
-        print(" New WhatsApp message: $data");
-        _getUnreadCount();
-      });
-
-      socket!.onDisconnect((_) {
-        // print(" WebSocket Disconnected");
-      });
-
-      socket!.onError((error) {
-        print(" WebSocket Error: $error");
-      });
-    } catch (error) {
-      print("Error connecting to WebSocket: $error");
-    }
-  }
-
-  void disconnectSocket() {
-    if (socket != null) {
-      socket!.disconnect();
-      print(" WebSocket Disconnected");
-    }
-  }
-
   bool updateLoader = false;
   Future<void> getLeadList({bool showLoading = true}) async {
     if (showLoading) {
@@ -1621,5 +1566,60 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       idsToDelete.add(leadId);
     }
     setState(() {});
+  }
+
+  Future<void>  connectSocket() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+
+    String tkn = await AppUtils.getToken() ?? "";
+    Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+
+    token = tkn;
+    phNum = number ?? "";
+    userId = decodedToken;
+
+    try {
+      // print("Token: $token");
+
+      socket = IO.io(
+        'https://admin.watconnect.com',
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setPath('/ibs/socket.io')
+            .setExtraHeaders({'Authorization': 'Bearer $token'})
+            .build(),
+      );
+      socket!.connect();
+      socket!.onConnect((_) {
+        print('Connected to WebSocket Leadlist');
+        socket!.emit("setup", userId);
+      });
+      socket!.on("connected", (_) {
+        // print(" WebSocket setup complete");
+      });
+
+      socket!.on("receivedwhatsappmessage", (data) {
+        print(" New WhatsApp message: $data");
+        _getUnreadCount();
+      });
+
+      socket!.onDisconnect((_) {
+        // print(" WebSocket Disconnected");
+      });
+
+      socket!.onError((error) {
+        print(" WebSocket Error: $error");
+      });
+    } catch (error) {
+      print("Error connecting to WebSocket: $error");
+    }
+  }
+
+  void disconnectSocket() {
+    if (socket != null) {
+      socket!.disconnect();
+      print(" WebSocket Disconnected");
+    }
   }
 }

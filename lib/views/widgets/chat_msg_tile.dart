@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/views/widgets/attachment_widget.dart';
 import 'package:whatsapp/views/widgets/custom_chat_button.dart';
+import 'package:whatsapp/views/widgets/custom_intractive_button.dart';
 import 'package:whatsapp/views/widgets/header_widget.dart';
 import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/whatsapp_chat_func.dart';
 
@@ -52,6 +53,7 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
 
   @override
   Widget build(BuildContext context) {
+    print(" widget.message.bodyText!::::::::::: ${widget.message.bodyText}");
     final now = DateTime.now();
     final istTime =
         widget.message.createddate.add(const Duration(hours: 5, minutes: 30));
@@ -75,6 +77,7 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
     final isEmptyMessage = widget.message.header == null &&
         widget.message.messageBody == null &&
         imageUrl.isEmpty &&
+        widget.message.bodyText == null &&
         widget.message.filetype == null &&
         (widget.message.message?.isEmpty ?? true);
 
@@ -177,6 +180,13 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis,
                     ),
+                  if (widget.message.bodyText?.isNotEmpty ?? false)
+                    Text(
+                      widget.message.bodyText!,
+                      style: const TextStyle(fontSize: 14, height: 1.5),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   if (widget.message.messageBody != null) Text(result),
                   if (widget.message.description != null)
                     Padding(
@@ -202,6 +212,10 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                         ),
                       ),
                     ),
+                  if (widget.message.interactiveButtons != null &&
+                      widget.message.interactiveButtons?.isNotEmpty == true)
+                    CustomInteractiveButtonList(
+                        buttons: widget.message.interactiveButtons!),
                   if (widget.message.buttons != null &&
                       widget.message.buttons?.isNotEmpty == true)
                     CustomButtonList(buttons: widget.message.buttons!),

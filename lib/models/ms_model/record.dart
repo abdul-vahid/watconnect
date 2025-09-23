@@ -41,9 +41,11 @@ class Record {
   String? identifier;
   String? title;
   String? body;
+  String? bodyText;
   String? unread_msg_count;
   String? erormessage;
   List<dynamic>? buttons;
+  List<dynamic>? interactiveButtons;
   List<dynamic>? templateCards;
   dynamic filetype;
   dynamic description;
@@ -67,6 +69,7 @@ class Record {
       this.isRead,
       this.businessNumber,
       this.messageId,
+      this.bodyText,
       this.deliveryStatus,
       this.chatmsg,
       this.templateName,
@@ -80,6 +83,7 @@ class Record {
       this.bodyTextParams,
       this.footer,
       this.buttons,
+      this.interactiveButtons,
       this.templateCards,
       this.title,
       this.filetype,
@@ -99,6 +103,7 @@ class Record {
         id: data['id'] as String?,
         parentId: data['parent_id'] as String?,
         name: data['name'] as String?,
+        bodyText: data['body_text'] as String?,
         messageTemplateId: data['message_template_id'] as String?,
         whatsappNumber: data['whatsapp_number'] as String?,
         message: data['message'] as String?,
@@ -136,6 +141,8 @@ class Record {
         body: data['body'],
         unread_msg_count: data['unread_msg_count'],
         buttons: (data['buttons'] as List<dynamic>?) ?? [],
+        interactiveButtons:
+            (data['interactive_buttons'] as List<dynamic>?) ?? [],
         templateCards: (data['template_cards'] as List<dynamic>?) ?? [],
         filetype: data['filetype'] as dynamic,
         description: data['description'] as dynamic,
@@ -156,6 +163,7 @@ class Record {
         'id': id,
         'parent_id': parentId,
         'name': name,
+        'body_text': bodyText,
         'message_template_id': messageTemplateId,
         'whatsapp_number': whatsappNumber,
         'message': message,
@@ -182,6 +190,7 @@ class Record {
         'template_type': templateType,
         'footer': footer,
         'buttons': buttons,
+        'interactive_buttons': interactiveButtons,
         'title': title,
         'filetype': filetype,
         'description': description,
