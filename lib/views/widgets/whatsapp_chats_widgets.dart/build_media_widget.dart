@@ -32,7 +32,7 @@ Widget buildMediaWidget(String format, String content,
       return content.isNotEmpty
           ? Container(
               height: 150,
-              width: 150,
+              // width: 150,
               decoration: BoxDecoration(
                   color: Colors.black, borderRadius: BorderRadius.circular(8)),
               child: const Center(

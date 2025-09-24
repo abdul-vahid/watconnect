@@ -70,7 +70,8 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
 
   int _countPlaceholders(String text) {
     final regex = RegExp(r'\{\{\d+\}\}');
-    return regex.allMatches(text).length;
+    final matches = regex.allMatches(text).map((m) => m.group(0)).toSet();
+    return matches.length;
   }
 
   // void _scrollToFocused() {
@@ -99,7 +100,9 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
               children: [
                 _buildHeaderRow(),
                 const Divider(thickness: 1),
-                const SizedBox(height: 5),
+                const Text(
+                    "💡 Tip: Write name as a parameter to replace it with the real name of the client."),
+                const SizedBox(height: 10),
                 _buildTemplateCard(),
                 msgViewModel.carousalList.isEmpty
                     ? const SizedBox()
@@ -140,6 +143,9 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                             mainContentFile == null) {
                           EasyLoading.showToast(
                               "Please pick a file to send this template");
+                          setState(() {
+                            isSendingTemplate = false;
+                          });
                           return;
                         }
 
@@ -148,6 +154,9 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                         if (!_allFilled(widget.controllers)) {
                           EasyLoading.showToast(
                               "Fill the values of all placeholders..");
+                          setState(() {
+                            isSendingTemplate = false;
+                          });
                           return;
                         }
 
@@ -319,23 +328,31 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 8,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: buildMediaWidget(
-                        msgViewModel.selectedHeader!.format ?? "",
-                        msgViewModel
-                                .selectedHeader?.example?.headerHandle?[0] ??
-                            "",
-                      ),
-                    ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 8,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: mainContentFile == null
+                            ? buildMediaWidget(
+                                msgViewModel.selectedHeader!.format ?? "",
+                                msgViewModel.selectedHeader?.example
+                                        ?.headerHandle?[0] ??
+                                    "",
+                              )
+                            : _isImageFile(mainContentFile!.path)
+                                ? Image.file(mainContentFile!)
+                                : buildMediaWidget(
+                                    msgViewModel.selectedHeader!.format ?? "",
+                                    msgViewModel.selectedHeader?.example
+                                            ?.headerHandle?[0] ??
+                                        "",
+                                  )),
                   ),
                   if (msgViewModel.selectedHeader!.format == "IMAGE" ||
                       msgViewModel.selectedHeader!.format == "VIDEO" ||
@@ -496,7 +513,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
       };
     } else {
       if (msgViewModel.mainBodyParams["parameters"] == null) {
-        EasyLoading.showToast("Save Template before sending...");
+        EasyLoading.showToast("Save Carousal before sending...");
         return {};
       }
       // 🔹 Merge params with main inputs
@@ -544,6 +561,16 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
             (entry) => MapEntry("${entry.key + 1}", entry.value.text.trim()),
           ),
     );
+  }
+
+  bool _isImageFile(String path) {
+    final ext = path.toLowerCase();
+    return ext.endsWith(".jpg") ||
+        ext.endsWith(".jpeg") ||
+        ext.endsWith(".png") ||
+        ext.endsWith(".gif") ||
+        ext.endsWith(".bmp") ||
+        ext.endsWith(".webp");
   }
 
   // String _getFileType(String path) {
@@ -887,6 +914,9 @@ class _CarousalCardState extends State<CarousalCard> {
           .every((controller) => controller.text.trim().isNotEmpty);
       if (!allFilled) {
         EasyLoading.showToast("Please fill the value of all placeholders");
+        setState(() {
+          isSavingCarousal = false;
+        });
         return;
       }
     }
@@ -895,6 +925,9 @@ class _CarousalCardState extends State<CarousalCard> {
     for (int index = 0; index < carousalFiles.length; index++) {
       if (carousalFiles[index] == null) {
         EasyLoading.showToast("Please pick files for all Carousel");
+        setState(() {
+          isSavingCarousal = false;
+        });
         return;
       }
     }

@@ -51,6 +51,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
 
   List leadModelList = [];
   List tempLeadModelList = [];
+  List backupListModel = [];
   UnreadCountVm? unreadCountVm;
 
   LeadListViewModel? leads;
@@ -1423,13 +1424,16 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   }
 
   filterLeads(List filter) {
-    print("tempLeadModelList::::::::: ${tempLeadModelList} ");
+    print("tempLeadModelList:: $filter ::::::: ${tempLeadModelList} ");
 
+    print("filter.contains('All'):::::::: ${filter.contains('All')}");
     if (filter.isEmpty || filter.contains('All')) {
-      allLeads.clear();
-      allLeads.addAll(tempLeadModelList);
+      print("backupListModel:::: ${backupListModel}");
+
       setState(() {
         noRecordFound = false;
+        allLeads.clear();
+        allLeads.addAll(backupListModel);
       });
       return;
     }
@@ -1470,6 +1474,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     // CLEAR LISTS FIRST
     tempLeadModelList.clear();
     allLeads.clear();
+    // backupListModel.clear();
     pinnedLeads.clear();
 
     await Provider.of<LeadListViewModel>(context, listen: false)
@@ -1482,6 +1487,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
             if (!tempLeadModelList.any((item) => item.id == record.id)) {
               tempLeadModelList.add(record);
             }
+            backupListModel = tempLeadModelList;
 
             if (!allLeads.any((item) => item.id == record.id)) {
               allLeads.add(record);
@@ -1568,7 +1574,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     setState(() {});
   }
 
-  Future<void>  connectSocket() async {
+  Future<void> connectSocket() async {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
