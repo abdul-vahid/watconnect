@@ -171,24 +171,25 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           actions: [
             Row(
               children: [
-                idsToDelete.isNotEmpty
-                    ? InkWell(
-                        onTap: () {
-                          Map<String, dynamic> body = {"ids": idsToDelete};
-                          print("list to dlete :::  $body");
-                          // Provider.of<LeadListViewModel>(context, listen: false)
-                          //     .deleteBulkLead(body)
-                          //     .then((onValue) {
-                          //    print("onval:::   $onValue");
-                          //    idsToDelete.clear();
-                          // });
-                        },
-                        child: const Icon(
-                          Icons.delete,
-                          color: Colors.white,
-                        ))
-                    : const SizedBox.shrink(),
-                showPin && idsToDelete.length > 1
+                // idsToDelete.isNotEmpty
+                //     ? InkWell(
+                //         onTap: () {
+                //           Map<String, dynamic> body = {"ids": idsToDelete};
+                //           print("list to dlete :::  $body");
+                //           // Provider.of<LeadListViewModel>(context, listen: false)
+                //           //     .deleteBulkLead(body)
+                //           //     .then((onValue) {
+                //           //    print("onval:::   $onValue");
+                //           //    idsToDelete.clear();
+                //           // });
+                //         },
+                //         child: const Icon(
+                //           Icons.delete,
+                //           color: Colors.white,
+                //         ))
+                //     : const SizedBox.shrink(),
+                showPin
+                    // && idsToDelete.length > 1
                     ? InkWell(
                         onTap: () {
                           if (isPinned) {

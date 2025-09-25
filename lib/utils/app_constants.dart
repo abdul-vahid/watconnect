@@ -227,7 +227,7 @@ abstract class AppConstants {
   static const String pinLead = "/api/leads/{leadId}/pin";
   static const String unpinLead = "/api/leads/{leadId}/unpin";
   static const String callHistoryApi =
-      "/api/whatsapp/call?business_number=917240500172&whatsapp_number=";
+      "/api/whatsapp/call?business_number={}&whatsapp_number=";
 
   static const String outgoingCall = '/api/whatsapp/call';
   static const String callAcceptApi = "/api/whatsapp/call/accept";

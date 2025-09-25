@@ -94,7 +94,15 @@ class MessageViewModel extends BaseListViewModel {
     notifyListeners();
   }
 
+  bool chatLoader = false;
+
+  setChatLoader(val) {
+    chatLoader = val;
+    notifyListeners();
+  }
+
   Future Fetchmsghistorydata({required leadnumber, required number}) async {
+    setChatLoader(true);
     try {
       var url = AppUtils.getUrl(
           AppConstants.Messagehistory.replaceAll('{leadnumber}', leadnumber)
@@ -107,12 +115,14 @@ class MessageViewModel extends BaseListViewModel {
 
       if (viewModels[0].model.records != null) {
         setMsgList(viewModels[0].model.records);
+        setChatLoader(false);
       } else {
         setMsgList([]);
+        setChatLoader(false);
       }
 
       // print("respone encode==>  ${jsonEncode(response)}");
-
+      setChatLoader(false);
       return response;
     } catch (e, stackTrace) {
       debug("Error: $e   $stackTrace");

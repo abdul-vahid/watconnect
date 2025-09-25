@@ -171,20 +171,24 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
 
     return WillPopScope(
       onWillPop: _onWillPop,
-      child: Scaffold(
-        body: PageView(
-          controller: _pageController,
-          physics: const NeverScrollableScrollPhysics(),
-          onPageChanged: (index) => setState(() => selected = index),
-          children: pageOptions,
-        ),
-        bottomNavigationBar: _buildSimpleBottomNavigationBar(
-          selected: selected,
-          items: visibleItems,
-          onItemTap: (index) {
-            setState(() => selected = index);
-            _pageController.jumpToPage(index);
-          },
+      child: SafeArea(
+        bottom: true,
+        top: false,
+        child: Scaffold(
+          body: PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            onPageChanged: (index) => setState(() => selected = index),
+            children: pageOptions,
+          ),
+          bottomNavigationBar: _buildSimpleBottomNavigationBar(
+            selected: selected,
+            items: visibleItems,
+            onItemTap: (index) {
+              setState(() => selected = index);
+              _pageController.jumpToPage(index);
+            },
+          ),
         ),
       ),
     );

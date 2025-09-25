@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/models/call_history_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
@@ -16,7 +17,10 @@ class CallsViewModel extends BaseListViewModel {
   get record => null;
 
   Future<String?> getCallHistory() async {
-    String url = AppUtils.getUrl(AppConstants.callHistoryApi);
+    final prefs = await SharedPreferences.getInstance();
+    var businessNumber = prefs.getString('phoneNumber') ?? "";
+    String url = AppUtils.getUrl(
+        AppConstants.callHistoryApi.replaceAll('{}', businessNumber));
     var res = await get(url: url, baseModel: callHistoryModel());
     print("response::::::of call history api:::::::   $res");
     return res;

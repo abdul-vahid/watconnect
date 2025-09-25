@@ -129,13 +129,12 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
   }
 
   Future<void> historyApiCall() async {
+    setState(() {
+      updateLoader = true;
+    });
     await Provider.of<CallsViewModel>(context, listen: false)
         .getCallHistory()
         .then((onValue) {
-      setState(() {
-        updateLoader = true;
-      });
-
       callHistoryList = [];
 
       for (var viewModel in callHistoryVm.viewModels) {

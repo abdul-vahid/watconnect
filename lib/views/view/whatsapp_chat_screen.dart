@@ -101,32 +101,35 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   final AudioPlayer audioPlayer = AudioPlayer();
   List<TextEditingController> controllers = [];
 
-  // bool _isPlaying = false;
+  int _lastMessageCount = 0;
+  bool _shouldScrollToBottom = false;
+
   @override
   void initState() {
     super.initState();
-    loadChatHistory();
+    loadChatHistory(showLoaing: true);
     getWalletStatus();
     MessageController msgController = Provider.of(context, listen: false);
     msgController.clearDeleteList();
     markUnread();
     setTemplteEmpty();
     _initializeAudio();
-    // audioManager.initialize();
     fetchTemplates();
-
-    scrollToBottom();
   }
 
   void scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  void _scheduleScrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeOut,
-        );
-      }
+      scrollToBottom();
     });
   }
 
@@ -151,7 +154,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   void dispose() {
     socketManager.dispose();
     _recorder.closeRecorder();
-
     _player.closePlayer();
     super.dispose();
   }
@@ -191,25 +193,15 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     );
   }
 
-  int _lastMessageCount = 0;
   Widget _pageBody() {
     return Consumer2<MessageController, MessageViewModel>(
         builder: (context, msgController, mviewModel, child) {
       List allMessages = mviewModel.allMessages;
 
-      // only scroll if new message(s) arrived
       if (allMessages.length > _lastMessageCount) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_scrollController.hasClients) {
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeOut,
-            );
-          }
-        });
+        _lastMessageCount = allMessages.length;
+        _scheduleScrollToBottom();
       }
-      _lastMessageCount = allMessages.length;
 
       print("all msg in the main screen::::::::::   ${allMessages.length}");
       return Padding(
@@ -360,7 +352,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                   children: [
                     SizedBox(
                       width: double.infinity,
-                      // color: Colors.amber,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8.0, vertical: 4),
@@ -443,53 +434,73 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                       ),
                     ),
                     const Divider(),
-                    allMessages.isEmpty
+                    chatLoader
                         ? const Expanded(
-                            child: Center(
-                            child: Text(
-                              "No Chats Available...",
-                              style: TextStyle(
-                                  fontFamily: AppFonts.medium, fontSize: 16),
-                            ),
-                          ))
-                        : Expanded(
-                            child: ListView.builder(
-                            controller: _scrollController,
-                            itemCount: allMessages.length,
-                            itemBuilder: (context, index) {
-                              final message = allMessages[index];
-                              final previousMessage =
-                                  index > 0 ? allMessages[index - 1] : null;
+                            child: Center(child: CircularProgressIndicator()))
+                        : allMessages.isEmpty
+                            ? const Expanded(
+                                child: Center(
+                                child: Text(
+                                  "No Chats Available...",
+                                  style: TextStyle(
+                                      fontFamily: AppFonts.medium,
+                                      fontSize: 16),
+                                ),
+                              ))
+                            : Expanded(
+                                child: NotificationListener<ScrollNotification>(
+                                  onNotification: (scrollNotification) {
+                                    if (scrollNotification
+                                        is ScrollEndNotification) {
+                                      _lastMessageCount = allMessages.length;
+                                    }
+                                    return false;
+                                  },
+                                  child: ListView.builder(
+                                    controller: _scrollController,
+                                    itemCount: allMessages.length,
+                                    itemBuilder: (context, index) {
+                                      final message = allMessages[index];
+                                      final previousMessage = index > 0
+                                          ? allMessages[index - 1]
+                                          : null;
 
-                              return message.category == "AUTHENTICATION"
-                                  ? const SizedBox()
-                                  : ConstrainedBox(
-                                      constraints:
-                                          const BoxConstraints(minHeight: 0),
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 8.0),
-                                        child: Container(
-                                          color: msgController.msgToDelete
-                                                  .contains(
-                                                      allMessages[index].id)
-                                              ? Colors.grey.shade300
-                                              : Colors.transparent,
-                                          child: ChatMessageTile(
-                                            message: message,
-                                            previousMessage: previousMessage,
-                                            userName: userName,
-                                            tenetCode: TenetCode,
-                                            onTap: msgController
-                                                .updateDeleteMsgList,
-                                            selectedMessages:
-                                                msgController.msgToDelete,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                            },
-                          ))
+                                      return message.category ==
+                                              "AUTHENTICATION"
+                                          ? const SizedBox()
+                                          : ConstrainedBox(
+                                              constraints: const BoxConstraints(
+                                                  minHeight: 0),
+                                              child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 8.0),
+                                                child: Container(
+                                                  color: msgController
+                                                          .msgToDelete
+                                                          .contains(
+                                                              allMessages[index]
+                                                                  .id)
+                                                      ? Colors.grey.shade300
+                                                      : Colors.transparent,
+                                                  child: ChatMessageTile(
+                                                    message: message,
+                                                    previousMessage:
+                                                        previousMessage,
+                                                    userName: userName,
+                                                    tenetCode: TenetCode,
+                                                    onTap: msgController
+                                                        .updateDeleteMsgList,
+                                                    selectedMessages:
+                                                        msgController
+                                                            .msgToDelete,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                    },
+                                  ),
+                                ),
+                              )
                   ],
                 ),
               ),
@@ -523,20 +534,35 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
         leadnumber: widget.wpnumber ?? "", number: number, bodydata: bodydata);
   }
 
-  Future<void> loadChatHistory() async {
+  bool chatLoader = false;
+
+  setChatLoader(val) {
+    setState(() {
+      chatLoader = val;
+    });
+  }
+
+  Future<void> loadChatHistory({bool showLoaing = false}) async {
     final prefs = await SharedPreferences.getInstance();
     final number = prefs.getString('phoneNumber');
     final messageVM = Provider.of<MessageViewModel>(context, listen: false);
     messageVM.setFileToSend(null);
-    messageVM.Fetchmsghistorydata(
-        leadnumber: widget.wpnumber ?? '', number: number);
+    if (showLoaing) {
+      setChatLoader(true);
+    }
+
+    await messageVM.Fetchmsghistorydata(
+            leadnumber: widget.wpnumber ?? '', number: number)
+        .then((onValue) {
+      setChatLoader(false);
+      _scheduleScrollToBottom();
+    });
   }
 
   Future<void> fetchTemplates() async {
     TempleteListViewModel templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
 
-    // Check if templeteViewModel is not null and contains viewModels
     if (templeteViewModel.viewModels.isNotEmpty) {
       for (var viewModel in templeteViewModel.viewModels) {
         var campaignModel = viewModel.model;
@@ -550,11 +576,17 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                 allTemplatesMap[categoryKey]?[record.id] = (record.name!);
               }
               setState(() {
-                templateNames.add(record.name);
-                // print("Templates => $templateNames");
+                log("record.status:::::::::  ${record.status}   ${record.name} ");
+                if (record.status == "APPROVED") {
+                  templateNames.add(record.name);
+                } else if (record.status == "REJECTED") {
+                  log("REJECTED:::::::::   ${record.name} ");
+                  templateNames.remove(record.name);
+                }
               });
             }
           }
+          log("templateNames:::::::::: $templateNames");
         }
       }
     }
@@ -598,7 +630,10 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
     await Provider.of<MessageViewModel>(context, listen: false)
-        .Fetchmsghistorydata(leadnumber: leadnumber, number: number);
+        .Fetchmsghistorydata(leadnumber: leadnumber, number: number)
+        .then((_) {
+      _scheduleScrollToBottom();
+    });
   }
 
   Widget _buildMessageInputArea() {
@@ -759,7 +794,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     await showDialog(
       context: context,
       builder: (context) => DeleteConfirmationDialog(
-        onConfirm: deletechat, // Your delete function
+        onConfirm: deletechat,
       ),
     );
   }
@@ -922,7 +957,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     }
 
     try {
-      // Step 1: Upload file to get document ID
       final uploadResponse = await messageVM.uploadFile(file, phoneNumber);
       if (uploadResponse == null) {
         debugPrint('Upload failed: No response');
@@ -932,7 +966,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
       final documentId = jsonDecode(uploadResponse)['id'];
       debugPrint('Uploaded File ID: $documentId');
 
-      // Step 2: Send to WhatsApp using document ID
       final whatsappPayload = type == "audio"
           ? {
               "messaging_product": "whatsapp",
@@ -960,7 +993,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
         number: phoneNumber,
       );
 
-      // Step 3: Upload to your internal DB
       final leadId = widget.id;
       final dbResponse =
           await messageVM.uploadFiledb(file, phoneNumber, leadId);
@@ -968,7 +1000,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
 
       debugPrint("Uploaded to DB. File ID: $fileId");
 
-      // Step 4: Add to message history
       final messageHistoryData = {
         "parent_id": leadId,
         "name": widget.leadName,
@@ -1012,7 +1043,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
 
   Future<void> _getBootmSheet() {
     TextEditingController templateController = TextEditingController();
-    // int selectedBtnIdx = 0;
     SelectedTemplateCategory = null;
     SelectedTemplateFilters = null;
 
@@ -1089,17 +1119,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                       value: SelectedTemplateCategory,
                     ),
                     const SizedBox(height: 12),
-                    // AppUtils.getDropdown(
-                    //   'Select Filter',
-                    //   data: tempateFilter,
-                    //   onChanged: (String? selectedCategory) {
-                    //     setState(() {});
-
-                    //     SelectedTemplateFilters = selectedCategory;
-                    //   },
-                    //   value: SelectedTemplateFilters,
-                    // ),
-                    // const SizedBox(height: 12),
                     AppUtils.getDropdown(
                       'Select Template Name',
                       data: templateNames,
@@ -1197,13 +1216,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
 
       for (var viewModel in templeteViewModel.viewModels) {
         final campaignModel = viewModel.model;
-
-        // if (campaignModel?.data?.isEmpty ?? true) {
-        //   continue;
-        // }
-
-        print(
-            "selectedTemplateName: while sel temp::    ${selectedTemplateName}");
 
         for (var record in campaignModel!.data!) {
           print(

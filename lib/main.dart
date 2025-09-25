@@ -60,7 +60,7 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 void main() async {
   tz.initializeTimeZones();
   ErrorWidget.builder = (FlutterErrorDetails details) {
-    return Center(
+    return const Center(
       child: Text(
         "Something went wrong",
         style: TextStyle(color: Colors.red, fontSize: 18),
@@ -74,10 +74,10 @@ void main() async {
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-       
-  const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  final DarwinInitializationSettings initializationSettingsDarwin =
+  const DarwinInitializationSettings initializationSettingsDarwin =
       DarwinInitializationSettings(
     requestAlertPermission: true,
     requestBadgePermission: true,
@@ -88,7 +88,7 @@ void main() async {
     // },
   );
 
-  final InitializationSettings initializationSettings = InitializationSettings(
+  const InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
     iOS: initializationSettingsDarwin,
   );
@@ -106,9 +106,6 @@ void main() async {
 
   runApp(const MyApp());
 }
-
-
-
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});

@@ -23,12 +23,13 @@ class TemplateSheetHelper extends StatefulWidget {
   String leadNum;
   String ledid;
 
-  TemplateSheetHelper(
-      {super.key,
-      required this.controllers,
-      required this.leadName,
-      required this.leadNum,
-      required this.ledid});
+  TemplateSheetHelper({
+    super.key,
+    required this.controllers,
+    required this.leadName,
+    required this.leadNum,
+    required this.ledid,
+  });
 
   @override
   State<TemplateSheetHelper> createState() => _TemplateSheetHelperState();
@@ -42,7 +43,6 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
   bool isSendingTemplate = false;
   List<TextEditingController> carousalController = [];
   File? mainContentFile;
-  // final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -74,387 +74,556 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     return matches.length;
   }
 
-  // void _scrollToFocused() {
-  //   Future.delayed(const Duration(milliseconds: 300), () {
-  //     _scrollController.animateTo(
-  //       _scrollController.position.maxScrollExtent,
-  //       duration: const Duration(milliseconds: 300),
-  //       curve: Curves.easeInOut,
-  //     );
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height * .80,
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: MediaQuery.of(context).viewInsets,
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            padding: const EdgeInsets.all(15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+      height: MediaQuery.of(context).size.height * 0.85,
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildHeaderRow(),
-                const Divider(thickness: 1),
                 const Text(
-                    "💡 Tip: Write name as a parameter to replace it with the real name of the client."),
-                const SizedBox(height: 10),
-                _buildTemplateCard(),
-                msgViewModel.carousalList.isEmpty
-                    ? const SizedBox()
-                    : CarousalCard(
-                        msgViewModel: msgViewModel,
-                        wpleadNum: widget.leadNum,
-                        leadId: widget.ledid,
-                      ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  child: Center(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.navBarIconColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                          side:
-                              const BorderSide(color: AppColor.navBarIconColor),
-                        ),
-                      ),
-                      onPressed: () async {
-                        setState(() {
-                          isSendingTemplate = true;
-                        });
-                        final msgViewModel = Provider.of<MessageViewModel>(
-                            context,
-                            listen: false);
-                        final walletController = Provider.of<WalletController>(
-                            context,
-                            listen: false);
-                        final prefs = await SharedPreferences.getInstance();
-                        final phoneNumber = prefs.getString('phoneNumber');
-                        final hasWallet =
-                            prefs.getBool(SharedPrefsConstants.hasWalletKey) ??
-                                false;
-
-                        if (_requiresFile(msgViewModel) &&
-                            mainContentFile == null) {
-                          EasyLoading.showToast(
-                              "Please pick a file to send this template");
-                          setState(() {
-                            isSendingTemplate = false;
-                          });
-                          return;
-                        }
-
-                        if (hasWallet) walletController.debitWalletBalApiCall();
-
-                        if (!_allFilled(widget.controllers)) {
-                          EasyLoading.showToast(
-                              "Fill the values of all placeholders..");
-                          setState(() {
-                            isSendingTemplate = false;
-                          });
-                          return;
-                        }
-
-                        //  4. Build request body
-                        final body = await _buildBody(
-                          msgViewModel: msgViewModel,
-                          phoneNumber: phoneNumber,
-                          hasWallet: hasWallet,
-                          walletController: walletController,
-                        );
-
-                        debugPrint("send temp api call body::: $body");
-
-                        if (body.isEmpty) {
-                          setState(() {
-                            isSendingTemplate = false;
-                          });
-                          return;
-                        }
-                        final response = await msgViewModel.sendTemplateApiCall(
-                          tempBody: body,
-                          number: phoneNumber,
-                        );
-
-                        debugPrint("onValue of send template::: $response");
-
-                        setState(() {
-                          isSendingTemplate = false;
-                        });
-                        if (response['success'] == true) {
-                          await msgViewModel.Fetchmsghistorydata(
-                              leadnumber: widget.leadNum, number: phoneNumber);
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: isSendingTemplate
-                          ? const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 6.0),
-                              child: Text("Send",
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 16)),
-                            ),
+                  "Review Template",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      color: AppColor.navBarIconColor,
+                      size: 20,
                     ),
                   ),
                 ),
               ],
             ),
           ),
+
+          // Content
+          Expanded(
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Color(0xffF8F9FA),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Tip Card
+                    _buildTipCard(),
+                    const SizedBox(height: 20),
+
+                    // Template Card
+                    _buildTemplateCard(),
+
+                    // Carousel Section
+                    if (msgViewModel.carousalList.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      CarousalCard(
+                        msgViewModel: msgViewModel,
+                        wpleadNum: widget.leadNum,
+                        leadId: widget.ledid,
+                      ),
+                    ],
+
+                    // Send Button
+                    const SizedBox(height: 24),
+                    _buildSendButton(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTipCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColor.navBarIconColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColor.navBarIconColor.withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.lightbulb_outline,
+            color: AppColor.navBarIconColor,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              "Tip: Write name as a parameter to replace it with the real name of the client.",
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[700],
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTemplateCard() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Colors.grey[300]!,
+          width: 1,
+        ),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xffE3FFC9).withOpacity(0.3),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Body Text
+            if (msgViewModel.selectedBody != null)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Text(
+                  msgViewModel.selectedBody!.text ?? "",
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+
+            // Placeholder Inputs
+            _buildPlaceholderInputs(widget.controllers),
+            const SizedBox(height: 16),
+
+            // Buttons
+            if (msgViewModel.selectedButtons != null) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: List.generate(
+                  msgViewModel.selectedButtons!.buttons!.length,
+                  (index) => _buildButtonChip(
+                    msgViewModel.selectedButtons?.buttons?[index].text ?? "",
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // Media Section
+            if (msgViewModel.selectedHeader != null) ...[
+              _buildMediaSection(),
+              const SizedBox(height: 16),
+            ],
+
+            // Footer
+            if (msgViewModel.selectedFooter != null)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  msgViewModel.selectedFooter?.text ?? "",
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 13,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+
+            // Checkbox
+            const SizedBox(height: 16),
+            _buildCheckbox(),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildHeaderRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          "Review Template",
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        InkWell(
-          onTap: () => Navigator.pop(context),
-          child: const Icon(
-            Icons.highlight_remove_outlined,
-            color: AppColor.navBarIconColor,
-            size: 25,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget buildPlaceholderInputs(List<TextEditingController> controllers) {
+  Widget _buildPlaceholderInputs(List<TextEditingController> controllers) {
     return Column(
       children: List.generate(controllers.length, (index) {
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: TextField(
-            controller: controllers[index],
-            decoration: InputDecoration(
-              labelText: "Enter value for placeholder ${index + 1}",
-              border: const OutlineInputBorder(),
-            ),
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Parameter ${index + 1}",
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller: controllers[index],
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: "Enter value for placeholder ${index + 1}",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                        color: AppColor.navBarIconColor,
+                        width: 2,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       }),
     );
   }
 
-  Widget _buildTemplateCard() {
-    print(
-        "msgViewModel.selectedHeade::::::      ${msgViewModel.selectedHeader}");
-    return Card(
-      elevation: 6,
-      shadowColor: Colors.black26,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+  Widget _buildButtonChip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColor.navBarIconColor, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppColor.navBarIconColor.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      color: const Color(0xffE3FFC9).withOpacity(0.4),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Body text
-            if (msgViewModel.selectedBody != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: Text(
-                  msgViewModel.selectedBody!.text ?? "",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-
-            // Placeholder inputs
-            buildPlaceholderInputs(widget.controllers),
-            const SizedBox(height: 12),
-
-            // Buttons (chips style)
-            if (msgViewModel.selectedButtons != null)
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: List.generate(
-                  msgViewModel.selectedButtons!.buttons!.length,
-                  (index) {
-                    return buildChatButtonTag(
-                      msgViewModel.selectedButtons?.buttons?[index].text ?? "",
-                    );
-                  },
-                ),
-              ),
-
-            const SizedBox(height: 16),
-
-            // Footer
-            if (msgViewModel.selectedFooter != null)
-              Text(
-                msgViewModel.selectedFooter?.text ?? "",
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-
-            const SizedBox(height: 16),
-
-            // Media preview
-            if (msgViewModel.selectedHeader != null)
-              Column(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 8,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: mainContentFile == null
-                            ? buildMediaWidget(
-                                msgViewModel.selectedHeader!.format ?? "",
-                                msgViewModel.selectedHeader?.example
-                                        ?.headerHandle?[0] ??
-                                    "",
-                              )
-                            : _isImageFile(mainContentFile!.path)
-                                ? Image.file(mainContentFile!)
-                                : buildMediaWidget(
-                                    msgViewModel.selectedHeader!.format ?? "",
-                                    msgViewModel.selectedHeader?.example
-                                            ?.headerHandle?[0] ??
-                                        "",
-                                  )),
-                  ),
-                  if (msgViewModel.selectedHeader!.format == "IMAGE" ||
-                      msgViewModel.selectedHeader!.format == "VIDEO" ||
-                      msgViewModel.selectedHeader!.format == "DOCUMENT")
-                    Center(
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          print(
-                              "Selected format: ${msgViewModel.selectedHeader!.format}");
-                          // final allowedExtensions =
-                          //     msgViewModel.selectedHeader!.format == 'IMAGE'
-                          //         ? ["jpg", "jpeg", "png"]
-                          //         : ["mp4", "mkv", "mov"];
-
-                          final format = msgViewModel.selectedHeader!.format;
-
-                          final allowedExtensions = format == 'IMAGE'
-                              ? ["jpg", "jpeg", "png"]
-                              : format == 'VIDEO'
-                                  ? ["mp4", "mkv", "mov"]
-                                  : [
-                                      "pdf",
-                                      "doc",
-                                      "docx",
-                                      "xls",
-                                      "xlsx",
-                                      "ppt",
-                                      "pptx"
-                                    ];
-
-                          final pickedFile =
-                              await FilePicker.platform.pickFiles(
-                            allowMultiple: false,
-                            type: FileType.custom,
-                            allowedExtensions: allowedExtensions,
-                          );
-
-                          if (pickedFile != null) {
-                            EasyLoading.showToast("Picked Successfully");
-                            setState(() {
-                              mainContentFile =
-                                  File(pickedFile.files.first.path!);
-                            });
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.upload_file,
-                          size: 20,
-                          color: Colors.white,
-                        ),
-                        label: const Text(
-                          "Pick File",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 18, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          backgroundColor: AppColor.navBarIconColor,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-
-            const SizedBox(height: 14),
-
-            // if (msgViewModel.selectedHeader != null)
-
-            // Checkbox
-            Row(
-              children: [
-                Transform.scale(
-                  scale: 1.2,
-                  child: Checkbox(
-                    activeColor: Colors.green[700],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    value: isChecked,
-                    onChanged: (bool? value) => setState(() {
-                      isChecked = value ?? false;
-                    }),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    "Send on login user WhatsApp number also",
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
-                ),
-              ],
-            ),
-          ],
+      child: Text(
+        text,
+        style: TextStyle(
+          color: AppColor.navBarIconColor,
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
         ),
       ),
     );
+  }
+
+  Widget _buildMediaSection() {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: Column(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: mainContentFile == null
+                      ? buildMediaWidget(
+                          msgViewModel.selectedHeader!.format ?? "",
+                          msgViewModel
+                                  .selectedHeader?.example?.headerHandle?[0] ??
+                              "",
+                        )
+                      : _isImageFile(mainContentFile!.path)
+                          ? Image.file(mainContentFile!)
+                          : buildMediaWidget(
+                              msgViewModel.selectedHeader!.format ?? "",
+                              msgViewModel.selectedHeader?.example
+                                      ?.headerHandle?[0] ??
+                                  "",
+                            ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (msgViewModel.selectedHeader!.format == "IMAGE" ||
+                  msgViewModel.selectedHeader!.format == "VIDEO" ||
+                  msgViewModel.selectedHeader!.format == "DOCUMENT")
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _pickFile,
+                    icon: const Icon(Icons.upload_file, size: 18),
+                    label: const Text("Choose File"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor.navBarIconColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 2,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCheckbox() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: isChecked ? AppColor.navBarIconColor : Colors.transparent,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: isChecked ? AppColor.navBarIconColor : Colors.grey[400]!,
+                width: 2,
+              ),
+            ),
+            child: isChecked
+                ? const Icon(Icons.check, color: Colors.white, size: 16)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => isChecked = !isChecked),
+              child: const Text(
+                "Send on login user WhatsApp number also",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSendButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _sendTemplate,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColor.navBarIconColor,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 2,
+          shadowColor: AppColor.navBarIconColor.withOpacity(0.3),
+        ),
+        child: isSendingTemplate
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : const Text(
+                "Send Template",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Future<void> _pickFile() async {
+    final format = msgViewModel.selectedHeader!.format;
+    final allowedExtensions = format == 'IMAGE'
+        ? ["jpg", "jpeg", "png"]
+        : format == 'VIDEO'
+            ? ["mp4", "mkv", "mov"]
+            : ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"];
+
+    final pickedFile = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: allowedExtensions,
+    );
+
+    if (pickedFile != null) {
+      EasyLoading.showToast("File selected successfully");
+      setState(() {
+        mainContentFile = File(pickedFile.files.first.path!);
+      });
+    }
+  }
+
+  Future<void> _sendTemplate() async {
+    setState(() {
+      isSendingTemplate = true;
+    });
+
+    final msgViewModel = Provider.of<MessageViewModel>(context, listen: false);
+    final walletController =
+        Provider.of<WalletController>(context, listen: false);
+    final prefs = await SharedPreferences.getInstance();
+    final phoneNumber = prefs.getString('phoneNumber');
+    final hasWallet = prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
+
+    if (_requiresFile(msgViewModel) && mainContentFile == null) {
+      EasyLoading.showToast("Please pick a file to send this template");
+      setState(() {
+        isSendingTemplate = false;
+      });
+      return;
+    }
+
+    if (hasWallet) walletController.debitWalletBalApiCall();
+
+    if (!_allFilled(widget.controllers)) {
+      EasyLoading.showToast("Fill the values of all placeholders..");
+      setState(() {
+        isSendingTemplate = false;
+      });
+      return;
+    }
+
+    final body = await _buildBody(
+      msgViewModel: msgViewModel,
+      phoneNumber: phoneNumber,
+      hasWallet: hasWallet,
+      walletController: walletController,
+    );
+
+    debugPrint("send temp api call body::: $body");
+
+    if (body.isEmpty) {
+      setState(() {
+        isSendingTemplate = false;
+      });
+      return;
+    }
+
+    final response = await msgViewModel.sendTemplateApiCall(
+      tempBody: body,
+      number: phoneNumber,
+    );
+
+    debugPrint("onValue of send template::: $response");
+
+    setState(() {
+      isSendingTemplate = false;
+    });
+
+    if (response['success'] == true) {
+      await msgViewModel.Fetchmsghistorydata(
+          leadnumber: widget.leadNum, number: phoneNumber);
+      Navigator.pop(context);
+    }
   }
 
   bool _requiresFile(MessageViewModel msgViewModel) {
@@ -477,9 +646,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     String? fileTitle;
 
     if (msgViewModel.carousalList.isEmpty) {
-      // 🔹 Handle file upload if exists
       if (mainContentFile != null && phoneNumber != null) {
-        // final fileType = _getFileType(mainContentFile!.path);
         final uploadResponse =
             await msgViewModel.uploadFile(mainContentFile!, phoneNumber);
 
@@ -516,7 +683,6 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
         EasyLoading.showToast("Save Carousal before sending...");
         return {};
       }
-      // 🔹 Merge params with main inputs
 
       final Map<String, dynamic> finalParams = {};
 
@@ -543,7 +709,6 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
       };
     }
 
-    // ✅ Safely add file data into parameters
     if (mainContentFile != null && fileId != null && fileTitle != null) {
       (body["parameters"] as Map<String, dynamic>).addAll({
         "file": <String, dynamic>{},
@@ -572,16 +737,6 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
         ext.endsWith(".bmp") ||
         ext.endsWith(".webp");
   }
-
-  // String _getFileType(String path) {
-  //   final ext = p.extension(path).replaceFirst('.', '').toLowerCase();
-  //   if (["jpg", "jpeg", "png"].contains(ext)) return "image";
-  //   if (["mp4", "mkv", "mov"].contains(ext)) return "video";
-  //   if (["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"].contains(ext)) {
-  //     return "document";
-  //   }
-  //   return "UNKNOWN";
-  // }
 }
 
 Widget buildChatButtonTag(String text) {
@@ -664,241 +819,283 @@ class _CarousalCardState extends State<CarousalCard> {
     final theme = Theme.of(context);
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 6,
-      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 2),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CarouselSlider(
-              carouselController: _carouselController,
-              options: CarouselOptions(
-                autoPlay: false,
-                enableInfiniteScroll: false,
-                viewportFraction: 1,
-                enlargeCenterPage: true,
-                height: 380,
-                onPageChanged: (index, reason) {
-                  setState(() => _currentIndex = index);
-                },
-              ),
-              items:
-                  widget.msgViewModel.carousalList.asMap().entries.map((entry) {
-                final index = entry.key;
-                final i = entry.value;
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Carousel Section with fixed height
+              Container(
+                height: 400,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: CarouselSlider(
+                  carouselController: _carouselController,
+                  options: CarouselOptions(
+                    autoPlay: false,
+                    enableInfiniteScroll: false,
+                    viewportFraction: 1,
+                    enlargeCenterPage: false,
+                    height: 500,
+                    onPageChanged: (index, reason) {
+                      setState(() => _currentIndex = index);
+                    },
+                  ),
+                  items: widget.msgViewModel.carousalList
+                      .asMap()
+                      .entries
+                      .map((entry) {
+                    final index = entry.key;
+                    final i = entry.value;
 
-                Component? selectedCarousalHeader;
-                Component? selectedCarousalBody;
-                Component? selectedCarousalFooter;
-                Component? selectedCarousalButtons;
+                    Component? selectedCarousalHeader;
+                    Component? selectedCarousalBody;
+                    Component? selectedCarousalFooter;
+                    Component? selectedCarousalButtons;
 
-                for (var e in i.components ?? []) {
-                  switch (e.type) {
-                    case "HEADER":
-                      selectedCarousalHeader = e;
-                      break;
-                    case "BODY":
-                      selectedCarousalBody = e;
-                      break;
-                    case "FOOTER":
-                      selectedCarousalFooter = e;
-                      break;
-                    case "BUTTONS":
-                      selectedCarousalButtons = e;
-                      break;
-                  }
-                }
+                    for (var e in i.components ?? []) {
+                      switch (e.type) {
+                        case "HEADER":
+                          selectedCarousalHeader = e;
+                          break;
+                        case "BODY":
+                          selectedCarousalBody = e;
+                          break;
+                        case "FOOTER":
+                          selectedCarousalFooter = e;
+                          break;
+                        case "BUTTONS":
+                          selectedCarousalButtons = e;
+                          break;
+                      }
+                    }
 
-                return SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (selectedCarousalBody != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            selectedCarousalBody.text ?? "",
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                    return Container(
+                      padding: const EdgeInsets.all(8),
+                      child: SingleChildScrollView(
+                        // Added scroll for content
+                        physics: const ClampingScrollPhysics(),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Header
+                            if (selectedCarousalBody != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Text(
+                                  selectedCarousalBody.text ?? "",
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+
+                            // Media - Fixed size
+                            if (selectedCarousalHeader != null)
+                              Container(
+                                height: 220, // Fixed height
+                                width: double.infinity,
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey[300]!),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: carousalFiles[index] == null
+                                      ? buildMediaWidget(
+                                          selectedCarousalHeader.format ?? "",
+                                          selectedCarousalHeader
+                                                  .example?.headerHandle?[0] ??
+                                              "",
+                                          fromCarousal: true,
+                                        )
+                                      : selectedCarousalHeader.format == "IMAGE"
+                                          ? Image.file(
+                                              carousalFiles[index]!,
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                            )
+                                          : Container(
+                                              color: Colors.black,
+                                              child: const Center(
+                                                child: Icon(
+                                                  Icons.play_arrow,
+                                                  color: Colors.white,
+                                                  size: 40,
+                                                ),
+                                              ),
+                                            ),
+                                ),
+                              ),
+
+                            // Placeholder Inputs
+                            buildPlaceholderInputs(
+                              allCarousalControllers[index],
+                              allCarousalPlaceholders[index],
                             ),
-                          ),
-                        ),
 
-                      if (selectedCarousalHeader != null)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: carousalFiles[index] == null
-                              ? buildMediaWidget(
-                                  selectedCarousalHeader.format ?? "",
-                                  selectedCarousalHeader
-                                          .example?.headerHandle?[0] ??
-                                      "",
-                                  fromCarousal: true,
-                                )
-                              : selectedCarousalHeader.format == "IMAGE"
-                                  ? Image.file(carousalFiles[index]!,
-                                      fit: BoxFit.cover)
-                                  : Container(
-                                      height: 180,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black,
-                                        borderRadius: BorderRadius.circular(12),
+                            const SizedBox(height: 12),
+
+                            // Buttons - Wrap with limited lines
+                            if (selectedCarousalButtons != null)
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: List.generate(
+                                  selectedCarousalButtons.buttons!.length,
+                                  (btnIndex) {
+                                    return ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        maxWidth:
+                                            MediaQuery.of(context).size.width *
+                                                0.3,
                                       ),
-                                      child: const Center(
-                                        child: Icon(Icons.play_arrow_rounded,
-                                            color: Colors.white, size: 40),
+                                      child: buildChatButtonTag(
+                                        selectedCarousalButtons
+                                                ?.buttons?[btnIndex].text ??
+                                            "",
                                       ),
+                                    );
+                                  },
+                                ).take(4).toList(), 
+                              ),
+
+                            const SizedBox(height: 12),
+
+                            Center(
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    final allowedExtensions =
+                                        selectedCarousalHeader?.format ==
+                                                'IMAGE'
+                                            ? ["jpg", "jpeg", "png"]
+                                            : ["mp4", "mkv", "mov"];
+
+                                    final pickedFile =
+                                        await FilePicker.platform.pickFiles(
+                                      allowMultiple: false,
+                                      type: FileType.custom,
+                                      allowedExtensions: allowedExtensions,
+                                    );
+
+                                    if (pickedFile != null) {
+                                      EasyLoading.showToast("File selected");
+                                      setState(() {
+                                        carousalFiles[index] =
+                                            File(pickedFile.files.first.path!);
+                                      });
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColor.navBarIconColor,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(6),
                                     ),
+                                  ),
+                                  child: const Text(
+                                    "Pick Carousal File",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            // Footer
+                            if (selectedCarousalFooter?.text != null)
+                              Text(
+                                selectedCarousalFooter!.text!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
                         ),
-
-                      const SizedBox(height: 12),
-
-                      // Placeholder Inputs
-                      buildPlaceholderInputs(
-                        allCarousalControllers[index],
-                        allCarousalPlaceholders[index],
                       ),
+                    );
+                  }).toList(),
+                ),
+              ),
 
-                      const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
-                      if (selectedCarousalButtons != null)
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: List.generate(
-                            selectedCarousalButtons.buttons!.length,
-                            (btnIndex) {
-                              return buildChatButtonTag(
-                                selectedCarousalButtons
-                                        ?.buttons?[btnIndex].text ??
-                                    "",
-                              );
-                            },
-                          ),
-                        ),
-
-                      const SizedBox(height: 20),
-
-                      // Pick File Button
-                      Center(
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            print(
-                                "Selected format: ${selectedCarousalHeader?.format}");
-                            final allowedExtensions =
-                                selectedCarousalHeader?.format == 'IMAGE'
-                                    ? ["jpg", "jpeg", "png"]
-                                    : ["mp4", "mkv", "mov"];
-
-                            final pickedFile =
-                                await FilePicker.platform.pickFiles(
-                              allowMultiple: false,
-                              type: FileType.custom,
-                              allowedExtensions: allowedExtensions,
-                            );
-
-                            if (pickedFile != null) {
-                              EasyLoading.showToast("Picked Successfully");
-                              setState(() {
-                                carousalFiles[index] =
-                                    File(pickedFile.files.first.path!);
-                              });
-                            }
-                          },
-                          icon: const Icon(
-                            Icons.upload_file,
-                            size: 20,
+              // Save Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _saveCarousal,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.navBarIconColor,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: isSavingCarousal
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
                             color: Colors.white,
                           ),
-                          label: const Text(
-                            "Pick File",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 18, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            backgroundColor: AppColor.navBarIconColor,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      if (selectedCarousalFooter?.text != null)
-                        Text(
-                          selectedCarousalFooter!.text!,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Save Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _saveCarousal,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.navBarIconColor,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                child: isSavingCarousal
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text(
-                        "Save Carousel",
-                        style: TextStyle(
-                            fontSize: 16,
+                        )
+                      : const Text(
+                          "Save Carousal",
+                          style: TextStyle(
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white),
-                      ),
+                          ),
+                        ),
+                ),
               ),
-            ),
 
-            const SizedBox(height: 8),
+              const SizedBox(height: 8),
 
-            // Dots Indicator
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                widget.msgViewModel.carousalList.length,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: _currentIndex == index ? 12 : 8,
-                  height: _currentIndex == index ? 12 : 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentIndex == index
-                        ? AppColor.navBarIconColor
-                        : Colors.grey[400],
+              // Dots Indicator
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  widget.msgViewModel.carousalList.length,
+                  (index) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _currentIndex == index ? 12 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color: _currentIndex == index
+                          ? AppColor.navBarIconColor
+                          : Colors.grey[300],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

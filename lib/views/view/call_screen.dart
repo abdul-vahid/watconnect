@@ -954,7 +954,7 @@ class _CallScreenState extends State<CallScreen> {
 
   void _handleError(String message, dynamic error, [StackTrace? stackTrace]) {
     log('❌ $message: $error', stackTrace: stackTrace);
-    _updateCallState(CallState.failed, 'Error: ${error.toString()}');
+    _updateCallState(CallState.failed, 'Error: something went wrong');
     EasyLoading.showError('Operation failed');
   }
 

@@ -116,27 +116,27 @@ class _UserListView extends State<UserListView> {
         backgroundColor: AppColor.pageBgGrey,
         appBar: AppBar(
           actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: CircleAvatar(
-                backgroundColor: AppColor.navBarIconColor,
-                child: IconButton(
-                  icon: const Icon(
-                    FontAwesomeIcons.add,
-                    size: 25,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UserAddView(),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            //   child: CircleAvatar(
+            //     backgroundColor: AppColor.navBarIconColor,
+            //     child: IconButton(
+            //       icon: const Icon(
+            //         FontAwesomeIcons.add,
+            //         size: 25,
+            //         color: Colors.white,
+            //       ),
+            //       onPressed: () {
+            //         Navigator.push(
+            //           context,
+            //           MaterialPageRoute(
+            //             builder: (context) => UserAddView(),
+            //           ),
+            //         );
+            //       },
+            //     ),
+            //   ),
+            // ),
           ],
           title: const Text(
             'Users',
