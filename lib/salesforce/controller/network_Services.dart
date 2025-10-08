@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/utils/app_constants.dart';
-import 'package:whatsapp/utils/app_utils.dart';
 
 class NetworkService {
   static Future<http.Response?> makeRequest({

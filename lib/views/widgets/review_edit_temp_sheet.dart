@@ -345,7 +345,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         color: AppColor.navBarIconColor,
                         width: 2,
                       ),
@@ -381,7 +381,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
       ),
       child: Text(
         text,
-        style: TextStyle(
+        style: const TextStyle(
           color: AppColor.navBarIconColor,
           fontWeight: FontWeight.w600,
           fontSize: 13,

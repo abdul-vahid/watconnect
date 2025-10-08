@@ -814,7 +814,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:intl/intl.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 import 'package:flutter/material.dart';
@@ -1580,7 +1579,7 @@ class _CallScreenState extends State<CallScreen> {
     );
   }
 
-  Future<void> _createHistoryApi(dynamic data) async {}
+  // Future<void> _createHistoryApi(dynamic data) async {}
 }
 
 String _formatDuration(int seconds) {

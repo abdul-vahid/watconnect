@@ -102,7 +102,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   List<TextEditingController> controllers = [];
 
   int _lastMessageCount = 0;
-  bool _shouldScrollToBottom = false;
+  // bool _shouldScrollToBottom = false;
 
   @override
   void initState() {

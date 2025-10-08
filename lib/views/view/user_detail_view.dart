@@ -239,24 +239,6 @@ class _UserDetailView extends State<UserDetailView> {
           'Details',
           style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
         ),
-        actions: [
-          // PopupMenuButton<String>(
-          //   icon: const Icon(Icons.more_vert, size: 23, color: Colors.white),
-          //   onSelected: (value) {
-          //     if (value == 'edit') {
-          //       _navigateToEdit();
-          //     }
-          //   },
-          //   itemBuilder: (BuildContext context) {
-          //     return [
-          //       const PopupMenuItem<String>(
-          //         value: 'edit',
-          //         child: Text('Edit'),
-          //       ),
-          //     ];
-          //   },
-          // ),
-        ],
       ),
       body: _pageBody(model),
     );

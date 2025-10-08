@@ -18,7 +18,7 @@ void showSfCallDialog(
     barrierColor: Colors.black.withOpacity(0.2),
     builder: (BuildContext context) {
       return Dialog(
-        insetPadding: EdgeInsets.all(20),
+        insetPadding: const EdgeInsets.all(20),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -31,12 +31,12 @@ void showSfCallDialog(
             children: [
               Row(
                 children: [
-                  Spacer(),
+                  const Spacer(),
                   const Text(
                     "Call History",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   InkWell(
                       onTap: () {
                         Navigator.pop(context);

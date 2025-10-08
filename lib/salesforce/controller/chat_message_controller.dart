@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -159,7 +161,7 @@ class ChatMessageController extends ChangeNotifier {
   Future<bool> getSfAccessTokenApiCall(Map<String, dynamic> body) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final env = await prefs.getString(SharedPrefsConstants.sfEnv);
+      final env = prefs.getString(SharedPrefsConstants.sfEnv);
 
       String url =
           env == 'Test' ? AppConstants.getTestToken : AppConstants.getToken;

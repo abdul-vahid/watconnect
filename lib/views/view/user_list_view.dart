@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_print, deprecated_member_use, prefer_typing_uninitialized_variables
 
 import 'package:focus_detector/focus_detector.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +10,6 @@ import '../../models/user_data_model/user_data_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import '../../view_models/user_data_list_vm.dart';
-import 'user_add_update_view.dart';
 
 class UserListView extends StatefulWidget {
   const UserListView({super.key});
@@ -115,29 +113,7 @@ class _UserListView extends State<UserListView> {
       child: Scaffold(
         backgroundColor: AppColor.pageBgGrey,
         appBar: AppBar(
-          actions: [
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            //   child: CircleAvatar(
-            //     backgroundColor: AppColor.navBarIconColor,
-            //     child: IconButton(
-            //       icon: const Icon(
-            //         FontAwesomeIcons.add,
-            //         size: 25,
-            //         color: Colors.white,
-            //       ),
-            //       onPressed: () {
-            //         Navigator.push(
-            //           context,
-            //           MaterialPageRoute(
-            //             builder: (context) => UserAddView(),
-            //           ),
-            //         );
-            //       },
-            //     ),
-            //   ),
-            // ),
-          ],
+         
           title: const Text(
             'Users',
             style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),

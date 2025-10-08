@@ -1425,11 +1425,11 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   }
 
   filterLeads(List filter) {
-    print("tempLeadModelList:: $filter ::::::: ${tempLeadModelList} ");
+    print("tempLeadModelList:: $filter ::::::: $tempLeadModelList ");
 
     print("filter.contains('All'):::::::: ${filter.contains('All')}");
     if (filter.isEmpty || filter.contains('All')) {
-      print("backupListModel:::: ${backupListModel}");
+      print("backupListModel:::: $backupListModel");
 
       setState(() {
         noRecordFound = false;
