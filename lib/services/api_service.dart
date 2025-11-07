@@ -5,9 +5,11 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/utils/app_utils.dart';
 
 import '../core/apis/app_exception.dart';
 import '../utils/function_lib.dart';
@@ -121,6 +123,8 @@ class APIService {
       case 401:
       case 403:
         debug("Unauthorized");
+        EasyLoading.showToast("Session Expired!\n Login Again");
+        AppUtils.logout(AppUtils.currentContext);
         throw UnauthorisedException(response.body.toString());
       case 500:
       default:

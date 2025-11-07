@@ -1,3 +1,4 @@
+// ignore: file_names
 class SfCallHistoryModel {
   String? whatsAppNumber;
   String? businessNum;

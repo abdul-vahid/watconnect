@@ -290,11 +290,11 @@ class outgoingCall {
         listen: false,
       ).outgoingCallApi(payload);
 
-      return true; // ✅ Success
+      return true;
     } catch (e, stacktrace) {
       print("❌ Error in startCall: $e");
       print(stacktrace);
-      return false; // ❌ Failure
+      return false;
     }
   }
 

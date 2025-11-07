@@ -95,6 +95,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
 
     if (drProvider.fromSalesForce) {
       String tkn = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
+      print("node token ::::  ${tkn}");
       Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
       var userId = decodedToken;
       String deviId = prefs.getString(SharedPrefsConstants.deviceId) ?? "";
