@@ -45,8 +45,8 @@ class SfChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               chatController
                   .callHistoryApiCall(userNumber: fullNum)
                   .then((value) {
-                showSfCallDialog(context, chatController.callHistoryList,
-                    () async {
+                showSfCallDialog(dbProvider.selectedContactInfo?.name ?? "",
+                    context, chatController.callHistoryList, () async {
                   final prefs = await SharedPreferences.getInstance();
                   final token =
                       prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";

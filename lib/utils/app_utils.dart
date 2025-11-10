@@ -381,7 +381,9 @@ class AppUtils {
   static Future<String> getSFUrl(String path) async {
     final prefs = await SharedPreferences.getInstance();
     final storedUrl = prefs.getString(SharedPrefsConstants.sfBaseUrl) ?? "";
-    String finalUrl = "$storedUrl/services/apexrest/WatConnect/";
+    // String finalUrl = "$storedUrl/services/apexrest/WatConnect/";   //prod
+
+    String finalUrl = "$storedUrl/services/apexrest/"; // stag
 
     return finalUrl + path;
   }

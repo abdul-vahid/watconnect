@@ -10,33 +10,34 @@ class SfCallHistoryModel {
   String? callStatus;
   String? id;
   String? statusC;
+  String? audioUrl;
 
-  SfCallHistoryModel({
-    this.whatsAppNumber,
-    this.businessNum,
-    this.startTime,
-    this.name,
-    this.event,
-    this.endTime,
-    this.duration,
-    this.callStatus,
-    this.id,
-    this.statusC,
-  });
+  SfCallHistoryModel(
+      {this.whatsAppNumber,
+      this.businessNum,
+      this.startTime,
+      this.name,
+      this.event,
+      this.endTime,
+      this.duration,
+      this.callStatus,
+      this.id,
+      this.statusC,
+      this.audioUrl});
 
   factory SfCallHistoryModel.fromJson(Map<String, dynamic> json) {
     return SfCallHistoryModel(
-      whatsAppNumber: json['WatConnect__WhatsApp_Number__c'] ?? "",
-      businessNum: json['WatConnect__WhatsApp_Bussiness_Number__c'] ?? "",
-      startTime: json['WatConnect__Start_Time__c'] ?? "",
-      name: json['Name'] ?? "",
-      event: json['WatConnect__Event__c'] ?? "",
-      endTime: json['WatConnect__End_Time__c'] ?? "",
-      duration: json['WatConnect__Duration__c'] ?? 0,
-      callStatus: json['WatConnect__Call_Status__c'] ?? "",
-      id: json['Id'] ?? "",
-      statusC: json['WatConnect__Status__c'] ?? "",
-    );
+        whatsAppNumber: json['WatConnect__WhatsApp_Number__c'] ?? "",
+        businessNum: json['WatConnect__WhatsApp_Bussiness_Number__c'] ?? "",
+        startTime: json['WatConnect__Start_Time__c'] ?? "",
+        name: json['Name'] ?? "",
+        event: json['WatConnect__Event__c'] ?? "",
+        endTime: json['WatConnect__End_Time__c'] ?? "",
+        duration: json['Duration__c'] ?? 0,
+        callStatus: json['Call_History__c'] ?? "",
+        id: json['Id'] ?? "",
+        statusC: json['Status__c'] ?? "",
+        audioUrl: json['Audio_url__c'] ?? "");
   }
 
   Map<String, dynamic> toJson() {
@@ -51,6 +52,7 @@ class SfCallHistoryModel {
       "WatConnect__Call_Status__c": callStatus,
       "Id": id,
       "WatConnect__Status__c": statusC,
+      "Audio_url__c": audioUrl
     };
   }
 }

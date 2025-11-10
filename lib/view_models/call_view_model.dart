@@ -1,13 +1,20 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:http/http.dart' as http;
+import 'package:mime/mime.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/models/call_history_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:whatsapp/utils/function_lib.dart';
 import '../core/models/base_list_view_model.dart';
+
+// ignore: depend_on_referenced_packages
+import 'package:http_parser/http_parser.dart';
 
 class CallsViewModel extends BaseListViewModel {
   @override
@@ -58,5 +65,71 @@ class CallsViewModel extends BaseListViewModel {
     var res = await get(url: url, baseModel: callHistoryModel());
     print("response::::::of start call api:::::::   $res");
     return res;
+  }
+
+  Future<dynamic> uploadRecFiledb(File file) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
+
+    if (token.isEmpty) {
+      print("❌ No token found");
+      return null;
+    }
+
+    // Check if your base URL is correct
+    var url = Uri.parse("${AppConstants.baseUrl}/api/whatsapp/files/null");
+    print("🔗 Request URL: $url");
+
+    var request = http.MultipartRequest("POST", url);
+
+    // Detect MIME type for audio file
+    final mimeType = 'audio/mp4'; // or 'audio/m4a' for m4a files
+    final fileStream = http.ByteStream(file.openRead());
+    final length = await file.length();
+
+    // Attach file
+    var multipartFile = http.MultipartFile(
+      'file', // Make sure this field name matches what your backend expects
+      fileStream,
+      length,
+      filename:
+          'recording_${DateTime.now().millisecondsSinceEpoch}.m4a', // Better filename
+      contentType: MediaType.parse(mimeType),
+    );
+
+    request.files.add(multipartFile);
+
+    // Add headers - remove Content-Type for multipart requests as it's set automatically
+    request.headers.addAll({
+      "Authorization": "Bearer $token", // Add Bearer if required
+    });
+
+    // Debug information
+    print("📋 Request Headers: ${request.headers}");
+    print("📁 File: ${file.path.split('/').last} (${length ~/ 1024} KB)");
+    print(
+        "🔑 Token: ${token.substring(0, 20)}..."); // Log first 20 chars for security
+
+    try {
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+
+      print("📡 Response Status: ${response.statusCode}");
+      print("📄 Response Body: $responseBody");
+
+      if (response.statusCode == 200) {
+        print("✅ File uploaded successfully");
+        return responseBody;
+      } else {
+        print(
+            "❌ Failed to upload file: ${response.statusCode} - ${response.reasonPhrase}");
+        print("🔍 Response body: $responseBody");
+        return null;
+      }
+    } catch (e, stackTrace) {
+      print("💥 Error occurred during file upload: $e");
+      print("📝 Stack trace: $stackTrace");
+      return null;
+    }
   }
 }

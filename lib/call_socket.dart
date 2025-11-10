@@ -16,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:whatsapp/main.dart';
+import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/call_view_model.dart';
@@ -52,6 +53,14 @@ class CallSocketService {
   Timer? _recordingTimer;
   String? _recordingFilePath;
   String? _currentCallId;
+  String startTime = "";
+
+  // Call Data Storage (for Salesforce API)
+  Map<String, dynamic>? _currentCallData;
+  String? _leadName;
+  String? _wpNumber;
+  String? _callId;
+  RTCSessionDescription? _offer;
 
   // UI
   BuildContext? _dialogContext;
@@ -157,19 +166,23 @@ class CallSocketService {
 
       if (_isRecording) {
         final recordingPath = await _audioRecorder.stop();
-
         _isRecording = false;
 
         if (recordingPath != null && recordingPath.isNotEmpty) {
           _recordingFilePath = recordingPath;
 
-          // Upload recording to server
-          await _uploadRecordingToServer(recordingPath);
+          // Verify the recorded file
+          final audioFile = File(recordingPath);
+          print('Audio file exists: ${audioFile.existsSync()}');
+          print('File size: ${audioFile.lengthSync()} bytes');
+
+          // Upload recording and call Salesforce API
+          await _handleRecordingUploadAndSalesforce(recordingPath);
 
           print('✅ Incoming call recording saved: $recordingPath');
 
           // Show popup to listen to recording
-          _showRecordingPlaybackPopup(recordingPath);
+          // _showRecordingPlaybackPopup(recordingPath);
         }
 
         _trackCallEvent('incoming_call_recording_stopped', {
@@ -184,6 +197,110 @@ class CallSocketService {
     }
   }
 
+  Future<void> _handleRecordingUploadAndSalesforce(String recordingPath) async {
+    try {
+      if (navigatorKey.currentContext == null) {
+        print('❌ Context not available for Salesforce API call');
+        return;
+      }
+
+      final audioFile = File(recordingPath);
+      if (!audioFile.existsSync()) {
+        print('❌ Recording file not found: $recordingPath');
+        return;
+      }
+
+      // Step 1: Upload recording file to get file ID
+      final callsViewModel = Provider.of<CallsViewModel>(
+          navigatorKey.currentContext!,
+          listen: false);
+
+      final dbResponse = await callsViewModel.uploadRecFiledb(audioFile);
+      print("dbResponse:::: of file rec audio api ::: $dbResponse");
+
+      final recFileId = jsonDecode(dbResponse)['records']?[0]?['title'];
+      print("dbResponse:::: jsonDecode recFileId ::: $recFileId");
+
+      if (recFileId == null) {
+        print('❌ Failed to get recording file ID');
+        return;
+      }
+
+      // Step 2: Check if Salesforce integration is enabled and call API
+      final drProvider = Provider.of<DashBoardController>(
+          navigatorKey.currentContext!,
+          listen: false);
+
+      if (drProvider.fromSalesForce) {
+        await _callSalesforceApi(recFileId);
+      } else {
+        print('ℹ️ Salesforce integration not enabled, skipping API call');
+      }
+    } catch (e, st) {
+      print('❌ Error in recording upload and Salesforce API: $e');
+      _handleError('Recording upload and Salesforce API failed', e, st);
+    }
+  }
+
+  Future<void> _callSalesforceApi(String recFileId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tentCode =
+          prefs.getString(SharedPrefsConstants.sfNodeTennatCode) ?? "";
+      final filePubUrl =
+          "${AppConstants.baseImgUrl}public/$tentCode/attachment/$recFileId";
+
+      final busNum =
+          prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+
+      print("dbResponse::::filePubUrl $filePubUrl");
+
+      // Prepare the API body
+      Map<String, dynamic> body = {
+        "name": _leadName ?? "Unknown Lead",
+        "whatsapp_number": _wpNumber ?? "Unknown Number",
+        "business_number": busNum,
+        "event": "call_started",
+        "call_id": _callId ?? _currentCallId ?? "Unknown",
+        "end_time": DateTime.now().toLocal().toIso8601String(),
+        "status": "Incoming",
+        "sdp": _offer?.sdp ?? "",
+        "audio_url": filePubUrl
+      };
+
+      log("chatMessageController.createCallHistoryApi $body");
+
+      // Call the Salesforce API
+      final ChatMessageController chatMessageController =
+          Provider.of<ChatMessageController>(navigatorKey.currentContext!,
+              listen: false);
+
+      await chatMessageController.createCallHistoryApi(body: body);
+
+      print('✅ Salesforce call history API called successfully');
+    } catch (e, st) {
+      print('❌ Salesforce API call failed: $e');
+      _handleError('Salesforce API call failed', e, st);
+    }
+  }
+
+  // Store call data for Salesforce API
+  void _storeCallDataForSalesforce({
+    required Map<String, dynamic> callData,
+    String? leadName,
+    String? wpNumber,
+    String? callId,
+    RTCSessionDescription? offer,
+  }) {
+    _currentCallData = callData;
+    _leadName = leadName;
+    _wpNumber = wpNumber;
+    _callId = callId;
+    _offer = offer;
+
+    print('📝 Stored call data for Salesforce API');
+  }
+
   void _showRecordingPlaybackPopup(String filePath) {
     if (navigatorKey.currentContext == null) return;
 
@@ -195,84 +312,9 @@ class CallSocketService {
         builder: (context) => RecordingPlaybackDialog(
           filePath: filePath,
           duration: _recordingDuration,
-          callId: _currentCallId ?? 'Unknown',
         ),
       );
     });
-  }
-
-  Future<void> _uploadRecordingToServer(String filePath) async {
-    try {
-      final file = File(filePath);
-      if (!await file.exists()) {
-        print('❌ Recording file not found: $filePath');
-        return;
-      }
-
-      final fileSize = await file.length();
-      print(
-          '📤 Uploading incoming call recording: $filePath (${fileSize ~/ 1024} KB)');
-
-      // Convert to base64 for upload
-      final bytes = await file.readAsBytes();
-      final base64Audio = base64Encode(bytes);
-
-      // Upload to server
-      await _saveCallRecordingToServer(base64Audio, filePath);
-
-      // Note: We don't delete the file immediately as user might want to play it
-      print('✅ Incoming call recording uploaded to server');
-    } catch (e, st) {
-      print('❌ Recording upload failed: $e');
-      // Don't rethrow - we don't want to break the call flow if upload fails
-    }
-  }
-
-  Future<void> _saveCallRecordingToServer(
-      String base64Audio, String filePath) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final drProvider = Provider.of<DashBoardController>(
-          navigatorKey.currentContext!,
-          listen: false);
-
-      String businessNumber = "";
-      if (drProvider.fromSalesForce) {
-        businessNumber =
-            prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      } else {
-        businessNumber = prefs.getString('phoneNumber') ?? "";
-      }
-
-      final Map<String, dynamic> recordingData = {
-        "fileName":
-            "IncomingCallRecording_${_currentCallId}_${DateTime.now().millisecondsSinceEpoch}.m4a",
-        "base64Data": base64Audio,
-        "callHistoryId": _currentCallId,
-        "businessNumber": businessNumber,
-        "whatsappNumber": "", // You might want to get this from call data
-        "duration": _recordingDuration,
-        "timestamp": DateTime.now().toIso8601String(),
-        "fileSize": base64Audio.length,
-        "direction": "incoming",
-      };
-
-      // Call your API to save the recording
-      final callsViewModel = Provider.of<CallsViewModel>(
-          navigatorKey.currentContext!,
-          listen: false);
-      // await callsViewModel.saveCallRecording(recordingData);
-
-      _trackCallEvent('incoming_call_recording_uploaded', {
-        'call_id': _currentCallId,
-        'duration': _recordingDuration,
-        'file_size': base64Audio.length
-      });
-
-      print('✅ Incoming call recording saved to server');
-    } catch (e, st) {
-      print('❌ Failed to save incoming call recording to server: $e');
-    }
   }
 
   void _handleError(String message, dynamic error, [StackTrace? stackTrace]) {
@@ -385,10 +427,10 @@ class CallSocketService {
 
   IO.Socket _createSocket(String token) {
     return IO.io(
-      'https://admin.watconnect.com',
+      'https://sandbox.watconnect.com',
       IO.OptionBuilder()
           .setTransports(['websocket'])
-          .setPath('/ibs/socket.io')
+          .setPath('/swp/socket.io')
           .setExtraHeaders({'Authorization': 'Bearer $token'})
           .setReconnectionAttempts(10)
           .setReconnectionDelay(2000)
@@ -433,6 +475,17 @@ class CallSocketService {
       }
       print("_dialogShown:::::::   be4 shoing popup        $_dialogShown");
       if (dir != "BUSINESS_INITIATED" && !_dialogShown) {
+        // Store call data for Salesforce API
+        _storeCallDataForSalesforce(
+          callData: data,
+          leadName: data['data']['name']?.toString(),
+          wpNumber: data['data']['whatsapp_number']?.toString(),
+          callId: data['data']['call_id']?.toString(),
+          offer: data['data']['sdp'] != null
+              ? RTCSessionDescription(data['data']['sdp'], 'offer')
+              : null,
+        );
+
         _showCallPopup(data);
         _removeOverlay();
       }
@@ -835,13 +888,11 @@ class CallSocketService {
 class RecordingPlaybackDialog extends StatefulWidget {
   final String filePath;
   final int duration;
-  final String callId;
 
   const RecordingPlaybackDialog({
     super.key,
     required this.filePath,
     required this.duration,
-    required this.callId,
   });
 
   @override
@@ -991,11 +1042,6 @@ class _RecordingPlaybackDialogState extends State<RecordingPlaybackDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'Call ID: ${widget.callId}',
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-          const SizedBox(height: 8),
           Text(
             'Duration: ${_formatDuration(Duration(seconds: widget.duration))}',
             style: const TextStyle(fontSize: 14, color: Colors.black87),

@@ -91,16 +91,16 @@ abstract class AppConstants {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // static const String baseUrl = "https://sandbox.watconnect.com/swp";
-  static const String baseUrl = "https://admin.watconnect.com/ibs";
+  static const String baseUrl = "https://sandbox.watconnect.com/swp";
+  // static const String baseUrl = "https://admin.watconnect.com/ibs";
   // static const String socketPath = '/swp/socket.io';
   static const String socketPath = '/ibs/socket.io';
 
   static const String socketUrl = 'https://sandbox.watconnect.com';
   // static const String socketUrl = 'https://admin.watconnect.com';
 
-  // static const String baseImgUrl = "https://sandbox.watconnect.com/";
-  static const String baseImgUrl = "https://admin.watconnect.com/";
+  static const String baseImgUrl = "https://sandbox.watconnect.com/";
+  // static const String baseImgUrl = "https://admin.watconnect.com/";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

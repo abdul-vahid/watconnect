@@ -21,6 +21,8 @@
                 tools:replace="android:resource" />
         </provider>
 
+
+
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"

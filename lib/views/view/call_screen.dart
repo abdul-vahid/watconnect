@@ -16,6 +16,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/call_socket.dart';
+import 'package:whatsapp/main.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/utils/app_color.dart';
@@ -65,6 +67,10 @@ class _CallScreenState extends State<CallScreen> {
   bool _isSocketConnected = false;
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
   bool _isRemoteRendererInitialized = false;
+
+  // Add this variable to store the offer
+  RTCSessionDescription? _offer;
+  String? startTime = "";
 
   Timer? _callTimer;
   int _callDurationInSeconds = 0;
@@ -158,6 +164,9 @@ class _CallScreenState extends State<CallScreen> {
 
       _isSocketConnected = false;
 
+      // Clear the stored offer
+      _offer = null;
+
       _permissionController.dispose();
     } catch (e) {
       print("❌ Error while disposing resources: $e");
@@ -202,7 +211,7 @@ class _CallScreenState extends State<CallScreen> {
       print('📁 Recording path: $_recordingFilePath');
 
       // Configure recording settings
-      final config = RecordConfig(
+      const config = RecordConfig(
         encoder: AudioEncoder.aacLc,
         bitRate: 128000,
         sampleRate: 44100,
@@ -250,13 +259,56 @@ class _CallScreenState extends State<CallScreen> {
       if (recordingPath != null && recordingPath.isNotEmpty) {
         _recordingFilePath = recordingPath;
 
-        // Comment out the upload for now
-        // await _uploadRecordingToServer(recordingPath);
+        final audioFile = File(recordingPath);
+        print('Audio file exists: ${audioFile.existsSync()}');
+        print('File size: ${audioFile.lengthSync()} bytes');
 
-        print('✅ Recording saved locally: $recordingPath');
+        final callsViewModel =
+            Provider.of<CallsViewModel>(context, listen: false);
+
+        final dbResponse = await callsViewModel.uploadRecFiledb(audioFile);
+        print("dbResponse::::  of file rec audio api :::   $dbResponse");
+
+        final recFileId = jsonDecode(dbResponse)['records']?[0]?['title'];
+        print("dbResponse:::: jsonDecode recFileIdi :::   $recFileId");
+        //
+        final drProvider =
+            Provider.of<DashBoardController>(context, listen: false);
+
+        if (drProvider.fromSalesForce) {
+          final prefs = await SharedPreferences.getInstance();
+          final tentCode =
+              prefs.getString(SharedPrefsConstants.sfNodeTennatCode) ?? "";
+          var filePubUrl =
+              "${AppConstants.baseImgUrl}public/$tentCode/attachment/$recFileId";
+
+          print("dbResponse::::filePubUrl   $filePubUrl");
+          String busNum =
+              prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+
+          Map<String, dynamic> body = {
+            "name": widget.leadName,
+            "whatsapp_number": widget.wpNumber,
+            "business_number": busNum,
+            "event": "call_started",
+            "status": "Outgoing",
+            "call_id": _callId,
+            "end_time": DateTime.now().toLocal().toIso8601String(),
+            "sdp": _offer?.sdp ?? "", // Use the stored offer here
+            "audio_url": filePubUrl
+          };
+
+          log("chatMessageController.createCallHistoryApi $body");
+
+          /// add audio rec key here
+
+          ChatMessageController chatMessageController =
+              Provider.of(context, listen: false);
+          chatMessageController.createCallHistoryApi(body: body);
+        }
 
         // Show a button to play the recording
-        _showPlayRecordingOption(recordingPath);
+        // _showPlayRecordingOption(recordingPath);
       }
 
       _trackCallEvent('recording_stopped',
@@ -269,101 +321,114 @@ class _CallScreenState extends State<CallScreen> {
   void _showPlayRecordingOption(String filePath) {
     if (!mounted) return;
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Call Recording Saved'),
-          content: Text(
-              'Recording duration: ${_formatDuration(_recordingDuration)}\n\nFile: ${filePath.split('/').last}'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _playRecording(filePath);
-              },
-              child: const Text('Play Recording'),
-            ),
-          ],
-        );
-      },
-    );
+    // showDialog(
+    //   context: context,
+    //   builder: (BuildContext context) {
+    //     return AlertDialog(
+    //       title: const Text('Call Recording Saved'),
+    //       content: Text(
+    //           'Recording duration: ${_formatDuration(_recordingDuration)}\n\nFile: ${filePath.split('/').last}'),
+    //       actions: [
+    //         TextButton(
+    //           onPressed: () => Navigator.of(context).pop(),
+    //           child: const Text('Close'),
+    //         ),
+    //         ElevatedButton(
+    //           onPressed: () {
+    //             Navigator.of(context).pop();
+    //             _playRecording(filePath);
+    //           },
+    //           child: const Text('Play Recording'),
+    //         ),
+    //       ],
+    //     );
+    //   },
+    // );
+
+    // Use a small delay to ensure the call popup is closed first
+    Future.delayed(const Duration(milliseconds: 500), () {
+      showDialog(
+        context: navigatorKey.currentContext!,
+        barrierDismissible: true,
+        builder: (context) => RecordingPlaybackDialog(
+          filePath: filePath,
+          duration: _recordingDuration,
+          // callId: _currentCallId ?? 'Unknown',
+        ),
+      );
+    });
   }
 
-  Future<void> _uploadRecordingToServer(String filePath) async {
-    try {
-      final file = File(filePath);
-      if (!await file.exists()) {
-        print('❌ Recording file not found: $filePath');
-        return;
-      }
+  // Future<void> _uploadRecordingToServer(String filePath) async {
+  //   try {
+  //     final file = File(filePath);
+  //     if (!await file.exists()) {
+  //       print('❌ Recording file not found: $filePath');
+  //       return;
+  //     }
 
-      final fileSize = await file.length();
-      print('📤 Uploading recording: $filePath (${fileSize ~/ 1024} KB)');
+  //     final fileSize = await file.length();
+  //     print('📤 Uploading recording: $filePath (${fileSize ~/ 1024} KB)');
 
-      // Convert to base64 for upload
-      final bytes = await file.readAsBytes();
-      final base64Audio = base64Encode(bytes);
+  //     // Convert to base64 for upload
+  //     final bytes = await file.readAsBytes();
+  //     final base64Audio = base64Encode(bytes);
 
-      // Upload to server
-      await _saveCallRecordingToServer(base64Audio, filePath);
+  //     // Upload to server
+  //     await _saveCallRecordingToServer(base64Audio, filePath);
 
-      // Clean up local file after successful upload
-      await file.delete();
-      print('✅ Recording uploaded and local file cleaned up');
-    } catch (e, st) {
-      _handleError('Recording upload failed', e, st);
-      // Don't rethrow - we don't want to break the call flow if upload fails
-    }
-  }
+  //     // Clean up local file after successful upload
+  //     await file.delete();
+  //     print('✅ Recording uploaded and local file cleaned up');
+  //   } catch (e, st) {
+  //     _handleError('Recording upload failed', e, st);
+  //     // Don't rethrow - we don't want to break the call flow if upload fails
+  //   }
+  // }
 
-  Future<void> _saveCallRecordingToServer(
-      String base64Audio, String filePath) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final drProvider =
-          Provider.of<DashBoardController>(context, listen: false);
+  // Future<void> _saveCallRecordingToServer(
+  //     String base64Audio, String filePath) async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final drProvider =
+  //         Provider.of<DashBoardController>(context, listen: false);
 
-      String businessNumber = "";
-      if (drProvider.fromSalesForce) {
-        businessNumber =
-            prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-      } else {
-        businessNumber = prefs.getString('phoneNumber') ?? "";
-      }
+  //     String businessNumber = "";
+  //     if (drProvider.fromSalesForce) {
+  //       businessNumber =
+  //           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+  //     } else {
+  //       businessNumber = prefs.getString('phoneNumber') ?? "";
+  //     }
 
-      final Map<String, dynamic> recordingData = {
-        "fileName":
-            "CallRecording_${_callId}_${DateTime.now().millisecondsSinceEpoch}.m4a",
-        "base64Data": base64Audio,
-        "callHistoryId": _callId,
-        "businessNumber": businessNumber,
-        "whatsappNumber": widget.wpNumber,
-        "duration": _recordingDuration,
-        "timestamp": DateTime.now().toIso8601String(),
-        "fileSize": base64Audio.length,
-      };
+  //     final Map<String, dynamic> recordingData = {
+  //       "fileName":
+  //           "CallRecording_${_callId}_${DateTime.now().millisecondsSinceEpoch}.m4a",
+  //       "base64Data": base64Audio,
+  //       "callHistoryId": _callId,
+  //       "businessNumber": businessNumber,
+  //       "whatsappNumber": widget.wpNumber,
+  //       "duration": _recordingDuration,
+  //       "timestamp": DateTime.now().toIso8601String(),
+  //       "fileSize": base64Audio.length,
+  //     };
 
-      // Call your API to save the recording
-      final callsViewModel =
-          Provider.of<CallsViewModel>(context, listen: false);
-      // await callsViewModel.saveCallRecording(recordingData);
+  //     // Call your API to save the recording
+  //     final callsViewModel =
+  //         Provider.of<CallsViewModel>(context, listen: false);
+  //     // await callsViewModel.saveCallRecording(recordingData);
 
-      _trackCallEvent('recording_uploaded', {
-        'call_id': _callId,
-        'duration': _recordingDuration,
-        'file_size': base64Audio.length
-      });
+  //     _trackCallEvent('recording_uploaded', {
+  //       'call_id': _callId,
+  //       'duration': _recordingDuration,
+  //       'file_size': base64Audio.length
+  //     });
 
-      EasyLoading.showSuccess('Call recording saved');
-    } catch (e, st) {
-      _handleError('Failed to save recording to server', e, st);
-    }
-  }
+  //     EasyLoading.showSuccess('Call recording saved');
+  //   } catch (e, st) {
+  //     _handleError('Failed to save recording to server', e, st);
+  //   }
+  // }
 
   Future<void> _initiateCall() async {
     if (_callState == CallState.calling || _callState == CallState.inCall) {
@@ -412,10 +477,10 @@ class _CallScreenState extends State<CallScreen> {
     });
 
     _socket = IO.io(
-      'https://admin.watconnect.com',
+      'https://sandbox.watconnect.com',
       IO.OptionBuilder()
           .setTransports(['websocket'])
-          .setPath('/ibs/socket.io')
+          .setPath('/swp/socket.io')
           .setExtraHeaders({'Authorization': 'Bearer $token'})
           .setReconnectionAttempts(5)
           .setReconnectionDelay(2000)
@@ -486,12 +551,13 @@ class _CallScreenState extends State<CallScreen> {
         }
       };
 
-      final RTCSessionDescription offer = await _peerConnection!.createOffer({
+      // Store the offer in the class variable
+      _offer = await _peerConnection!.createOffer({
         'offerToReceiveAudio': true,
         'offerToReceiveVideo': false,
       });
 
-      await _peerConnection!.setLocalDescription(offer);
+      await _peerConnection!.setLocalDescription(_offer!);
 
       final prefs = await SharedPreferences.getInstance();
       String businessNumber = "";
@@ -510,7 +576,10 @@ class _CallScreenState extends State<CallScreen> {
           "messaging_product": "whatsapp",
           "to": wpNumber,
           "action": "connect",
-          "session": {"sdp_type": "offer", "sdp": offer.sdp}
+          "session": {
+            "sdp_type": "offer",
+            "sdp": _offer!.sdp
+          } // Use _offer here
         },
         "business_number": businessNumber
       };
@@ -547,7 +616,7 @@ class _CallScreenState extends State<CallScreen> {
         "call_id": _callId,
         "start_time":
             (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
-        "sdp": offer.sdp,
+        "sdp": _offer!.sdp, // Use _offer here
         "sdp_type": "connect",
         "direction": "BUSINESS_INITIATED"
       };
@@ -555,24 +624,6 @@ class _CallScreenState extends State<CallScreen> {
       await callsViewModel.outgoingCallApi(payload);
 
       String busNum = "";
-
-      if (drProvider.fromSalesForce) {
-        busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-
-        Map<String, dynamic> body = {
-          "name": widget.leadName,
-          "whatsapp_number": widget.wpNumber,
-          "business_number": busNum,
-          "event": "call_started",
-          "call_id": _callId,
-          "start_time": DateTime.now().toUtc().toIso8601String(),
-          "sdp": offer.sdp,
-        };
-
-        ChatMessageController chatMessageController =
-            Provider.of(context, listen: false);
-        chatMessageController.createCallHistoryApi(body: body);
-      }
 
       _trackCallEvent('call_initiated');
 
@@ -623,10 +674,10 @@ class _CallScreenState extends State<CallScreen> {
 
   void _connectStatusSocket(String token) {
     _statusSocket = IO.io(
-      'https://admin.watconnect.com',
+      'https://sandbox.watconnect.com',
       IO.OptionBuilder()
           .setTransports(['websocket'])
-          .setPath('/ibs/socket.io')
+          .setPath('/swp/socket.io')
           .setExtraHeaders({'Authorization': 'Bearer $token'})
           .setReconnectionAttempts(5)
           .setReconnectionDelay(2000)
