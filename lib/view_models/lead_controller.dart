@@ -15,6 +15,18 @@ class LeadController extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<String> allBusinessNumbers = [];
+
+  setAllBusNums(String num) {
+    allBusinessNumbers.add(num);
+    notify();
+  }
+
+  clearAllBusNums() {
+    allBusinessNumbers.clear();
+    notify();
+  }
+
   List<LeadListModel> leadList = [];
   List<LeadListModel> tempLeadList = [];
 

@@ -61,6 +61,13 @@ class DashBoardController extends ChangeNotifier {
     if (response != null && response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       drawerItems = data.map((e) => SfDrawerModel.fromJson(e)).toList();
+      print(
+          "drawerr item list in salesfore:::::::::::::::    ${drawerItems.length}");
+      if (drawerItems.isNotEmpty) {
+        print(
+            "drawerItems.first.configName:::  ${drawerItems.first.sObjectName}");
+        setSelectedTitle(drawerItems.first.sObjectName ?? "");
+      }
       print("drawerItems:::: $drawerItems");
     } else {
       drawerItems = [];
@@ -75,7 +82,7 @@ class DashBoardController extends ChangeNotifier {
     notify();
   }
 
-  String selectedTitle = "Lead";
+  String selectedTitle = "";
   setSelectedTitle(String val) {
     selectedTitle = val;
     notify();
@@ -184,7 +191,7 @@ class DashBoardController extends ChangeNotifier {
     );
     if (response != null && response.statusCode == 200) {
       sfUserData = SfProfileModel.fromJson(jsonDecode(response.body));
-      sfDeviceTokenApiCall(sfUserData?.userId ?? "");
+      // sfDeviceTokenApiCall(sfUserData?.userId ?? "");
       notify();
       log("Fetched ${sfUserData?.name ?? ""}  get sfGetProfile .");
     }

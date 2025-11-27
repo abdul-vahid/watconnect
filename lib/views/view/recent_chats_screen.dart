@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print, deprecated_member_use, use_build_context_synchronously, prefer_typing_uninitialized_variables, unnecessary_brace_in_string_interps
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -11,9 +13,11 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/recent_chat_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_fonts.dart';
+import 'package:whatsapp/view_models/lead_controller.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
-import 'package:whatsapp/views/view/whatsapp_chat_screen.dart';
+import 'package:whatsapp/views/view/chat/whatsapp_chat_screen.dart';
 import '../../models/lead_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
@@ -30,7 +34,7 @@ class _RecentChatViewState extends State<RecentChatView> {
   String finalResult = "";
   IO.Socket? socket;
   String token = "your_token_here";
-  var userId;
+  Map<String, dynamic> userId = {};
   String leadId = "lead_456";
   String phNum = "+919876543210";
   // final List<String> _leadfilter = [];
@@ -54,8 +58,11 @@ class _RecentChatViewState extends State<RecentChatView> {
   List unreadList = [];
   String? number;
 
+  bool? shouldHideLeadNumber;
+
   @override
   void initState() {
+    shouldHide();
     _getUnreadCount();
     getLeadList();
     super.initState();
@@ -571,6 +578,21 @@ class _RecentChatViewState extends State<RecentChatView> {
     Color statusColor;
     statusColor = AppColor.navBarIconColor;
 
+    // Function to format phone number based on shouldHideLeadNumber
+    String formatPhoneNumber(String? phoneNumber) {
+      if (phoneNumber == null || phoneNumber.isEmpty) return '';
+
+      if (shouldHideLeadNumber == true && phoneNumber.length > 5) {
+        // Show only last 5 digits, mask the rest with X
+        int totalLength = phoneNumber.length;
+        String lastFiveDigits = phoneNumber.substring(totalLength - 5);
+        String maskedPart = 'X' * (totalLength - 5);
+        return '$maskedPart$lastFiveDigits';
+      } else {
+        return phoneNumber;
+      }
+    }
+
     return GestureDetector(
       onLongPress: () {
         setState(() {
@@ -694,7 +716,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                 height: 3,
                               ),
                               Text(
-                                "${model.full_number}",
+                                formatPhoneNumber(model.full_number),
                                 style: const TextStyle(fontSize: 12),
                               ),
                               const SizedBox(
@@ -770,15 +792,30 @@ class _RecentChatViewState extends State<RecentChatView> {
   }
 
   Future<void> connectSocket() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? number = prefs.getString('phoneNumber');
+    // final prefs = await SharedPreferences.getInstance();
+    // String? number = prefs.getString('phoneNumber');
 
     String tkn = await AppUtils.getToken() ?? "";
-    Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+    // Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+    final prefs = await SharedPreferences.getInstance();
+    String? number = prefs.getString('phoneNumber');
+    LeadController leadCtrl = Provider.of(context, listen: false);
+    token = tkn;
+    phNum = number ?? "";
+    Map<String, dynamic> decodedToken = Map<String, dynamic>.from(
+      JwtDecoder.decode(tkn),
+    );
 
     token = tkn;
     phNum = number ?? "";
     userId = decodedToken;
+
+    userId.addAll({
+      "business_numbers": leadCtrl.allBusinessNumbers,
+      "business_number": number
+    });
+
+    log("user id sending in socket setup::::   $userId");
 
     try {
       // print("Token: $token");
@@ -858,5 +895,11 @@ class _RecentChatViewState extends State<RecentChatView> {
     } else {
       return DateFormat('MMM dd, yy').format(inputDate);
     }
+  }
+
+  Future<void> shouldHide() async {
+    final prefs = await SharedPreferences.getInstance();
+    shouldHideLeadNumber = prefs.getBool(SharedPrefsConstants.shouldHideNumber);
+    setState(() {});
   }
 }

@@ -15,4 +15,17 @@ class WhatsappSettingViewModel extends BaseListViewModel {
     debug("urlll=>$url");
     await get(url: url, baseModel: WhatsappSettingModel());
   }
+
+  List<String> allBusinessNums = [];
+  addNumToList(String num) async {
+    allBusinessNums.add(num);
+    await Future.delayed(Duration.zero);
+    notifyListeners();
+  }
+
+  clearAllNumbers() async {
+    allBusinessNums.clear();
+    await Future.delayed(Duration.zero);
+    notifyListeners();
+  }
 }

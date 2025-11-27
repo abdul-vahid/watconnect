@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print, deprecated_member_use, prefer_typing_uninitialized_variables, non_constant_identifier_names
 
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:focus_detector/focus_detector.dart';
@@ -22,13 +23,14 @@ import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
+import 'package:whatsapp/view_models/campaign_chart_vm.dart';
+import 'package:whatsapp/view_models/lead_controller.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/NotificationPage.dart';
 import 'package:whatsapp/views/view/campaign_list_view.dart';
-// import 'package:whatsapp/views/view/clipper_test.dart';
-import 'package:whatsapp/views/view/lead_list_view.dart';
+import 'package:whatsapp/views/view/lead/lead_list_view.dart';
 import 'package:whatsapp/views/view/templete_list_view.dart';
 import 'package:whatsapp/views/widgets/home_page_cards.dart';
 
@@ -44,7 +46,6 @@ import '../../models/whatsapp_setting_model/whatsapp_setting_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/function_lib.dart' show debug;
 import '../../view_models/auto_response_vm.dart';
-import '../../view_models/campaign_chart_vm.dart' show CampaignChartViewModel;
 import '../../view_models/campaign_count_vm.dart';
 import '../../view_models/chart_list_vm.dart';
 import '../../view_models/lead_count_vm.dart';
@@ -63,32 +64,17 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  // List of items for the dropdown
   String? lastAddedId;
   Map<String, String> itemsMap = {};
   List allNums = [];
   IO.Socket? socket;
   String phNum = "+919876543210";
   String token = "your_token_here";
-  var userId;
+  Map<String, dynamic> userId = {};
   List allWhNums = [];
   List unreadList = [];
   String? selectedWhatsAppNumber;
-  UnreadCountVm? unreadCountVm;
-  ChartListViewModel? leadListVM;
-  LeadCountViewModel? leadCountVM;
-  WhatsappSettingViewModel? whatsAppSettingVM;
-  AutoResponseViewModel? autoResponseVM;
-  CampaignCountViewModel? campaignVM;
-  TempleteListViewModel? templateVM;
-  WhatsappSettingModel? nmodel;
-  CampaignChartViewModel? chartListVM;
 
-  UnreadCountVm? unreadcountvm;
-
-  ApprovedTemplateViewModel? approveddataVM;
-  // Aprovedtempltemodeldata? modeltemplete;
-  List<Datum> datatempletlist = [];
   //-------- Start code method of month chart------
   List<String?> addData = [];
   late TooltipBehavior _tooltipBehavior;
@@ -109,7 +95,9 @@ class _HomeViewState extends State<HomeView> {
   num totalCountofIncome = 0;
   num totalCountofExpence = 0;
   String? globalUnreadCount = "";
-  List<Templatedata> Templatedat = [];
+
+  bool _isInitialized = false;
+  bool _isLoading = false;
 
   Future<String?> getPhoneNumber() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -118,26 +106,34 @@ class _HomeViewState extends State<HomeView> {
     return phoneNumber;
   }
 
-  // bool _isVisible = false;
   String selectedNumber = "";
 
   @override
   void initState() {
-    {
-      _tooltipBehavior = TooltipBehavior(enable: true);
-      NotificationUtil.registerToken();
-      getAvailableModules();
-      getPhoneNumber();
-      _getUnreadCount();
-      fetch();
-      // connectSocket();
-    }
-
     super.initState();
+    _tooltipBehavior = TooltipBehavior(enable: true);
+    NotificationUtil.registerToken();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    if (_isInitialized) return;
+
+    _isLoading = true;
+    await getAvailableModules();
+    await getPhoneNumber();
+    await _fetchInitialData();
+    _isInitialized = true;
+    _isLoading = false;
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    disconnectSocket();
     super.dispose();
   }
 
@@ -146,64 +142,78 @@ class _HomeViewState extends State<HomeView> {
     final prefs = await SharedPreferences.getInstance();
     modules =
         prefs.getStringList(SharedPrefsConstants.userAvailableMoulesKey) ?? [];
-    setState(() {});
-
     print("modules:::: $modules");
-
-    if (modules.contains("Calls")) {
-      String tkn = await AppUtils.getToken() ?? "";
-      Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
-      userId = decodedToken;
-      print("modules contains calls so we are here ::::::::  $userId");
-      // CallSocketService().connect(tkn, userId);
-    }
   }
 
-  void fetch() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? selectedWhatsAppNumber = prefs.getString('phoneNumber');
-    await Provider.of<WhatsappSettingViewModel>(context, listen: false).fetch();
-    print(
-        "selectedWhatsAppNumber:::::::::::::::::::::::::::: $selectedWhatsAppNumber");
-    if (selectedWhatsAppNumber == null || selectedWhatsAppNumber.isEmpty) {
-      if (Provider.of<WhatsappSettingViewModel>(context, listen: false)
-          .viewModels
-          .isNotEmpty) {
-        selectedWhatsAppNumber = Provider.of<WhatsappSettingViewModel>(
-          context,
-          listen: false,
-        ).viewModels[0].model.record[0].phone;
-        selectedNumber = selectedWhatsAppNumber ?? "";
-        await prefs.setString('phoneNumber', selectedWhatsAppNumber ?? "");
+  Future<void> _fetchInitialData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? selectedWhatsAppNumber = prefs.getString('phoneNumber');
+
+      // Fetch WhatsApp settings first
+      await Provider.of<WhatsappSettingViewModel>(context, listen: false)
+          .fetch();
+
+      // Update selected number if needed
+      final whatsAppVM =
+          Provider.of<WhatsappSettingViewModel>(context, listen: false);
+      if (selectedWhatsAppNumber == null || selectedWhatsAppNumber.isEmpty) {
+        if (whatsAppVM.viewModels.isNotEmpty) {
+          selectedWhatsAppNumber =
+              whatsAppVM.viewModels[0].model.record[0].phone;
+          selectedNumber = selectedWhatsAppNumber ?? "";
+          await prefs.setString('phoneNumber', selectedWhatsAppNumber ?? "");
+        }
+      } else {
+        selectedNumber = selectedWhatsAppNumber;
       }
-    } else {
-      selectedNumber = selectedWhatsAppNumber;
+
+      debugPrint('Selected WhatsApp Number: $selectedWhatsAppNumber');
+
+      // Fetch data in parallel where possible
+      await Future.wait([
+        Provider.of<CampaignChartViewModel>(context, listen: false)
+            .fetchCampaignChart(number: selectedWhatsAppNumber),
+        Provider.of<TempleteListViewModel>(context, listen: false)
+            .templeteCountfetch(number: selectedWhatsAppNumber),
+        Provider.of<TempleteListViewModel>(context, listen: false)
+            .templetefetch(number: selectedWhatsAppNumber),
+        Provider.of<CampaignCountViewModel>(context, listen: false)
+            .fetchCampaignCount(number: selectedWhatsAppNumber),
+        Provider.of<LeadCountViewModel>(context, listen: false).countNewLead(),
+        Provider.of<AutoResponseViewModel>(context, listen: false)
+            .autoResponseFetch(),
+        _getUnreadCount(),
+      ] as Iterable<Future>);
+    } catch (e) {
+      print('Error in _fetchInitialData: $e');
+    } finally {
+      EasyLoading.dismiss();
     }
-    print("selectedNumber:::>>>> $selectedNumber");
-    // setState(() {});
-
-    debugPrint('Selected WhatsApp Number: $selectedWhatsAppNumber');
-
-    await Provider.of<CampaignChartViewModel>(context, listen: false)
-        .fetchCampaignChart(number: selectedWhatsAppNumber);
-    // Provider.of<ApprovedTemplateViewModel>(context, listen: false)
-    //     .fetchTemplatechart(number: selectedWhatsAppNumber);
-    await Provider.of<TempleteListViewModel>(context, listen: false)
-        .templeteCountfetch(number: selectedWhatsAppNumber);
-    await Provider.of<TempleteListViewModel>(context, listen: false)
-        .templetefetch(number: selectedWhatsAppNumber);
-    await Provider.of<CampaignCountViewModel>(context, listen: false)
-        .fetchCampaignCount(number: selectedWhatsAppNumber);
-
-    // Provider.of<ChartListViewModel>(context, listen: false).fetchLeadsMonth();
-    Provider.of<LeadCountViewModel>(context, listen: false).countNewLead();
-    Provider.of<AutoResponseViewModel>(context, listen: false)
-        .autoResponseFetch();
-
-    EasyLoading.dismiss();
   }
 
-  // String? _phone;
+  // MOVED THIS METHOD OUTSIDE OF BUILD
+  void _updateItemsMap(WhatsappSettingViewModel whatsAppSettingVM) {
+    LeadController leadController = Provider.of(context, listen: false);
+    itemsMap.clear();
+    leadController.clearAllBusNums();
+    allNums = [];
+
+    for (var viewModel in whatsAppSettingVM.viewModels) {
+      var nmodel = viewModel.model;
+      if (nmodel != null) {
+        for (var record in nmodel.record ?? []) {
+          allNums.add(record);
+          leadController.setAllBusNums(record.phone);
+          allWhNums.add("${record.name} ${record.phone}");
+          itemsMap[record.phone] = "${record.name} ${record.phone}";
+        }
+      }
+    }
+
+    print("all business numbers::::  ${leadController.allBusinessNumbers}");
+  }
+
   void whatsappSettingNumber(BuildContext context) {
     showDialog(
       context: context,
@@ -228,20 +238,14 @@ class _HomeViewState extends State<HomeView> {
                           onTap: () async {
                             setState(() {
                               selectedWhatsAppNumber = key;
+                              _isLoading = true;
                             });
-                            Provider.of<CampaignCountViewModel>(context,
-                                    listen: false)
-                                .fetchCampaignCount(
-                                    number: selectedWhatsAppNumber);
 
-                            Provider.of<TempleteListViewModel>(context,
-                                    listen: false)
-                                .templeteCountfetch(
-                                    number: selectedWhatsAppNumber);
+                            await _refreshDataWithNewNumber(key);
 
-                            final prefs = await SharedPreferences.getInstance();
-                            await prefs.setString(
-                                'phoneNumber', selectedWhatsAppNumber ?? "");
+                            setState(() {
+                              _isLoading = false;
+                            });
 
                             Navigator.of(context).pop();
                           },
@@ -259,35 +263,368 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  Future<void> _refreshDataWithNewNumber(String number) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('phoneNumber', number);
+
+    await Future.wait([
+      Provider.of<CampaignCountViewModel>(context, listen: false)
+          .fetchCampaignCount(number: number),
+      Provider.of<TempleteListViewModel>(context, listen: false)
+          .templeteCountfetch(number: number),
+      Provider.of<CampaignChartViewModel>(context, listen: false)
+          .fetchCampaignChart(number: number),
+    ]);
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    itemsMap = {};
+    // Use Consumer for each specific ViewModel to avoid unnecessary rebuilds
+    return Consumer<WhatsappSettingViewModel>(
+      builder: (context, whatsAppSettingVM, child) {
+        // Call _updateItemsMap here, but it's now defined outside of build
+        _updateItemsMap(whatsAppSettingVM);
 
-    leadListVM = Provider.of<ChartListViewModel>(context);
-    leadCountVM = Provider.of<LeadCountViewModel>(context);
-    whatsAppSettingVM = Provider.of<WhatsappSettingViewModel>(context);
-    autoResponseVM = Provider.of<AutoResponseViewModel>(context);
-    campaignVM = Provider.of<CampaignCountViewModel>(context);
-    templateVM = Provider.of<TempleteListViewModel>(context);
-    chartListVM = Provider.of<CampaignChartViewModel>(context);
-    unreadcountvm = Provider.of<UnreadCountVm>(context);
-    approveddataVM = Provider.of<ApprovedTemplateViewModel>(context);
-    _updateItemsMap();
-    WidgetStateProperty.all(AppColor.navBarIconColor);
+        return Consumer<DashBoardController>(
+          builder: (context, ref, child) {
+            return _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : FocusDetector(
+                    onFocusGained: () {
+                      log('Home Screen focused again');
+                      connectSocket();
+                    },
+                    onFocusLost: () {
+                      disconnectSocket();
+                    },
+                    child: Scaffold(
+                      backgroundColor: Colors.white,
+                      drawer: const AppDrawerWidget(),
+                      appBar: AppBar(
+                        iconTheme: const IconThemeData(color: Colors.white),
+                        centerTitle: true,
+                        elevation: 2,
+                        backgroundColor: AppColor.navBarIconColor,
+                        title: const Text(
+                          "Home",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        actions: [
+                          _buildNotificationIcon(),
+                          _buildPhoneMenu(whatsAppSettingVM),
+                        ],
+                      ),
+                      body: _buildBody(),
+                    ),
+                  );
+          },
+        );
+      },
+    );
+  }
 
-    for (var viewModel in leadCountVM!.viewModels) {
+  Widget _buildNotificationIcon() {
+    return Consumer<UnreadCountVm>(
+      builder: (context, unreadCountVm, child) {
+        int totalUnreadCount = _calculateUnreadCount(unreadCountVm);
+
+        return IconButton(
+          tooltip: "Messages",
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const NotificationPage(),
+              ),
+            );
+          },
+          icon: Stack(
+            children: [
+              const Icon(Icons.notifications, size: 28),
+              if (totalUnreadCount > 0)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: badges.Badge(
+                    isLabelVisible: true,
+                    label: Text(
+                      totalUnreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    backgroundColor:
+                        Theme.of(context).colorScheme.onTertiaryContainer,
+                    padding: const EdgeInsets.all(2),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPhoneMenu(WhatsappSettingViewModel whatsAppSettingVM) {
+    return PopupMenuButton<String>(
+      position: PopupMenuPosition.under,
+      icon: const Icon(Icons.phone, size: 23, color: Colors.white),
+      itemBuilder: (BuildContext context) {
+        return allNums.map((number) {
+          final isSelected = number.phone == selectedNumber;
+          return PopupMenuItem<String>(
+            value: number.phone,
+            child: Text(
+              "${number.name} ${number.phone} ",
+              style: TextStyle(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? Colors.blue : Colors.black,
+              ),
+            ),
+          );
+        }).toList();
+      },
+      onSelected: (value) async {
+        print('Selected: $value');
+        setState(() {
+          _isLoading = true;
+        });
+
+        await _refreshDataWithNewNumber(value);
+
+        setState(() {
+          _isLoading = false;
+        });
+
+        EasyLoading.showToast("$value marked as selected",
+            toastPosition: EasyLoadingToastPosition.bottom);
+      },
+    );
+  }
+
+  Widget _buildBody() {
+    return Consumer<LeadCountViewModel>(
+      builder: (context, leadCountVM, child) {
+        return Consumer<AutoResponseViewModel>(
+          builder: (context, autoResponseVM, child) {
+            return Consumer<CampaignCountViewModel>(
+              builder: (context, campaignVM, child) {
+                return Consumer<TempleteListViewModel>(
+                  builder: (context, templateVM, child) {
+                    return Consumer<CampaignChartViewModel>(
+                      builder: (context, chartListVM, child) {
+                        // Calculate values once
+                        _calculateValues(leadCountVM, autoResponseVM,
+                            campaignVM, templateVM);
+                        _getBusinessWidgets(chartListVM);
+                        _getTemplateData(templateVM);
+
+                        return SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 12),
+                              _buildTopCards(),
+                              const SizedBox(height: 20),
+                              _buildCharts(chartListVM, templateVM),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTopCards() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+      child: Row(
+        children: [
+          HomePageCard(
+            title: "All Leads",
+            subtitle: "${(countNewLeads ?? 0).toString()} / Total",
+            icon: Icons.leaderboard_rounded,
+            polygonAsset: "assets/images/home_polygon.png",
+            tap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LeadListView()),
+              );
+            },
+          ),
+          const SizedBox(width: 10),
+          HomePageCard(
+            title: "All Campaigns",
+            subtitle: "${(campaignCount ?? 0).toString()} / Total",
+            icon: Icons.leaderboard_rounded,
+            polygonAsset: "assets/images/home_polygon.png",
+            tap: () {
+              if (modules.contains("Campaign") ||
+                  modules.contains('Campaigns')) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const CampaignListView()),
+                );
+              } else {
+                EasyLoading.showToast(
+                    "Access to Campaign is not included in this Plan");
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCharts(
+      CampaignChartViewModel chartListVM, TempleteListViewModel templateVM) {
+    return Padding(
+      padding: const EdgeInsets.all(15),
+      child: Column(
+        children: [
+          if (modules.contains("Campaign") && campaignCount != "0")
+            _buildCampaignChart(chartListVM),
+          if (modules.contains("Campaign") && campaignCount != "0")
+            const SizedBox(height: 20),
+          if (templatedata.isNotEmpty) _buildTemplateChart(templateVM),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCampaignChart(CampaignChartViewModel chartListVM) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 6,
+            spreadRadius: 2,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+          const Text(
+            'Campaign',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          SfCircularChart(
+            tooltipBehavior: _tooltipBehavior,
+            legend: const Legend(
+              isVisible: true,
+              position: LegendPosition.top,
+              overflowMode: LegendItemOverflowMode.wrap,
+            ),
+            series: <PieSeries<_SalesData, String>>[
+              PieSeries<_SalesData, String>(
+                legendIconType: LegendIconType.circle,
+                radius: '100',
+                dataSource: businessData,
+                enableTooltip: true,
+                pointColorMapper: (_SalesData sales, int index) =>
+                    areaColor[index % areaColor.length],
+                xValueMapper: (_SalesData sales, _) => sales.status,
+                yValueMapper: (_SalesData sales, _) => sales.count,
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTemplateChart(TempleteListViewModel templateVM) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 6,
+            spreadRadius: 2,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+          const Text(
+            'Template',
+            style: TextStyle(
+              color: Colors.black,
+              fontFamily: AppFonts.semiBold,
+              fontSize: 18,
+            ),
+          ),
+          SfCircularChart(
+            tooltipBehavior: _tooltipBehavior,
+            legend: const Legend(
+              isVisible: true,
+              position: LegendPosition.top,
+              overflowMode: LegendItemOverflowMode.wrap,
+            ),
+            series: <DoughnutSeries<Templatedata, String>>[
+              DoughnutSeries<Templatedata, String>(
+                radius: '100',
+                dataSource: templatedata,
+                enableTooltip: true,
+                pointColorMapper: (Templatedata sales, int index) =>
+                    areaColor[index % areaColor.length],
+                xValueMapper: (Templatedata sales, _) => sales.status,
+                yValueMapper: (Templatedata sales, _) => sales.count,
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _calculateValues(
+    LeadCountViewModel leadCountVM,
+    AutoResponseViewModel autoResponseVM,
+    CampaignCountViewModel campaignVM,
+    TempleteListViewModel templateVM,
+  ) {
+    // Calculate countNewLeads
+    for (var viewModel in leadCountVM.viewModels) {
       NewLeadCountModel nmodel = viewModel.model;
       countNewLeads = nmodel.total;
     }
 
-    for (var viewModel in autoResponseVM!.viewModels) {
+    // Calculate autoResponseCount
+    for (var viewModel in autoResponseVM.viewModels) {
       AutoResponseModel automodel = viewModel.model;
       autoResponseCount = automodel.total;
     }
 
-    for (var viewModel in campaignVM!.viewModels) {
+    // Calculate campaignCount
+    for (var viewModel in campaignVM.viewModels) {
       CampaignCountModel campmodel = viewModel.model;
-
       var pend = campmodel.result?.pending;
       var comp = campmodel.result?.completed;
       var abort = campmodel.result?.aborted;
@@ -298,395 +635,33 @@ class _HomeViewState extends State<HomeView> {
           int.parse(prog!);
       campaignCount = allCamp.toString();
     }
-    // print("cammma=>${campaignCount}");
 
-    for (var viewModel in templateVM!.viewModels) {
+    // Calculate templateCount
+    for (var viewModel in templateVM.viewModels) {
       TemplateModel tempmodel = viewModel.model;
       templateCount = tempmodel.data?.length;
-      debug('countofdata===$templateCount');
     }
+  }
 
-    getBusinessWidgets();
-
-    getTemplateData();
-
+  int _calculateUnreadCount(UnreadCountVm unreadCountVm) {
     int totalUnreadCount = 0;
-
-    for (var viewModel in unreadcountvm!.viewModels) {
+    for (var viewModel in unreadCountVm.viewModels) {
       if (viewModel.model is UnreadMsgModel) {
         UnreadMsgModel unreadvm = viewModel.model as UnreadMsgModel;
         var records = unreadvm.records ?? [];
-        // print("recorcccccccccccds${records.length}");
-        for (var data in records) {
-          String? unreadCount = data.unreadMsgCount;
-
-          if (unreadCount != null) {
-            // int count = int.tryParse(unreadCount) ?? 0;
-            setState(() {
-              totalUnreadCount = records.length;
-            });
-          }
-        }
-      } else {
-        print("Model is not UnreadMsgModel: ${viewModel.model.runtimeType}");
+        totalUnreadCount = records.length;
       }
     }
-    return Consumer<DashBoardController>(builder: (context, ref, child) {
-      return FocusDetector(
-        onFocusGained: () {
-          log('\x1B[95mFCM     home Screen focused again::::::::::::::::::::::::::::::::::::::::::::::::::');
-
-          // print("Screen focused again");
-          connectSocket();
-        },
-        onFocusLost: () {
-          disconnectSocket();
-        },
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          drawer: const AppDrawerWidget(),
-          appBar: AppBar(
-            iconTheme:
-                const IconThemeData(color: Color.fromARGB(255, 255, 255, 255)),
-            centerTitle: true,
-            elevation: 2,
-            backgroundColor: AppColor.navBarIconColor,
-            title: const Text(
-              "Home",
-              style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
-            ),
-            actions: [
-              IconButton(
-                  tooltip: "Messages",
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const NotificationPage(),
-                      ),
-                    );
-                  },
-                  icon: Stack(
-                    children: [
-                      const Icon(
-                        Icons.notifications,
-                        size: 28,
-                      ),
-                      if (totalUnreadCount > 0)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: badges.Badge(
-                            isLabelVisible: true,
-                            label: Text(
-                              totalUnreadCount.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            backgroundColor: Theme.of(context)
-                                .colorScheme
-                                .onTertiaryContainer,
-                            padding: const EdgeInsets.all(2),
-                          ),
-                        ),
-                    ],
-                  )),
-              PopupMenuButton<String>(
-                position: PopupMenuPosition.under,
-                icon: const Icon(Icons.phone, size: 23, color: Colors.white),
-                itemBuilder: (BuildContext context) {
-                  return allNums.map((number) {
-                    final isSelected = number.phone == selectedNumber;
-                    return PopupMenuItem<String>(
-                      value: number.phone,
-                      child: Text(
-                        "${number.name} ${number.phone} ",
-                        style: TextStyle(
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected ? Colors.blue : Colors.black,
-                        ),
-                      ),
-                    );
-                  }).toList();
-                },
-                onSelected: (value) async {
-                  print('Selected: $value');
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.setString('phoneNumber', value);
-
-                  EasyLoading.showToast("$value marked as selected",
-                      toastPosition: EasyLoadingToastPosition.bottom);
-                  selectedNumber = value;
-                  EasyLoading.show();
-                  fetch();
-
-                  setState(() {});
-                },
-              ),
-            ],
-          ),
-          body: res.isNotEmpty
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 15.0, vertical: 60),
-                  child: Center(
-                      child: Text(
-                    res,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontFamily: AppFonts.semiBold,
-                        color: Colors.redAccent,
-                        fontSize: 18),
-                  )),
-                )
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 12),
-
-                      // Padding(
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Row(
-                          children: [
-                            HomePageCard(
-                              title: "All Leads",
-                              subtitle:
-                                  "${(countNewLeads ?? 0).toString()} / Total",
-                              icon: Icons.leaderboard_rounded,
-                              polygonAsset: "assets/images/home_polygon.png",
-                              tap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const LeadListView()));
-                              },
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            HomePageCard(
-                              title: "All Campaigns",
-                              subtitle:
-                                  "${(campaignCount ?? 0).toString()} / Total",
-                              icon: Icons.leaderboard_rounded,
-                              polygonAsset: "assets/images/home_polygon.png",
-                              tap: () {
-                                if (modules.contains("Campaign") ||
-                                    modules.contains('Campaigns')) {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const CampaignListView()));
-                                } else {
-                                  EasyLoading.showToast(
-                                      "Access to Campaign is not included in this Plan");
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(
-                        height: 20,
-                      ),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                        child: Row(
-                          children: [
-                            HomePageCard(
-                              title: "Total Templates",
-                              subtitle:
-                                  "${(templateCount ?? 0).toString()} / Total",
-                              icon: Icons.leaderboard_rounded,
-                              polygonAsset: "assets/images/home_polygon.png",
-                              tap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const TempleteListView()));
-                              },
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            HomePageCard(
-                              title: "Auto Message",
-                              subtitle: "${autoResponseCount ?? ""} / Total",
-                              icon: Icons.leaderboard_rounded,
-                              polygonAsset: "assets/images/home_polygon.png",
-                              tap: () {},
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: Column(
-                          children: [
-                            modules.contains("Campaign")
-                                ? campaignCount != "0"
-                                    ? Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(16),
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black
-                                                  .withOpacity(0.12),
-                                              blurRadius: 6,
-                                              spreadRadius: 2,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            const Text(
-                                              'Campaign',
-                                              style: TextStyle(
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 18,
-                                              ),
-                                            ),
-                                            SfCircularChart(
-                                                tooltipBehavior:
-                                                    _tooltipBehavior,
-                                                legend: const Legend(
-                                                    isVisible: true,
-                                                    position:
-                                                        LegendPosition.top,
-                                                    overflowMode:
-                                                        LegendItemOverflowMode
-                                                            .wrap),
-                                                series: <PieSeries<_SalesData,
-                                                    String>>[
-                                                  PieSeries<_SalesData, String>(
-                                                      legendIconType:
-                                                          LegendIconType.circle,
-                                                      radius: '100',
-                                                      dataSource: businessData,
-                                                      enableTooltip: true,
-                                                      pointColorMapper:
-                                                          (_SalesData sales,
-                                                                  int index) =>
-                                                              areaColor[index %
-                                                                  areaColor
-                                                                      .length],
-                                                      xValueMapper:
-                                                          (_SalesData sales,
-                                                                  _) =>
-                                                              sales.status,
-                                                      yValueMapper:
-                                                          (_SalesData sales,
-                                                                  _) =>
-                                                              sales.count)
-                                                ]),
-                                          ],
-                                        ),
-                                      )
-                                    : const SizedBox()
-                                : const SizedBox(),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            templatedata.isEmpty
-                                ? const SizedBox()
-                                : Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.12),
-                                          blurRadius: 6,
-                                          spreadRadius: 2,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        const Text(
-                                          'Template',
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            // fontWeight: FontWeight.bold,
-                                            fontFamily: AppFonts.semiBold,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                        SfCircularChart(
-                                            tooltipBehavior: _tooltipBehavior,
-                                            legend: const Legend(
-                                                isVisible: true,
-                                                position: LegendPosition.top,
-                                                overflowMode:
-                                                    LegendItemOverflowMode
-                                                        .wrap),
-                                            series: <DoughnutSeries<
-                                                Templatedata, String>>[
-                                              DoughnutSeries<Templatedata,
-                                                      String>(
-                                                  radius: '100',
-                                                  dataSource: templatedata,
-                                                  enableTooltip: true,
-                                                  pointColorMapper:
-                                                      (Templatedata sales,
-                                                              int index) =>
-                                                          areaColor[index %
-                                                              areaColor.length],
-                                                  xValueMapper:
-                                                      (Templatedata sales, _) =>
-                                                          sales.status,
-                                                  yValueMapper:
-                                                      (Templatedata sales, _) =>
-                                                          sales.count)
-                                            ]),
-                                      ],
-                                    ),
-                                  ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-        ),
-      );
-    });
+    return totalUnreadCount;
   }
 
-  void getTemplateData() {
+  void _getTemplateData(TempleteListViewModel templateVM) {
     Map<String, int> categoryCount = {};
     templatedata.clear();
 
-    for (var viewModel in templateVM!.viewModels) {
-      // print("working....");
-
+    for (var viewModel in templateVM.viewModels) {
       if (viewModel.model is TemplateModel) {
         TemplateModel templateModel = viewModel.model as TemplateModel;
-        // print("Working haiiii...");
-
         if (templateModel.data != null) {
           for (var entry in templateModel.data!) {
             String? templateCategory = entry.category;
@@ -698,21 +673,18 @@ class _HomeViewState extends State<HomeView> {
             }
           }
         }
-      } else {
-        debugPrint("erorr : ${viewModel.model.runtimeType}");
       }
-
-      categoryCount.forEach((category, count) {
-        templatedata.add(Templatedata(category, count));
-        // print("category name: $category, count: $count");
-      });
     }
+
+    categoryCount.forEach((category, count) {
+      templatedata.add(Templatedata(category, count));
+    });
   }
 
-  void getBusinessWidgets() {
+  void _getBusinessWidgets(CampaignChartViewModel chartListVM) {
     businessData.clear();
 
-    for (var viewModel in chartListVM!.viewModels) {
+    for (var viewModel in chartListVM.viewModels) {
       if (viewModel.model is CampaignChartModel) {
         CampaignChartModel countagent = viewModel.model as CampaignChartModel;
         if (countagent.result != null) {
@@ -726,46 +698,34 @@ class _HomeViewState extends State<HomeView> {
           businessData.add(_SalesData("Completed", completed));
           businessData.add(_SalesData("Aborted", aborted));
         }
-      } else {
-        debugPrint("Unexpected model type: ${viewModel.model.runtimeType}");
       }
     }
-  }
-
-  void _updateItemsMap() {
-    itemsMap.clear();
-    allNums = [];
-    print(
-        "whatsAppSettingVM!.viewModels:::   ${whatsAppSettingVM!.viewModels}");
-    for (var viewModel in whatsAppSettingVM!.viewModels) {
-      var nmodel = viewModel.model;
-      print("nmodel::::    $viewModel");
-      if (nmodel != null) {
-        for (var record in nmodel?.record ?? []) {
-          allNums.add(record);
-          allWhNums.add("${record.name} ${record.phone}");
-          itemsMap[record.phone] = "${record.name} ${record.phone}";
-        }
-      }
-    }
-    print("itemsMap::: $itemsMap   $allNums");
   }
 
   Future<void> connectSocket() async {
     log("connecting to socket::::::::::::::::::::::::::::::::: ");
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
-
+    LeadController leadCtrl = Provider.of(context, listen: false);
     String tkn = await AppUtils.getToken() ?? "";
-    Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+    Map<String, dynamic> decodedToken = Map<String, dynamic>.from(
+      JwtDecoder.decode(tkn),
+    );
 
     token = tkn;
     phNum = number ?? "";
     userId = decodedToken;
 
-    try {
-      // print("Token: $token");
+    userId.addAll({
+      "business_numbers": leadCtrl.allBusinessNumbers,
+      "business_number": number
+    });
 
+    log("user id sending in socket setup::::   $userId");
+    //    final prefs = await SharedPreferences.getInstance();
+    // await prefs.setString('phoneNumber', number);
+
+    try {
       socket = IO.io(
         'https://admin.watconnect.com',
         IO.OptionBuilder()
@@ -779,19 +739,14 @@ class _HomeViewState extends State<HomeView> {
         print('Connected to WebSocket on home');
         socket!.emit("setup", userId);
       });
-      socket!.on("connected", (_) {
-        // print(" WebSocket setup complete");
-      });
-
+      socket!.on("connected", (_) {});
       socket!.on("receivedwhatsappmessage", (data) {
-        print(" New WhatsApp message: $data");
+        // print(" New WhatsApp message: $data");
         _getUnreadCount();
       });
-
       socket!.onDisconnect((_) {
         print(" WebSocket Disconnected home");
       });
-
       socket!.onError((error) {
         print(" WebSocket Error home: $error");
       });
@@ -806,22 +761,13 @@ class _HomeViewState extends State<HomeView> {
     var number = prefs.getString('phoneNumber');
 
     if (!mounted) return;
-    res =
-        await Provider.of<LeadListViewModel>(context, listen: false).fetch() ??
-            "";
-    print("res:::::::::::  $res");
+
     await Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number ?? "");
 
-    var unreadMsgModel;
-    for (var unreadModel in unreadCountVm?.viewModels ?? []) {
-      unreadMsgModel = unreadModel.model as UnreadMsgModel;
+    if (mounted) {
+      setState(() {});
     }
-    if (unreadMsgModel != null) {
-      unreadList = unreadMsgModel.records ?? [];
-    }
-
-    setState(() {});
   }
 
   void disconnectSocket() {
@@ -830,33 +776,10 @@ class _HomeViewState extends State<HomeView> {
       print(" WebSocket Disconnected on home");
     }
   }
-
-  void getSfCampWidgets() {
-    DashBoardController dbController = Provider.of(context, listen: false);
-    businessData.clear();
-    businessData
-        .add(_SalesData("Pending", dbController.campStatus?.pending ?? 0));
-    businessData.add(
-        _SalesData("In Progress", dbController.campStatus?.inProgress ?? 0));
-    businessData
-        .add(_SalesData("Completed", dbController.campStatus?.completed ?? 0));
-  }
-
-  void getSfTemplateData() {
-    DashBoardController dbController = Provider.of(context, listen: false);
-    templatedata.clear();
-    templatedata
-        .add(Templatedata("Pending", dbController.tempStatus?.pending ?? 0));
-    templatedata.add(
-        Templatedata("In Progress", dbController.tempStatus?.pending ?? 0));
-    templatedata
-        .add(Templatedata("Approved", dbController.tempStatus?.approved ?? 0));
-  }
 }
 
 class _SalesData {
   _SalesData(this.status, this.count);
-
   final String status;
   final int count;
 }

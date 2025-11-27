@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart'
 import 'package:whatsapp/view_models/lead_count_vm.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
 import 'package:whatsapp/views/view/lead_add_update_view.dart';
-import 'package:whatsapp/views/view/lead_list_view.dart';
+import 'package:whatsapp/views/view/lead/lead_list_view.dart';
 import '../../models/lead_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_constants.dart';
@@ -30,11 +30,11 @@ class _LeadDetailViewState extends State<LeadDetailView> {
   String? dateformat;
   get model => widget.model;
   String? amount;
-
+  bool? shouldHideLeadNumber;
   @override
   void initState() {
     print("tag list::: ${widget.model?.tagNames ?? []}");
-    // bottomnavigationbar animated
+    shouldHide();
     super.initState();
   }
 
@@ -112,8 +112,28 @@ class _LeadDetailViewState extends State<LeadDetailView> {
   }
 
   Widget _pageBody(model) {
+    String leadNum =
+        "${widget.model?.countryCode} ${widget.model?.whatsappNumber}";
     print("widget.model?.whatsapp_number${widget.model?.whatsappNumber}");
-    // print("widget.model?.createdbyname${widget.model?.ownername}");
+    // Function to format phone number based on shouldHideLeadNumber
+    String formatPhoneNumber(String? phoneNumber, String? countryCode) {
+      if (phoneNumber == null || phoneNumber.isEmpty) return '';
+
+      String fullNumber = phoneNumber.contains("+")
+          ? phoneNumber
+          : "${countryCode ?? ''}$phoneNumber";
+      print("fullNumber::::   $fullNumber");
+
+      if (shouldHideLeadNumber == true && fullNumber.length > 5) {
+        // Show only last 5 digits, mask the rest with X
+        int totalLength = fullNumber.length;
+        String lastFiveDigits = fullNumber.substring(totalLength - 5);
+        String maskedPart = 'X' * (totalLength - 5);
+        return '$maskedPart$lastFiveDigits';
+      } else {
+        return fullNumber;
+      }
+    }
 
     print("model$model");
     return SingleChildScrollView(
@@ -156,8 +176,12 @@ class _LeadDetailViewState extends State<LeadDetailView> {
                           const Divider(),
                           recordRow("Email", widget.model?.email),
                           const Divider(),
-                          recordRow("Phone",
-                              "${widget.model?.countryCode} ${widget.model?.whatsappNumber}"),
+                          recordRow(
+                              "Phone",
+                              formatPhoneNumber(
+                                widget.model?.whatsappNumber,
+                                widget.model?.countryCode,
+                              )),
                           const Divider(),
                         ],
                       )
@@ -492,5 +516,11 @@ class _LeadDetailViewState extends State<LeadDetailView> {
       print("result on detailesss:::: ");
       Navigator.pop(context, true);
     }
+  }
+
+  Future<void> shouldHide() async {
+    final prefs = await SharedPreferences.getInstance();
+    shouldHideLeadNumber = prefs.getBool(SharedPrefsConstants.shouldHideNumber);
+    setState(() {});
   }
 }

@@ -41,8 +41,7 @@ class APIService {
         'Authorization': token,
       });
 
-      print(
-          "POST URL ---> $url \nSTATUSCODE ${response.statusCode}---> \nRESPONSE ---> ${response.body}  ");
+      log("POST URL ---> toke:  $token   $url \nSTATUSCODE ${response.statusCode}---> \nRESPONSE ---> ${response.body}  ");
       if (url.contains(AppConstants.refreshTokenAPIPath)) {
         var body = jsonDecode(response.body);
         String accessToken = body['authToken'];

@@ -9,6 +9,7 @@ abstract class SharedPrefsConstants {
   static const String mobileNoKey = "mobile_no";
   static const String nameKey = "name";
   static const String userKey = "user";
+  static const String shouldHideNumber = "shouldHideNumber";
   static const String accountKey = "account";
   static const String userDecodedTokenKey = "decoded_token_key";
   static const String usertenantcodeKey = "tenantcode";
@@ -91,16 +92,16 @@ abstract class AppConstants {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  static const String baseUrl = "https://sandbox.watconnect.com/swp";
-  // static const String baseUrl = "https://admin.watconnect.com/ibs";
+  // static const String baseUrl = "https://sandbox.watconnect.com/swp";
+  static const String baseUrl = "https://admin.watconnect.com/ibs";
   // static const String socketPath = '/swp/socket.io';
   static const String socketPath = '/ibs/socket.io';
 
-  static const String socketUrl = 'https://sandbox.watconnect.com';
-  // static const String socketUrl = 'https://admin.watconnect.com';
+  // static const String socketUrl = 'https://sandbox.watconnect.com';
+  static const String socketUrl = 'https://admin.watconnect.com';
 
-  static const String baseImgUrl = "https://sandbox.watconnect.com/";
-  // static const String baseImgUrl = "https://admin.watconnect.com/";
+  // static const String baseImgUrl = "https://sandbox.watconnect.com/";
+  static const String baseImgUrl = "https://admin.watconnect.com/";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

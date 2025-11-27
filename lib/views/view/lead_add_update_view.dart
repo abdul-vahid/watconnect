@@ -21,7 +21,7 @@ import '../../utils/function_lib.dart';
 
 import '../../view_models/lead_list_vm.dart';
 import '../../view_models/user_data_list_vm.dart';
-import 'lead_list_view.dart';
+import 'lead/lead_list_view.dart';
 
 List userData = [];
 Map userMap = {};
@@ -38,21 +38,6 @@ class LeadAddView extends StatefulWidget {
 
 class _Forms extends State<LeadAddView> {
   var baseViewModels;
-  // final List<String> _salutations = [
-  //   "Mr",
-  //   "Mrs",
-  //   "Ms",
-  //   "Dr",
-  //   "Prof",
-  // ];
-  // final List<String> _titles = [
-  //   "CEO",
-  //   "Director",
-  //   "Manager",
-  //   "Owner",
-  //   "Partner",
-  //   "Executive",
-  // ];
 
   final List<String> _leadsources = [
     "Phone",
@@ -73,51 +58,6 @@ class _Forms extends State<LeadAddView> {
     "Closed - Converted",
     "Closed - Not Converted",
   ];
-
-  // final List<String> _industries = [
-  // "Agriculture",
-  // "Apparel",
-  // "Banking",
-  // "Bio Technology",
-  // "Chemical",
-  // "Communications",
-  // "Construction",
-  // "Consulting",
-  // "Education",
-  // "Electronics",
-  // "Energy",
-  // "Engineering",
-  // "EnterTainment",
-  // "Finance",
-  // "Food and Beverage",
-  // "Goverment",
-  // "Healthcare",
-  // "Hospitality",
-  // "Insurance",
-  //   "Legal",
-  //   "Machinary",
-  //   "Manufacturing",
-  //   "Media",
-  //   "Non Profit(NGO)",
-  //   "Recreation",
-  //   "Retail",
-  //   "Shipping",
-  //   "Technology",
-  //   "Telecommunications",
-  //   "Transportaion",
-  //   "Utilities",
-  //   "Other",
-  // ];
-  // final List<String> _payments = [
-  //   "Subscription",
-  //   "One Time",
-  // ];
-  // final List<String> _paymentterms = [
-  //   "12",
-  //   "24 Month",
-  //   "One Time",
-  //   "One Time with Yearly Renewal"
-  // ];
 
   final List<Map<String, String>> _countrycode = [
     {"country": "India", "country_code": "+91"},
@@ -272,6 +212,7 @@ class _Forms extends State<LeadAddView> {
   bool isEdit = false;
   String? selectedCountry;
   TextEditingController dobController = TextEditingController();
+  TextEditingController wpNumCtrl = TextEditingController();
   String? selectedDate;
   bool hasTags = false;
   String? leadStatus;
@@ -298,11 +239,14 @@ class _Forms extends State<LeadAddView> {
 
   List<Map<String, String>> selectedTagList = [];
 
+  bool shouldHideLeadNumber = false;
+
   @override
   void initState() {
     Provider.of<GetUserViewModel>(context, listen: false).fetchUser();
     Provider.of<UserDataListViewModel>(context, listen: false).fetchUser();
     getTags();
+    shouldHide();
     getWalletStatus();
     super.initState();
     final model = widget.model;
@@ -317,7 +261,10 @@ class _Forms extends State<LeadAddView> {
           "widget.model?.countryCode:::: ${widget.model?.tagNames}  ${widget.model?.leadsource}");
 
       selectedCountry = widget.model?.countryCode;
+      _whatsapnumber = widget.model?.whatsappNumber;
       dobController.text = widget.model?.dob ?? "";
+      wpNumCtrl.text = formatPhoneNumber(widget.model?.whatsappNumber);
+      print("wpNumCtrl::: :${wpNumCtrl.text}");
       selectedDate = widget.model?.dob ?? "";
       selectedTagList = (widget.model?.tagNames ?? [])
           .map((tag) => {
@@ -570,9 +517,7 @@ class _Forms extends State<LeadAddView> {
                             AppUtils.getTextFormField(
                               'Select Date of Birth',
                               controller: dobController,
-                              // initialValue: widget.model?.dob,
                               onSaved: (dt) {
-                                // print()
                                 // selectedDate = dt;
                               },
                               onTap: () async {
@@ -594,12 +539,6 @@ class _Forms extends State<LeadAddView> {
                                       "selectedDate::::::::::: $selectedDate");
                                 }
                               },
-                              // validator: (value) {
-                              //   if (value!.isEmpty) {
-                              //     return 'Please select date of birth';
-                              //   }
-                              //   return null;
-                              // },
                             ),
 
                             const SizedBox(
@@ -650,15 +589,36 @@ class _Forms extends State<LeadAddView> {
 
                             AppUtils.getTextFormField(
                               'Enter phone number',
-                              initialValue: widget.model?.whatsappNumber,
+                              controller: wpNumCtrl,
+                              obscureText:
+                                  widget.model != null && shouldHideLeadNumber
+                                      ? true
+                                      : false,
+                              readOnly:
+                                  widget.model != null && shouldHideLeadNumber
+                                      ? true
+                                      : false,
                               onSaved: (wpnumber) {
-                                _whatsapnumber = '$wpnumber';
-                                print(
-                                    "sdfdsfssdfjhsdkfjskdjfskdjsdk4$_whatsapnumber");
+                                // If it's masked, use the original number from the model
+                                if (shouldHideLeadNumber && isEdit) {
+                                  _whatsapnumber = widget.model?.whatsappNumber;
+                                } else {
+                                  _whatsapnumber = '$wpnumber';
+                                }
                               },
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter phone number';
+                                }
+
+                                // Skip phone validation if it's masked (contains X's)
+                                if (shouldHideLeadNumber &&
+                                    value.contains('X')) {
+                                  return null;
+                                }
+
+                                if (!isValidPhone(value.trim())) {
+                                  return 'Please enter valid phone number';
                                 }
                                 return null;
                               },
@@ -680,12 +640,6 @@ class _Forms extends State<LeadAddView> {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter email';
                                 }
-
-                                // final emailRegex =
-                                //     RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                                // if (!emailRegex.hasMatch(value)) {
-                                //   return 'Please enter a valid email';
-                                // }
                                 return null;
                               },
                             ),
@@ -748,11 +702,9 @@ class _Forms extends State<LeadAddView> {
                     ],
                   ),
                 ),
-
                 const SizedBox(
                   height: 15,
                 ),
-
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -870,11 +822,8 @@ class _Forms extends State<LeadAddView> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 const SizedBox(height: 15),
-
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -919,113 +868,9 @@ class _Forms extends State<LeadAddView> {
                     ],
                   ),
                 ),
-
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   children: [
-                //     Expanded(
-                //       child: Column(
-                //         crossAxisAlignment: CrossAxisAlignment.start,
-                //         children: [
-                //           const Text('Street'),
-                //           const SizedBox(
-                //             height: 5,
-                //           ),
-                //           AppUtils.getTextFormField(
-                //             'Enter your street',
-                //             initialValue: widget.model?.street,
-                //             onSaved: (street) {
-                //               _street = street;
-                //             },
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //     const SizedBox(
-                //       width: 05,
-                //     ),
-                //     Expanded(
-                //       child: Column(
-                //         crossAxisAlignment: CrossAxisAlignment.start,
-                //         children: [
-                //           const Text('City'),
-                //           const SizedBox(
-                //             height: 5,
-                //           ),
-                //           AppUtils.getTextFormField(
-                //             'Enter your City',
-                //             initialValue: widget.model?.city,
-                //             onSaved: (value) {
-                //               _city = value;
-                //             },
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //   ],
-                // ),
-                const SizedBox(
-                    // height: 10,
-                    ),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   children: [
-                //     Expanded(
-                //       child: Column(
-                //         crossAxisAlignment: CrossAxisAlignment.start,
-                //         children: [
-                //           const Text('State'),
-                //           const SizedBox(
-                //             height: 5,
-                //           ),
-                //           AppUtils.getTextFormField(
-                //             'Enter your State',
-                //             initialValue: widget.model?.state,
-                //             onSaved: (value) {
-                //               _selectedState = value;
-                //             },
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //     const SizedBox(
-                //       width: 05,
-                //     ),
-                //     Expanded(
-                //       child: Column(
-                //         crossAxisAlignment: CrossAxisAlignment.start,
-                //         children: [
-                //           const Text('Zip/Postal code'),
-                //           const SizedBox(
-                //             height: 5,
-                //           ),
-                //           AppUtils.getTextFormField(
-                //             'Enter your zip code',
-                //             initialValue: widget.model?.zipcode,
-                //             onSaved: (value) {
-                //               _zipcode = value;
-                //             },
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //   ],
-                // ),
-
-                // AppUtils.getTextFormField(
-                //   'Enter description',
-                //   initialValue: widget.model?.description,
-                //   onSaved: (description) {
-                //     _description = description;
-                //   },
-                // ),
                 const SizedBox(
                   height: 15,
                 ),
-
-                //----------This Code Use of Cancel and Submit Button Showing Start Here---------------
-
-                //----------End Code of Cancel and Submit Button Showing Start Here---------------
               ],
             ),
           ),
@@ -1042,28 +887,25 @@ class _Forms extends State<LeadAddView> {
       _addleadFormKey.currentState!.save();
       userId = userMap.keys
           .firstWhere((k) => userMap[k] == _asignStaff, orElse: () => null);
-      if (!isValidPhone(_whatsapnumber!.trim())) {
+
+      // Skip phone validation if it's masked
+      if (!shouldHideLeadNumber && !isValidPhone(_whatsapnumber!.trim())) {
         EasyLoading.showToast("Please enter valid whatsapp number");
         return;
       }
 
-      // LeadModel addleadModel = LeadModel(
-      //     firstname: _firstname?.trim(),
-      //     lastname: _lastname?.trim(),
-      //     email: _email?.trim(),
-      //     whatsappNumber: _whatsapnumber?.trim(),
-      //     leadsource: _leadsource,
-      //     leadstatus: _leadstatus,
-      //     ownerid: userId,
-      //     countryCode: selectedCountry,
-      //     ownername: _asignStaff,
-      //     address: _selectedCountry?.trim());
+      // If phone number is masked in edit mode, use the original number
+      String whatsappNumberToUse = _whatsapnumber!;
+      if (shouldHideLeadNumber && isEdit && _whatsapnumber!.contains('X')) {
+        whatsappNumberToUse = widget.model?.whatsappNumber ?? _whatsapnumber!;
+      }
 
       Map body = {
         "firstname": _firstname?.trim(),
         "lastname": _lastname?.trim(),
         "country_code": selectedCountry,
-        "whatsapp_number": _whatsapnumber?.trim(),
+        "whatsapp_number":
+            whatsappNumberToUse.trim(), // Use the corrected number
         "email": _email?.trim(),
         "dob": selectedDate,
         "tag_names": hasTags ? selectedTagList : [],
@@ -1076,8 +918,6 @@ class _Forms extends State<LeadAddView> {
         "blocked": false
       };
 
-      // AppUtils.onLoading(context, "Saving, please wait...");
-
       print("addleadModel:::::::::::::::::::::::  $body");
 
       _getleadData?.addlead(body).then((value) {
@@ -1088,7 +928,6 @@ class _Forms extends State<LeadAddView> {
 
           if (error is List) {
             message = "Something went wrong";
-            // message = error.join(", ");
           } else if (error is String) {
             message = error;
           } else {
@@ -1116,69 +955,12 @@ class _Forms extends State<LeadAddView> {
           );
         } else {}
       }).catchError((error, stackTrace) {
-        // Navigator.pop(context);
-        // Navigator.pop(context);
         print(
-            "calling error messagesssssssssssssssssssssssssssss  ${AppUtils.getLeadErrorMessages(error).runtimeType}   ${AppUtils.getLeadErrorMessages(error)}");
-
-        // List<String> errorMessages = AppUtils.getErrorMessages(error);
-        // var err = errorMessages[0];
-        // print(
-        //     "errorMessages of the 0 index:  ${err.runtimeType}::::::::::::::::: ${err}");
-
+            "calling error messages: ${AppUtils.getLeadErrorMessages(error)}");
         EasyLoading.showToast(AppUtils.getLeadErrorMessages(error)[0]);
-        // AppUtils.getAlert(context, errorMessages, title: "Error Alert");
       });
     }
   }
-
-  // Future<void> updateData() async {
-  //   if (_addleadFormKey.currentState!.validate()) {
-  //     _addleadFormKey.currentState!.save();
-
-  //     var id = widget.model?.id;
-  //     debug('idmodel====$id');
-  //     LeadModel leadModel = LeadModel(
-  //       id: id,
-  //       firstname: _firstname,
-  //       lastname: _lastname,
-  //       email: _email,
-  //       whatsapp_number: _whatsapnumber,
-  //       city: _city,
-  //       company: _company,
-  //       leadsource: _leadsource,
-  //       leadstatus: _leadstatus,
-  //       salutation: _salutation,
-  //       industry: _industry,
-  //       title: _title,
-  //       ownername: _asignStaff,
-  //       // ownerid: "c3c74964-d091-4fa3-8d9e-fa041d9c0d40",
-  //       paymentmodel: _payment,
-  //       paymentterms: _paymentterm,
-  //       street: _street,
-  //       state: _selectedState,
-  //       country: _selectedCountry,
-  //       zipcode: _zipcode,
-  //       description: _description,
-  //       // amount: _amount,
-  //     );
-  //     print("lelelelelel;eelelle=>>>${leadModel.toMap()}");
-  //     AppUtils.onLoading(context, "Updating, please wait...");
-  //     Provider.of<LeadListViewModel>(context, listen: false)
-  //         .update(id, leadModel);
-  //     Navigator.pushReplacement(
-  //       context,
-  //       MaterialPageRoute(
-  //           builder: (context) => MultiProvider(
-  //                 providers: [
-  //                   ChangeNotifierProvider(
-  //                       create: (_) => LeadListViewModel(context))
-  //                 ],
-  //                 child: const LeadListView(),
-  //               )),
-  //     );
-  //   }
-  // }
 
   Future<void> updateData() async {
     print("_leadstatus:::$_leadstatus");
@@ -1191,12 +973,19 @@ class _Forms extends State<LeadAddView> {
       var id = widget.model?.id;
       debug('idmodel====$id');
 
+      // If phone number is masked, use the original number from the model
+      String whatsappNumberToUse = _whatsapnumber!;
+      if (shouldHideLeadNumber && isEdit && _whatsapnumber!.contains('X')) {
+        whatsappNumberToUse = widget.model?.whatsappNumber ?? _whatsapnumber!;
+      }
+
       Map body = {
         "id": widget.model?.id,
         "firstname": _firstname?.trim(),
         "lastname": _lastname?.trim(),
         "country_code": selectedCountry,
-        "whatsapp_number": _whatsapnumber?.trim(),
+        "whatsapp_number":
+            whatsappNumberToUse.trim(), // Use the corrected number
         "email": _email?.trim(),
         "dob": selectedDate,
         "tag_names": hasTags ? selectedTagList : [],
@@ -1215,8 +1004,6 @@ class _Forms extends State<LeadAddView> {
 
       _getleadData?.updatelead(body, widget.model?.id ?? "").then((value) {
         debug("value#### $value");
-        // Navigator.pop(context);
-        // Navigator.pop(context);
         if (value.isNotEmpty) {
           debug("value#### $value");
           Navigator.pushAndRemoveUntil(
@@ -1233,39 +1020,13 @@ class _Forms extends State<LeadAddView> {
             ),
             (Route<dynamic> route) => route.isFirst,
           );
-        } else {}
+        }
       }).catchError((error, stackTrace) {
         Navigator.pop(context);
         List<String> errorMessages = AppUtils.getErrorMessages(error);
         print("errorMessages:::: $errorMessages");
         AppUtils.getAlert(context, errorMessages, title: "Error Alert");
       });
-
-      // Provider.of<LeadListViewModel>(context, listen: false)
-      //     .update(id, leadModel)
-      //     .then((value) {
-
-      //   Navigator.pushAndRemoveUntil(
-      //     context,
-      //     MaterialPageRoute(
-      //       builder: (context) => MultiProvider(
-      //         providers: [
-      //           ChangeNotifierProvider(
-      //             create: (_) => LeadListViewModel(context),
-      //           ),
-      //         ],
-      //         child: const LeadListView(),
-      //       ),
-      //     ),
-      //     (Route<dynamic> route) => route.isFirst,
-      //   );
-
-      // }).catchError((error, stackTrace) {
-      //   List<String> errorMessages = AppUtils.getErrorMessages(error);
-      //   Navigator.pop(context);
-
-      //   AppUtils.getAlert(context, errorMessages, title: "Error Alert");
-      // });
     }
   }
 
@@ -1284,7 +1045,6 @@ class _Forms extends State<LeadAddView> {
           for (var record in leadmodel!.records!) {
             tags.add(record);
             tagsNameSet.add(record);
-            // allLeads.add(record);
           }
         }
       }
@@ -1303,6 +1063,27 @@ class _Forms extends State<LeadAddView> {
         modules.contains("Tag") || modules.contains("Tags") ? true : false;
     print("hasWallet::::::::::::::::::::::::    $hasTags");
     setState(() {});
+  }
+
+  Future<void> shouldHide() async {
+    final prefs = await SharedPreferences.getInstance();
+    shouldHideLeadNumber =
+        prefs.getBool(SharedPrefsConstants.shouldHideNumber) ?? false;
+    setState(() {});
+  }
+
+  String formatPhoneNumber(String? phoneNumber) {
+    if (phoneNumber == null || phoneNumber.isEmpty) return '';
+
+    if (shouldHideLeadNumber == true && phoneNumber.length > 5) {
+      int totalLength = phoneNumber.length;
+      String lastFiveDigits = phoneNumber.substring(totalLength - 5);
+      String maskedPart = 'X' * (totalLength - 5);
+      print("masedpart::: ${maskedPart}   $lastFiveDigits");
+      return '$maskedPart$lastFiveDigits';
+    } else {
+      return phoneNumber;
+    }
   }
 }
 

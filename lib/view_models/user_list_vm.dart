@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/core/models/base_view_model.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
@@ -156,6 +157,7 @@ class UserListViewModel extends BaseListViewModel {
     return records["message"];
   }
 
+  bool? shouldHideNumber;
   Future<bool> makeLoginRequest(
       String username, String password, String tcode) async {
     // Email regex validation
@@ -197,6 +199,20 @@ class UserListViewModel extends BaseListViewModel {
           var authToken = jsonResponse['authToken'];
           var refreshToken = jsonResponse['refreshToken'];
           print('Success: $jsonResponse');
+
+          Map<String, dynamic> decodedToken =
+              await JwtDecoder.decode(authToken);
+
+          final prefs = await SharedPreferences.getInstance();
+          print(
+              "['is_whatsapp_number_hidden']    ${decodedToken['is_whatsapp_number_hidden']}   ['userrole']  ${decodedToken['userrole']}");
+          if (decodedToken['is_whatsapp_number_hidden'] == true &&
+              decodedToken['userrole'] == "USER") {
+            prefs.setBool(SharedPrefsConstants.shouldHideNumber, true);
+          } else {
+            prefs.setBool(SharedPrefsConstants.shouldHideNumber, false);
+          }
+          print("shouldHideNumber::::::::::   $shouldHideNumber");
 
           var records = jsonResponse is List ? jsonResponse : [jsonResponse];
           var modelMap =

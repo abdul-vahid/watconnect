@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import '../../models/unread_msg_model/record.dart';
 import '../../models/unread_msg_model/unread_msg_model.dart'
@@ -60,7 +61,16 @@ class _NotificationPageState extends State<NotificationPage> {
   @override
   void initState() {
     super.initState();
+    shouldHide();
     fetchcount();
+  }
+
+  bool shouldHideLeadNumber = false;
+  Future<void> shouldHide() async {
+    final prefs = await SharedPreferences.getInstance();
+    shouldHideLeadNumber =
+        prefs.getBool(SharedPrefsConstants.shouldHideNumber) ?? false;
+    setState(() {});
   }
 
   @override
@@ -172,7 +182,7 @@ class _NotificationPageState extends State<NotificationPage> {
                                     ),
                                   ),
                                   title: Text(
-                                    record.name ?? record.whatsappNumber ?? "",
+                                    record.name ?? "",
                                     style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
@@ -180,9 +190,12 @@ class _NotificationPageState extends State<NotificationPage> {
                                     ),
                                   ),
                                   subtitle: Text(
-                                    record.whatsappNumber ??
-                                        record.whatsappNumber ??
-                                        "",
+                                    shouldHideLeadNumber
+                                        ? "*******${record.whatsappNumber?.substring(record.whatsappNumber!.length - 5)}"
+                                        : record.whatsappNumber ?? "",
+                                    // record.whatsappNumber ??
+                                    //     record.whatsappNumber ??
+                                    //     "",
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w400,

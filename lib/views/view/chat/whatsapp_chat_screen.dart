@@ -17,11 +17,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
+import 'package:whatsapp/models/call_history_model.dart';
+import 'package:whatsapp/models/lead_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
+import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_fonts.dart';
+import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/utils/function_lib.dart';
+import 'package:whatsapp/view_models/call_view_model.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
+import 'package:whatsapp/view_models/message_controller.dart';
+import 'package:whatsapp/view_models/message_list_vm.dart';
+import 'package:whatsapp/view_models/templete_list_vm.dart';
+import 'package:whatsapp/view_models/unread_count_vm.dart';
+import 'package:whatsapp/view_models/wallet_controller.dart';
+import 'package:whatsapp/views/view/call/call_screen.dart';
 import 'package:whatsapp/views/view/lead_detail_view.dart';
 
 import 'package:whatsapp/views/widgets/chat_msg_tile.dart';
@@ -35,17 +46,6 @@ import 'package:whatsapp/views/widgets/review_edit_temp_sheet.dart';
 import 'package:whatsapp/views/widgets/show_call_dialog.dart';
 import 'package:path/path.dart' as path;
 
-import '../../utils/app_color.dart';
-import '../../utils/app_utils.dart';
-import '../../view_models/wallet_controller.dart';
-import '../../view_models/call_view_model.dart';
-import '../../view_models/unread_count_vm.dart';
-import '../../view_models/message_controller.dart';
-import '../../view_models/templete_list_vm.dart';
-import '../../view_models/message_list_vm.dart';
-import '../../models/call_history_model.dart';
-import '../../models/lead_model.dart';
-import '../view/call_screen.dart';
 import 'package:flutter_sound/flutter_sound.dart' as fs;
 
 class WhatsappChatScreen extends StatefulWidget {

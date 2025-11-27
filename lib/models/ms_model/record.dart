@@ -23,6 +23,14 @@ class Record {
   String? messageId;
   String? deliveryStatus;
   String? chatmsg;
+
+  String? adPlatform;
+  String? adUrl;
+  String? adMediaType;
+  String? adHeadline;
+  String? adBody;
+  String? adMediaUrl;
+
   String? templateName;
   String? templateId;
   String? language;
@@ -72,6 +80,12 @@ class Record {
       this.bodyText,
       this.deliveryStatus,
       this.chatmsg,
+      this.adPlatform,
+      this.adUrl,
+      this.adMediaType,
+      this.adHeadline,
+      this.adBody,
+      this.adMediaUrl,
       this.templateName,
       this.templateId,
       this.language,
@@ -120,6 +134,12 @@ class Record {
         messageId: data['message_id'] as String?,
         deliveryStatus: data['delivery_status'] as String?,
         chatmsg: data['chatmsg'] as String?,
+        adPlatform: data['ad_platform'] as String?,
+        adUrl: data['ad_url'] as String?,
+        adMediaType: data['ad_media_type'] as String?,
+        adHeadline: data['ad_headline'] as String?,
+        adBody: data['ad_body'] as String?,
+        adMediaUrl: data['ad_file_url'] as String?,
         templateName: data['template_name'] as String?,
         templateId: data['template_id'] as String?,
         language: data['language'] as String?,
@@ -179,6 +199,11 @@ class Record {
         'message_id': messageId,
         'delivery_status': deliveryStatus,
         'chatmsg': chatmsg,
+        'ad_platform': adPlatform,
+        'ad_url': adUrl,
+        'ad_headline': adHeadline,
+        'ad_body': adBody,
+        'ad_media_url': adMediaUrl,
         'template_name': templateName,
         'template_id': templateId,
         'language': language,

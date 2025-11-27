@@ -2,10 +2,14 @@
 
 import 'dart:convert';
 import 'dart:developer';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/views/view/show_video.dart';
+import 'package:whatsapp/views/view/view_fullscreen_img.dart';
 import 'package:whatsapp/views/widgets/attachment_widget.dart';
 import 'package:whatsapp/views/widgets/custom_chat_button.dart';
 import 'package:whatsapp/views/widgets/custom_intractive_button.dart';
@@ -79,12 +83,25 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
         imageUrl.isEmpty &&
         widget.message.bodyText == null &&
         widget.message.filetype == null &&
-        (widget.message.message?.isEmpty ?? true);
+        (widget.message.message?.isEmpty ?? true) &&
+        (widget.message.adHeadline?.isEmpty ?? true) &&
+        (widget.message.adBody?.isEmpty ?? true) &&
+        (widget.message.adMediaUrl?.isEmpty ?? true);
 
     if (isEmptyMessage) return const SizedBox();
 
     final regex = RegExp(r'\{\{\d+\}\}');
     String result = "";
+
+    String headline = widget.message.adHeadline ?? "";
+    String adbody = widget.message.adBody ?? "";
+    String adMediaUrl = widget.message.adMediaUrl ?? "";
+    String adMediaType = widget.message.adMediaType ?? "";
+    String adUrl = widget.message.adUrl ?? "";
+    String adPlatform = widget.message.adPlatform ?? "";
+
+    final bool isAdMessage =
+        headline.isNotEmpty || adbody.isNotEmpty || adMediaUrl.isNotEmpty;
 
     if (widget.message.templateType == 'carousel') {
       var carousalPams =
@@ -167,7 +184,122 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (imageUrl.isNotEmpty) AttachmentWidget(url: imageUrl),
+                  if (isAdMessage) ...[
+                    if (adMediaUrl.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: adMediaType == "video"
+                            ? InkWell(
+                                onTap: () async {
+                                  print("adMediaUrl::::::    $adMediaUrl");
+
+                                  final Uri url = Uri.parse(adMediaUrl);
+                                  if (await launchUrl(url,
+                                      mode: LaunchMode.externalApplication)) {
+                                    throw Exception('Could not launch $url');
+                                  }
+                                  print("Ad URL tapped: $adUrl");
+                                  // Navigator.push(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //       builder: (_) =>
+                                  //           ViewVideo(videoUrl: adMediaUrl)),
+                                  // );
+                                },
+                                child: Container(
+                                  height: 120,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.65,
+                                  color: Colors.black12,
+                                  child: const Icon(Icons.play_circle_filled,
+                                      size: 48),
+                                ))
+                            : InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            PreviewImage(imgUrl: adMediaUrl)),
+                                  );
+                                },
+                                child: CachedNetworkImage(
+                                  imageUrl: adMediaUrl,
+                                  height: 120,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.65,
+                                  fit: BoxFit.cover,
+                                  placeholder: (_, __) => const Center(
+                                      child: CircularProgressIndicator()),
+                                  errorWidget: (_, __, ___) =>
+                                      const Icon(Icons.broken_image),
+                                ),
+                              ),
+                      ),
+                    if (headline.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4.0),
+                        child: Text(
+                          headline,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    if (adbody.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Text(
+                          adbody,
+                          maxLines: 5,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            overflow: TextOverflow.ellipsis,
+                            fontSize: 14,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    if (adPlatform.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Text(
+                          "via $adPlatform",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    if (adUrl.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: GestureDetector(
+                          onTap: () async {
+                            final Uri url = Uri.parse(adUrl);
+                            if (await launchUrl(url,
+                                mode: LaunchMode.externalApplication)) {
+                              throw Exception('Could not launch $url');
+                            }
+                            print("Ad URL tapped: $adUrl");
+                          },
+                          child: Text(
+                            adUrl,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ),
+                    const Divider(color: Colors.grey),
+                  ],
+                  if (imageUrl.isNotEmpty && !isAdMessage)
+                    AttachmentWidget(url: imageUrl),
                   if (widget.message.header != null && imageUrl.isEmpty)
                     HeaderMediaWidget(
                       header: widget.message.header!,
@@ -243,12 +375,10 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
 
                         var carousalPams =
                             jsonEncode(widget.message.bodyTextParams['$index']);
-                        // result = widget.message.messageBody ?? "";
                         if (regex.hasMatch(result)) {
                           result = replacePlaceholders(result, carousalPams);
                         }
 
-                        // Body text params
                         Map<String, dynamic>? bodyParams;
                         if (widget.message.bodyTextParams != null &&
                             widget.message.bodyTextParams
@@ -339,7 +469,6 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                         },
                       ),
                     ),
-                    // Indicator Dots
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: widget.message.templateCards

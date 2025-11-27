@@ -1,17 +1,27 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/views/view/call_history_screen.dart'
     show formatDateTime, formatDuration;
 import '../../../models/call_history_model.dart';
 
-void showCallDialog(
+Future<void> showCallDialog(
   BuildContext context,
   List<CallHistoryData> callHistoryList,
   VoidCallback onCallPressed,
-) {
+) async {
+  final prefs = await SharedPreferences.getInstance();
+  String tennetcode =
+      prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
   showDialog(
     context: context,
     barrierDismissible: true,
@@ -67,6 +77,7 @@ void showCallDialog(
                             const Divider(height: 1, color: Colors.grey),
                         itemBuilder: (context, index) {
                           final call = callHistoryList[index];
+                          print("title:::  ${call.title}");
                           return ListTile(
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 4, vertical: 4),
@@ -93,9 +104,24 @@ void showCallDialog(
                               style: const TextStyle(
                                   color: Colors.grey, fontSize: 14),
                             ),
-                            trailing: Text(
-                              formatDuration(call.duration ?? 0),
-                              style: const TextStyle(fontSize: 14),
+                            trailing: Column(
+                              children: [
+                                (call.title != null && call.title!.isNotEmpty)
+                                    ? InkWell(
+                                        onTap: () async {
+                                          print(
+                                              "call.title::::    ${AppConstants.baseImgUrl}public/${tennetcode}/attachment/${call.title}");
+                                          await downloadAndOpenAudio(
+                                              "${AppConstants.baseImgUrl}public/${tennetcode}/attachment/${call.title}");
+                                          //
+                                        },
+                                        child: const Icon(Icons.download))
+                                    : const SizedBox(),
+                                Text(
+                                  formatDuration(call.duration ?? 0),
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ],
                             ),
                           );
                         },
@@ -107,4 +133,36 @@ void showCallDialog(
       );
     },
   );
+}
+
+Future<void> downloadAndOpenAudio(String url) async {
+  try {
+    Directory directory;
+    if (Platform.isAndroid) {
+      directory = Directory('/storage/emulated/0/Download');
+    } else if (Platform.isIOS) {
+      directory = await getApplicationDocumentsDirectory();
+    } else {
+      throw Exception("Unsupported platform");
+    }
+
+    if (!await directory.exists()) {
+      await directory.create(recursive: true);
+    }
+
+    String fileName = url.split('/').last;
+    String filePath = '${directory.path}/$fileName';
+
+    Dio dio = Dio();
+    await dio.download(url, filePath, onReceiveProgress: (received, total) {
+      if (total != -1) {
+        debugPrint(
+            'Download progress: ${(received / total * 100).toStringAsFixed(0)}%');
+      }
+    });
+
+    await OpenFilex.open(filePath);
+  } catch (e) {
+    debugPrint("Download error: $e");
+  }
 }

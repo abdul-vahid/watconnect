@@ -20,6 +20,8 @@ import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/call_view_model.dart';
+import 'package:whatsapp/view_models/lead_controller.dart';
+import 'package:whatsapp/view_models/message_list_vm.dart';
 
 class CallSocketService {
   static final CallSocketService _instance = CallSocketService._internal();
@@ -211,20 +213,6 @@ class CallSocketService {
       }
 
       // Step 1: Upload recording file to get file ID
-      final callsViewModel = Provider.of<CallsViewModel>(
-          navigatorKey.currentContext!,
-          listen: false);
-
-      final dbResponse = await callsViewModel.uploadRecFiledb(audioFile);
-      print("dbResponse:::: of file rec audio api ::: $dbResponse");
-
-      final recFileId = jsonDecode(dbResponse)['records']?[0]?['title'];
-      print("dbResponse:::: jsonDecode recFileId ::: $recFileId");
-
-      if (recFileId == null) {
-        print('❌ Failed to get recording file ID');
-        return;
-      }
 
       // Step 2: Check if Salesforce integration is enabled and call API
       final drProvider = Provider.of<DashBoardController>(
@@ -232,8 +220,48 @@ class CallSocketService {
           listen: false);
 
       if (drProvider.fromSalesForce) {
+        final callsViewModel = Provider.of<CallsViewModel>(
+            navigatorKey.currentContext!,
+            listen: false);
+
+        final dbResponse = await callsViewModel.uploadRecFiledb(audioFile);
+        print("dbResponse:::: of file rec audio api ::: $dbResponse");
+
+        final recFileId = jsonDecode(dbResponse)['records']?[0]?['title'];
+        print("dbResponse:::: jsonDecode recFileId ::: $recFileId");
+
+        if (recFileId == null) {
+          print('❌ Failed to get recording file ID');
+          return;
+        }
+
         await _callSalesforceApi(recFileId);
       } else {
+        final messageVM = Provider.of<MessageViewModel>(
+            navigatorKey.currentContext!,
+            listen: false);
+
+        final callsViewModel = Provider.of<CallsViewModel>(
+            navigatorKey.currentContext!,
+            listen: false);
+        final prefs = await SharedPreferences.getInstance();
+        final dbResponse = await messageVM.uploadFiledb(audioFile, null, null);
+        final fileId = jsonDecode(dbResponse)['records']?[0]?['id'];
+        String businessNumber = prefs.getString('phoneNumber') ?? "";
+        Map<String, dynamic> body = {
+          "name": _leadName,
+          "whatsapp_number": _wpNumber,
+          "business_number": businessNumber,
+          "event": "call_started",
+          "status": "Outgoing",
+          "call_id": _callId,
+          "end_time": DateTime.now().toLocal().toIso8601String(),
+          "sdp": _offer?.sdp ?? "", // Use the stored offer here
+          "file_id": fileId
+        };
+
+        callsViewModel.outgoingCallApi(body);
+        // ----------
         print('ℹ️ Salesforce integration not enabled, skipping API call');
       }
     } catch (e, st) {
@@ -359,10 +387,12 @@ class CallSocketService {
         _isConnected = true;
         debugPrint('✅ Call socket connected');
 
-        // Add file details
+        LeadController leadCtrl =
+            Provider.of(navigatorKey.currentContext!, listen: false);
         userData.addAll({
           'deviceId': devId,
           'business_number': busNum,
+          'business_numbers': leadCtrl.allBusinessNumbers,
         });
 
         log("before we connect socket userdata::::   $userData   devi id :::  $devId busNum:::  $busNum ");
@@ -427,10 +457,10 @@ class CallSocketService {
 
   IO.Socket _createSocket(String token) {
     return IO.io(
-      'https://sandbox.watconnect.com',
+      'https://admin.watconnect.com',
       IO.OptionBuilder()
           .setTransports(['websocket'])
-          .setPath('/swp/socket.io')
+          .setPath('/ibs/socket.io')
           .setExtraHeaders({'Authorization': 'Bearer $token'})
           .setReconnectionAttempts(10)
           .setReconnectionDelay(2000)
@@ -444,6 +474,8 @@ class CallSocketService {
     var callData;
     _socket?.on("whatsapp_call_event", (data) async {
       log('\x1B[32m   incoming call data whatsapp_call_event   $data    ');
+
+      // Reset dialog state
       _dialogShown = false;
       callData = data;
       final event = data['data']['event'];
@@ -463,17 +495,25 @@ class CallSocketService {
       }
 
       print(
-          "busNum call datat   :::   $busNum      selectedBusinessNumber     $selectedBusinessNumber");
-      if (busNum != selectedBusinessNumber) {
+          "busNum call data: $busNum, selectedBusinessNumber: $selectedBusinessNumber");
+
+      LeadController leadCtrl =
+          Provider.of(navigatorKey.currentContext!, listen: false);
+
+      if (!leadCtrl.allBusinessNumbers.contains(busNum)) {
+        print('❌ Call not for current business number, ignoring');
         _closePopup();
         return;
       }
 
       if (event == "terminate") {
+        print('📞 Call terminated event received');
         _closePopup();
         return;
       }
-      print("_dialogShown:::::::   be4 shoing popup        $_dialogShown");
+
+      print("_dialogShown before showing popup: $_dialogShown");
+
       if (dir != "BUSINESS_INITIATED" && !_dialogShown) {
         // Store call data for Salesforce API
         _storeCallDataForSalesforce(
@@ -486,8 +526,12 @@ class CallSocketService {
               : null,
         );
 
+        print('📞 Showing call popup for incoming call');
         _showCallPopup(data);
-        _removeOverlay();
+        // REMOVED: _removeOverlay(); - This was causing the overlay to be removed immediately
+      } else {
+        print(
+            'ℹ️ Call direction is BUSINESS_INITIATED or dialog already shown');
       }
     });
 
@@ -528,11 +572,19 @@ class CallSocketService {
   // ===================== UI HANDLING =====================
 
   void _showOverlay(Map<String, dynamic> data) {
-    if (_callOverlay != null) return;
+    // Remove existing overlay first
+    _removeOverlay();
+
+    // Get the correct context from navigatorKey
+    final context = navigatorKey.currentContext;
+    if (context == null) {
+      print('❌ No context available for overlay');
+      return;
+    }
 
     _callOverlay = OverlayEntry(
       builder: (context) => Positioned(
-        top: 40,
+        top: MediaQuery.of(context).padding.top + 40, // Account for status bar
         left: 16,
         right: 16,
         child: Material(
@@ -540,21 +592,46 @@ class CallSocketService {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.85),
+              color: Colors.black.withOpacity(0.9),
               borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               children: [
-                const Icon(Icons.call, color: Colors.greenAccent),
-                const SizedBox(width: 8),
+                const Icon(Icons.call, color: Colors.greenAccent, size: 24),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    "${data['data']['name']} is calling...",
-                    style: const TextStyle(color: Colors.white),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Incoming Call",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        "${data['data']['name'] ?? 'Unknown'}",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
                   onPressed: () {
                     _removeOverlay();
                     if (!_dialogShown) _showCallPopup(data);
@@ -567,12 +644,21 @@ class CallSocketService {
       ),
     );
 
-    Overlay.of(navigatorKey.currentContext!).insert(_callOverlay!);
+    try {
+      Overlay.of(context).insert(_callOverlay!);
+      print('✅ Overlay shown successfully');
+    } catch (e) {
+      print('❌ Failed to insert overlay: $e');
+      _callOverlay = null;
+    }
   }
 
   void _removeOverlay() {
-    _callOverlay?.remove();
-    _callOverlay = null;
+    if (_callOverlay != null) {
+      print('🗑️ Removing overlay');
+      _callOverlay?.remove();
+      _callOverlay = null;
+    }
   }
 
   void _closePopup() async {
@@ -663,6 +749,8 @@ class CallSocketService {
       await Provider.of<CallsViewModel>(navigatorKey.currentContext!,
               listen: false)
           .callAcceptApi(payload);
+      LeadController leadCtrl =
+          Provider.of(navigatorKey.currentContext!, listen: false);
 
       final prefs = await SharedPreferences.getInstance();
       String deviId = prefs.getString(SharedPrefsConstants.deviceId) ?? "";
@@ -670,7 +758,8 @@ class CallSocketService {
       _socket?.emit("accept_call", {
         "call_id": callData['data']['call_id'],
         "business_number": callData['data']['business_number'],
-        "deviceId": deviId
+        "deviceId": deviId,
+        "business_numbers": leadCtrl.allBusinessNumbers ?? []
       });
 
       // Start recording when call is accepted
@@ -744,6 +833,9 @@ class CallSocketService {
   // ===================== POPUP =====================
 
   Future<void> _showCallPopup(Map<String, dynamic> data) async {
+    // Stop any existing audio first
+    await _audioPlayer.stop();
+
     await _audioPlayer.setReleaseMode(ReleaseMode.loop);
     await _audioPlayer.play(
       UrlSource('https://admin.watconnect.com/user_images/ringtone.mp3'),
@@ -753,102 +845,124 @@ class CallSocketService {
     _duration = 0;
     _callAccepted = false;
 
-    if (navigatorKey.currentContext == null || _dialogShown) return;
+    final context = navigatorKey.currentContext;
+    if (context == null || _dialogShown) {
+      print('❌ Cannot show dialog: context null or dialog already shown');
+      return;
+    }
+
     _dialogShown = true;
 
+    // Show overlay first
+    _showOverlay(data);
+
     showDialog(
-      context: navigatorKey.currentContext!,
-      barrierDismissible: true,
+      context: context,
+      barrierDismissible: false, // Make it modal
       builder: (ctx) {
         _dialogContext = ctx;
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _showOverlay(data);
-        });
 
         return StatefulBuilder(
           builder: (context, setState) {
             _popupSetState = setState;
 
-            return AlertDialog(
-              backgroundColor: const Color(0xFF1E1E1E),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.phone_in_talk_rounded,
-                      size: 60, color: Colors.greenAccent),
-                  const SizedBox(height: 12),
-                  Text(
-                    "${data['data']['name']} is calling...",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  if (_callAccepted)
+            return PopScope(
+              canPop: false, // Prevent back button from closing
+              child: AlertDialog(
+                backgroundColor: const Color(0xFF1E1E1E),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.phone_in_talk_rounded,
+                        size: 60, color: Colors.greenAccent),
+                    const SizedBox(height: 12),
                     Text(
-                      _formatDuration(_duration),
+                      "${data['data']['name']} is calling...",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      data['data']['whatsapp_number']?.toString() ??
+                          'Unknown number',
                       style: const TextStyle(color: Colors.white70),
                     ),
-                  if (_isRecording) ...[
                     const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.fiber_manual_record,
-                            color: Colors.red, size: 16),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Recording • ${_formatDuration(_recordingDuration)}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.red,
-                            fontWeight: FontWeight.w500,
+                    if (_callAccepted)
+                      Text(
+                        _formatDuration(_duration),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    if (_isRecording) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.fiber_manual_record,
+                              color: Colors.red, size: 16),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Recording • ${_formatDuration(_recordingDuration)}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.red,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _popupButton(
+                          label: "Accept",
+                          icon: Icons.call,
+                          color: Colors.green,
+                          onPressed: () async {
+                            print('✅ Accept button pressed');
+                            await acceptApiCall(data);
+                            setState(() => _callAccepted = true);
+                            await _audioPlayer.stop();
+                            _removeOverlay(); // Remove overlay when call is accepted
+                          },
+                        ),
+                        _popupButton(
+                          label: "Reject",
+                          icon: Icons.call_end,
+                          color: Colors.red,
+                          onPressed: () async {
+                            print('❌ Reject button pressed');
+                            await rejectApiCall(data);
+                            Navigator.of(_dialogContext!).pop();
+                          },
                         ),
                       ],
                     ),
                   ],
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _popupButton(
-                        label: "Accept",
-                        icon: Icons.call,
-                        color: Colors.green,
-                        onPressed: () async {
-                          await acceptApiCall(data);
-                          setState(() => _callAccepted = true);
-                          await _audioPlayer.stop();
-                        },
-                      ),
-                      _popupButton(
-                        label: "Reject",
-                        icon: Icons.call_end,
-                        color: Colors.red,
-                        onPressed: () async {
-                          await rejectApiCall(data);
-                          Navigator.of(_dialogContext!).pop();
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             );
           },
         );
       },
     ).then((_) {
+      print('🔚 Dialog closed');
       _dialogContext = null;
       _dialogShown = false;
       _popupSetState = null;
+      _removeOverlay(); // Ensure overlay is removed when dialog closes
 
       // Stop recording when dialog is closed
       if (_isRecording) {

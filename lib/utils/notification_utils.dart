@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/utils/app_constants.dart';
-import 'package:whatsapp/views/view/whatsapp_chat_screen.dart';
+import 'package:whatsapp/views/view/chat/whatsapp_chat_screen.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/models/lead_model.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
@@ -176,6 +176,7 @@ class NotificationUtil {
       if (drProvider.fromSalesForce) {
         drProvider.setSfFcmToken(token);
         drProvider.setSfDeviceToken(deviceId);
+        await UserListViewModel().registerFCMToken(token, deviceId);
         debug("Skipping FCM registration due to fromSalesForce flag");
       } else {
         await UserListViewModel().registerFCMToken(token, deviceId);

@@ -179,23 +179,34 @@ class _SfHomeScreenState extends State<SfHomeScreen> {
                           const SizedBox(
                             width: 10,
                           ),
-                          HomePageCard(
-                            title: "All Leads",
-                            subtitle: dbController.totalLead,
-                            icon: Icons.bolt,
-                            polygonAsset: "assets/images/home_polygon.png",
-                            tap: () {
-                              dbController.setSelectedTitle("Lead");
-                              dbController.drawerListApiCall(type: "Lead");
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ConfigListingScreen(type: "Lead"),
+                          dbController.drawerItems.isEmpty
+                              ? SizedBox()
+                              : HomePageCard(
+                                  title: dbController
+                                          .drawerItems.first.sObjectName ??
+                                      "",
+                                  subtitle: dbController.totalLead,
+                                  icon: Icons.bolt,
+                                  polygonAsset:
+                                      "assets/images/home_polygon.png",
+                                  tap: () {
+                                    // dbController.setSelectedTitle("Lead");
+                                    dbController.drawerListApiCall(
+                                        type: dbController.drawerItems.first
+                                                .sObjectName ??
+                                            "");
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ConfigListingScreen(
+                                                type: dbController.drawerItems
+                                                        .first.sObjectName ??
+                                                    ""),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              );
-                            },
-                          ),
                         ],
                       ),
                     ),

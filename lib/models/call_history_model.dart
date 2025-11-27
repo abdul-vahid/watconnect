@@ -57,6 +57,9 @@ class CallHistoryData {
   DateTime? lastModifiedDate;
   int? duration;
 
+  String? fileId;
+  String? title;
+
   CallHistoryData();
 
   CallHistoryData.fromJson(Map<String, dynamic> json) {
@@ -82,6 +85,8 @@ class CallHistoryData {
         ? DateTime.tryParse(json['lastmodifieddate'])
         : null;
     duration = json['duration'];
+    fileId = json['file_id'] ?? "";
+    title = json['title'] ?? "";
   }
 
   Map<String, dynamic> toJson() {

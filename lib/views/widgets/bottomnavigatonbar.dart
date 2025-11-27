@@ -18,6 +18,7 @@ import 'package:whatsapp/salesforce/screens/sf_profile_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_recent_chat_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
+import 'package:whatsapp/view_models/lead_controller.dart';
 import 'package:whatsapp/views/view/recent_chats_screen.dart';
 
 import '../../utils/app_color.dart';
@@ -96,11 +97,25 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     if (drProvider.fromSalesForce) {
       String tkn = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
       print("node token ::::  ${tkn}");
-      Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
-      var userId = decodedToken;
+      // Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+      // var userId = decodedToken;
+
+      Map<String, dynamic> decodedToken = Map<String, dynamic>.from(
+        JwtDecoder.decode(tkn),
+      );
+
+      // token = tkn;
+      // phNum = number ?? "";
+      Map<String, dynamic> userId = decodedToken;
+
       String deviId = prefs.getString(SharedPrefsConstants.deviceId) ?? "";
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+      LeadController leadCtrl = Provider.of(context, listen: false);
+      userId.addAll({
+        "business_numbers": leadCtrl.allBusinessNumbers,
+        "business_number": busNum
+      });
       CallSocketService().connect(tkn, userId, deviId, busNum);
     }
 

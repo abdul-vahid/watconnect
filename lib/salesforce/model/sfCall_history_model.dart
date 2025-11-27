@@ -29,15 +29,15 @@ class SfCallHistoryModel {
     return SfCallHistoryModel(
         whatsAppNumber: json['WatConnect__WhatsApp_Number__c'] ?? "",
         businessNum: json['WatConnect__WhatsApp_Bussiness_Number__c'] ?? "",
-        startTime: json['WatConnect__Start_Time__c'] ?? "",
+        startTime: json['Start_Time__c'] ?? "",
         name: json['Name'] ?? "",
         event: json['WatConnect__Event__c'] ?? "",
-        endTime: json['WatConnect__End_Time__c'] ?? "",
+        endTime: json['End_Time__c'] ?? "",
         duration: json['Duration__c'] ?? 0,
         callStatus: json['Call_History__c'] ?? "",
         id: json['Id'] ?? "",
         statusC: json['Status__c'] ?? "",
-        audioUrl: json['Audio_url__c'] ?? "");
+        audioUrl: json['url'] ?? "");
   }
 
   Map<String, dynamic> toJson() {

@@ -133,7 +133,7 @@ void showSfCallDialog(
                                     icon: const Icon(Icons.download,
                                         size: 22, color: Colors.blue),
                                     onPressed: () async {
-                                      await _downloadAndOpenAudio(
+                                      await downloadAndOpenAudio(
                                           call.audioUrl!);
                                     },
                                   ),
@@ -183,7 +183,7 @@ String sfFromatCallDate(String isoString) {
   }
 }
 
-Future<void> _downloadAndOpenAudio(String url) async {
+Future<void> downloadAndOpenAudio(String url) async {
   try {
     Directory directory;
     if (Platform.isAndroid) {

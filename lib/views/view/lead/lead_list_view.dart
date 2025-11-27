@@ -16,15 +16,17 @@ import 'package:shared_preferences/shared_preferences.dart'
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:whatsapp/models/tags_list_model.dart';
 import 'package:whatsapp/models/unread_msg_model/unread_msg_model.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_fonts.dart';
+import 'package:whatsapp/view_models/lead_controller.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
-import 'package:whatsapp/views/view/whatsapp_chat_screen.dart';
-import '../../models/lead_model.dart';
-import '../../utils/app_color.dart';
-import '../../utils/app_utils.dart';
-import '../../view_models/lead_list_vm.dart';
-import '../../view_models/user_data_list_vm.dart';
-import 'lead_add_update_view.dart';
+import 'package:whatsapp/views/view/chat/whatsapp_chat_screen.dart';
+import '../../../models/lead_model.dart';
+import '../../../utils/app_color.dart';
+import '../../../utils/app_utils.dart';
+import '../../../view_models/lead_list_vm.dart';
+import '../../../view_models/user_data_list_vm.dart';
+import '../lead_add_update_view.dart';
 
 import 'package:badges/badges.dart' as badges;
 
@@ -71,9 +73,14 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   int selectedFilterId = 0;
   List<String> filters = ["All", "Unread", "Filter"];
   List<String> tags = [];
+
+  bool? shouldHideLeadNumber;
   @override
   void initState() {
     selectleadList = [];
+    shouldHide();
+
+    print("shouldHideLeadNumber::::::   $shouldHideLeadNumber");
     getTags();
     _getUnreadCount();
     selectTagFilterList = [];
@@ -1178,14 +1185,29 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
         break;
     }
 
+    String formatPhoneNumber(String? phoneNumber, String? countryCode) {
+      if (phoneNumber == null || phoneNumber.isEmpty) return '';
+
+      String fullNumber = phoneNumber.contains("+")
+          ? phoneNumber
+          : "${countryCode ?? ''}$phoneNumber";
+
+      if (shouldHideLeadNumber == true && fullNumber.length > 5) {
+        int totalLength = fullNumber.length;
+        String lastFiveDigits = fullNumber.substring(totalLength - 5);
+        String maskedPart = 'X' * (totalLength - 5);
+        return '$maskedPart$lastFiveDigits';
+      } else {
+        return fullNumber;
+      }
+    }
+
     return GestureDetector(
       onLongPress: () {
         setState(() {
           showPin = true;
-
           showBulkBin = true;
           addToDeleteList(model.lead_id ?? "");
-          // idsToDelete.add(model.lead_id ?? "");
           pinnedLeadId = model.lead_id ?? "";
           isPinned = model.pinned ?? false;
         });
@@ -1313,11 +1335,8 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                           height: 5,
                         ),
                         Text(
-                          model.whatsappNumber?.isNotEmpty == true
-                              ? model.whatsappNumber!.contains("+")
-                                  ? model.whatsappNumber ?? ""
-                                  : "${model.countryCode}${model.whatsappNumber ?? ""}"
-                              : '',
+                          formatPhoneNumber(
+                              model.whatsappNumber, model.countryCode),
                           style: const TextStyle(fontSize: 12),
                         ),
                         Padding(
@@ -1579,12 +1598,21 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
 
+    LeadController leadCtrl = Provider.of(context, listen: false);
+
     String tkn = await AppUtils.getToken() ?? "";
-    Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
+    Map<String, dynamic> decodedToken = Map<String, dynamic>.from(
+      JwtDecoder.decode(tkn),
+    );
 
     token = tkn;
     phNum = number ?? "";
     userId = decodedToken;
+
+    userId.addAll({
+      "business_numbers": leadCtrl.allBusinessNumbers,
+      "business_number": number
+    });
 
     try {
       // print("Token: $token");
@@ -1628,5 +1656,11 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       socket!.disconnect();
       print(" WebSocket Disconnected");
     }
+  }
+
+  Future<void> shouldHide() async {
+    final prefs = await SharedPreferences.getInstance();
+    shouldHideLeadNumber = prefs.getBool(SharedPrefsConstants.shouldHideNumber);
+    setState(() {});
   }
 }

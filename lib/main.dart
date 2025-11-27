@@ -39,7 +39,8 @@ import 'package:whatsapp/view_models/templete_list_vm.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/view_models/user_data_list_vm.dart';
 import 'package:whatsapp/view_models/wallet_controller.dart';
-import 'package:whatsapp/views/view/whatsapp_chat_screen.dart';
+// import 'package:whatsapp/views/view/call/call_controller.dart';
+import 'package:whatsapp/views/view/chat/whatsapp_chat_screen.dart';
 import 'firebase_options.dart';
 import 'view_models/campaign_vm.dart';
 import 'view_models/chart_list_vm.dart';
@@ -165,7 +166,8 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => SfcampaignController()),
         ChangeNotifierProvider(create: (_) => WalletController()),
         ChangeNotifierProvider(create: (_) => LeadController()),
-        ChangeNotifierProvider(create: (_) => SfFileUploadController())
+        ChangeNotifierProvider(create: (_) => SfFileUploadController()),
+        // ChangeNotifierProvider(create: (_) => CallController()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

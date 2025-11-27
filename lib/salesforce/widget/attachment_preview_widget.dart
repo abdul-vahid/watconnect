@@ -11,159 +11,317 @@ import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/build_attachm
 class AttachmentPreviewWidget extends StatelessWidget {
   final String? contentType;
   final String? attachmentUrl;
+  final String? fileName;
+  final String? fileSize;
 
   const AttachmentPreviewWidget({
     super.key,
     required this.contentType,
     required this.attachmentUrl,
+    this.fileName,
+    this.fileSize,
   });
 
   @override
   Widget build(BuildContext context) {
     final String type = contentType ?? "";
+    final String displayName = fileName ?? _getDefaultFileName(type);
 
     if (type.contains("image")) {
-      return InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PreviewImage(imgUrl: attachmentUrl ?? ""),
-            ),
-          );
-        },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: CachedNetworkImage(
-            imageUrl: attachmentUrl ?? '',
-            width: double.infinity,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Image.asset(
-              "assets/images/img_place.png",
-              height: 150,
-              fit: BoxFit.cover,
-            ),
-            errorWidget: (context, url, error) => Image.asset(
-              "assets/images/img_place.png",
-              height: 150,
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-      );
+      return _buildImagePreview(context);
     } else if (type.contains("video")) {
-      return InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ViewVideo(videoUrl: attachmentUrl ?? ''),
-            ),
-          );
-        },
-        child: Stack(
-          children: [
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(
-              height: 150,
-              child: Center(
-                child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
-              ),
-            ),
-          ],
-        ),
-      );
+      return _buildVideoPreview(context);
     } else if (type.contains("application/pdf")) {
-      return InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ViewPdf(pdfUrl: attachmentUrl ?? ""),
-            ),
-          );
-        },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.asset("assets/images/pdf.png", height: 150),
-        ),
-      );
+      return _buildPdfPreview(context, displayName);
     } else if (type.contains("audio")) {
-      return InkWell(
-        onTap: () async {
-          showDialog(
-            context: context,
-            builder: (context) => AudioDialog(audioUrl: attachmentUrl ?? ""),
-          );
-        },
-        child: Container(
-          height: 60,
-          width: MediaQuery.of(context).size.width * 0.5,
-          decoration: BoxDecoration(
-            color: Colors.deepOrangeAccent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 12.0),
-                child: Container(
-                  height: 30,
-                  width: 30,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                  ),
-                  child: const Icon(
-                    Icons.headphones,
-                    size: 20,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+      return _buildAudioPreview(context);
     } else if (type.contains("ms-excel") || type.contains("spreadsheetml")) {
-      return _genericDocumentPreview(
-        context,
-        imageAsset: "assets/images/excel.png",
-      );
+      return _buildExcelPreview(context, displayName);
     } else if (type.contains("ms-powerpoint") ||
         type.contains("presentationml")) {
-      return _genericDocumentPreview(
-        context,
-        imageAsset: "assets/images/powerpoint.png",
-      );
+      return _buildPowerPointPreview(context, displayName);
     } else if (type.contains("application")) {
-      return _genericDocumentPreview(
-        context,
-        imageAsset: "assets/images/doc.png",
-      );
+      return _buildDocumentPreview(context, displayName);
     }
 
     return const SizedBox.shrink();
   }
 
-  Widget _genericDocumentPreview(BuildContext context,
-      {required String imageAsset}) {
+  Widget _buildImagePreview(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PreviewImage(imgUrl: attachmentUrl ?? ""),
+          ),
+        );
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: CachedNetworkImage(
+          imageUrl: attachmentUrl ?? '',
+          width: double.infinity,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Image.asset(
+            "assets/images/img_place.png",
+            height: 150,
+            fit: BoxFit.cover,
+          ),
+          errorWidget: (context, url, error) => Image.asset(
+            "assets/images/img_place.png",
+            height: 150,
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVideoPreview(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ViewVideo(videoUrl: attachmentUrl ?? ''),
+          ),
+        );
+      },
+      child: Stack(
+        children: [
+          Container(
+            height: 150,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(
+            height: 150,
+            child: Center(
+              child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPdfPreview(BuildContext context, String fileName) {
+    return _buildDocumentCard(
+      context,
+      icon: Icons.picture_as_pdf_rounded,
+      iconColor: Colors.red,
+      backgroundColor: Colors.red.shade50,
+      fileName: fileName,
+      fileType: "PDF Document",
+    );
+  }
+
+  Widget _buildDocumentPreview(BuildContext context, String fileName) {
+    return _buildDocumentCard(
+      context,
+      icon: Icons.description_rounded,
+      iconColor: Colors.blue,
+      backgroundColor: Colors.blue.shade50,
+      fileName: fileName,
+      fileType: "Document",
+    );
+  }
+
+  Widget _buildExcelPreview(BuildContext context, String fileName) {
+    return _buildDocumentCard(
+      context,
+      icon: Icons.table_chart_rounded,
+      iconColor: Colors.green,
+      backgroundColor: Colors.green.shade50,
+      fileName: fileName,
+      fileType: "Excel Spreadsheet",
+    );
+  }
+
+  Widget _buildPowerPointPreview(BuildContext context, String fileName) {
+    return _buildDocumentCard(
+      context,
+      icon: Icons.slideshow_rounded,
+      iconColor: Colors.orange,
+      backgroundColor: Colors.orange.shade50,
+      fileName: fileName,
+      fileType: "PowerPoint Presentation",
+    );
+  }
+
+  Widget _buildDocumentCard(
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required Color backgroundColor,
+    required String fileName,
+    required String fileType,
+  }) {
     return InkWell(
       onTap: () {
         print("before opening doc:::: $attachmentUrl");
         openDocument(context, attachmentUrl ?? "");
       },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Image.asset(imageAsset, height: 150),
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.7,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          children: [
+            // Document Icon
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: iconColor.withOpacity(0.3)),
+              ),
+              child: Icon(icon, size: 24, color: iconColor),
+            ),
+
+            const SizedBox(width: 12),
+
+            // File Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // File Name
+                  Text(
+                    _truncateFileName(fileName),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    maxLines: 1,
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // File Type and Size
+                  Row(
+                    children: [
+                      Text(
+                        fileType,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      if (fileSize != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 3,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade500,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          fileSize!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 8),
+
+            // Open Icon
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.arrow_outward_rounded,
+                size: 16,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Widget _buildAudioPreview(BuildContext context) {
+    return InkWell(
+      onTap: () async {
+        showDialog(
+          context: context,
+          builder: (context) => AudioDialog(audioUrl: attachmentUrl ?? ""),
+        );
+      },
+      child: Container(
+        height: 60,
+        width: MediaQuery.of(context).size.width * 0.5,
+        decoration: BoxDecoration(
+          color: Colors.deepOrangeAccent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: Container(
+                height: 30,
+                width: 30,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+                child: const Icon(
+                  Icons.headphones,
+                  size: 20,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getDefaultFileName(String contentType) {
+    if (contentType.contains("pdf")) return "document.pdf";
+    if (contentType.contains("excel") || contentType.contains("spreadsheet"))
+      return "spreadsheet.xlsx";
+    if (contentType.contains("powerpoint") ||
+        contentType.contains("presentation")) return "presentation.pptx";
+    if (contentType.contains("application")) return "document.doc";
+    return "file";
+  }
+
+  String _truncateFileName(String fileName) {
+    const maxLength = 20;
+    if (fileName.length <= maxLength) return fileName;
+
+    final extension = fileName.substring(fileName.lastIndexOf('.'));
+    final nameWithoutExtension =
+        fileName.substring(0, fileName.lastIndexOf('.'));
+    final truncatedName =
+        nameWithoutExtension.substring(0, maxLength - extension.length - 3);
+
+    return '$truncatedName...$extension';
   }
 }

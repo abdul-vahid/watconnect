@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:whatsapp/view_models/lead_controller.dart';
 import 'package:whatsapp/view_models/message_list_vm.dart';
 import '../../../utils/app_utils.dart';
 import '../../../view_models/unread_count_vm.dart';
@@ -14,10 +15,23 @@ class SocketManager {
   IO.Socket? _socket;
 
   Future<void> connectSocket(BuildContext context, String? wpNumber) async {
+    Map<String, dynamic> userId = {};
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
     String token = await AppUtils.getToken() ?? "";
-    Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+    LeadController leadCtrl = Provider.of(context, listen: false);
+    Map<String, dynamic> decodedToken = Map<String, dynamic>.from(
+      JwtDecoder.decode(token),
+    );
+
+    token = token;
+    number = number ?? "";
+    userId = decodedToken;
+
+    userId.addAll({
+      "business_numbers": leadCtrl.allBusinessNumbers,
+      "business_number": number
+    });
 
     try {
       _socket = IO.io(
@@ -33,7 +47,7 @@ class SocketManager {
 
       _socket!.onConnect((_) {
         log('Connected to WebSocket');
-        _socket!.emit("setup", decodedToken);
+        _socket!.emit("setup", userId);
       });
 
       _socket!.on("connected", (_) {
