@@ -41,6 +41,8 @@ abstract class SharedPrefsConstants {
 
   static const String sfNodeTennatCode = "sfNodeTennatCode";
 
+  static const String sfLoginType = "sfLoginType";
+
   static const String sfEnv = "sfEnv";
 }
 

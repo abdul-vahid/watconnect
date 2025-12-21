@@ -15,7 +15,8 @@ import 'package:whatsapp/views/view/call/call_screen.dart';
 // import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 
 class SfChatAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const SfChatAppBar({super.key});
+  bool hasCalls;
+  SfChatAppBar({super.key, required this.hasCalls});
 
   @override
   Widget build(BuildContext context) {
@@ -30,53 +31,61 @@ class SfChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       centerTitle: true,
       actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 10.0),
-          child: InkWell(
-            onTap: () {
-              ChatMessageController chatController =
-                  Provider.of(context, listen: false);
+        hasCalls
+            ? Padding(
+                padding: const EdgeInsets.only(right: 10.0),
+                child: InkWell(
+                  onTap: () {
+                    ChatMessageController chatController =
+                        Provider.of(context, listen: false);
 
-              DashBoardController dbProvider =
-                  Provider.of(context, listen: false);
-              var wpCode = dbProvider.selectedContactInfo?.countryCode ?? "91";
-              var wpNum = dbProvider.selectedContactInfo?.whatsappNumber ?? "";
-              String fullNum = wpCode + wpNum;
-              chatController
-                  .callHistoryApiCall(userNumber: fullNum)
-                  .then((value) {
-                showSfCallDialog(dbProvider.selectedContactInfo?.name ?? "",
-                    context, chatController.callHistoryList, () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  final token =
-                      prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
-                  if (token.isEmpty) {
-                    EasyLoading.showToast("Something went wrong");
-                  } else {
-                    final decoded = JwtDecoder.decode(token);
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => CallScreen(
-                            token: token,
-                            userData: decoded,
-                            // parentId: widget.id ?? "",
-                            wpNumber: fullNum,
-                            leadName:
-                                dbProvider.selectedContactInfo?.name ?? ""),
-                      ),
-                    );
-                  }
-                });
-              });
-            },
-            child: const Icon(
-              Icons.call,
-              color: Colors.white,
-            ),
-          ),
-        )
+                    DashBoardController dbProvider =
+                        Provider.of(context, listen: false);
+                    var wpCode =
+                        dbProvider.selectedContactInfo?.countryCode ?? "91";
+                    var wpNum =
+                        dbProvider.selectedContactInfo?.whatsappNumber ?? "";
+                    String fullNum = wpCode + wpNum;
+                    chatController
+                        .callHistoryApiCall(userNumber: fullNum)
+                        .then((value) {
+                      showSfCallDialog(
+                          dbProvider.selectedContactInfo?.name ?? "",
+                          context,
+                          chatController.callHistoryList, () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        final token =
+                            prefs.getString(SharedPrefsConstants.sfNodeToken) ??
+                                "";
+                        if (token.isEmpty) {
+                          EasyLoading.showToast("Something went wrong");
+                        } else {
+                          final decoded = JwtDecoder.decode(token);
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CallScreen(
+                                  token: token,
+                                  userData: decoded,
+                                  // parentId: widget.id ?? "",
+                                  wpNumber: fullNum,
+                                  leadName:
+                                      dbProvider.selectedContactInfo?.name ??
+                                          ""),
+                            ),
+                          );
+                        }
+                      });
+                    });
+                  },
+                  child: const Icon(
+                    Icons.call,
+                    color: Colors.white,
+                  ),
+                ),
+              )
+            : const SizedBox()
       ],
 
       //  GestureDetector(

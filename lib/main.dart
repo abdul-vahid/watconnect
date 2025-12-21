@@ -19,6 +19,7 @@ import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
 import 'package:whatsapp/salesforce/controller/sfCampaign_controller.dart';
 import 'package:whatsapp/salesforce/controller/template_controller.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
+import 'package:whatsapp/salesforce/screens/sf_notification_screen.dart';
 import 'package:whatsapp/services/notifications/local_notification_service.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
@@ -271,6 +272,19 @@ Future<void> _handleSfNotification(Map<String, dynamic> finalJson) async {
 
     if (matchedModel == null) {
       debug("No matching lead found for ID: $leadId");
+      DashBoardController drProvider = Provider.of(ctx, listen: false);
+
+      if (drProvider.fromSalesForce) {
+        Navigator.push(
+          ctx,
+          MaterialPageRoute(
+            builder: (_) => SfNotificationScreen(),
+          ),
+        );
+      } else {
+        return;
+      }
+
       return;
     }
 

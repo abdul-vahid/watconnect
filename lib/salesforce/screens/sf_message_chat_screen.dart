@@ -9,11 +9,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_sound/flutter_sound.dart' as fs;
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
@@ -29,6 +31,7 @@ import 'package:whatsapp/salesforce/widget/header_type_preview.dart';
 import 'package:whatsapp/salesforce/widget/pick_media_buttons.dart';
 import 'package:whatsapp/salesforce/widget/sf_chat_appbar.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 
 final GlobalKey<FormState> _addTemplateFormKey = GlobalKey<FormState>();
 
@@ -62,10 +65,30 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     super.initState();
     ChatMessageController chatMsgController =
         Provider.of(context, listen: false);
-
+    isCallAvailable();
     chatMsgController.setSelectedFile(null);
     _initializeAudio();
     getUserNumer();
+  }
+
+  bool hasCalls = false;
+
+  isCallAvailable() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
+
+    Map<String, dynamic> decodedToken = Map<String, dynamic>.from(
+      JwtDecoder.decode(token),
+    );
+
+    var modulesList = decodedToken['modules'];
+    List availableModule =
+        modulesList.map((e) => e['name'].toString()).toList();
+
+    List<String> stringList = List<String>.from(availableModule);
+
+    hasCalls = stringList.contains("Calls");
+    setState(() {});
   }
 
   Future<void> _initializeAudio() async {
@@ -99,7 +122,9 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
         child: Scaffold(
           backgroundColor: Colors.white,
           resizeToAvoidBottomInset: true,
-          appBar: const SfChatAppBar(),
+          appBar: SfChatAppBar(
+            hasCalls: hasCalls,
+          ),
           body: Stack(
             children: [
               RefreshIndicator(

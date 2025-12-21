@@ -1,16 +1,19 @@
-// ignore_for_file: use_build_context_synchronously, deprecated_member_use
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use, avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/views/view/login_salesforce.dart';
 
 import '../../utils/app_utils.dart' show AppUtils;
 import '../../view_models/user_list_vm.dart';
 import '../widgets/bottomnavigatonbar.dart';
+
+enum sfLoginType { WatConnect, SFWatConnect }
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -24,6 +27,8 @@ class _LoginViewState extends State<LoginView> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _tcodeController = TextEditingController();
   bool _obscurePassword = true;
+  sfLoginType? _selectedSfType = sfLoginType.WatConnect;
+
   @override
   void initState() {
     // _emailController.text = 'shivani.m+demo@ibirdsservices.com';
@@ -177,146 +182,8 @@ class _LoginViewState extends State<LoginView> {
                                       icon: const Icon(Icons.cloud,
                                           color: Colors.white),
                                       onPressed: () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          builder: (BuildContext context) {
-                                            return Container(
-                                              decoration: const BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.vertical(
-                                                  top: Radius.circular(24),
-                                                ),
-                                              ),
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(20.0),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Center(
-                                                      child: Container(
-                                                        width: 40,
-                                                        height: 4,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color:
-                                                              Colors.grey[300],
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(2),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 16),
-
-                                                    // Header
-                                                    const Text(
-                                                      "Login to Salesforce",
-                                                      style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        color:
-                                                            Color(0xFF080707),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 8),
-                                                    const Text(
-                                                      "Choose your environment to continue",
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 24),
-
-                                                    _LoginOptionTile(
-                                                      icon: Icons.public,
-                                                      iconColor: const Color(
-                                                          0xFF0176D3),
-                                                      title: "Production",
-                                                      subtitle:
-                                                          "login.salesforce.com",
-                                                      onTap: () {
-                                                        Navigator.pop(context);
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (_) =>
-                                                                const WebViewPage(
-                                                              env: "Prod",
-                                                              url:
-                                                                  "https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ&redirect_uri=https://login.salesforce.com/services/oauth2/success",
-                                                            ),
-                                                          ),
-                                                        );
-                                                      },
-                                                    ),
-                                                    const SizedBox(height: 16),
-
-                                                    _LoginOptionTile(
-                                                      icon: Icons.science,
-                                                      iconColor: const Color(
-                                                          0xFF4BC076),
-                                                      title:
-                                                          "Sandbox / Testing",
-                                                      subtitle:
-                                                          "test.salesforce.com",
-                                                      onTap: () {
-                                                        Navigator.pop(context);
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (_) =>
-                                                                const WebViewPage(
-                                                              env: "Test",
-                                                              url:
-                                                                  "https://test.salesforce.com/services/oauth2/authorize?response_type=code&client_id=3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ&redirect_uri=https://login.salesforce.com/services/oauth2/success",
-                                                            ),
-                                                          ),
-                                                        );
-                                                      },
-                                                    ),
-                                                    const SizedBox(height: 24),
-
-                                                    SizedBox(
-                                                      width: double.infinity,
-                                                      child: TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.pop(
-                                                                context),
-                                                        style: TextButton
-                                                            .styleFrom(
-                                                          foregroundColor:
-                                                              Colors.grey[700],
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  vertical: 16),
-                                                          shape:
-                                                              RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        6),
-                                                          ),
-                                                        ),
-                                                        child: const Text(
-                                                            "Cancel"),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        );
+                                        _showSalesforceLoginBottomSheet(
+                                            context);
                                       },
                                       label: const Text(
                                         "Salesforce",
@@ -371,6 +238,180 @@ class _LoginViewState extends State<LoginView> {
         ));
   }
 
+  void _showSalesforceLoginBottomSheet(BuildContext context) {
+    sfLoginType? bottomSheetSelectedType = _selectedSfType;
+    String val = "WatConnect";
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Login to Salesforce",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF080707),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Choose your environment to continue",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Radio<sfLoginType>(
+                          value: sfLoginType.WatConnect,
+                          activeColor: AppColor.navBarIconColor,
+                          groupValue: bottomSheetSelectedType,
+                          onChanged: (sfLoginType? value) {
+                            setState(() {
+                              bottomSheetSelectedType = value;
+                              val = value?.name ?? "";
+                            });
+                          },
+                        ),
+                        const Text("WatConnect"),
+                        const SizedBox(width: 20),
+                        Radio<sfLoginType>(
+                          value: sfLoginType.SFWatConnect,
+                          activeColor: AppColor.navBarIconColor,
+                          groupValue: bottomSheetSelectedType,
+                          onChanged: (sfLoginType? value) {
+                            setState(() {
+                              bottomSheetSelectedType = value;
+                              val = value?.name ?? "";
+                            });
+                          },
+                        ),
+                        const Text("SFWatConnect"),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    _LoginOptionTile(
+                      icon: Icons.public,
+                      iconColor: const Color(0xFF0176D3),
+                      title: "Production",
+                      subtitle: "login.salesforce.com",
+                      onTap: () async {
+                        Navigator.pop(context);
+
+                        print(":::  ::::: :::::   $val   ${val.runtimeType}");
+
+                        final prefs = await SharedPreferences.getInstance();
+                        prefs.setString(SharedPrefsConstants.sfLoginType, val);
+
+                        setState(() {
+                          _selectedSfType = bottomSheetSelectedType;
+                        });
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => WebViewPage(
+                              env: "Prod",
+                              url: _getSalesforceUrl(
+                                  "Prod", bottomSheetSelectedType),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _LoginOptionTile(
+                      icon: Icons.science,
+                      iconColor: const Color(0xFF4BC076),
+                      title: "Sandbox / Testing",
+                      subtitle: "test.salesforce.com",
+                      onTap: () async {
+                        Navigator.pop(context);
+                        setState(() {
+                          _selectedSfType = bottomSheetSelectedType;
+                        });
+
+                        final prefs = await SharedPreferences.getInstance();
+                        prefs.setString(
+                            SharedPrefsConstants.sfLoginType, "Sandbox");
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => WebViewPage(
+                              env: "Test",
+                              url: _getSalesforceUrl(
+                                  "Test", bottomSheetSelectedType),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.grey[700],
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: const Text("Cancel"),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _getSalesforceUrl(String environment, sfLoginType? loginType) {
+    String baseUrl = environment == "Prod"
+        ? "https://login.salesforce.com"
+        : "https://test.salesforce.com";
+
+    String clientId = loginType == sfLoginType.WatConnect
+        ? "3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ"
+        : "3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ"; // You can change this for SFWatConnect
+
+    return "$baseUrl/services/oauth2/authorize?response_type=code&client_id=$clientId&redirect_uri=https://login.salesforce.com/services/oauth2/success";
+  }
+
   void onButtonPressed() {
     if (_loginFormKey.currentState!.validate()) {
       _loginFormKey.currentState!.save();
@@ -422,7 +463,6 @@ class _LoginViewState extends State<LoginView> {
   }
 }
 
-// Custom widget for login options
 class _LoginOptionTile extends StatelessWidget {
   final IconData icon;
   final Color iconColor;

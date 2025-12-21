@@ -75,7 +75,6 @@ class _HomeViewState extends State<HomeView> {
   List unreadList = [];
   String? selectedWhatsAppNumber;
 
-  //-------- Start code method of month chart------
   List<String?> addData = [];
   late TooltipBehavior _tooltipBehavior;
   List<_SalesData> businessData = [];
@@ -150,11 +149,9 @@ class _HomeViewState extends State<HomeView> {
       final prefs = await SharedPreferences.getInstance();
       String? selectedWhatsAppNumber = prefs.getString('phoneNumber');
 
-      // Fetch WhatsApp settings first
       await Provider.of<WhatsappSettingViewModel>(context, listen: false)
           .fetch();
 
-      // Update selected number if needed
       final whatsAppVM =
           Provider.of<WhatsappSettingViewModel>(context, listen: false);
       if (selectedWhatsAppNumber == null || selectedWhatsAppNumber.isEmpty) {
@@ -170,7 +167,6 @@ class _HomeViewState extends State<HomeView> {
 
       debugPrint('Selected WhatsApp Number: $selectedWhatsAppNumber');
 
-      // Fetch data in parallel where possible
       await Future.wait([
         Provider.of<CampaignChartViewModel>(context, listen: false)
             .fetchCampaignChart(number: selectedWhatsAppNumber),
@@ -192,7 +188,6 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
-  // MOVED THIS METHOD OUTSIDE OF BUILD
   void _updateItemsMap(WhatsappSettingViewModel whatsAppSettingVM) {
     LeadController leadController = Provider.of(context, listen: false);
     itemsMap.clear();
@@ -283,10 +278,8 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    // Use Consumer for each specific ViewModel to avoid unnecessary rebuilds
     return Consumer<WhatsappSettingViewModel>(
       builder: (context, whatsAppSettingVM, child) {
-        // Call _updateItemsMap here, but it's now defined outside of build
         _updateItemsMap(whatsAppSettingVM);
 
         return Consumer<DashBoardController>(
@@ -419,7 +412,6 @@ class _HomeViewState extends State<HomeView> {
                   builder: (context, templateVM, child) {
                     return Consumer<CampaignChartViewModel>(
                       builder: (context, chartListVM, child) {
-                        // Calculate values once
                         _calculateValues(leadCountVM, autoResponseVM,
                             campaignVM, templateVM);
                         _getBusinessWidgets(chartListVM);
@@ -610,19 +602,16 @@ class _HomeViewState extends State<HomeView> {
     CampaignCountViewModel campaignVM,
     TempleteListViewModel templateVM,
   ) {
-    // Calculate countNewLeads
     for (var viewModel in leadCountVM.viewModels) {
       NewLeadCountModel nmodel = viewModel.model;
       countNewLeads = nmodel.total;
     }
 
-    // Calculate autoResponseCount
     for (var viewModel in autoResponseVM.viewModels) {
       AutoResponseModel automodel = viewModel.model;
       autoResponseCount = automodel.total;
     }
 
-    // Calculate campaignCount
     for (var viewModel in campaignVM.viewModels) {
       CampaignCountModel campmodel = viewModel.model;
       var pend = campmodel.result?.pending;
@@ -636,7 +625,6 @@ class _HomeViewState extends State<HomeView> {
       campaignCount = allCamp.toString();
     }
 
-    // Calculate templateCount
     for (var viewModel in templateVM.viewModels) {
       TemplateModel tempmodel = viewModel.model;
       templateCount = tempmodel.data?.length;
@@ -722,8 +710,6 @@ class _HomeViewState extends State<HomeView> {
     });
 
     log("user id sending in socket setup::::   $userId");
-    //    final prefs = await SharedPreferences.getInstance();
-    // await prefs.setString('phoneNumber', number);
 
     try {
       socket = IO.io(
@@ -741,7 +727,6 @@ class _HomeViewState extends State<HomeView> {
       });
       socket!.on("connected", (_) {});
       socket!.on("receivedwhatsappmessage", (data) {
-        // print(" New WhatsApp message: $data");
         _getUnreadCount();
       });
       socket!.onDisconnect((_) {

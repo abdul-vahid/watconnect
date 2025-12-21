@@ -8,6 +8,7 @@ import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/screens/confige_listing_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_campaign_listing_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/utils/notification_utils.dart';
 import '../../models/user_model/user_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
@@ -392,6 +393,7 @@ class _SfAppDrawerWidgetState extends State<SfAppDrawerWidget> {
   }
 
   Future<void> _logoutUser() async {
+    NotificationUtil.deleteFCMTokenOnLogout();
     AppUtils.logout(context);
   }
 }
