@@ -10,14 +10,21 @@ import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/views/view/login_view.dart';
 import 'package:whatsapp/views/widgets/bottomnavigatonbar.dart';
 // import 'package:whatsapp/salesforce/screens/sf_dashboard.dart';
 
 class WebViewPage extends StatefulWidget {
   final String url;
   final String env;
+  final sfLoginType loginType;
 
-  const WebViewPage({super.key, required this.url, required this.env});
+  const WebViewPage({
+    super.key,
+    required this.url,
+    required this.env,
+    required this.loginType,
+  });
 
   @override
   _WebViewPageState createState() => _WebViewPageState();
@@ -29,6 +36,7 @@ class _WebViewPageState extends State<WebViewPage> {
 
   @override
   void initState() {
+    print(" widget.loginType:::::::::::::::    ${widget.loginType}");
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -53,16 +61,16 @@ class _WebViewPageState extends State<WebViewPage> {
               await prefs.setString(SharedPrefsConstants.sfEnv, widget.env);
               Map<String, String> body = {
                 "grant_type": "authorization_code",
-                "client_id":
-                    "3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ",
-                "client_secret":
-                    "195E44ED6BAFD4F6F5CB20343F7FFC169616D9C417B3C51089B00F6487E0F459",
+                "client_id": widget.loginType == sfLoginType.WatConnect
+                    ? "3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ"
+                    : "3MVG9dAEux2v1sLu9_ht_e8ED9j_Wh5cLRVVeAomQlCsjtBdsLgLF1G11oQuiZngKyW71zVbjIdGHlvKp9AMd",
+                "client_secret": widget.loginType == sfLoginType.WatConnect
+                    ? "195E44ED6BAFD4F6F5CB20343F7FFC169616D9C417B3C51089B00F6487E0F459"
+                    : "C28DF71DC17459F1568BD4D6E22D328F20F0113E44195E8BEA28779D9784257F",
                 "code": authCode,
-                "redirect_uri":
-                    // widget.env == 'Test'
-                    //     ? "https://test.salesforce.com/services/oauth2/success"
-                    //     :
-                    "https://login.salesforce.com/services/oauth2/success",
+                "redirect_uri": widget.env == 'Test'
+                    ? "https://test.salesforce.com/services/oauth2/success"
+                    : "https://login.salesforce.com/services/oauth2/success",
               };
 
               ChatMessageController chatMessageController =

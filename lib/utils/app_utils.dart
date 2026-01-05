@@ -499,10 +499,10 @@ class AppUtils {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
-              backgroundColor: AppColor.navBarIconColor, // Text color
-              minimumSize: const Size(80, 40), // Width and height of button
+              backgroundColor: AppColor.navBarIconColor,
+              minimumSize: const Size(80, 40),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(50), // Rounded corners
+                borderRadius: BorderRadius.circular(50),
               ),
             ),
             onPressed: onPressed,
