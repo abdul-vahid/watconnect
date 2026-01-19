@@ -129,8 +129,29 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
         onFocusGained: () {
           // print("Screen focused again");
           log('\x1B[95mFCM     Leads Screen focused again::::::::::::::::::::::::::::::::::::::::::::::::::');
+    ChatMessageController cmProvider =
+              Provider.of(context, listen: false);
+   DashBoardController dbController = Provider.of(context, listen: false);
 
+        final usrNumber =
+            dbController.selectedContactInfo?.whatsappNumber ?? "";
+          Future.delayed(const Duration(milliseconds: 1), () async {
+            await cmProvider.messageHistoryApiCall(
+              userNumber: usrNumber,
+              isFirstTime: false,
+            );
+            _scrollToBottom();
+          });
           connectSocket();
+
+
+                Future.delayed(const Duration(milliseconds: 1500), () async {
+            await cmProvider.messageHistoryApiCall(
+              userNumber: usrNumber,
+              isFirstTime: false,
+            );
+            _scrollToBottom();
+          });
         },
         onFocusLost: () {
           disconnectSocket();

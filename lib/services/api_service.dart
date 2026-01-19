@@ -130,6 +130,7 @@ class APIService {
       case 401:
       case 403:
         debug("Unauthorized  url>>>>>>>>>>>   $url");
+        print("error is coming from api service");
         EasyLoading.showToast("Session Expired!\n Login Again");
         AppUtils.logout(AppUtils.currentContext);
         throw UnauthorisedException(response.body.toString());

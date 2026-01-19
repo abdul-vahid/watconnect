@@ -80,6 +80,7 @@ class NetworkService {
               useAuth: useAuth,
             );
           } else {
+            print("error is coming from network service");
             EasyLoading.showToast("Session expired. Please log in again.");
           }
           break;

@@ -21,6 +21,7 @@ import 'package:whatsapp/salesforce/controller/template_controller.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_notification_screen.dart';
 import 'package:whatsapp/services/notifications/local_notification_service.dart';
+import 'package:whatsapp/services/notifications/notification_service.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/function_lib.dart';
 import 'package:whatsapp/view_models/approved_template_vm.dart';
@@ -59,6 +60,13 @@ final RouteObserver<ModalRoute<void>> routeObserver =
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(
+    RemoteMessage message) async {
+  await Firebase.initializeApp();
+}
+    
+
 void main() async {
   tz.initializeTimeZones();
   ErrorWidget.builder = (FlutterErrorDetails details) {
@@ -73,40 +81,46 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-  const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-
-  const DarwinInitializationSettings initializationSettingsDarwin =
-      DarwinInitializationSettings(
-    requestAlertPermission: true,
-    requestBadgePermission: true,
-    requestSoundPermission: true,
-    // onDidReceiveLocalNotification: (int id, String? title, String? body, String? payload) async {
-    //   // Handle iOS foreground notification tap here
-    //   print("iOS Notification received: $payload");
-    // },
+ FirebaseMessaging.onBackgroundMessage(
+    firebaseMessagingBackgroundHandler,
   );
 
-  const InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-    iOS: initializationSettingsDarwin,
-  );
+  await NotificationService.init(); // ✅ HERE
 
-  await flutterLocalNotificationsPlugin.initialize(
-    initializationSettings,
-    onDidReceiveNotificationResponse: (NotificationResponse response) {
-      if (response.payload != null && response.payload!.isNotEmpty) {
-        print(
-            "onDidReceiveNotificationResponse:::::::::    ${response.payload}");
-        _handleSfNotification(_decodePayload(response.payload!));
-      }
-    },
-  );
+  // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  // const AndroidInitializationSettings initializationSettingsAndroid =
+  //     AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  // const DarwinInitializationSettings initializationSettingsDarwin =
+  //     DarwinInitializationSettings(
+  //   requestAlertPermission: true,
+  //   requestBadgePermission: true,
+  //   requestSoundPermission: true,
+  //   // onDidReceiveLocalNotification: (int id, String? title, String? body, String? payload) async {
+  //   //   // Handle iOS foreground notification tap here
+  //   //   print("iOS Notification received: $payload");
+  //   // },
+  // );
+
+  // const InitializationSettings initializationSettings = InitializationSettings(
+  //   android: initializationSettingsAndroid,
+  //   iOS: initializationSettingsDarwin,
+  // );
+
+  // await flutterLocalNotificationsPlugin.initialize(
+  //   initializationSettings,
+  //   onDidReceiveNotificationResponse: (NotificationResponse response) {
+  //     if (response.payload != null && response.payload!.isNotEmpty) {
+  //       print(
+  //           "onDidReceiveNotificationResponse:::::::::    ${response.payload}");
+  //       _handleSfNotification(_decodePayload(response.payload!));
+  //     }
+  //   },
+  // );
 
   runApp(const MyApp());
+    await NotificationService.handleInitialMessage();
 }
 
 class MyApp extends StatefulWidget {
@@ -120,7 +134,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _setupInteractedMessage();
+    // _setupInteractedMessage();
   }
 
   @override
@@ -187,208 +201,219 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
-}
+  
 
-@pragma('vm:entry-point')
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("message firebaseMessagingBackgroundHandler::: ");
-  debug("Background FCM: $message ${message.notification}");
-  if (message.notification == null && message.data.isNotEmpty) {
-    LocalNotificationService.displayNotification(message);
-  }
-  // if (message.notification != null) {
-  //   await Future.delayed(const Duration(milliseconds: 50));
-  //   await flutterLocalNotificationsPlugin.cancelAll();
-  // }
 
-  // LocalNotificationService.displayNotification(message);
-}
 
-void _setupInteractedMessage() {
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    LocalNotificationService.displayNotification(message);
-  });
 
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print("onMessageOpenedApp::::   ${message.data}");
-    _handleSfNotification(message.data);
-  });
+// @pragma('vm:entry-point')
+// Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   print("message firebaseMessagingBackgroundHandler::: ");
+//   debug("Background FCM: $message ${message.notification}");
+//   if (message.notification == null && message.data.isNotEmpty) {
+//     LocalNotificationService.displayNotification(message);
+//   }
+//   // if (message.notification != null) {
+//   //   await Future.delayed(const Duration(milliseconds: 50));
+//   //   await flutterLocalNotificationsPlugin.cancelAll();
+//   // }
 
-  FirebaseMessaging.instance.getInitialMessage().then((message) {
-    if (message != null) {
-      print("getInitialMessage::::   ${message.data}");
-      _handleSfNotification(message.data);
-    }
-  });
-}
+//   // LocalNotificationService.displayNotification(message);
+// }
 
-Map<String, dynamic> _decodePayload(String payload) {
-  payload = payload.replaceAll(RegExp(r'^{|}$'), '');
-  final Map<String, dynamic> data = {};
-  for (final part in payload.split(',')) {
-    final kv = part.split(':');
-    if (kv.length == 2) {
-      data[kv[0].trim()] = kv[1].trim();
-    }
-  }
-  return data;
-}
+// void _setupInteractedMessage() {
+//   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+//     LocalNotificationService.displayNotification(message);
+//   });
 
-Future<void> _handleSfNotification(Map<String, dynamic> finalJson) async {
-  for (var key in finalJson.keys) {
-    print("Key: $key  ->  Value: ${finalJson[key]}");
-  }
+//   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+//     print("onMessageOpenedApp::::   ${message.data}");
+//     _handleSfNotification(message.data);
+//   });
 
-  final finJson = cleanMap(finalJson);
+//   FirebaseMessaging.instance.getInitialMessage().then((message) {
+//     if (message != null) {
+//       print("getInitialMessage::::   ${message.data}");
+//       _handleSfNotification(message.data);
+//     }
+//   });
+// }
 
-  print("finalJson:::::::::  $finJson");
+// Map<String, dynamic> _decodePayload(String payload) {
+//   payload = payload.replaceAll(RegExp(r'^{|}$'), '');
+//   final Map<String, dynamic> data = {};
+//   for (final part in payload.split(',')) {
+//     final kv = part.split(':');
+//     if (kv.length == 2) {
+//       data[kv[0].trim()] = kv[1].trim();
+//     }
+//   }
+//   return data;
+// }
 
-  print("finalJson:::::::::  ${finJson['lead_id']}");
+// Future<void> _handleSfNotification(Map<String, dynamic> finalJson) async {
+//   for (var key in finalJson.keys) {
+//     print("Key: $key  ->  Value: ${finalJson[key]}");
+//   }
 
-  if (finJson.containsKey('lead_id')) {
-    String leadId = finJson['lead_id'];
-    final ctx = navigatorKey.currentContext;
+//   final finJson = cleanMap(finalJson);
 
-    // if (ctx!.mounted) return;
+//   print("finalJson:::::::::  $finJson");
 
-    final leadlistvm = Provider.of<LeadListViewModel>(ctx!, listen: false);
-    LeadModel? matchedModel;
-    final List<LeadModel> pinnedLeads = [];
+//   print("finalJson:::::::::  ${finJson['lead_id']}");
 
-    // Find pinned leads and matching lead
-    for (var viewModel in leadlistvm.viewModels) {
-      final leadmodel = viewModel.model;
+//   if (finJson.containsKey('lead_id')) {
+//     String leadId = finJson['lead_id'];
+//     final ctx = navigatorKey.currentContext;
 
-      if (leadmodel?.records != null) {
-        for (var record in leadmodel!.records!) {
-          print("record.id::::::::  ${record.id}");
-          if (record.pinned == true) {
-            pinnedLeads.add(record);
-          }
-          if (record.id.toString() == leadId) {
-            matchedModel = record;
-          }
-        }
-      }
-    }
+//     // if (ctx!.mounted) return;
 
-    if (matchedModel == null) {
-      debug("No matching lead found for ID: $leadId");
-      DashBoardController drProvider = Provider.of(ctx, listen: false);
+//     final leadlistvm = Provider.of<LeadListViewModel>(ctx!, listen: false);
+//    await leadlistvm.fetch();
+//     LeadModel? matchedModel;
+//     final List<LeadModel> pinnedLeads = [];
 
-      if (drProvider.fromSalesForce) {
-        Navigator.push(
-          ctx,
-          MaterialPageRoute(
-            builder: (_) =>
-                SfNotificationScreen(leadId: finJson['full_number']),
-          ),
-        );
-      } else {
-        return;
-      }
+//     // Find pinned leads and matching lead
+//     for (var viewModel in leadlistvm.viewModels) {
+//       final leadmodel = viewModel.model;
 
-      return;
-    }
+//       if (leadmodel?.records != null) {
+//         for (var record in leadmodel!.records!) {
+//           print("record.id::::::::  ${record.id}");
+//           if (record.pinned == true) {
+//             pinnedLeads.add(record);
+//           }
+//           if (record.id.toString() == leadId) {
+//             matchedModel = record;
+//           }
+//         }
+//       }
+//     }
 
-    final wpNumber = matchedModel.whatsappNumber ?? "";
-    final formattedWpNumber = wpNumber.contains("+")
-        ? wpNumber
-        : "${matchedModel.countryCode}$wpNumber";
+//     if (matchedModel == null) {
+//       debug("No matching lead found for ID: $leadId");
+//       DashBoardController drProvider = Provider.of(ctx, listen: false);
 
-    Navigator.push(
-      ctx,
-      MaterialPageRoute(
-        builder: (_) => WhatsappChatScreen(
-          pinnedLeads: pinnedLeads,
-          leadName:
-              "${matchedModel?.firstname ?? ""} ${matchedModel?.lastname ?? ""}",
-          wpnumber: formattedWpNumber,
-          id: matchedModel?.id,
-          model: matchedModel,
-        ),
-      ),
-    );
-    // }
-  } else {
-    final finJson = cleanMap(finalJson);
+//       if (drProvider.fromSalesForce) {
+//         Navigator.push(
+//           ctx,
+//           MaterialPageRoute(
+//             builder: (_) =>
+//                 SfNotificationScreen(leadId: finJson['full_number']),
+//           ),
+//         );
+//       } else {
+//         return;
+//       }
 
-    print("finJson:::: $finJson");
-    final leadId = finJson['RecordId'] ?? "";
-    final objName = finJson['sObjectName'] ?? "";
+//       return;
+//     }
 
-    print(
-        "finJson['RecordId']   $finJson     ${finJson.runtimeType}    :: ${finJson['sObjectName']}");
+//     final wpNumber = matchedModel.whatsappNumber ?? "";
+//     final formattedWpNumber = wpNumber.contains("+")
+//         ? wpNumber
+//         : "${matchedModel.countryCode}$wpNumber";
 
-    final ctx = navigatorKey.currentContext;
-    log("ctx::::::::: $finJson   $leadId   $objName   ");
 
-    for (var key in finJson.keys) {
-      print("Key: $key  ->  Value: ${finJson[key]}");
-    }
 
-    if (ctx == null || !ctx.mounted) return;
+//     Navigator.push(
+//       ctx,
+//       MaterialPageRoute(
+//         builder: (_) => WhatsappChatScreen(
+//           pinnedLeads: pinnedLeads,
+//           leadName:
+//               "${matchedModel?.firstname ?? ""} ${matchedModel?.lastname ?? ""}",
+//           wpnumber: formattedWpNumber,
+//           id: matchedModel?.id,
+//           model: matchedModel,
+//         ),
+//       ),
+//     );
+//     // }
+//   } else {
+//     final finJson = cleanMap(finalJson);
 
-    final dashBoardController =
-        Provider.of<DashBoardController>(ctx, listen: false);
-    await dashBoardController.drawerListApiCall(type: objName);
+//     print("finJson:::: $finJson");
+//     final leadId = finJson['RecordId'] ?? "";
+//     final objName = finJson['sObjectName'] ?? "";
 
-    final pinnedConfigItems = dashBoardController.drawerListItems
-        .where((item) => item.isPinned == true)
-        .toList();
+//     print(
+//         "finJson['RecordId']   $finJson     ${finJson.runtimeType}    :: ${finJson['sObjectName']}");
 
-    final matchedItem = dashBoardController.drawerListItems.firstWhere(
-      (item) => item.id == leadId,
-    );
+//     final ctx = navigatorKey.currentContext;
+//     log("ctx::::::::: $finJson   $leadId   $objName   ");
 
-    if (ctx.mounted) {
-      final cmProvider = Provider.of<ChatMessageController>(ctx, listen: false);
-      final dbProvider = Provider.of<DashBoardController>(ctx, listen: false);
+//     for (var key in finJson.keys) {
+//       print("Key: $key  ->  Value: ${finJson[key]}");
+//     }
 
-      final phNum =
-          "${matchedItem.countryCode ?? ""}${matchedItem.whatsappNumber ?? ""}";
-      dbProvider.setSelectedContaactInfo(matchedItem);
-      await cmProvider.messageHistoryApiCall(userNumber: phNum);
+//     if (ctx == null || !ctx.mounted) return;
 
-      if (ctx.mounted) {
-        Navigator.push(
-          ctx,
-          MaterialPageRoute(
-            builder: (context) =>
-                SfMessageChatScreen(pinnedLeadsList: pinnedConfigItems),
-          ),
-        );
-      }
-    }
-  }
-}
+//     final dashBoardController =
+//         Provider.of<DashBoardController>(ctx, listen: false);
+//     await dashBoardController.drawerListApiCall(type: objName);
 
-Map<String, dynamic> cleanMap(Map raw) {
-  final Map<String, dynamic> result = {};
+//     final pinnedConfigItems = dashBoardController.drawerListItems
+//         .where((item) => item.isPinned == true)
+//         .toList();
 
-  raw.forEach((key, value) {
-    // Clean key
-    final newKey = key.toString().replaceAll('"', '');
+//     final matchedItem = dashBoardController.drawerListItems.firstWhere(
+//       (item) => item.id == leadId,
+//     );
 
-    // Clean value
-    if (value is String) {
-      // remove extra quotes if present
-      final newValue = value.replaceAll('"', '');
-      result[newKey] = newValue;
-    } else if (value is Map) {
-      // handle nested maps
-      result[newKey] = cleanMap(value);
-    } else if (value is List) {
-      // handle list of maps/strings
-      result[newKey] = value.map((e) {
-        if (e is Map) return cleanMap(e);
-        if (e is String) return e.replaceAll('"', '');
-        return e;
-      }).toList();
-    } else {
-      result[newKey] = value;
-    }
-  });
+//     if (ctx.mounted) {
+//       final cmProvider = Provider.of<ChatMessageController>(ctx, listen: false);
+//       final dbProvider = Provider.of<DashBoardController>(ctx, listen: false);
 
-  return result;
+//       final phNum =
+//           "${matchedItem.countryCode ?? ""}${matchedItem.whatsappNumber ?? ""}";
+//       dbProvider.setSelectedContaactInfo(matchedItem);
+//       await cmProvider.messageHistoryApiCall(userNumber: phNum);
+
+//       if (ctx.mounted) {
+//         Navigator.push(
+//           ctx,
+//           MaterialPageRoute(
+//             builder: (context) =>
+//                 SfMessageChatScreen(pinnedLeadsList: pinnedConfigItems),
+//           ),
+//         );
+//       }
+//     }
+//   }
+// }
+
+// Map<String, dynamic> cleanMap(Map raw) {
+//   final Map<String, dynamic> result = {};
+
+//   raw.forEach((key, value) {
+//     // Clean key
+//     final newKey = key.toString().replaceAll('"', '');
+
+//     // Clean value
+//     if (value is String) {
+//       // remove extra quotes if present
+//       final newValue = value.replaceAll('"', '');
+//       result[newKey] = newValue;
+//     } else if (value is Map) {
+//       // handle nested maps
+//       result[newKey] = cleanMap(value);
+//     } else if (value is List) {
+//       // handle list of maps/strings
+//       result[newKey] = value.map((e) {
+//         if (e is Map) return cleanMap(e);
+//         if (e is String) return e.replaceAll('"', '');
+//         return e;
+//       }).toList();
+//     } else {
+//       result[newKey] = value;
+//     }
+//   });
+
+//   return result;
+// }
+
+
+
+
 }

@@ -28,14 +28,20 @@ class _SfHomeScreenState extends State<SfHomeScreen> {
 
   @override
   void initState() {
-    DashBoardController drProvider = Provider.of(context, listen: false);
-
-    drProvider.getDasBoardReportApiCall();
-    drProvider.drawerApiCall();
-    drProvider.getProfileApiCall();
+    callAllApis();
     _tooltipBehavior = TooltipBehavior(enable: true);
-    NotificationUtil.registerToken();
+    
     super.initState();
+  }
+
+  callAllApis() {
+    Future.delayed(const Duration(milliseconds: 1500), () async {
+      DashBoardController drProvider = Provider.of(context, listen: false);
+NotificationUtil.registerToken();
+      drProvider.getDasBoardReportApiCall();
+      drProvider.drawerApiCall();
+      drProvider.getProfileApiCall();
+    });
   }
 
   List<Color> areaColor = [

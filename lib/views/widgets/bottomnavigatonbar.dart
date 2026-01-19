@@ -231,29 +231,35 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(items.length, (index) {
           final isSelected = selected == index;
-          return GestureDetector(
-            onTap: () => onItemTap(index),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  items[index]['icon'] as IconData,
-                  color: isSelected ? Colors.white : Colors.grey,
-                  size: 24,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  items[index]['label'] as String,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.grey,
-                    fontSize: 12,
-                    fontWeight:
-                        isSelected ? FontWeight.w500 : FontWeight.normal,
-                  ),
-                ),
-              ],
-            ),
-          );
+        return GestureDetector(
+  behavior: HitTestBehavior.opaque, // VERY IMPORTANT
+  onTap: () => onItemTap(index),
+  child: SizedBox(
+    width: 80, // increases horizontal tap area
+    height: double.infinity, // full navbar height
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          items[index]['icon'] as IconData,
+          color: isSelected ? Colors.white : Colors.grey,
+          size: 24,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          items[index]['label'] as String,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey,
+            fontSize: 12,
+            fontWeight:
+                isSelected ? FontWeight.w500 : FontWeight.normal,
+          ),
+        ),
+      ],
+    ),
+  ),
+);
+
         }),
       ),
     );

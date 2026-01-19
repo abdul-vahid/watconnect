@@ -163,8 +163,14 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     return Consumer<MessageController>(
       builder: (context, msgController, child) {
         return FocusDetector(
-          onFocusGained: () =>
-              socketManager.connectSocket(context, widget.wpnumber),
+          onFocusGained: () {
+
+
+              loadChatHistory(showLoaing: false);
+
+              socketManager.connectSocket(context, widget.wpnumber);
+          },
+
           onFocusLost: () => socketManager.disconnectSocket(),
           child: SafeArea(
             child: Scaffold(
