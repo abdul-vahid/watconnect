@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:focus_detector/focus_detector.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -16,6 +17,9 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_common/src/util/event_emitter.dart';
+import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
@@ -32,6 +36,8 @@ import 'package:whatsapp/salesforce/widget/pick_media_buttons.dart';
 import 'package:whatsapp/salesforce/widget/sf_chat_appbar.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/view_models/lead_controller.dart';
+import 'package:whatsapp/view_models/user_list_vm.dart';
 
 final GlobalKey<FormState> _addTemplateFormKey = GlobalKey<FormState>();
 
@@ -50,7 +56,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
   final ScrollController _scrollController = ScrollController();
   int _previousChatLength = 0;
   // File? _audioFile;
-
+  IO.Socket? socket;
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
 
@@ -68,6 +74,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     isCallAvailable();
     chatMsgController.setSelectedFile(null);
     _initializeAudio();
+    // connectSocket();
     getUserNumer();
   }
 
@@ -98,6 +105,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
 
   @override
   void dispose() {
+    disconnectSocket();
     _recorder.closeRecorder();
     _player.closePlayer();
     _previewPlayerSubscription?.cancel();
@@ -117,21 +125,32 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
       }
 
       _previousChatLength = currentLength;
-      return SafeArea(
-        bottom: true,
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          resizeToAvoidBottomInset: true,
-          appBar: SfChatAppBar(
-            hasCalls: hasCalls,
-          ),
-          body: Stack(
-            children: [
-              RefreshIndicator(
-                onRefresh: _pullRefresh,
-                child: _pageBody(),
-              ),
-            ],
+      return FocusDetector(
+        onFocusGained: () {
+          // print("Screen focused again");
+          log('\x1B[95mFCM     Leads Screen focused again::::::::::::::::::::::::::::::::::::::::::::::::::');
+
+          connectSocket();
+        },
+        onFocusLost: () {
+          disconnectSocket();
+        },
+        child: SafeArea(
+          bottom: true,
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            resizeToAvoidBottomInset: true,
+            appBar: SfChatAppBar(
+              hasCalls: hasCalls,
+            ),
+            body: Stack(
+              children: [
+                RefreshIndicator(
+                  onRefresh: _pullRefresh,
+                  child: _pageBody(),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -908,6 +927,133 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     }
     msgController.clear();
   }
+
+  Future<void> connectSocket() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    String tkn = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+
+    if (tkn.isEmpty || busNum.isEmpty) {
+      print("❌ Missing token or business number for socket connection");
+      return;
+    } else {
+      log("tkn node>>>>>>>>>> $tkn");
+    }
+
+    Map<String, dynamic> decodedToken =
+        Map<String, dynamic>.from(JwtDecoder.decode(tkn));
+    String devId = await getDeviceId();
+    // LeadController leadCtrl = Provider.of(context, listen: false);
+    BusinessNumberController busNumCtrl = Provider.of(context, listen: false);
+    final dbController =
+        Provider.of<DashBoardController>(context, listen: false);
+    decodedToken.addAll({
+      "business_numbers": busNumCtrl.sfAllBusNums,
+      "businessNumber": busNum,
+      "userId": decodedToken['id'],
+      "deviceId": devId
+    });
+
+    log("decodedToken>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  $decodedToken");
+
+    print("🔌 Connecting WebSocket with token: ${tkn.substring(0, 20)}...");
+
+    try {
+      socket = IO.io(
+        'https://admin.watconnect.com',
+        IO.OptionBuilder()
+            .setTransports(['websocket', 'polling'])
+            .setPath('/ibs/socket.io')
+            .setExtraHeaders({
+              'Authorization': 'Bearer $tkn',
+              'Content-Type': 'application/json',
+            })
+            .setQuery({'token': tkn})
+            .enableForceNew()
+            .enableReconnection()
+            .setReconnectionAttempts(5)
+            .setReconnectionDelay(1000)
+            .setTimeout(20000)
+            .build(),
+      );
+
+      /// ✅ Connected
+      socket!.onConnect((_) {
+        print('✅ Connected to WebSocket');
+        print('🆔 Socket ID: ${socket!.id}');
+
+        socket!.emitWithAck("setup", decodedToken, ack: (response) {
+          print('✅ Setup acknowledged: $response');
+        });
+      });
+
+      /// ❌ Connection error
+      socket!.onConnectError((error) {
+        print('❌ Connect Error: $error');
+      });
+
+      /// ⚠️ Socket error
+      socket!.onError((error) {
+        print('⚠️ Socket Error: $error');
+      });
+
+      /// 🔌 Disconnected
+      socket!.onDisconnect((reason) {
+        print('🔌 Disconnected: $reason');
+      });
+
+      /// 📢 Server confirms setup
+      socket!.on("connected", (_) {
+        print("🎉 WebSocket setup complete");
+      });
+
+      /// 📡 LISTEN TO ALL EVENTS (SAFE)
+      socket!.onAny((event, [data]) {
+        print("📡 Event: $event");
+        print("📦 Data: $data");
+      });
+
+      socket!.on("receivedwhatsappmessage", (data) async {
+        print("💬 New WhatsApp message received: $data");
+        DashBoardController dbController = Provider.of(context, listen: false);
+
+        final usrNumber =
+            dbController.selectedContactInfo?.whatsappNumber ?? "";
+        print("usrNumberLLLL >>>>>  $usrNumber");
+
+        if (usrNumber.isNotEmpty) {
+          print("trying to make api call");
+          ChatMessageController cmProvider =
+              Provider.of(context, listen: false);
+
+          Future.delayed(const Duration(milliseconds: 1000), () async {
+            await cmProvider.messageHistoryApiCall(
+              userNumber: usrNumber,
+              isFirstTime: false,
+            );
+            _scrollToBottom();
+          });
+
+          _scrollToBottom();
+        }
+      });
+
+      /// 🔌 Explicit connectP
+      socket!.connect();
+    } catch (error, stackTrace) {
+      print("❌ Error connecting to WebSocket");
+      print("Error: $error");
+      print("StackTrace: $stackTrace");
+    }
+  }
+
+  void disconnectSocket() {
+    if (socket != null) {
+      socket!.disconnect();
+      print(" WebSocket Disconnected  recent");
+    }
+  }
 }
 
 String replaceTemplateParams(String templateBody, String paramsJsonString) {
@@ -1158,7 +1304,7 @@ void reviewBottomSheetShow(BuildContext context, {bool fromCamp = false}) {
                               : [];
 
                       return SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
+                        physics: const ClampingScrollPhysics(),
                         child: Form(
                           key: _addTemplateFormKey,
                           child: Column(

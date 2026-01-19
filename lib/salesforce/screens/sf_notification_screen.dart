@@ -1,14 +1,18 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
+import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
+import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 
 import 'package:whatsapp/utils/app_color.dart';
 
 class SfNotificationScreen extends StatefulWidget {
-  const SfNotificationScreen({super.key});
+  String? leadId;
+  SfNotificationScreen({super.key, this.leadId});
 
   @override
   State<SfNotificationScreen> createState() => _SfNotificationScreenState();
@@ -17,8 +21,11 @@ class SfNotificationScreen extends StatefulWidget {
 class _SfNotificationScreenState extends State<SfNotificationScreen> {
   @override
   void initState() {
+    print("full numberL:::::  ${widget.leadId}");
     DashBoardController dasbController = Provider.of(context, listen: false);
-    dasbController.sfNotificationHistoryApiCall();
+    dasbController.sfNotificationHistoryApiCall().then((onValue) {
+      macthNum();
+    });
     super.initState();
   }
 
@@ -160,27 +167,28 @@ class _SfNotificationScreenState extends State<SfNotificationScreen> {
           padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 12),
           child: InkWell(
             onTap: () async {
+              String phNum = drawerListItem.whatsappNumber ?? "";
               // showBlurOnlyLoaderDialog(context);
-              // ChatMessageController cmProvider =
-              //     Provider.of(context, listen: false);
-              // DashBoardController dbProvider =
-              //     Provider.of(context, listen: false);
+              ChatMessageController cmProvider =
+                  Provider.of(context, listen: false);
+              DashBoardController dbProvider =
+                  Provider.of(context, listen: false);
+              dbProvider.setSelectedPinnedInfo(null);
 
-              // dbProvider.setSelectedContaactInfo(drawerListItem);
-              // await cmProvider
-              //     .messageHistoryApiCall(
-              //   userNumber: phNum,
-              // )
-              //     .then((onValue) {
-              //   Navigator.pop(context);
-              //   dbProvider.resentUnreadCountApiCall(phNum, isFromChat: false);
-              // });
-              // Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //         builder: (context) => SfMessageChatScreen(
-              //             // pinnedLeadsList: ,
-              //             )));
+              dbProvider.setSelectedContaactInfo(drawerListItem);
+              await cmProvider
+                  .messageHistoryApiCall(
+                userNumber: phNum,
+              )
+                  .then((onValue) {
+                Navigator.pop(context);
+              });
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SfMessageChatScreen(
+                            pinnedLeadsList: dbProvider.pinnedConfigItems,
+                          )));
             },
             child: Row(
               children: [
@@ -265,5 +273,42 @@ class _SfNotificationScreenState extends State<SfNotificationScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> macthNum() async {
+    DashBoardController dasbController = Provider.of(context, listen: false);
+
+    if (widget.leadId == null || dasbController.sfNoticationList.isEmpty) {
+      return;
+    }
+    EasyLoading.show();
+
+    for (int i = 0; i < dasbController.sfNoticationList.length; i++) {
+      if (dasbController.sfNoticationList[i].whatsappNumber!
+          .contains(widget.leadId ?? "")) {
+        String phNum = dasbController.sfNoticationList[i].whatsappNumber ?? "";
+        // showBlurOnlyLoaderDialog(context);
+        ChatMessageController cmProvider = Provider.of(context, listen: false);
+        DashBoardController dbProvider = Provider.of(context, listen: false);
+        dbProvider.setSelectedPinnedInfo(null);
+
+        dbProvider.setSelectedContaactInfo(dasbController.sfNoticationList[i]);
+        await cmProvider
+            .messageHistoryApiCall(
+          userNumber: phNum,
+        )
+            .then((onValue) {
+          Navigator.pop(context);
+        });
+        EasyLoading.dismiss();
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => SfMessageChatScreen(
+                      pinnedLeadsList: dbProvider.pinnedConfigItems,
+                    )));
+      }
+    }
+    EasyLoading.dismiss();
   }
 }

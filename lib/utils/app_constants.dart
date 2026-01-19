@@ -39,6 +39,8 @@ abstract class SharedPrefsConstants {
   static const String sfNodeToken = "sfNodeToken";
   static const String sfNodeRefreshToken = "sfNodeRefreshToken";
 
+  static const String sfNodeBaseUrlSanbox = "sfNodeBaseUrlSanbox";
+  static const String sfNodeBaseUrl = "sfNodeBaseUrl";
   static const String sfNodeTennatCode = "sfNodeTennatCode";
 
   static const String sfLoginType = "sfLoginType";

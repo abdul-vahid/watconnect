@@ -471,20 +471,27 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: isChecked ? AppColor.navBarIconColor : Colors.transparent,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: isChecked ? AppColor.navBarIconColor : Colors.grey[400]!,
-                width: 2,
+          InkWell(
+            onTap: () {
+              setState(() => isChecked = !isChecked);
+            },
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color:
+                    isChecked ? AppColor.navBarIconColor : Colors.transparent,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color:
+                      isChecked ? AppColor.navBarIconColor : Colors.grey[400]!,
+                  width: 2,
+                ),
               ),
+              child: isChecked
+                  ? const Icon(Icons.check, color: Colors.white, size: 16)
+                  : null,
             ),
-            child: isChecked
-                ? const Icon(Icons.check, color: Colors.white, size: 16)
-                : null,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -970,7 +977,7 @@ class _CarousalCardState extends State<CarousalCard> {
                                       ),
                                     );
                                   },
-                                ).take(4).toList(), 
+                                ).take(4).toList(),
                               ),
 
                             const SizedBox(height: 12),

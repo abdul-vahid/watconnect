@@ -239,7 +239,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _showSalesforceLoginBottomSheet(BuildContext context) {
-    sfLoginType? bottomSheetSelectedType = _selectedSfType;
+    sfLoginType? bottomSheetSelectedType = sfLoginType.WatConnect;
     String val = "WatConnect";
     showModalBottomSheet(
       context: context,
@@ -315,7 +315,7 @@ class _LoginViewState extends State<LoginView> {
                             });
                           },
                         ),
-                        const Text("SFWatConnect"),
+                        const Text("WatConnect 2.0"),
                       ],
                     ),
                     const SizedBox(height: 15),

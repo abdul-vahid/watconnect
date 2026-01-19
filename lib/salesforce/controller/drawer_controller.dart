@@ -41,8 +41,11 @@ class DashBoardController extends ChangeNotifier {
 
   bool fromSalesForce = false;
 
-  setLoginType(bool from) {
+  setLoginType(bool from) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool("fromSalesForce", fromSalesForce);
     fromSalesForce = from;
+
     notify();
   }
 

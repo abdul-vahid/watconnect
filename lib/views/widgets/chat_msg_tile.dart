@@ -309,8 +309,8 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                     Text(
                       widget.message.message!,
                       style: const TextStyle(fontSize: 14, height: 1.5),
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
+                      // maxLines: 4,
+                      // overflow: TextOverflow.ellipsis,
                     ),
                   if (widget.message.bodyText?.isNotEmpty ?? false)
                     Text(

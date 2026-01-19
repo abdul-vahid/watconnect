@@ -25,7 +25,10 @@ class APIService {
         'Authorization': token,
       });
 
-      final data = returnResponse(response);
+      print(
+          "**************** before return response****************  ${url}  ");
+
+      final data = returnResponse(response, url);
       return ApiResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
       throw FetchDataException('No Internet Connection');
@@ -49,7 +52,10 @@ class APIService {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(SharedPrefsConstants.accessTokenKey, accessToken);
       }
-      final data = returnResponse(response);
+
+      print(
+          "**************** before return response****************  ${url} ${body} ");
+      final data = returnResponse(response, url);
       return ApiResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
       throw FetchDataException('No Internet Connection');
@@ -63,8 +69,9 @@ class APIService {
         'Accept': 'application/json',
         'Authorization': token,
       });
-
-      final data = returnResponse(response);
+      print(
+          "**************** before return response****************  ${url} ${body} ");
+      final data = returnResponse(response, url);
       return ApiResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
       throw FetchDataException('No Internet Connection');
@@ -85,7 +92,7 @@ class APIService {
         body: body,
       );
 
-      final data = returnResponse(response);
+      final data = returnResponse(response, url);
       return ApiResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
       throw FetchDataException('No Internet Connection');
@@ -108,7 +115,8 @@ class APIService {
   }
 
   @visibleForTesting
-  dynamic returnResponse(http.Response response) {
+  dynamic returnResponse(http.Response response, String url) {
+    print("api url>>>>>>>>>>>   $url");
     switch (response.statusCode) {
       case 200:
       case 201:
@@ -121,7 +129,7 @@ class APIService {
         return jsonDecode(response.body);
       case 401:
       case 403:
-        debug("Unauthorized");
+        debug("Unauthorized  url>>>>>>>>>>>   $url");
         EasyLoading.showToast("Session Expired!\n Login Again");
         AppUtils.logout(AppUtils.currentContext);
         throw UnauthorisedException(response.body.toString());

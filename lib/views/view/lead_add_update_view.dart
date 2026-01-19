@@ -207,6 +207,7 @@ class _Forms extends State<LeadAddView> {
     {"country": "South Africa", "country_code": "+27"},
     {"country": "Zambia", "country_code": "+26"}
   ];
+
   Map<String, String> countryCodeMap = {};
   Map<String, String> code = {};
   bool isEdit = false;
@@ -320,6 +321,7 @@ class _Forms extends State<LeadAddView> {
   String? _selectedCountry;
   String? _whatsapnumber;
   String? defaultSel;
+  String? defaultUsrId;
   final GlobalKey<FormState> _addleadFormKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -330,7 +332,12 @@ class _Forms extends State<LeadAddView> {
     for (var viewModel in baseViewModels.viewModels) {
       UserDataModel model1 = viewModel.model;
       userMap[model1.id] = model1.username;
-      debug('user=====${model1.username}');
+      debug('user=====${model1.username}  ${model1.userrole}');
+      if (model1.userrole == 'ADMIN') {
+        defaultSel = model1.username;
+        _asignStaff = defaultSel;
+        defaultUsrId = model1?.id ?? "";
+      }
     }
 
     userData = userMap.values.toList();
@@ -340,12 +347,6 @@ class _Forms extends State<LeadAddView> {
       print("viewModel.model:::>>>>> ${viewModel.model}");
       GetUser model = viewModel.model;
       name = model.managername;
-    }
-
-    print("name::::: $name   $userData");
-    if (userData.contains(name)) {
-      defaultSel = name;
-      setState(() {});
     }
 
     return Scaffold(
@@ -636,12 +637,12 @@ class _Forms extends State<LeadAddView> {
                               onSaved: (email) {
                                 _email = email;
                               },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter email';
-                                }
-                                return null;
-                              },
+                              // validator: (value) {
+                              //   if (value == null || value.isEmpty) {
+                              //     return 'Please enter email';
+                              //   }
+                              //   return null;
+                              // },
                             ),
 
                             const SizedBox(height: 10),
@@ -686,7 +687,34 @@ class _Forms extends State<LeadAddView> {
                               '--Select--',
                               onChanged: (value) {
                                 setState(() {
-                                  _asignStaff = value;
+                                  print(
+                                      'Dropdown selected value (name): $value');
+
+                                  try {
+                                    print("userData>>>>>>>  ${userData}");
+
+                                    // Find the key (user ID) for the selected username
+                                    final selectedUserId =
+                                        userMap.keys.firstWhere(
+                                      (key) => userMap[key] == value,
+                                      orElse: () => '',
+                                    );
+
+                                    print('Matched user name: $value');
+                                    print('Matched user id: $selectedUserId');
+
+                                    setState(() {
+                                      _asignStaff = value;
+                                      defaultUsrId =
+                                          selectedUserId; // Update the user ID too!
+                                    });
+                                    print(
+                                        'Assigned staff: $_asignStaff, ID: $defaultUsrId');
+                                  } catch (e) {
+                                    print(
+                                        'No matching user found for value: $value');
+                                    print('Error: $e');
+                                  }
                                 });
                               },
                               validator: (value) =>
@@ -885,8 +913,8 @@ class _Forms extends State<LeadAddView> {
     var userId;
     if (_addleadFormKey.currentState!.validate()) {
       _addleadFormKey.currentState!.save();
-      userId = userMap.keys
-          .firstWhere((k) => userMap[k] == _asignStaff, orElse: () => null);
+      // defaultUsrId = userMap.keys
+      //     .firstWhere((k) => userMap[k] == _asignStaff, orElse: () => null);
 
       // Skip phone validation if it's masked
       if (!shouldHideLeadNumber && !isValidPhone(_whatsapnumber!.trim())) {
@@ -912,7 +940,7 @@ class _Forms extends State<LeadAddView> {
         "leadsource": _leadsource,
         "leadstatus": _leadstatus,
         "ownername": _asignStaff,
-        "ownerid": userId,
+        "ownerid": defaultUsrId,
         "description": _description?.trim(),
         "address": _selectedCountry?.trim(),
         "blocked": false

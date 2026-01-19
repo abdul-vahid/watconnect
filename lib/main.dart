@@ -193,13 +193,15 @@ class _MyAppState extends State<MyApp> {
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("message firebaseMessagingBackgroundHandler::: ");
   debug("Background FCM: $message ${message.notification}");
-
-  if (message.notification != null) {
-    await Future.delayed(const Duration(milliseconds: 50));
-    await flutterLocalNotificationsPlugin.cancelAll();
+  if (message.notification == null && message.data.isNotEmpty) {
+    LocalNotificationService.displayNotification(message);
   }
+  // if (message.notification != null) {
+  //   await Future.delayed(const Duration(milliseconds: 50));
+  //   await flutterLocalNotificationsPlugin.cancelAll();
+  // }
 
-  LocalNotificationService.displayNotification(message);
+  // LocalNotificationService.displayNotification(message);
 }
 
 void _setupInteractedMessage() {
@@ -278,7 +280,8 @@ Future<void> _handleSfNotification(Map<String, dynamic> finalJson) async {
         Navigator.push(
           ctx,
           MaterialPageRoute(
-            builder: (_) => SfNotificationScreen(),
+            builder: (_) =>
+                SfNotificationScreen(leadId: finJson['full_number']),
           ),
         );
       } else {

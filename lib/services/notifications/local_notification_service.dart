@@ -116,6 +116,7 @@ class LocalNotificationService {
   // }
 
   static Future<void> displayNotification(RemoteMessage message) async {
+    print("is this called from the killed state");
     try {
       final int id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       BigPictureStyleInformation? bigPictureStyle;

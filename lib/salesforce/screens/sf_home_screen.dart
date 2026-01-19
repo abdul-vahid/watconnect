@@ -85,7 +85,7 @@ class _SfHomeScreenState extends State<SfHomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SfNotificationScreen(),
+                        builder: (context) => SfNotificationScreen(),
                       ),
                     );
                   },

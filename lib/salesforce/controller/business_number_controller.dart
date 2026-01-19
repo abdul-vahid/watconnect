@@ -20,6 +20,8 @@ class BusinessNumberController extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<String> sfAllBusNums = [];
+
   Future<void> getBusinessNumberApiCall() async {
     String url = await AppUtils.getSFUrl(AppConstants.sfGetBusinessNumbs);
     // String apiUrl = AppConstants.sfGetBusinessNumbs;
@@ -32,6 +34,17 @@ class BusinessNumberController extends ChangeNotifier {
       businessNumbers
         ..clear()
         ..addAll(data.map((e) => BusinessNumberModel.fromJson(e)));
+      sfAllBusNums.clear();
+      for (int i = 0; i < businessNumbers.length; i++) {
+        sfAllBusNums.add(businessNumbers[i].whasappSettingNumber ?? "");
+      }
+
+      // sfAllBusNums
+      //   ..clear()
+      //   ..addAll(
+      //       data.map((e) => businessNumbers[e].whasappSettingNumber ?? ""));
+
+      print("sfAllBusNums>>>>>>>>>>>>   $sfAllBusNums");
       final prefs = await SharedPreferences.getInstance();
 
       final defaultNumber = businessNumbers.firstWhere(

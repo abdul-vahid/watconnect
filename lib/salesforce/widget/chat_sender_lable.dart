@@ -15,11 +15,19 @@ class ChatSenderLabel extends StatelessWidget {
         final name = item.messageType == "Incoming"
             ? dbRef.selectedContactInfo?.name ?? ""
             : "You";
-        return Text(
-          name,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[700],
+
+        return Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.7,
+          ),
+          child: Text(
+            name,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[700],
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         );
       },

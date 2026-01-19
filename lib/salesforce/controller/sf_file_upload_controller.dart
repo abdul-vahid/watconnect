@@ -19,6 +19,7 @@ import 'package:whatsapp/utils/app_utils.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http_parser/http_parser.dart';
 import 'package:whatsapp/utils/function_lib.dart';
+import 'package:whatsapp/utils/notification_utils.dart';
 
 class SfFileUploadController extends ChangeNotifier {
   Future<void> notify() async {
@@ -61,7 +62,13 @@ class SfFileUploadController extends ChangeNotifier {
   setPublicUrlId(String title) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(SharedPrefsConstants.sfNodeTennatCode) ?? "";
-    filePubUrl = "${AppConstants.baseImgUrl}public/$token/attachment/$title";
+
+    final nodeBaseUrlSf =
+        prefs.getString(SharedPrefsConstants.sfNodeBaseUrl) ?? "";
+    String baseImgUrl = nodeBaseUrlSf.contains('sandbox.watconnect')
+        ? "https://sandbox.watconnect.com/"
+        : "https://admin.watconnect.com/";
+    filePubUrl = "${baseImgUrl}public/$token/attachment/$title";
     log("file upload public url::::::   $filePubUrl");
 
     notify();
@@ -81,17 +88,24 @@ class SfFileUploadController extends ChangeNotifier {
       print(
           "response  sfGetReactLoginCredApi      ${response.body}  $body  ${body['password']}");
 
+      final prefs = await SharedPreferences.getInstance();
+
+      bool isSandbox =
+          body['endpoint'].toString().contains('sandbox.watconnect');
+      prefs.setString(
+          SharedPrefsConstants.sfNodeBaseUrl, body['endpoint'].toString());
       sfNodeLoginRequest(
         body['username'],
         body['password'],
         body['company_name'],
+        body['endpoint'],
       );
     }
     notify();
   }
 
   Future<bool> sfNodeLoginRequest(
-      String username, String password, String tcode) async {
+      String username, String password, String tcode, String baseUrl) async {
     final emailRegex =
         RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
     if (!emailRegex.hasMatch(username)) {
@@ -99,7 +113,8 @@ class SfFileUploadController extends ChangeNotifier {
       return false;
     }
     EasyLoading.show();
-    String url = AppUtils.getUrl(AppConstants.loginAPIPath);
+    String url = "$baseUrl/auth/login";
+    // AppUtils.getUrl(AppConstants.loginAPIPath);
     final headers = {
       'Content-Type': 'application/json',
     };
@@ -154,6 +169,8 @@ class SfFileUploadController extends ChangeNotifier {
             log("get token after set ytoken:::::::::::    $token");
           });
 
+          NotificationUtil.registerToken();
+
           EasyLoading.dismiss();
           return true;
         }
@@ -173,10 +190,11 @@ class SfFileUploadController extends ChangeNotifier {
   }
 
   Future<void> refreshToken() async {
-    String refreshTokenUrl = AppUtils.getUrl(AppConstants.refreshTokenAPIPath);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String baseUrl = prefs.getString(SharedPrefsConstants.sfNodeBaseUrl) ?? "";
+    String refreshTokenUrl = baseUrl + AppConstants.refreshTokenAPIPath;
+    // AppUtils.getUrl(AppConstants.refreshTokenAPIPath);
     try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-
       var refshtokn = prefs.getString(
             SharedPrefsConstants.sfNodeRefreshToken,
           ) ??
@@ -213,7 +231,7 @@ class SfFileUploadController extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
-
+    print("sf node token:::   ${token}");
     if (token.isEmpty) {
       setFileUploadLoader(false);
       throw Exception("No token found");
@@ -260,6 +278,8 @@ class SfFileUploadController extends ChangeNotifier {
 
         throw HttpException("Unauthorized or Forbidden", uri: url);
       } else {
+        print(
+            "streamedResponse.statusCode:::    ${streamedResponse.statusCode}   ${streamedResponse.stream}");
         setFileUploadLoader(false);
         throw HttpException(
             "Unexpected server response: ${streamedResponse.statusCode}",
@@ -307,10 +327,10 @@ class SfFileUploadController extends ChangeNotifier {
 
     final response = await request.send();
     final responseBody = await response.stream.bytesToString();
-
+    debug("File uploaded successfully: webhook_template $responseBody");
     if (response.statusCode == 200) {
       setFileUploadLoader(false);
-      debug("File uploaded successfully: webhook_template $responseBody");
+      // debug("File uploaded successfully: webhook_template $responseBody");
       var mp = jsonDecode(responseBody);
       setFileDocId(mp['id']);
 
