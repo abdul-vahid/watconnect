@@ -6,6 +6,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:focus_detector/focus_detector.dart';
 import 'package:image_picker/image_picker.dart';
@@ -115,6 +116,16 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: AppColor.navBarIconColor, 
+      statusBarIconBrightness: Brightness.dark, 
+      statusBarBrightness: Brightness.light, 
+    ),
+  );
+
     return Consumer<ChatMessageController>(builder: (context, ref, child) {
       final currentLength = ref.chatHistoryList.length;
 
@@ -125,52 +136,65 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
       }
 
       _previousChatLength = currentLength;
-      return FocusDetector(
-        onFocusGained: () {
-          // print("Screen focused again");
-          log('\x1B[95mFCM     Leads Screen focused again::::::::::::::::::::::::::::::::::::::::::::::::::');
-    ChatMessageController cmProvider =
-              Provider.of(context, listen: false);
-   DashBoardController dbController = Provider.of(context, listen: false);
+      return GestureDetector(
 
-        final usrNumber =
-            dbController.selectedContactInfo?.whatsappNumber ?? "";
-          Future.delayed(const Duration(milliseconds: 1), () async {
-            await cmProvider.messageHistoryApiCall(
-              userNumber: usrNumber,
-              isFirstTime: false,
-            );
-            _scrollToBottom();
-          });
-          connectSocket();
-
-
-                Future.delayed(const Duration(milliseconds: 1500), () async {
-            await cmProvider.messageHistoryApiCall(
-              userNumber: usrNumber,
-              isFirstTime: false,
-            );
-            _scrollToBottom();
-          });
+        onTap: (){
+          FocusScope.of(context).unfocus();
         },
-        onFocusLost: () {
-          disconnectSocket();
-        },
-        child: SafeArea(
-          bottom: true,
-          child: Scaffold(
-            backgroundColor: Colors.white,
-            resizeToAvoidBottomInset: true,
-            appBar: SfChatAppBar(
-              hasCalls: hasCalls,
-            ),
-            body: Stack(
-              children: [
-                RefreshIndicator(
-                  onRefresh: _pullRefresh,
-                  child: _pageBody(),
-                ),
-              ],
+        child: FocusDetector(
+          onFocusGained: () async {
+        
+        
+                final prefs = await SharedPreferences.getInstance();
+                prefs.setBool("isOnSFChatPage",true);
+        
+            // print("Screen focused again");
+            log('\x1B[95mFCM     Leads Screen focused again::::::::::::::::::::::::::::::::::::::::::::::::::');
+            ChatMessageController cmProvider =
+                Provider.of(context, listen: false);
+           DashBoardController dbController = Provider.of(context, listen: false);
+        
+          final usrNumber =
+              dbController.selectedContactInfo?.whatsappNumber ?? "";
+            Future.delayed(const Duration(milliseconds: 1), () async {
+              await cmProvider.messageHistoryApiCall(
+                userNumber: usrNumber,
+                isFirstTime: false,
+              );
+              _scrollToBottom();
+            });
+            connectSocket();
+        
+        
+                  Future.delayed(const Duration(milliseconds: 1500), () async {
+              await cmProvider.messageHistoryApiCall(
+                userNumber: usrNumber,
+                isFirstTime: false,
+              );
+              _scrollToBottom();
+            });
+          },
+          onFocusLost: () async {
+               final prefs = await SharedPreferences.getInstance();
+                prefs.setBool("isOnSFChatPage",false);
+            disconnectSocket();
+          },
+          child: SafeArea(
+            bottom: true,
+            child: Scaffold(
+              backgroundColor: Colors.white,
+              resizeToAvoidBottomInset: true,
+              appBar: SfChatAppBar(
+                hasCalls: hasCalls,
+              ),
+              body: Stack(
+                children: [
+                  RefreshIndicator(
+                    onRefresh: _pullRefresh,
+                    child: _pageBody(),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -860,16 +884,23 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                 ),
               ),
               InkWell(
-                onTap: () {
+                onTap: () async {
+                         Future.delayed(const Duration(milliseconds: 1000), () async {
+         
+         
+              FocusScope.of(context).unfocus();
+          });
                   ChatMessageController chatMsgCtrl =
                       Provider.of(context, listen: false);
                   if (msgController.text.isNotEmpty &&
                       chatMsgCtrl.selectedFile == null) {
-                    sendMsg(msgController.text.trim());
+                   await sendMsg(msgController.text.trim()); 
                   }
                   if (chatMsgCtrl.selectedFile != null) {
                     sendFile();
                   }
+                    
+                
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -915,7 +946,18 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
         code: dbController.selectedContactInfo?.countryCode ?? "91",
       );
       msgController.clear();
-      Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+
+
+              Future.delayed(const Duration(milliseconds: 100), () async {
+         
+            _scrollToBottom();
+              FocusScope.of(context).unfocus();
+          });
+
+      
+      // Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+
+    
     }
   }
 
@@ -1299,6 +1341,8 @@ void reviewBottomSheetShow(BuildContext context, {bool fromCamp = false}) {
           behavior: HitTestBehavior.opaque,
           onTap: () => FocusScope.of(context).unfocus(),
           child: SafeArea(
+            bottom: true,
+            top: false,
             child: Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,

@@ -11,6 +11,7 @@ import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/lead_model.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
+import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_notification_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/lead_list_vm.dart';
@@ -237,7 +238,21 @@ class NotificationService {
     if (sfLoginType.isNotEmpty) {
       DashBoardController dasbController = Provider.of(ctx!, listen: false);
       await dasbController.sfNotificationHistoryApiCall();
-      if (shouldwait) {
+         final prefs = await SharedPreferences.getInstance();
+            bool isOnChat=  prefs.getBool("isOnSFChatPage")??false;
+
+            if(isOnChat){
+
+                // Navigator.push(
+                //   ctx,
+                //   MaterialPageRoute(
+                //       builder: (context) => SfMessageChatScreen(
+                //             pinnedLeadsList: [],
+                //           )));
+
+            }else{
+
+  if (shouldwait) {
         Future.delayed(const Duration(milliseconds: 3500), () {
           Navigator.push(
             ctx!,
@@ -256,6 +271,11 @@ class NotificationService {
           ),
         );
       }
+
+            }
+
+
+    
 
       // navigate to customer screen
     } else {
