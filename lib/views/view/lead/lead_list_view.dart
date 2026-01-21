@@ -206,10 +206,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       case 'view':
         showTagDialog(context);
         break;
-      case 'edit':
-        // Handle Edit Tags
-        debugPrint('Edit Tags selected');
-        break;
+      
     }
   },
   itemBuilder: (BuildContext context) => [
@@ -217,10 +214,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       value: 'view',
       child: Text('View Tags'),
     ),
-    const PopupMenuItem<String>(
-      value: 'edit',
-      child: Text('Edit Tags'),
-    ),
+  
   ],
   icon: const Icon(Icons.label,color: Colors.white,),
 )
@@ -1728,25 +1722,13 @@ void showTagDialog(BuildContext context) {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with icon
+            
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.tag_rounded,
-                      color: Colors.blue.shade700,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
+              
                   Expanded(
                     child: Text(
-                      'Tags',
+                     hasTags?  'Tags (${tags.length} ${tags.length == 1 ? 'tag' : 'tags'})' :  'Tags ',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
@@ -1754,6 +1736,8 @@ void showTagDialog(BuildContext context) {
                       ),
                     ),
                   ),
+
+              
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: Icon(
@@ -1769,48 +1753,37 @@ void showTagDialog(BuildContext context) {
               
               const SizedBox(height: 20),
               
-              // Content
+              
               if (!hasTags)
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.label_off_rounded,
-                        color: Colors.grey.shade400,
-                        size: 48,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No tags added',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.label_off_rounded,
+                          color: Colors.grey.shade400,
+                          size: 48,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Add tags to organize this lead',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade500,
+                        const SizedBox(height: 12),
+                        Text(
+                          'No tags added',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                    
+                      ],
+                    ),
                   ),
                 )
               else
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '${tags.length} ${tags.length == 1 ? 'tag' : 'tags'}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                 
                     const SizedBox(height: 16),
                     Container(
                       constraints: BoxConstraints(
@@ -1824,9 +1797,9 @@ void showTagDialog(BuildContext context) {
                             return Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8),
-                                color: _getTagColor(tag.name).withOpacity(0.1),
+                                color: Colors.blue.shade600.withOpacity(0.1),
                                 border: Border.all(
-                                  color: _getTagColor(tag.name).withOpacity(0.3),
+                                  color: Colors.blue.shade600.withOpacity(0.3),
                                   width: 1,
                                 ),
                               ),
@@ -1840,7 +1813,7 @@ void showTagDialog(BuildContext context) {
                                   children: [
                                     Icon(
                                       Icons.label_rounded,
-                                      color: _getTagColor(tag.name),
+                                      color: Colors.blue.shade600,
                                       size: 14,
                                     ),
                                     const SizedBox(width: 6),
@@ -1887,30 +1860,7 @@ void showTagDialog(BuildContext context) {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        // Edit Tags action
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        backgroundColor: AppColor.navBarIconColor,
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Edit Tags',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
+                
                 ],
               ),
             ],
@@ -1921,24 +1871,8 @@ void showTagDialog(BuildContext context) {
   );
 }
 
-// Helper function to generate consistent colors for tags
-Color _getTagColor(String? tagName) {
-  if (tagName == null) return Colors.grey;
-  
-  final colors = [
-    Colors.blue.shade600,
-    Colors.green.shade600,
-    Colors.orange.shade600,
-    Colors.purple.shade600,
-    Colors.red.shade600,
-    Colors.teal.shade600,
-    Colors.pink.shade600,
-    Colors.indigo.shade600,
-  ];
-  
-  final hash = tagName.hashCode;
-  return colors[hash % colors.length];
-}
+
+
 
 
 }
