@@ -197,45 +197,78 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                 //     : const SizedBox.shrink(),
                 showPin
                     // && idsToDelete.length > 1
-                    ? InkWell(
-                        onTap: () {
-                          if (isPinned) {
-                            Provider.of<LeadListViewModel>(context,
-                                    listen: false)
-                                .unpinChat(pinnedLeadId)
-                                .then((onValue) {
-                              getLeadList(showLoading: false);
-                            });
-                          } else {
-                            Provider.of<LeadListViewModel>(context,
-                                    listen: false)
-                                .pinChat(pinnedLeadId)
-                                .then((onValue) {
-                              getLeadList(showLoading: false);
-                            });
-                          }
-                          setState(() {
-                            showPin = false;
-                            idsToDelete.clear();
-                            pinnedLeadId = "";
-                          });
-                        },
-                        child: isPinned == false
-                            ? const Icon(
-                                Icons.push_pin_outlined,
-                                color: Colors.white,
-                              )
-                            : Image.asset(
-                                "assets/images/unpin_icon.png",
-                                color: Colors.white,
-                                height: 20,
-                              ),
-                      )
+                    ? Row(
+                      children: [
+
+                    PopupMenuButton<String>(
+  onSelected: (value) {
+    switch (value) {
+      case 'view':
+        showTagDialog(context);
+        break;
+      case 'edit':
+        // Handle Edit Tags
+        debugPrint('Edit Tags selected');
+        break;
+    }
+  },
+  itemBuilder: (BuildContext context) => [
+    const PopupMenuItem<String>(
+      value: 'view',
+      child: Text('View Tags'),
+    ),
+    const PopupMenuItem<String>(
+      value: 'edit',
+      child: Text('Edit Tags'),
+    ),
+  ],
+  icon: const Icon(Icons.label,color: Colors.white,),
+)
+, const SizedBox(
+                  width: 10,
+                ),
+
+                        InkWell(
+                            onTap: () {
+                              if (isPinned) {
+                                Provider.of<LeadListViewModel>(context,
+                                        listen: false)
+                                    .unpinChat(pinnedLeadId)
+                                    .then((onValue) {
+                                  getLeadList(showLoading: false);
+                                });
+                              } else {
+                                Provider.of<LeadListViewModel>(context,
+                                        listen: false)
+                                    .pinChat(pinnedLeadId)
+                                    .then((onValue) {
+                                  getLeadList(showLoading: false);
+                                });
+                              }
+                              setState(() {
+                                showPin = false;
+                                idsToDelete.clear();
+                                pinnedLeadId = "";
+                              });
+                            },
+                            child: isPinned == false
+                                ? const Icon(
+                                    Icons.push_pin_outlined,
+                                    color: Colors.white,
+                                  )
+                                : Image.asset(
+                                    "assets/images/unpin_icon.png",
+                                    color: Colors.white,
+                                    height: 20,
+                                  ),
+                          ),
+                      ],
+                    )
                     : const SizedBox(),
                 const SizedBox(
                   width: 10,
                 ),
-                Padding(
+            showPin?SizedBox() :    Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: CircleAvatar(
                     backgroundColor: AppColor.navBarIconColor,
@@ -1205,6 +1238,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     return GestureDetector(
       onLongPress: () {
         setState(() {
+selectedLead=model;
           showPin = true;
           showBulkBin = true;
           addToDeleteList(model.lead_id ?? "");
@@ -1663,4 +1697,248 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     shouldHideLeadNumber = prefs.getBool(SharedPrefsConstants.shouldHideNumber);
     setState(() {});
   }
+  LeadModel? selectedLead;
+void showTagDialog(BuildContext context) {
+  final tags = selectedLead?.tagNames ?? [];
+  final hasTags = tags.isNotEmpty;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 24,
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with icon
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.tag_rounded,
+                      color: Colors.blue.shade700,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Tags',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade900,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: Colors.grey.shade500,
+                      size: 20,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 20),
+              
+              // Content
+              if (!hasTags)
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.label_off_rounded,
+                        color: Colors.grey.shade400,
+                        size: 48,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No tags added',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Add tags to organize this lead',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${tags.length} ${tags.length == 1 ? 'tag' : 'tags'}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.3,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: tags.map((tag) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: _getTagColor(tag.name).withOpacity(0.1),
+                                border: Border.all(
+                                  color: _getTagColor(tag.name).withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.label_rounded,
+                                      color: _getTagColor(tag.name),
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      tag.name ?? '-',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey.shade800,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              
+              const SizedBox(height: 24),
+              
+              // Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      child: Text(
+                        'Close',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        // Edit Tags action
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        backgroundColor: AppColor.navBarIconColor,
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Edit Tags',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+// Helper function to generate consistent colors for tags
+Color _getTagColor(String? tagName) {
+  if (tagName == null) return Colors.grey;
+  
+  final colors = [
+    Colors.blue.shade600,
+    Colors.green.shade600,
+    Colors.orange.shade600,
+    Colors.purple.shade600,
+    Colors.red.shade600,
+    Colors.teal.shade600,
+    Colors.pink.shade600,
+    Colors.indigo.shade600,
+  ];
+  
+  final hash = tagName.hashCode;
+  return colors[hash % colors.length];
+}
+
+
 }
