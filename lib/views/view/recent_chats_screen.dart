@@ -5428,9 +5428,10 @@ class _RecentChatViewState extends State<RecentChatView> {
         inputDate.day == now.day;
 
     if (isToday) {
-      return DateFormat.jm().format(inputDate);
+      // return DateFormat.jm().format(inputDate);
+      return DateFormat('MMM dd, yyyy').format(inputDate);
     } else {
-      return DateFormat('MMM dd, yy').format(inputDate);
+      return DateFormat('MMM dd, yyyy').format(inputDate);
     }
   }
 
