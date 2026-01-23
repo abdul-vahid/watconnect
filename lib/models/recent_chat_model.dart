@@ -1,6 +1,3 @@
-// ignore: file_names
-// ignore_for_file: non_constant_identifier_names
-
 import 'dart:convert';
 
 import '../core/models/base_model.dart';
@@ -51,6 +48,9 @@ class Records {
   String? full_number;
   DateTime? createddate;
   bool? pinned;
+
+  List<dynamic>? tag_names;
+
   Records(
       {this.id,
       this.parent_id,
@@ -62,16 +62,23 @@ class Records {
       this.whatsapp_number,
       this.createddate,
       this.pinned,
-      this.message});
+      this.message,
+      this.tag_names});
 
   factory Records.fromMap(Map<String, dynamic> data) {
+    // Handle tag_names which could be List<dynamic> or null
+    List<dynamic>? tagNamesList;
+    if (data['tag_names'] != null && data['tag_names'] is List) {
+      tagNamesList = data['tag_names'] as List<dynamic>;
+    }
+
     return Records(
       id: data['id']?.toString(),
       parent_id: data['parent_id']?.toString(),
       lead_id: data['lead_id']?.toString(),
-      country_code: data['country_code'].toString(),
-      countrycode: data['countrycode'].toString(),
-      message: data['message'] ?? "",
+      country_code: data['country_code']?.toString(),
+      countrycode: data['countrycode']?.toString(),
+      message: data['message']?.toString() ?? "",
       pinned: data['pinned'] ?? false,
       contactname: data['contactname']?.toString(),
       full_number: data['full_number']?.toString(),
@@ -79,6 +86,7 @@ class Records {
       createddate: data['createddate'] != null
           ? DateTime.tryParse(data['createddate'].toString())
           : null,
+      tag_names: tagNamesList, // Use the properly handled list
     );
   }
 
@@ -91,7 +99,8 @@ class Records {
         'full_number': full_number,
         'countrycode': countrycode,
         'whatsapp_number': whatsapp_number,
-        'createddate': createddate,
+        'createddate': createddate?.toIso8601String(),
+        'tag_names': tag_names,
       };
 
   factory Records.fromJson(String data) {
@@ -100,57 +109,3 @@ class Records {
 
   String toJson() => json.encode(toMap());
 }
-
-// class RecentChatModel extends BaseModel {
-//   String? id;
-//   String? parent_id;
-//   String? contactname;
-
-//   String? whatsapp_number;
-//   String? full_number;
-
-//   DateTime? createddate;
-
-//   RecentChatModel({
-//     this.id,
-//     this.parent_id,
-//     this.contactname,
-//     this.full_number,
-//     this.whatsapp_number,
-//     this.createddate,
-//   });
-
-//   factory RecentChatModel.fromMap(Map<String, dynamic> data) => RecentChatModel(
-//         id: data['id']?.toString(),
-//         parent_id: data['parent_id']?.toString(),
-//         contactname: data['contactname']?.toString(),
-//         full_number: data['full_number']?.toString(),
-//         whatsapp_number: data['whatsapp_number']?.toString(),
-//         createddate: data['createddate'] == null
-//             ? null
-//             : DateTime.tryParse(data['createddate'].toString()),
-//       );
-//   @override
-//   RecentChatModel fromMap(Map<String, dynamic> data) {
-//     return RecentChatModel.fromMap(data);
-//   }
-
-//   @override
-//   Map<String, dynamic> toMap() => {
-//         if (id != null) 'id': id,
-//         if (parent_id != null) 'parent_id': parent_id,
-//         if (contactname != null) 'contactname': contactname,
-//         if (full_number != null) 'full_number': full_number,
-//         if (whatsapp_number != null) 'whatsapp_number': whatsapp_number,
-//         if (createddate != null) 'createddate': createddate,
-//       };
-
-//   @override
-//   factory RecentChatModel.fromJson(String data) {
-//     return RecentChatModel.fromMap(json.decode(data) as Map<String, dynamic>);
-//   }
-
-//   String toJson() => json.encode(toMap());
-
-//   void removeAt(RecentChatModel model) {}
-// }
