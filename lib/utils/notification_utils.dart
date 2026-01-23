@@ -187,55 +187,55 @@ class NotificationUtil {
     }
   }
 
-  void NavigationFunc(String leadId, BuildContext cntxt) {
-    debug("NavigationFunc called with leadId: $leadId");
+  // void NavigationFunc(String leadId, BuildContext cntxt) {
+  //   debug("NavigationFunc called with leadId: $leadId");
 
-    if (!cntxt.mounted) return;
+  //   if (!cntxt.mounted) return;
 
-    final leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
-    LeadModel? matchedModel;
-    final List<LeadModel> pinnedLeads = [];
+  //   final leadlistvm = Provider.of<LeadListViewModel>(cntxt, listen: false);
+  //   LeadModel? matchedModel;
+  //   final List<LeadModel> pinnedLeads = [];
 
-    // Find pinned leads and matching lead
-    for (var viewModel in leadlistvm.viewModels) {
-      final leadmodel = viewModel.model;
+  //   // Find pinned leads and matching lead
+  //   for (var viewModel in leadlistvm.viewModels) {
+  //     final leadmodel = viewModel.model;
 
-      if (leadmodel?.records != null) {
-        for (var record in leadmodel!.records!) {
-          if (record.pinned == true) {
-            pinnedLeads.add(record);
-          }
-          if (record.id.toString() == leadId) {
-            matchedModel = record;
-          }
-        }
-      }
-    }
+  //     if (leadmodel?.records != null) {
+  //       for (var record in leadmodel!.records!) {
+  //         if (record.pinned == true) {
+  //           pinnedLeads.add(record);
+  //         }
+  //         if (record.id.toString() == leadId) {
+  //           matchedModel = record;
+  //         }
+  //       }
+  //     }
+  //   }
 
-    if (matchedModel == null) {
-      debug("No matching lead found for ID: $leadId");
-      return;
-    }
+  //   if (matchedModel == null) {
+  //     debug("No matching lead found for ID: $leadId");
+  //     return;
+  //   }
 
-    final wpNumber = matchedModel.whatsappNumber ?? "";
-    final formattedWpNumber = wpNumber.contains("+")
-        ? wpNumber
-        : "${matchedModel.countryCode}$wpNumber";
+  //   final wpNumber = matchedModel.whatsappNumber ?? "";
+  //   final formattedWpNumber = wpNumber.contains("+")
+  //       ? wpNumber
+  //       : "${matchedModel.countryCode}$wpNumber";
 
-    Navigator.push(
-      cntxt,
-      MaterialPageRoute(
-        builder: (_) => WhatsappChatScreen(
-          pinnedLeads: pinnedLeads,
-          leadName:
-              "${matchedModel?.firstname ?? ""} ${matchedModel?.lastname ?? ""}",
-          wpnumber: formattedWpNumber,
-          id: matchedModel?.id,
-          model: matchedModel,
-        ),
-      ),
-    );
-  }
+  //   Navigator.push(
+  //     cntxt,
+  //     MaterialPageRoute(
+  //       builder: (_) => WhatsappChatScreen(
+  //         pinnedLeads: pinnedLeads,
+  //         leadName:
+  //             "${matchedModel?.firstname ?? ""} ${matchedModel?.lastname ?? ""}",
+  //         wpnumber: formattedWpNumber,
+  //         id: matchedModel?.id,
+  //         model: matchedModel,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   static Future<void> deleteFCMTokenOnLogout() async {
     try {
@@ -267,38 +267,38 @@ Future<String> downloadAndSaveImage(String url, String fileName) async {
   }
 }
 
-@pragma('vm:entry-point')
-Future<void> showImageNotification(
-    RemoteMessage message, String filePath) async {
-  try {
-    // final bigPictureStyleInformation = BigPictureStyleInformation(
-    //   FilePathAndroidBitmap(filePath),
-    //   largeIcon: FilePathAndroidBitmap(filePath),
-    //   contentTitle: message.notification?.title ?? '',
-    //   summaryText: message.notification?.body ?? '',
-    // );
+// @pragma('vm:entry-point')
+// Future<void> showImageNotification(
+//     RemoteMessage message, String filePath) async {
+//   try {
+//     // final bigPictureStyleInformation = BigPictureStyleInformation(
+//     //   FilePathAndroidBitmap(filePath),
+//     //   largeIcon: FilePathAndroidBitmap(filePath),
+//     //   contentTitle: message.notification?.title ?? '',
+//     //   summaryText: message.notification?.body ?? '',
+//     // );
 
-    // final androidPlatformChannelSpecifics = AndroidNotificationDetails(
-    //   'spark',
-    //   'Spark',
-    //   channelDescription: 'spark',
-    //   styleInformation: bigPictureStyleInformation,
-    //   importance: Importance.max,
-    //   priority: Priority.high,
-    // );
+//     // final androidPlatformChannelSpecifics = AndroidNotificationDetails(
+//     //   'spark',
+//     //   'Spark',
+//     //   channelDescription: 'spark',
+//     //   styleInformation: bigPictureStyleInformation,
+//     //   importance: Importance.max,
+//     //   priority: Priority.high,
+//     // );
 
-    // final platformChannelSpecifics =
-    //     NotificationDetails(android: androidPlatformChannelSpecifics);
+//     // final platformChannelSpecifics =
+//     //     NotificationDetails(android: androidPlatformChannelSpecifics);
 
-    // await LocalNotificationService.instance.show(
-    //   0,
-    //   message.notification?.title,
-    //   message.notification?.body,
-    //   platformChannelSpecifics,
-    // );
-  } catch (e) {
-    debugPrint("Error showing image notification: $e");
-    // Fallback to regular notification
-    // LocalNotificationService.displayNotification(message);
-  }
-}
+//     // await LocalNotificationService.instance.show(
+//     //   0,
+//     //   message.notification?.title,
+//     //   message.notification?.body,
+//     //   platformChannelSpecifics,
+//     // );
+//   } catch (e) {
+//     debugPrint("Error showing image notification: $e");
+//     // Fallback to regular notification
+//     // LocalNotificationService.displayNotification(message);
+//   }
+// }

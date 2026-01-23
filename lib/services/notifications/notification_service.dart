@@ -145,6 +145,9 @@ class NotificationService {
       iOS: iosDetails,
     );
 
+
+    print("======================================this is trying to show the local notification======================================");
+
     await _localNotifications.show(
       message.hashCode,
       message.notification?.title ?? message.data['title'],

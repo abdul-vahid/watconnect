@@ -91,6 +91,7 @@ class MessageViewModel extends BaseListViewModel {
 
   setFileToSend(File? someFile) {
     fileToSend = someFile;
+    print("file to send set>>>>. ${fileToSend}");
     notifyListeners();
   }
 
