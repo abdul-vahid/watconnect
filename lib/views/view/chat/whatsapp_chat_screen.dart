@@ -5,9 +5,11 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_sound/public/flutter_sound_player.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -165,8 +167,8 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
         return FocusDetector(
           onFocusGained: () {
 
-
-              loadChatHistory(showLoaing: false);
+print("itssss gaining focusssss>>>>>>>>>>>>>..>.----------------------------------");
+              loadChatHistory(showLoaing: false,clearFile: false);
 
               socketManager.connectSocket(context, widget.wpnumber);
           },
@@ -356,89 +358,92 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                 ),
                 child: Column(
                   children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 4),
-                        child: Row(
-                          children: [
-                            GestureDetector(
-                              onTap: () async {
-                                if (widget.model == null) {
-                                  return;
-                                }
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => LeadDetailView(
-                                      model: widget.model,
-                                    ),
-                                  ),
-                                );
+  
+SizedBox(
+  width: double.infinity,
+  child: Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    child: Row(
+      children: [
+      
+        Expanded(
+          child: InkWell(
+            onTap: () async {
+              if (widget.model == null) return;
 
-                                if (result == true) {
-                                  print("result on detailesss:::: ");
-                                  Navigator.pop(context, true);
-                                }
-                              },
-                              child: Row(
-                                children: [
-                                  const CircleAvatar(
-                                    backgroundImage: NetworkImage(
-                                      'https://www.w3schools.com/w3images/avatar2.png',
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width * .5,
-                                    child: Text(
-                                      widget.leadName ?? "",
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                          fontFamily: AppFonts.medium,
-                                          color:
-                                              Color.fromARGB(255, 59, 52, 52)),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Spacer(),
-                            msgController.msgToDelete.isNotEmpty
-                                ? IconButton(
-                                    icon: const Icon(
-                                      Icons.delete,
-                                      color: Colors.black,
-                                    ),
-                                    onPressed: () {
-                                      _showSimpleDialog("");
-                                    },
-                                  )
-                                : const SizedBox(),
-                            PopupMenuButton<String>(
-                              icon: const Icon(
-                                Icons.more_vert,
-                                color: Colors.black,
-                              ),
-                              onSelected: (String value) {
-                                if (value == 'Clear Chat') {
-                                  _showDeleteDialog();
-                                }
-                              },
-                              itemBuilder: (BuildContext context) =>
-                                  <PopupMenuEntry<String>>[
-                                const PopupMenuItem<String>(
-                                  value: 'Clear Chat',
-                                  child: Text('Clear Chat'),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LeadDetailView(
+                    model: widget.model,
+                  ),
+                ),
+              );
+
+              if (result == true) {
+                Navigator.pop(context, true);
+              }
+            },
+            child: Row(
+              children: [
+                const CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    'https://www.w3schools.com/w3images/avatar2.png',
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    widget.leadName ?? "",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: AppFonts.medium,
+                      color: Color.fromARGB(255, 59, 52, 52),
                     ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+      
+        if (msgController.msgToDelete.isNotEmpty) ...[
+          IconButton(
+            icon: const Icon(Icons.copy, color: Colors.black),
+            onPressed: () {
+            _copyMultipleMessages();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.black),
+            onPressed: () {
+              _showSimpleDialog("");
+            },
+          ),
+        ],
+
+       
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert, color: Colors.black),
+          onSelected: (value) {
+            if (value == 'Clear Chat') {
+              _showDeleteDialog();
+            }
+          },
+          itemBuilder: (context) => const [
+            PopupMenuItem<String>(
+              value: 'Clear Chat',
+              child: Text('Clear Chat'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
+),
+
+
                     const Divider(),
                     chatLoader
                         ? const Expanded(
@@ -548,11 +553,14 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     });
   }
 
-  Future<void> loadChatHistory({bool showLoaing = false}) async {
+  Future<void> loadChatHistory({bool showLoaing = false, bool clearFile=true}) async {
     final prefs = await SharedPreferences.getInstance();
     final number = prefs.getString('phoneNumber');
     final messageVM = Provider.of<MessageViewModel>(context, listen: false);
-    messageVM.setFileToSend(null);
+    if(clearFile){
+ messageVM.setFileToSend(null);
+    }
+   
     if (showLoaing) {
       setChatLoader(true);
     }
@@ -1487,4 +1495,62 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     unreadList = unreadMsgModel.records ?? [];
     setState(() {});
   }
+  
+Future<void> _copyMultipleMessages() async {
+      MessageController msgController = Provider.of(context, listen: false);
+            MessageViewModel mviewModel = Provider.of(context, listen: false);
+
+      List allMessages = mviewModel.allMessages;
+
+  if (msgController.msgToDelete.isEmpty) return;
+  
+  String allText = "";
+  
+  for (var messageId in msgController.msgToDelete) {
+    var message = allMessages.firstWhere(
+      (msg) => msg.id == messageId,
+      orElse: () => null,
+    );
+    
+    if (message != null) {
+      String messageText = "";
+      
+      if (message.message?.isNotEmpty ?? false) {
+        messageText = message.message!;
+      } else if (message.bodyText?.isNotEmpty ?? false) {
+        messageText = message.bodyText!;
+      } else if (message.messageBody != null) {
+        messageText = message.messageBody!;
+      } else if (message.adHeadline?.isNotEmpty ?? false) {
+        messageText = "${message.adHeadline}\n${message.adBody ?? ''}";
+      }
+      
+      if (messageText.isNotEmpty) {
+      
+        final time = DateFormat('hh:mm a').format(
+          message.createddate.add(const Duration(hours: 5, minutes: 30))
+        );
+        final sender = message.status == "Outgoing" ? "You" : widget.leadName ?? "";
+        allText += "[$time] $sender: $messageText\n\n";
+      }
+    }
+  }
+  
+  if (allText.isNotEmpty) {
+    await Clipboard.setData(ClipboardData(text: allText.trim()));
+    
+   
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${msgController.msgToDelete.length} messages copied to clipboard'),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+      msgController.clearDeleteList();
+  }
+
+
+}
 }
