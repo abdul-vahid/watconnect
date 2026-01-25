@@ -510,12 +510,15 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(items.length, (index) {
           final isSelected = selected == index;
+          // Get the actual index from original items list
+          int originalIndex = _getOriginalIndex(index, items);
+
           return GestureDetector(
-            behavior: HitTestBehavior.opaque, // VERY IMPORTANT
-            onTap: () => onItemTap(index),
+            behavior: HitTestBehavior.opaque,
+            onTap: () => onItemTap(originalIndex), // Pass original index
             child: SizedBox(
-              width: 80, // increases horizontal tap area
-              height: double.infinity, // full navbar height
+              width: 80,
+              height: double.infinity,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -541,5 +544,29 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
         }),
       ),
     );
+  }
+
+// Helper method to get original index
+  int _getOriginalIndex(
+      int visibleIndex, List<Map<String, dynamic>> visibleItems) {
+    final originalItems = [
+      {'icon': Icons.home, 'label': 'Home', 'visible': true},
+      {'icon': Icons.person, 'label': 'Profile', 'visible': true},
+      {
+        'icon': Icons.people,
+        'label': 'Users',
+        'visible': userModelData?.userrole == "ADMIN"
+      },
+      {'icon': Icons.chat, 'label': 'Chats', 'visible': true},
+    ];
+
+    String visibleLabel = visibleItems[visibleIndex]['label'] as String;
+
+    for (int i = 0; i < originalItems.length; i++) {
+      if (originalItems[i]['label'] == visibleLabel) {
+        return i;
+      }
+    }
+    return visibleIndex;
   }
 }
