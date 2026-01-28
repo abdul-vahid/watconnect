@@ -57,6 +57,7 @@ class WhatsappChatScreen extends StatefulWidget {
   final LeadModel? model;
   final String? contryCode;
   final String? id;
+  final bool? isArch;
 
   const WhatsappChatScreen({
     super.key,
@@ -66,6 +67,7 @@ class WhatsappChatScreen extends StatefulWidget {
     this.id,
     this.model,
     this.contryCode,
+    this.isArch,
   });
 
   @override
@@ -104,11 +106,15 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   List<TextEditingController> controllers = [];
 
   int _lastMessageCount = 0;
-  // bool _shouldScrollToBottom = false;
+  
+  
+  bool _isArchived = false;
 
   @override
   void initState() {
     super.initState();
+    _isArchived = widget.isArch == true;
+    
     loadChatHistory(showLoaing: true);
     getWalletStatus();
     MessageController msgController = Provider.of(context, listen: false);
@@ -166,11 +172,11 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
       builder: (context, msgController, child) {
         return FocusDetector(
           onFocusGained: () {
+            print(
+                "itssss gaining focusssss>>>>>>>>>>>>>..>.----------------------------------");
+            loadChatHistory(showLoaing: false, clearFile: false);
 
-print("itssss gaining focusssss>>>>>>>>>>>>>..>.----------------------------------");
-              loadChatHistory(showLoaing: false,clearFile: false);
-
-              socketManager.connectSocket(context, widget.wpnumber);
+            socketManager.connectSocket(context, widget.wpnumber);
           },
 
           onFocusLost: () => socketManager.disconnectSocket(),
@@ -179,8 +185,7 @@ print("itssss gaining focusssss>>>>>>>>>>>>>..>.--------------------------------
               backgroundColor: AppColor.pageBgGrey,
               appBar: AppBar(
                 leading: const BackButton(color: Colors.white),
-                title:
-                    const Text("Chat", style: TextStyle(color: Colors.white)),
+                title: const Text("Chat", style: TextStyle(color: Colors.white)),
                 actions: [
                   if (hasCalls)
                     IconButton(
@@ -274,6 +279,8 @@ print("itssss gaining focusssss>>>>>>>>>>>>>..>.--------------------------------
                                                 model: widget.model == null
                                                     ? null
                                                     : model,
+                                                isArch: model.is_archived ??
+                                                    false,
                                               ),
                                             ),
                                           ).then((onValue) {
@@ -358,91 +365,125 @@ print("itssss gaining focusssss>>>>>>>>>>>>>..>.--------------------------------
                 ),
                 child: Column(
                   children: [
-  
-SizedBox(
-  width: double.infinity,
-  child: Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    child: Row(
-      children: [
-      
-        Expanded(
-          child: InkWell(
-            onTap: () async {
-              if (widget.model == null) return;
+                    SizedBox(
+                      width: double.infinity,
+                      child: Padding(
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: () async {
+                                  if (widget.model == null) return;
 
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LeadDetailView(
-                    model: widget.model,
-                  ),
-                ),
-              );
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LeadDetailView(
+                                        model: widget.model,
+                                      ),
+                                    ),
+                                  );
 
-              if (result == true) {
-                Navigator.pop(context, true);
-              }
-            },
-            child: Row(
-              children: [
-                const CircleAvatar(
-                  backgroundImage: NetworkImage(
-                    'https://www.w3schools.com/w3images/avatar2.png',
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    widget.leadName ?? "",
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontFamily: AppFonts.medium,
-                      color: Color.fromARGB(255, 59, 52, 52),
+                                  if (result == true) {
+                                    Navigator.pop(context, true);
+                                  }
+                                },
+                                child: Row(
+                                  children: [
+                                    const CircleAvatar(
+                                      backgroundImage: NetworkImage(
+                                        'https://www.w3schools.com/w3images/avatar2.png',
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            widget.leadName ?? "",
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontFamily: AppFonts.medium,
+                                              color:
+                                                  Color.fromARGB(255, 59, 52, 52),
+                                            ),
+                                          ),
+                                          if (_isArchived)
+                                            const Row(
+                                              children: [
+                                                Icon(Icons.archive,
+                                                    size: 12, color: Colors.grey),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  'Archived',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: Colors.grey,
+                                                    fontStyle: FontStyle.italic,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            if (msgController.msgToDelete.isNotEmpty) ...[
+                              IconButton(
+                                icon: const Icon(Icons.copy, color: Colors.black),
+                                onPressed: () {
+                                  _copyMultipleMessages();
+                                },
+                              ),
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.black),
+                                onPressed: () {
+                                  _showSimpleDialog("");
+                                },
+                              ),
+                            ],
+
+                            PopupMenuButton<String>(
+                              icon:
+                                  const Icon(Icons.more_vert, color: Colors.black),
+                              onSelected: (value) async {
+                                if (value == 'Clear Chat') {
+                                  _showDeleteDialog();
+                                } else if (value == 'Archive Chat' ||
+                                    value == 'Unarchive Chat') {
+                                  await _toggleArchiveStatus();
+                                }
+                              },
+                              itemBuilder: (context) {
+                                return [
+                                  PopupMenuItem<String>(
+                                    value: _isArchived
+                                        ? 'Unarchive Chat'
+                                        : 'Archive Chat',
+                                    child: Text(_isArchived
+                                        ? 'Unarchive Chat'
+                                        : 'Archive Chat'),
+                                  ),
+                                  const PopupMenuItem<String>(
+                                    value: 'Clear Chat',
+                                    child: Text('Clear Chat'),
+                                  ),
+                                ];
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-      
-        if (msgController.msgToDelete.isNotEmpty) ...[
-          IconButton(
-            icon: const Icon(Icons.copy, color: Colors.black),
-            onPressed: () {
-            _copyMultipleMessages();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.black),
-            onPressed: () {
-              _showSimpleDialog("");
-            },
-          ),
-        ],
-
-       
-        PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert, color: Colors.black),
-          onSelected: (value) {
-            if (value == 'Clear Chat') {
-              _showDeleteDialog();
-            }
-          },
-          itemBuilder: (context) => const [
-            PopupMenuItem<String>(
-              value: 'Clear Chat',
-              child: Text('Clear Chat'),
-            ),
-          ],
-        ),
-      ],
-    ),
-  ),
-),
-
 
                     const Divider(),
                     chatLoader
@@ -553,14 +594,14 @@ SizedBox(
     });
   }
 
-  Future<void> loadChatHistory({bool showLoaing = false, bool clearFile=true}) async {
+  Future<void> loadChatHistory({bool showLoaing = false, bool clearFile = true}) async {
     final prefs = await SharedPreferences.getInstance();
     final number = prefs.getString('phoneNumber');
     final messageVM = Provider.of<MessageViewModel>(context, listen: false);
-    if(clearFile){
- messageVM.setFileToSend(null);
+    if (clearFile) {
+      messageVM.setFileToSend(null);
     }
-   
+
     if (showLoaing) {
       setChatLoader(true);
     }
@@ -1434,7 +1475,6 @@ SizedBox(
                   _stopPlayer();
                   if (_audioFile != null) {
                     await sendFile("audio", "");
-                    // widget.onSend(_audioFile!);
                   }
                   Navigator.pop(context);
                 },
@@ -1477,8 +1517,49 @@ SizedBox(
     );
   }
 
+  Future<void> _toggleArchiveStatus() async {
+    try {
+      final LeadListViewModel leadData =
+          Provider.of<LeadListViewModel>(context, listen: false);
+
+     
+      bool newArchiveStatus = !_isArchived;
+
+      Map<String, dynamic> body = {
+        "id": widget.id,
+        "is_archived": newArchiveStatus
+      };
+
+      EasyLoading.show(status: 'Processing...');
+
+     
+      await leadData.updatelead(body, widget.id ?? "");
+
+      EasyLoading.dismiss();
+
+      
+      setState(() {
+        _isArchived = newArchiveStatus;
+      });
+
+
+      EasyLoading.showToast(newArchiveStatus
+          ? 'Chat archived successfully'
+          : 'Chat unarchived successfully');
+
+      
+      leadData.fetchRecentChat();
+
+    } catch (e) {
+      EasyLoading.dismiss();
+      EasyLoading.showToast('Failed to update archive status');
+      print('Error in _toggleArchiveStatus: $e');
+    }
+  }
+
   UnreadCountVm? unreadCountVm;
   List unreadList = [];
+
   Future<void> _getUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
     var number = prefs.getString('phoneNumber');
@@ -1495,62 +1576,59 @@ SizedBox(
     unreadList = unreadMsgModel.records ?? [];
     setState(() {});
   }
-  
-Future<void> _copyMultipleMessages() async {
-      MessageController msgController = Provider.of(context, listen: false);
-            MessageViewModel mviewModel = Provider.of(context, listen: false);
 
-      List allMessages = mviewModel.allMessages;
+  Future<void> _copyMultipleMessages() async {
+    MessageController msgController = Provider.of(context, listen: false);
+    MessageViewModel mviewModel = Provider.of(context, listen: false);
 
-  if (msgController.msgToDelete.isEmpty) return;
-  
-  String allText = "";
-  
-  for (var messageId in msgController.msgToDelete) {
-    var message = allMessages.firstWhere(
-      (msg) => msg.id == messageId,
-      orElse: () => null,
-    );
-    
-    if (message != null) {
-      String messageText = "";
-      
-      if (message.message?.isNotEmpty ?? false) {
-        messageText = message.message!;
-      } else if (message.bodyText?.isNotEmpty ?? false) {
-        messageText = message.bodyText!;
-      } else if (message.messageBody != null) {
-        messageText = message.messageBody!;
-      } else if (message.adHeadline?.isNotEmpty ?? false) {
-        messageText = "${message.adHeadline}\n${message.adBody ?? ''}";
-      }
-      
-      if (messageText.isNotEmpty) {
-      
-        final time = DateFormat('hh:mm a').format(
-          message.createddate.add(const Duration(hours: 5, minutes: 30))
-        );
-        final sender = message.status == "Outgoing" ? "You" : widget.leadName ?? "";
-        allText += "[$time] $sender: $messageText\n\n";
+    List allMessages = mviewModel.allMessages;
+
+    if (msgController.msgToDelete.isEmpty) return;
+
+    String allText = "";
+
+    for (var messageId in msgController.msgToDelete) {
+      var message = allMessages.firstWhere(
+        (msg) => msg.id == messageId,
+        orElse: () => null,
+      );
+
+      if (message != null) {
+        String messageText = "";
+
+        if (message.message?.isNotEmpty ?? false) {
+          messageText = message.message!;
+        } else if (message.bodyText?.isNotEmpty ?? false) {
+          messageText = message.bodyText!;
+        } else if (message.messageBody != null) {
+          messageText = message.messageBody!;
+        } else if (message.adHeadline?.isNotEmpty ?? false) {
+          messageText = "${message.adHeadline}\n${message.adBody ?? ''}";
+        }
+
+        if (messageText.isNotEmpty) {
+          final time = DateFormat('hh:mm a').format(
+              message.createddate.add(const Duration(hours: 5, minutes: 30)));
+          final sender =
+              message.status == "Outgoing" ? "You" : widget.leadName ?? "";
+          allText += "[$time] $sender: $messageText\n\n";
+        }
       }
     }
-  }
-  
-  if (allText.isNotEmpty) {
-    await Clipboard.setData(ClipboardData(text: allText.trim()));
-    
-   
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${msgController.msgToDelete.length} messages copied to clipboard'),
-        duration: Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+
+    if (allText.isNotEmpty) {
+      await Clipboard.setData(ClipboardData(text: allText.trim()));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('${msgController.msgToDelete.length} messages copied to clipboard'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
 
       msgController.clearDeleteList();
+    }
   }
-
-
-}
 }

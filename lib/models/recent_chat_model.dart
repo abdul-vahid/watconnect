@@ -48,6 +48,7 @@ class Records {
   String? full_number;
   DateTime? createddate;
   bool? pinned;
+  bool? isArchived;
 
   List<dynamic>? tag_names;
 
@@ -63,7 +64,9 @@ class Records {
       this.createddate,
       this.pinned,
       this.message,
-      this.tag_names});
+      this.tag_names,
+      this.isArchived
+      });
 
   factory Records.fromMap(Map<String, dynamic> data) {
     // Handle tag_names which could be List<dynamic> or null
@@ -80,6 +83,7 @@ class Records {
       countrycode: data['countrycode']?.toString(),
       message: data['message']?.toString() ?? "",
       pinned: data['pinned'] ?? false,
+      isArchived: data['is_archived']??false,
       contactname: data['contactname']?.toString(),
       full_number: data['full_number']?.toString(),
       whatsapp_number: data['whatsapp_number']?.toString(),
@@ -95,6 +99,7 @@ class Records {
         'parent_id': parent_id,
         'lead_id': lead_id,
         'pinned': pinned,
+        "is_archived":isArchived,
         'contactname': contactname,
         'full_number': full_number,
         'countrycode': countrycode,

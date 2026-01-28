@@ -1,7 +1,6 @@
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -18,20 +17,19 @@ import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/view_models/lead_controller.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/chat/whatsapp_chat_screen.dart';
-import 'package:whatsapp/views/view/recent_archieve_chat.dart';
 import '../../models/lead_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import '../../view_models/lead_list_vm.dart';
 import 'package:badges/badges.dart' as badges;
 
-class RecentChatView extends StatefulWidget {
-  const RecentChatView({super.key});
+class RecentArchieveChatView extends StatefulWidget {
+  const RecentArchieveChatView({super.key});
   @override
-  State<RecentChatView> createState() => _RecentChatViewState();
+  State<RecentArchieveChatView> createState() => _RecentArchieveChatViewState();
 }
 
-class _RecentChatViewState extends State<RecentChatView> {
+class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
   final List<Color> tagColors = [
     Colors.red,
     Colors.blue,
@@ -245,123 +243,120 @@ class _RecentChatViewState extends State<RecentChatView> {
     unreadCountVm = Provider.of<UnreadCountVm>(context);
     leadlistvm = Provider.of<LeadListViewModel>(context);
 
-    return FocusDetector(
-      onFocusGained: (){
-        getLeadList();
-      },
-      child: Scaffold(
-        backgroundColor: AppColor.pageBgGrey,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: isTagFilterActive
+    return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: isTagFilterActive
+            ? Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedTagId = null;
+                        selectedTagName = null;
+                        isTagFilterActive = false;
+                        allRecentChats = tempLeadModelList;
+                      });
+                    },
+                    child: const Icon(Icons.arrow_back, color: Colors.white),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    selectedTagName ?? 'Tag',
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              )
+            : const Text(
+                'Archieve Chats',
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+        centerTitle: true,
+        leading: InkWell(
+          onTap: (){
+            Navigator.pop(context);
+          },
+          child: const Icon(Icons.arrow_back,color: Colors.white,)),
+        elevation: 5,
+        actions: [
+
+
+          showPin
               ? Row(
                   children: [
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedTagId = null;
-                          selectedTagName = null;
-                          isTagFilterActive = false;
-                          allRecentChats = tempLeadModelList;
-                        });
-                      },
-                      child: const Icon(Icons.arrow_back, color: Colors.white),
+                    // Tag Icon
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12.0),
+                      child: InkWell(
+                        onTap: () {
+                          _showTagsBottomSheet(
+                              context, currentLeadForTagEditing!);
+                        },
+                        child: const Icon(
+                          FontAwesomeIcons.tags,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      selectedTagName ?? 'Tag',
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w600),
+
+                    // Pin Icon
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: InkWell(
+                        onTap: () {
+                          if (isPinned) {
+                            Provider.of<LeadListViewModel>(context,
+                                    listen: false)
+                                .unpinChat(pinnedLeadId)
+                                .then((onValue) {
+                              getLeadList(showLoading: false);
+                            });
+                          } else {
+                            Provider.of<LeadListViewModel>(context,
+                                    listen: false)
+                                .pinChat(pinnedLeadId)
+                                .then((onValue) {
+                              getLeadList(showLoading: false);
+                            });
+                          }
+                          setState(() {
+                            showPin = false;
+                            pinnedLeadId = "";
+                          });
+                        },
+                        child: isPinned == false
+                            ? const Icon(
+                                Icons.push_pin_outlined,
+                                color: Colors.white,
+                              )
+                            : Image.asset(
+                                "assets/images/unpin_icon.png",
+                                color: Colors.white,
+                                height: 20,
+                              ),
+                      ),
                     ),
                   ],
                 )
-              : const Text(
-                  'Chats',
-                  style:
-                      TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-          centerTitle: true,
-          elevation: 5,
-          actions: [
-      
-        IconButton(onPressed: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>RecentArchieveChatView()));
-        }, icon: Icon(Icons.archive),color: Colors.white,),
-      
-            showPin
-                ? Row(
-                    children: [
-                      // Tag Icon
-                      Padding(
-                        padding: const EdgeInsets.only(right: 12.0),
-                        child: InkWell(
-                          onTap: () {
-                            _showTagsBottomSheet(
-                                context, currentLeadForTagEditing!);
-                          },
-                          child: const Icon(
-                            FontAwesomeIcons.tags,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                      ),
-      
-                      // Pin Icon
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: InkWell(
-                          onTap: () {
-                            if (isPinned) {
-                              Provider.of<LeadListViewModel>(context,
-                                      listen: false)
-                                  .unpinChat(pinnedLeadId)
-                                  .then((onValue) {
-                                getLeadList(showLoading: false);
-                              });
-                            } else {
-                              Provider.of<LeadListViewModel>(context,
-                                      listen: false)
-                                  .pinChat(pinnedLeadId)
-                                  .then((onValue) {
-                                getLeadList(showLoading: false);
-                              });
-                            }
-                            setState(() {
-                              showPin = false;
-                              pinnedLeadId = "";
-                            });
-                          },
-                          child: isPinned == false
-                              ? const Icon(
-                                  Icons.push_pin_outlined,
-                                  color: Colors.white,
-                                )
-                              : Image.asset(
-                                  "assets/images/unpin_icon.png",
-                                  color: Colors.white,
-                                  height: 20,
-                                ),
-                        ),
-                      ),
-                    ],
-                  )
-                : const SizedBox(),
-          ],
-        ),
-        body: GestureDetector(
-          onTap: () {
-            setState(() {
-              pinnedLeadId = "";
-              showPin = false;
-              isPinned = false;
-            });
-            FocusScope.of(context).unfocus();
-          },
-          child: RefreshIndicator(
-            onRefresh: _pullRefresh,
-            child: (_pageBody()),
-          ),
+              : const SizedBox(),
+        ],
+      ),
+      body: GestureDetector(
+        onTap: () {
+          setState(() {
+            pinnedLeadId = "";
+            showPin = false;
+            isPinned = false;
+          });
+          FocusScope.of(context).unfocus();
+        },
+        child: RefreshIndicator(
+          onRefresh: _pullRefresh,
+          child: (_pageBody()),
         ),
       ),
     );
@@ -478,7 +473,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                         pinnedLeads: pinnedLeads,
                                         leadName: model.contactname ?? "",
                                         wpnumber: model.full_number,
-                                        id: model.lead_id,
+                                        id: model.id,
                                         contryCode: model.countrycode,
                                       ),
                                     ),
@@ -769,7 +764,7 @@ class _RecentChatViewState extends State<RecentChatView> {
 
     await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
             listen: false)
-        .fetchRecentChat()
+        .fetchRecentArchieveChat()
         .then((onValue) {
       allRecentChats = [];
       tempLeadModelList = [];
@@ -777,9 +772,12 @@ class _RecentChatViewState extends State<RecentChatView> {
 
       try {
         for (var viewModel in leadlistvm.viewModels) {
+          print(". archieve>>>>.     ${viewModel.model}");
           var recentMsgmodel = viewModel.model;
+            print(". recentMsgmodel>>>>.     ${recentMsgmodel}");
           if (recentMsgmodel?.records != null) {
             for (var record in recentMsgmodel!.records!) {
+               print(". recentMsgmodel.record >>>>.     ${record}. ${record.runtimeType}");
               allRecentChats.add(record);
               tempLeadModelList.add(record);
               if (record.pinned) {
@@ -831,13 +829,13 @@ class _RecentChatViewState extends State<RecentChatView> {
                 : model.tag_names!
             : [];
 
-    // Check if there are more tags than shown
+   
     bool hasMoreTags =
         model.tag_names != null && model.tag_names!.length > maxTagsToShow;
     int remainingTagsCount =
         model.tag_names != null ? model.tag_names!.length - maxTagsToShow : 0;
 
-    return  model.isArchived! ? const SizedBox() : GestureDetector(
+    return   GestureDetector(
       onLongPress: () {
         setState(() {
           showPin = true;
@@ -890,7 +888,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                             pinnedLeads: pinnedLeads,
                             leadName: model.contactname ?? "",
                             wpnumber: model.full_number,
-                            id: model.lead_id,
+                            id: model.id,
                           isArch: model.isArchived,
                             contryCode: model.countrycode,
                           ),

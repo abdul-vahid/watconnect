@@ -184,6 +184,10 @@ abstract class AppConstants {
   static const String recentChat =
       '/api/whatsapp/chat/filter?textName=&cityName=&recordType=recentlyMessage';
 
+
+  static const String recentArchieveChat =
+      '/api/whatsapp/chat/filter?textName=&recordType=archived';
+
   static const String allCampLeads =
       '/api/whatsapp/chat/filter?textName=&cityName=&recordType=lead';
 

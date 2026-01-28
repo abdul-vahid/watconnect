@@ -34,6 +34,13 @@ class LeadListViewModel extends BaseListViewModel {
     await get(url: url, baseModel: RecentChatModel());
   }
 
+
+
+   Future<void> fetchRecentArchieveChat() async {
+    String url = AppUtils.getUrl(AppConstants.recentArchieveChat);
+    await get(url: url, baseModel: RecentChatModel());
+  }
+
   Future<void> pinChat(String leadId) async {
     String url =
         AppUtils.getUrl(AppConstants.pinLead.replaceAll("{leadId}", leadId));
