@@ -347,7 +347,7 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
       return false;
     }
 
-    // Only show exit dialog when on home page (index 0)
+    
     return (await showCupertinoDialog(
           context: context,
           builder: (BuildContext context) => CupertinoAlertDialog(
@@ -510,12 +510,12 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(items.length, (index) {
           final isSelected = selected == index;
-          // Get the actual index from original items list
+         
           int originalIndex = _getOriginalIndex(index, items);
 
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () => onItemTap(originalIndex), // Pass original index
+            onTap: () => onItemTap(originalIndex), 
             child: SizedBox(
               width: 80,
               height: double.infinity,

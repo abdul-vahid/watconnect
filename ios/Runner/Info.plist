@@ -35,6 +35,20 @@
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
+	<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>watconnect</string>
+        </array>
+    </dict>
+</array>
+
+<key>FlutterDeepLinkingEnabled</key>
+<true/>
 	<string>Main</string>
 	<!-- <key>UISupportedInterfaceOrientations</key>
 	<array>

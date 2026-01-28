@@ -13,7 +13,8 @@ class GetUserViewModel extends BaseListViewModel {
 
   fetchUser() async {
     String url = AppUtils.getUrl(AppConstants.getUserAPIPath);
-    debug(' check===$url');
+    debug('fetchUser() called $url');
+    debug('check===$url');
     get(
       url: url,
       baseModel: GetUser(),

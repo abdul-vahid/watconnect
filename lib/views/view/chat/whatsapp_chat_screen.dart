@@ -107,12 +107,13 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
 
   int _lastMessageCount = 0;
   
-  
+  // Local state for archive status
   bool _isArchived = false;
 
   @override
   void initState() {
     super.initState();
+    // Initialize local archive state from widget parameter
     _isArchived = widget.isArch == true;
     
     loadChatHistory(showLoaing: true);
@@ -412,6 +413,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                                   Color.fromARGB(255, 59, 52, 52),
                                             ),
                                           ),
+                                          // Show archive indicator based on local state
                                           if (_isArchived)
                                             const Row(
                                               children: [
@@ -436,6 +438,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                               ),
                             ),
 
+                            // Copy and Delete buttons when messages are selected
                             if (msgController.msgToDelete.isNotEmpty) ...[
                               IconButton(
                                 icon: const Icon(Icons.copy, color: Colors.black),
@@ -452,6 +455,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                               ),
                             ],
 
+                            // More options menu - using local _isArchived state
                             PopupMenuButton<String>(
                               icon:
                                   const Icon(Icons.more_vert, color: Colors.black),
@@ -464,6 +468,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                 }
                               },
                               itemBuilder: (context) {
+                                // Dynamic menu items based on local archive state
                                 return [
                                   PopupMenuItem<String>(
                                     value: _isArchived
@@ -1522,7 +1527,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
       final LeadListViewModel leadData =
           Provider.of<LeadListViewModel>(context, listen: false);
 
-     
+      // Toggle the local archive status
       bool newArchiveStatus = !_isArchived;
 
       Map<String, dynamic> body = {
@@ -1532,23 +1537,24 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
 
       EasyLoading.show(status: 'Processing...');
 
-     
+      // Call API to update archive status on server
       await leadData.updatelead(body, widget.id ?? "");
 
       EasyLoading.dismiss();
 
-      
+      // Update local state
       setState(() {
         _isArchived = newArchiveStatus;
       });
 
-
+      // Show success message
       EasyLoading.showToast(newArchiveStatus
           ? 'Chat archived successfully'
           : 'Chat unarchived successfully');
 
-      
-      leadData.fetchRecentChat();
+      // Optional: Refresh the lead list in the background
+      // This will update the archive status in the main list
+      leadData.fetch();
 
     } catch (e) {
       EasyLoading.dismiss();

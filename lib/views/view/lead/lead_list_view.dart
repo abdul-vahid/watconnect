@@ -198,31 +198,30 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                 showPin
                     // && idsToDelete.length > 1
                     ? Row(
-                      children: [
-
-                    PopupMenuButton<String>(
-  onSelected: (value) {
-    switch (value) {
-      case 'view':
-        showTagDialog(context);
-        break;
-      
-    }
-  },
-  itemBuilder: (BuildContext context) => [
-    const PopupMenuItem<String>(
-      value: 'view',
-      child: Text('View Tags'),
-    ),
-  
-  ],
-  icon: const Icon(Icons.label,color: Colors.white,),
-)
-, const SizedBox(
-                  width: 10,
-                ),
-
-                        InkWell(
+                        children: [
+                          PopupMenuButton<String>(
+                            onSelected: (value) {
+                              switch (value) {
+                                case 'view':
+                                  showTagDialog(context);
+                                  break;
+                              }
+                            },
+                            itemBuilder: (BuildContext context) => [
+                              const PopupMenuItem<String>(
+                                value: 'view',
+                                child: Text('View Tags'),
+                              ),
+                            ],
+                            icon: const Icon(
+                              Icons.label,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          InkWell(
                             onTap: () {
                               if (isPinned) {
                                 Provider.of<LeadListViewModel>(context,
@@ -256,33 +255,35 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                     height: 20,
                                   ),
                           ),
-                      ],
-                    )
+                        ],
+                      )
                     : const SizedBox(),
                 const SizedBox(
                   width: 10,
                 ),
-            showPin?SizedBox() :    Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: CircleAvatar(
-                    backgroundColor: AppColor.navBarIconColor,
-                    child: IconButton(
-                      icon: const Icon(
-                        FontAwesomeIcons.add,
-                        size: 25,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LeadAddView(),
+                showPin
+                    ? SizedBox()
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: CircleAvatar(
+                          backgroundColor: AppColor.navBarIconColor,
+                          child: IconButton(
+                            icon: const Icon(
+                              FontAwesomeIcons.add,
+                              size: 25,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => LeadAddView(),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
+                        ),
+                      ),
               ],
             ),
           ],
@@ -1232,7 +1233,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     return GestureDetector(
       onLongPress: () {
         setState(() {
-selectedLead=model;
+          selectedLead = model;
           showPin = true;
           showBulkBin = true;
           addToDeleteList(model.lead_id ?? "");
@@ -1691,188 +1692,179 @@ selectedLead=model;
     shouldHideLeadNumber = prefs.getBool(SharedPrefsConstants.shouldHideNumber);
     setState(() {});
   }
-  LeadModel? selectedLead;
-void showTagDialog(BuildContext context) {
-  final tags = selectedLead?.tagNames ?? [];
-  final hasTags = tags.isNotEmpty;
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
+  LeadModel? selectedLead;
+  void showTagDialog(BuildContext context) {
+    final tags = selectedLead?.tagNames ?? [];
+    final hasTags = tags.isNotEmpty;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 24,
-                spreadRadius: 0,
-              ),
-            ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-            
-              Row(
-                children: [
-              
-                  Expanded(
-                    child: Text(
-                     hasTags?  'Tags (${tags.length} ${tags.length == 1 ? 'tag' : 'tags'})' :  'Tags ',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade900,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 24,
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        hasTags
+                            ? 'Tags (${tags.length} ${tags.length == 1 ? 'tag' : 'tags'})'
+                            : 'Tags ',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade900,
+                        ),
                       ),
                     ),
-                  ),
-
-              
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      Icons.close_rounded,
-                      color: Colors.grey.shade500,
-                      size: 20,
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: Colors.grey.shade500,
+                        size: 20,
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 20),
-              
-              
-              if (!hasTags)
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.label_off_rounded,
-                          color: Colors.grey.shade400,
-                          size: 48,
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                if (!hasTags)
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.label_off_rounded,
+                            color: Colors.grey.shade400,
+                            size: 48,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No tags added',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      Container(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * 0.3,
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'No tags added',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
+                        child: SingleChildScrollView(
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: tags.map((tag) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.blue.shade600.withOpacity(0.1),
+                                  border: Border.all(
+                                    color:
+                                        Colors.blue.shade600.withOpacity(0.3),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.label_rounded,
+                                        color: Colors.blue.shade600,
+                                        size: 14,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        tag.name ?? '-',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey.shade800,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                    
-                      ],
-                    ),
-                  ),
-                )
-              else
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                 
-                    const SizedBox(height: 16),
-                    Container(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.3,
                       ),
-                      child: SingleChildScrollView(
-                        child: Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: tags.map((tag) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: Colors.blue.shade600.withOpacity(0.1),
-                                border: Border.all(
-                                  color: Colors.blue.shade600.withOpacity(0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.label_rounded,
-                                      color: Colors.blue.shade600,
-                                      size: 14,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      tag.name ?? '-',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade800,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                    ],
+                  ),
+
+                const SizedBox(height: 24),
+
+                // Actions
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        child: Text(
+                          'Close',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              
-              const SizedBox(height: 24),
-              
-              // Actions
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        side: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      child: Text(
-                        'Close',
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
-
-
-
-
-
+        );
+      },
+    );
+  }
 }

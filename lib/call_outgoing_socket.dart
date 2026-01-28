@@ -58,12 +58,12 @@ class outgoingCall {
     _socket
       ?..onConnect((_) {
         _isConnected = true;
-        debugPrint('✅ Call socket connected for outgoing call');
+        //debugPrint('✅ Call socket connected for outgoing call');
         _socket?.emit("setup", userData);
       })
       ..onDisconnect((_) async {
         _isConnected = false;
-        debugPrint('❌ Call socket disconnected');
+        //debugPrint('❌ Call socket disconnected');
         await Future.delayed(const Duration(seconds: 2));
         connect(token, userData, devId, busNum);
       })
@@ -92,7 +92,6 @@ class outgoingCall {
     try {
       print("🧹 Cleaning up resources...");
 
-      // Stop and dispose local stream
       if (_localStream != null) {
         for (var track in _localStream!.getTracks()) {
           await track.stop();

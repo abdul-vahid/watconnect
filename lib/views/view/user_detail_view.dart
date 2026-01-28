@@ -202,7 +202,7 @@ class _UserDetailView extends State<UserDetailView> {
             const SnackBar(
               content: Text('Password has been changed.'),
               duration: Duration(seconds: 3),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColor.navBarIconColor,
             ),
           );
 

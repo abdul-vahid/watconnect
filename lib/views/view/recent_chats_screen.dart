@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:focus_detector/focus_detector.dart';
@@ -23,7 +22,6 @@ import '../../models/lead_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
 import '../../view_models/lead_list_vm.dart';
-import 'package:badges/badges.dart' as badges;
 
 class RecentChatView extends StatefulWidget {
   const RecentChatView({super.key});
@@ -33,29 +31,7 @@ class RecentChatView extends StatefulWidget {
 
 class _RecentChatViewState extends State<RecentChatView> {
   final List<Color> tagColors = [
-    Colors.red,
     Colors.blue,
-    Colors.green,
-    Colors.orange,
-    Colors.purple,
-    Colors.yellow,
-    Colors.cyan,
-    Colors.pink,
-    Colors.teal,
-    Colors.brown,
-    Colors.indigo,
-    Colors.lime,
-    Colors.amber,
-    Colors.deepOrange,
-    Colors.deepPurple,
-    Colors.lightBlue,
-    Colors.lightGreen,
-    Colors.grey,
-    Colors.blueGrey,
-    Colors.black,
-    Colors.pinkAccent,
-    Colors.redAccent,
-    Colors.orangeAccent
   ];
 
   String finalResult = "";
@@ -88,6 +64,7 @@ class _RecentChatViewState extends State<RecentChatView> {
   String? selectedTagId;
   String? selectedTagName;
   bool isTagFilterActive = false;
+  List<Map<String, dynamic>> selectedTagsForFilter = [];
 
   List<Map<String, dynamic>> allUniqueTags = [];
 
@@ -162,7 +139,7 @@ class _RecentChatViewState extends State<RecentChatView> {
       others = [];
 
       List sourceList = isTagFilterActive
-          ? _getFilteredLeadsByTag(selectedTagId)
+          ? _getFilteredLeadsByTags(selectedTagsForFilter)
           : (selectedFilterId == 1 ? _getUnreadLeads() : tempLeadModelList);
 
       for (var lead in sourceList) {
@@ -184,22 +161,29 @@ class _RecentChatViewState extends State<RecentChatView> {
   }
 
   void _applyTagFilter() {
-    if (selectedTagId == null) {
+    if (selectedTagsForFilter.isEmpty) {
       allRecentChats = tempLeadModelList;
       isTagFilterActive = false;
     } else {
-      allRecentChats = _getFilteredLeadsByTag(selectedTagId);
+      allRecentChats = _getFilteredLeadsByTags(selectedTagsForFilter);
       isTagFilterActive = true;
     }
     setState(() {});
   }
 
-  List _getFilteredLeadsByTag(String? tagId) {
-    if (tagId == null) return tempLeadModelList;
+  List _getFilteredLeadsByTags(List<Map<String, dynamic>> tags) {
+    if (tags.isEmpty) return tempLeadModelList;
 
     return tempLeadModelList.where((lead) {
-      if (lead.tag_names == null) return false;
-      return lead.tag_names.any((tag) => tag['id'] == tagId);
+      if (lead.tag_names == null || lead.tag_names.isEmpty) return false;
+
+      // Check if lead has all selected tags
+      for (var selectedTag in tags) {
+        bool hasTag =
+            lead.tag_names.any((tag) => tag['id'] == selectedTag['id']);
+        if (!hasTag) return false;
+      }
+      return true;
     }).toList();
   }
 
@@ -505,19 +489,41 @@ class _RecentChatViewState extends State<RecentChatView> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  CircleAvatar(
-                                    radius: 20,
-                                    backgroundColor: AppColor.navBarIconColor,
-                                    child: Text(
-                                      model.contactname?.isNotEmpty == true
-                                          ? model.contactname![0].toUpperCase()
-                                          : '?',
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
+                                  Stack(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 20,
+                                        backgroundColor:
+                                            AppColor.navBarIconColor,
+                                        child: Text(
+                                          model.contactname?.isNotEmpty == true
+                                              ? model.contactname![0]
+                                                  .toUpperCase()
+                                              : '?',
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.push_pin,
+                                            size: 12,
+                                            color: Colors.orange,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(height: 4),
                                   SizedBox(
@@ -594,8 +600,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                               onTap: () {
                                                 setState(() {
                                                   selectedFilterId = index;
-                                                  selectedTagId = null;
-                                                  selectedTagName = null;
+                                                  selectedTagsForFilter.clear();
                                                   isTagFilterActive = false;
                                                   if (index == 1) {
                                                     unreadChatFilter();
@@ -630,81 +635,88 @@ class _RecentChatViewState extends State<RecentChatView> {
                                             ),
                                           );
                                         }),
-                                        ...allUniqueTags.map((tag) {
-                                          final isSelected =
-                                              isTagFilterActive &&
-                                                  selectedTagId == tag['id'];
-                                          return Padding(
-                                            padding: const EdgeInsets.only(
-                                                right: 10.0),
-                                            child: InkWell(
-                                              borderRadius:
-                                                  BorderRadius.circular(18),
-                                              onTap: () {
-                                                setState(() {
-                                                  selectedTagId = tag['id'];
-                                                  selectedTagName = tag['name'];
-                                                  selectedFilterId = -1;
-                                                  isTagFilterActive = true;
-                                                  _applyTagFilter();
-                                                });
-                                              },
-                                              child: Container(
-                                                padding: const EdgeInsets.only(
-                                                  left: 8,
-                                                  right: 4,
-                                                  top: 8,
-                                                  bottom: 8,
+                                        // Filter button for tags
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              right: 10.0),
+                                          child: InkWell(
+                                            borderRadius:
+                                                BorderRadius.circular(18),
+                                            onTap: () {
+                                              _showFilterTagsBottomSheet();
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.only(
+                                                left: 12,
+                                                right: 12,
+                                                top: 8,
+                                                bottom: 8,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(18),
+                                                border: Border.all(
+                                                  color: isTagFilterActive
+                                                      ? Colors.blue
+                                                      : Colors.grey,
+                                                  width: 1.2,
                                                 ),
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(18),
-                                                  border: Border.all(
-                                                    color: isSelected
-                                                        ? Colors.black
-                                                        : tag['color'],
-                                                    width:
-                                                        isSelected ? 1.5 : 1.2,
+                                                color: isTagFilterActive
+                                                    ? Colors.blue
+                                                        .withOpacity(0.1)
+                                                    : Colors.transparent,
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Icon(
+                                                    FontAwesomeIcons.filter,
+                                                    color: Colors.grey,
+                                                    size: 16,
                                                   ),
-                                                  color: tag['color']
-                                                      .withOpacity(0.1),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      FontAwesomeIcons.tag,
-                                                      color: tag['color'],
-                                                      size: 18,
+                                                  const SizedBox(width: 6),
+                                                  const Text(
+                                                    'Filter',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.grey,
                                                     ),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      tag['name'],
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: tag['color'],
+                                                  ),
+                                                  if (selectedTagsForFilter
+                                                      .isNotEmpty)
+                                                    Container(
+                                                      margin:
+                                                          const EdgeInsets.only(
+                                                              left: 6),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
+                                                      decoration:
+                                                          const BoxDecoration(
+                                                        color: Colors.blue,
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: Text(
+                                                        selectedTagsForFilter
+                                                            .length
+                                                            .toString(),
+                                                        style: const TextStyle(
+                                                          fontSize: 10,
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
                                                       ),
                                                     ),
-                                                    const SizedBox(width: 4),
-                                                    InkWell(
-                                                      onTap: () {
-                                                        _deleteTag(tag['id']);
-                                                      },
-                                                      child: Icon(
-                                                        Icons.close,
-                                                        color: tag['color'],
-                                                        size: 16,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                ],
                                               ),
                                             ),
-                                          );
-                                        }).toList(),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -807,8 +819,7 @@ class _RecentChatViewState extends State<RecentChatView> {
   bool isPinned = false;
 
   Widget leadRecordList(Records model, String unreadMsgCount) {
-    Color statusColor;
-    statusColor = AppColor.navBarIconColor;
+    Color statusColor = AppColor.navBarIconColor;
 
     String formatPhoneNumber(String? phoneNumber) {
       if (phoneNumber == null || phoneNumber.isEmpty) return '';
@@ -823,7 +834,6 @@ class _RecentChatViewState extends State<RecentChatView> {
       }
     }
 
-    // Get visible tags (max 3)
     List<dynamic> visibleTags =
         model.tag_names != null && model.tag_names!.isNotEmpty
             ? model.tag_names!.length > maxTagsToShow
@@ -831,11 +841,25 @@ class _RecentChatViewState extends State<RecentChatView> {
                 : model.tag_names!
             : [];
 
-    // Check if there are more tags than shown
     bool hasMoreTags =
         model.tag_names != null && model.tag_names!.length > maxTagsToShow;
     int remainingTagsCount =
         model.tag_names != null ? model.tag_names!.length - maxTagsToShow : 0;
+
+    Color tagIconColor = Colors.grey[600]!;
+    if (visibleTags.isNotEmpty) {
+      try {
+        final tag = visibleTags[0];
+        final tagIndex = allUniqueTags.indexWhere((t) => t['id'] == tag['id']);
+        if (tagIndex != -1) {
+          tagIconColor = allUniqueTags[tagIndex]['color'];
+        }
+      } catch (e) {
+        tagIconColor = Colors.grey[600]!;
+      }
+    }
+
+    bool hasUnread = unreadMsgCount != "0" && unreadMsgCount.isNotEmpty;
 
     return  model.isArchived! ? const SizedBox() : GestureDetector(
       onLongPress: () {
@@ -869,9 +893,49 @@ class _RecentChatViewState extends State<RecentChatView> {
         ),
         margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: CircleAvatar(
+                      radius: 22,
+                      backgroundColor: AppColor.navBarIconColor,
+                      child: Text(
+                        model.contactname?.isNotEmpty == true
+                            ? model.contactname![0].toUpperCase()
+                            : '?',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (model.pinned ?? false)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.push_pin,
+                          size: 12,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: InkWell(
                   onTap: () {
@@ -897,11 +961,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                         ),
                       ).then((_) {
                         _getUnreadCount();
-
-                        setState(() {
-                          unreadMsgCount = "0";
-                          unreadMsgCount = "";
-                        });
+                        setState(() {});
                       });
                       leads?.viewModels.clear();
                       Provider.of<LeadListViewModel>(context, listen: false)
@@ -916,157 +976,95 @@ class _RecentChatViewState extends State<RecentChatView> {
                       );
                     }
                   },
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 18.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor: AppColor.navBarIconColor,
-                              child: Text(
-                                model.contactname?.isNotEmpty == true
-                                    ? model.contactname![0].toUpperCase()
-                                    : '?',
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10.0, horizontal: 5),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "${model.contactname}",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontFamily: AppFonts.semiBold,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                formatPhoneNumber(model.full_number),
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                "${model.message}",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.black54),
-                              ),
-                              // Display tags if available - MAX 3 TAGS
-                              if (visibleTags.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4.0),
-                                  child: Wrap(
-                                    spacing: 4,
-                                    runSpacing: 2,
-                                    children: [
-                                      ...visibleTags.map<Widget>((tag) {
-                                        final tagColor =
-                                            allUniqueTags.firstWhere(
-                                          (t) => t['id'] == tag['id'],
-                                          orElse: () => {'color': Colors.grey},
-                                        )['color'];
-                                        return Container(
-                                          padding: const EdgeInsets.only(
-                                            left: 6,
-                                            right: 4,
-                                            top: 2,
-                                            bottom: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: tagColor.withOpacity(0.1),
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                            border: Border.all(
-                                              color: tagColor,
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                FontAwesomeIcons.tag,
-                                                size: 10,
-                                                color: tagColor,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                tag['name'],
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  color: tagColor,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 2),
-                                              InkWell(
-                                                onTap: () {
-                                                  _removeTagFromLead(
-                                                      model, tag['id']);
-                                                },
-                                                child: Icon(
-                                                  Icons.close,
-                                                  size: 12,
-                                                  color: tagColor,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }).toList(),
-                                      if (hasMoreTags)
-                                        InkWell(
-                                          onTap: () {
-                                            _showTagsBottomSheet(
-                                                context, model);
-                                          },
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: AppColor.navBarIconColor
-                                                  .withOpacity(0.1),
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                              border: Border.all(
-                                                color: AppColor.navBarIconColor,
-                                                width: 1,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              '+$remainingTagsCount more',
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                color: AppColor.navBarIconColor,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
+                      // Name and Tag Icon
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                // Contact name with ellipsis
+                                Flexible(
+                                  child: Text(
+                                    "${model.contactname}",
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontFamily: AppFonts.semiBold,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                            ],
+                                // Tag icon with bigger size and scope
+                                if (visibleTags.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 6),
+                                    child: InkWell(
+                                      onTap: () {
+                                        _showTagsBottomSheet(context, model);
+                                      },
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              FontAwesomeIcons.tag,
+                                              size: 20,
+                                              color: tagIconColor,
+                                            ),
+                                            // Tags count दिखाएं
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 4),
+                                              child: Text(
+                                                // Total tags count दिखाएं
+                                                '+${model.tag_names?.length ?? 0}',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: tagIconColor,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+
+                      // Phone number
+                      Text(
+                        formatPhoneNumber(model.full_number),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+
+                      // Last message
+                      Text(
+                        "${model.message}",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
                         ),
                       ),
                     ],
@@ -1074,91 +1072,90 @@ class _RecentChatViewState extends State<RecentChatView> {
                 ),
               ),
               Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (model.pinned ?? false)
-                        Icon(
-                          Icons.push_pin,
-                          color: Colors.black87,
-                          size: 16,
-                        ),
-                      if (unreadMsgCount != "0" && unreadMsgCount.isNotEmpty)
-                        badges.Badge(
-                          badgeStyle: const badges.BadgeStyle(
-                            badgeColor: Colors.green,
-                          ),
-                          badgeContent: Text(
-                            unreadMsgCount,
-                            style: const TextStyle(color: Colors.white),
+                  if (hasUnread)
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: const BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          unreadMsgCount,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      PopupMenuButton<String>(
-                        padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.more_vert,
-                            size: 20, color: Colors.black54),
-                        onSelected: (value) {
-                          if (value == 'pin') {
-                            _handlePinAction(model);
-                          } else if (value == 'tags') {
-                            _showTagsBottomSheet(context, model);
-                          }
-                        },
-                        itemBuilder: (BuildContext context) => [
-                          PopupMenuItem<String>(
-                            value: 'pin',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  model.pinned ?? false
-                                      ? Icons.push_pin
-                                      : Icons.push_pin_outlined,
-                                  color: Colors.black87,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(model.pinned ?? false ? 'Unpin' : 'Pin'),
-                              ],
+                      ),
+                    ),
+               
+                  PopupMenuButton<String>(
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.more_vert,
+                        size: 18, color: Colors.black54),
+                    onSelected: (value) {
+                      if (value == 'pin') {
+                        _handlePinAction(model);
+                      } else if (value == 'tags') {
+                        _showTagsBottomSheet(context, model);
+                      }
+                    },
+                    itemBuilder: (BuildContext context) => [
+                      PopupMenuItem<String>(
+                        value: 'pin',
+                        child: Row(
+                          children: [
+                            Icon(
+                              model.pinned ?? false
+                                  ? Icons.push_pin
+                                  : Icons.push_pin_outlined,
+                              color: Colors.black87,
+                              size: 18,
                             ),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'tags',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  FontAwesomeIcons.tags,
-                                  color: Colors.black87,
-                                  size: 16,
-                                ),
-                                SizedBox(width: 8),
-                                Text('Manage Tags'),
-                              ],
+                            const SizedBox(width: 8),
+                            Text(model.pinned ?? false ? 'Unpin' : 'Pin',
+                                style: const TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'tags',
+                        child: Row(
+                          children: [
+                            Icon(
+                              FontAwesomeIcons.tags,
+                              color: tagIconColor,
+                              size: 14,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            const Text('Manage Tags',
+                                style: TextStyle(fontSize: 14)),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 40),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          formatDateTime(model.createddate.toString()),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Colors.black54,
-                          ),
+
+                  const SizedBox(height: 8),
+
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _formatMessageTime(model.createddate.toString()),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
                         ),
-                        const SizedBox(width: 20),
-                      ],
-                    ),
-                  )
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                  ),
                 ],
               )
             ],
@@ -1166,6 +1163,29 @@ class _RecentChatViewState extends State<RecentChatView> {
         ),
       ),
     );
+  }
+
+  String _formatMessageTime(String isoString) {
+    try {
+      final inputDate = DateTime.parse(isoString).toLocal();
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+
+      final messageDate =
+          DateTime(inputDate.year, inputDate.month, inputDate.day);
+
+      if (messageDate == today) {
+        return DateFormat('h:mm a').format(inputDate); // Today: show time
+      } else if (messageDate == yesterday) {
+        return 'Yesterday';
+      } else {
+        // For all other days: show date only
+        return DateFormat('MM/dd/yy').format(inputDate);
+      }
+    } catch (e) {
+      return '';
+    }
   }
 
   Future<void> _removeTagFromLead(Records lead, String tagId) async {
@@ -1212,7 +1232,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                 const SnackBar(
                   content: Text('Tag removed from lead'),
                   duration: Duration(seconds: 2),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColor.cardsColor,
                 ),
               );
             },
@@ -1370,6 +1390,277 @@ class _RecentChatViewState extends State<RecentChatView> {
     }
   }
 
+  void _showFilterTagsBottomSheet() {
+    List<String> selectedFilterTagIds =
+        selectedTagsForFilter.map((tag) => tag['id'] as String).toList();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Filter by Labels',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, size: 24),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 20),
+                  if (selectedFilterTagIds.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Selected for Filter:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: selectedFilterTagIds.map<Widget>((tagId) {
+                            final tag = allUniqueTags.firstWhere(
+                              (t) => t['id'] == tagId,
+                              orElse: () => {
+                                'id': tagId,
+                                'name': 'Unknown',
+                                'color': Colors.grey
+                              },
+                            );
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: tag['color'].withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: tag['color'],
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    FontAwesomeIcons.tag,
+                                    size: 2,
+                                    color: tag['color'],
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    tag['name'],
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: tag['color'],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        selectedFilterTagIds.remove(tagId);
+                                      });
+                                    },
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 14,
+                                      color: tag['color'],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  const Text(
+                    'Select Labels to Filter:',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: allUniqueTags.isEmpty
+                        ? const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  FontAwesomeIcons.tags,
+                                  size: 48,
+                                  color: Colors.grey,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No labels available',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: EdgeInsets.zero,
+                            itemCount: allUniqueTags.length,
+                            itemBuilder: (context, index) {
+                              final tag = allUniqueTags[index];
+                              final isSelected =
+                                  selectedFilterTagIds.contains(tag['id']);
+
+                              return ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 0,
+                                  vertical: 4,
+                                ),
+                                leading: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: tag['color'].withOpacity(0.15),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    FontAwesomeIcons.tag,
+                                    size: 20,
+                                    color: tag['color'],
+                                  ),
+                                ),
+                                title: Text(
+                                  tag['name'],
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                                trailing: Checkbox(
+                                  value: isSelected,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      if (value == true) {
+                                        if (!selectedFilterTagIds
+                                            .contains(tag['id'])) {
+                                          selectedFilterTagIds.add(tag['id']);
+                                        }
+                                      } else {
+                                        selectedFilterTagIds.remove(tag['id']);
+                                      }
+                                    });
+                                  },
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedTagsForFilter.clear();
+                              isTagFilterActive = false;
+                              allRecentChats = tempLeadModelList;
+                            });
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade200,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Clear Filter',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedTagsForFilter = allUniqueTags
+                                  .where((tag) =>
+                                      selectedFilterTagIds.contains(tag['id']))
+                                  .toList();
+                              isTagFilterActive =
+                                  selectedTagsForFilter.isNotEmpty;
+                              _applyTagFilter();
+                            });
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColor.navBarIconColor,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Filter',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showTagsBottomSheet(BuildContext context, Records lead) {
     selectedTagIdsForCurrentLead =
         lead.tag_names?.map((tag) => tag['id'] as String).toList() ?? [];
@@ -1448,86 +1739,6 @@ class _RecentChatViewState extends State<RecentChatView> {
                   ),
                   const Divider(height: 20),
 
-                  // Selected tags section
-                  // if (selectedTagIdsForCurrentLead.isNotEmpty)
-                  //   Column(
-                  //     crossAxisAlignment: CrossAxisAlignment.start,
-                  //     children: [
-                  //       const Text(
-                  //         'Selected Labels',
-                  //         style: TextStyle(
-                  //           fontSize: 14,
-                  //           fontWeight: FontWeight.w600,
-                  //           color: Colors.green,
-                  //         ),
-                  //       ),
-                  //       const SizedBox(height: 8),
-                  //       Wrap(
-                  //         spacing: 8,
-                  //         runSpacing: 8,
-                  //         children: selectedTagIdsForCurrentLead
-                  //             .map<Widget>((tagId) {
-                  //           final tag = allUniqueTags.firstWhere(
-                  //             (t) => t['id'] == tagId,
-                  //             orElse: () => {
-                  //               'id': tagId,
-                  //               'name': 'Unknown',
-                  //               'color': Colors.grey
-                  //             },
-                  //           );
-                  //           return Container(
-                  //             padding: const EdgeInsets.symmetric(
-                  //               horizontal: 12,
-                  //               vertical: 6,
-                  //             ),
-                  //             decoration: BoxDecoration(
-                  //               color: tag['color'].withOpacity(0.15),
-                  //               borderRadius: BorderRadius.circular(20),
-                  //               border: Border.all(
-                  //                 color: tag['color'],
-                  //                 width: 1,
-                  //               ),
-                  //             ),
-                  //             child: Row(
-                  //               mainAxisSize: MainAxisSize.min,
-                  //               children: [
-                  //                 Icon(
-                  //                   FontAwesomeIcons.tag,
-                  //                   size: 12,
-                  //                   color: tag['color'],
-                  //                 ),
-                  //                 const SizedBox(width: 6),
-                  //                 Text(
-                  //                   tag['name'],
-                  //                   style: TextStyle(
-                  //                     fontSize: 12,
-                  //                     color: tag['color'],
-                  //                     fontWeight: FontWeight.w500,
-                  //                   ),
-                  //                 ),
-                  //                 const SizedBox(width: 6),
-                  //                 InkWell(
-                  //                   onTap: () {
-                  //                     setState(() {
-                  //                       selectedTagIdsForCurrentLead
-                  //                           .remove(tagId);
-                  //                     });
-                  //                   },
-                  //                   child: Icon(
-                  //                     Icons.close,
-                  //                     size: 14,
-                  //                     color: tag['color'],
-                  //                   ),
-                  //                 ),
-                  //               ],
-                  //             ),
-                  //           );
-                  //         }).toList(),
-                  //       ),
-                  //       const SizedBox(height: 16),
-                  //     ],
-                  //   ),
-
                   // Create new label button
                   ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 0),
@@ -1535,13 +1746,13 @@ class _RecentChatViewState extends State<RecentChatView> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.15),
+                        color: AppColor.cardsColor.withOpacity(0.15),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.add,
                         size: 24,
-                        color: Colors.green,
+                        color: AppColor.navBarIconColor,
                       ),
                     ),
                     title: const Text(
@@ -1678,7 +1889,8 @@ class _RecentChatViewState extends State<RecentChatView> {
                                                 'Label "$tagName" created successfully'),
                                             duration:
                                                 const Duration(seconds: 2),
-                                            backgroundColor: Colors.green,
+                                            backgroundColor:
+                                                AppColor.cardsColor,
                                           ),
                                         );
                                       } else if (context.mounted) {
@@ -1697,7 +1909,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
                                     newTagController.text.trim().isNotEmpty
-                                        ? Colors.green
+                                        ? AppColor.navBarIconColor
                                         : Colors.grey.shade300,
                                 foregroundColor:
                                     newTagController.text.trim().isNotEmpty
@@ -1832,7 +2044,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                           : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: hasChanges
-                            ? Colors.blue[700]
+                            ? AppColor.navBarIconColor
                             : Colors.grey.shade300,
                         foregroundColor:
                             hasChanges ? Colors.white : Colors.grey.shade600,
@@ -2013,11 +2225,11 @@ class _RecentChatViewState extends State<RecentChatView> {
                       }
                     }
 
-                    if (selectedTagId == tagId) {
-                      selectedTagId = null;
-                      selectedTagName = null;
-                      isTagFilterActive = false;
-                      allRecentChats = tempLeadModelList;
+                    if (selectedTagsForFilter
+                        .any((tag) => tag['id'] == tagId)) {
+                      selectedTagsForFilter
+                          .removeWhere((tag) => tag['id'] == tagId);
+                      _applyTagFilter();
                     }
                   });
 

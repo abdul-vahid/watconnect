@@ -369,6 +369,7 @@ class _Forms extends State<LeadAddView> {
       ),
       body: _pageBody(),
       bottomNavigationBar: Container(
+        margin: const EdgeInsets.all(10),
         // decoration: InputDecoration(border: Border.all(12)),
         height: 49,
         color: Colors.white,

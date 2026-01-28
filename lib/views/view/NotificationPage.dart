@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/unread_count_vm.dart';
+import 'package:whatsapp/views/view/chat/whatsapp_chat_screen.dart';
 import '../../models/unread_msg_model/record.dart';
 import '../../models/unread_msg_model/unread_msg_model.dart'
     show UnreadMsgModel;
@@ -163,6 +164,24 @@ class _NotificationPageState extends State<NotificationPage> {
                                   ),
                                 ),
                                 child: ListTile(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            WhatsappChatScreen(
+                                          pinnedLeads: [],
+                                          leadName: record.name ?? "",
+                                          wpnumber: record.whatsappNumber ?? "",
+                                          id: record.parentId ?? "",
+                                          contryCode: "+91",
+                                        ),
+                                      ),
+                                    ).then((_) {
+                                      fetchcount();
+                                      setState(() {});
+                                    });
+                                  },
                                   leading: Container(
                                     width: 40,
                                     height: 40,
@@ -193,9 +212,6 @@ class _NotificationPageState extends State<NotificationPage> {
                                     shouldHideLeadNumber
                                         ? "*******${record.whatsappNumber?.substring(record.whatsappNumber!.length - 5)}"
                                         : record.whatsappNumber ?? "",
-                                    // record.whatsappNumber ??
-                                    //     record.whatsappNumber ??
-                                    //     "",
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w400,
