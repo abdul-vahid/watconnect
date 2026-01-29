@@ -398,4 +398,6 @@ class NotificationService {
 
     return result;
   }
+
+  static Future<void> displayBackgroundNotification(RemoteMessage message) async {}
 }
