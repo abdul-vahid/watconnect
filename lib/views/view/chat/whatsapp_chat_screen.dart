@@ -468,7 +468,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                 }
                               },
                               itemBuilder: (context) {
-                                // Dynamic menu items based on local archive state
                                 return [
                                   PopupMenuItem<String>(
                                     value: _isArchived

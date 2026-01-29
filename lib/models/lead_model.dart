@@ -65,6 +65,7 @@ class LeadModel {
   String? createdbyname;
   String? lastmodifiedbyname;
   bool? pinned;
+  bool? isArchived;
 
   LeadModel(
       {this.id,
@@ -92,7 +93,9 @@ class LeadModel {
       this.ownername,
       this.createdbyname,
       this.lastmodifiedbyname,
-      this.pinned});
+      this.pinned,
+      this.isArchived
+      });
 
   factory LeadModel.fromJson(Map<String, dynamic> json) {
     return LeadModel(
@@ -123,7 +126,10 @@ class LeadModel {
         ownername: json['ownername'] ?? '',
         createdbyname: json['createdbyname'] ?? '',
         lastmodifiedbyname: json['lastmodifiedbyname'] ?? '',
-        pinned: json['pinned'] ?? false);
+        pinned: json['pinned'] ?? false,
+        isArchived: json['is_archived']??false
+        
+        );
   }
 
   Map<String, dynamic> toJson() {
@@ -153,7 +159,8 @@ class LeadModel {
       'ownername': ownername ?? '',
       'createdbyname': createdbyname ?? '',
       'lastmodifiedbyname': lastmodifiedbyname ?? '',
-      'pinned': pinned ?? false
+      'pinned': pinned ?? false,
+      "is_archived":isArchived??false
     };
   }
 }

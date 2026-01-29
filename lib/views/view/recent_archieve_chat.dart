@@ -231,7 +231,7 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
 
     return FocusDetector(
       onFocusGained: (){
-        getLeadList();
+        getLeadList(showLoading: false);
       },
       child: Scaffold(
         backgroundColor: AppColor.pageBgGrey,

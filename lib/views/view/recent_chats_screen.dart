@@ -231,7 +231,7 @@ class _RecentChatViewState extends State<RecentChatView> {
 
     return FocusDetector(
       onFocusGained: (){
-        getLeadList();
+        getLeadList(showLoading: false);
       },
       child: Scaffold(
         backgroundColor: AppColor.pageBgGrey,

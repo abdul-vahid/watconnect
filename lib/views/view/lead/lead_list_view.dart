@@ -166,7 +166,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       onFocusGained: () {
         // print("Screen focused again");
         log('\x1B[95mFCM     Leads Screen focused again::::::::::::::::::::::::::::::::::::::::::::::::::');
-
+        getLeadList(showLoading: false);
         connectSocket();
       },
       onFocusLost: () {
@@ -691,6 +691,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                       wpnumber: model.full_number,
                                       id: model.id,
                                       model: model,
+                                      isArch: model.isArchived,
                                       // contryCode: model.countrycode,
                                     ),
                                   ),
@@ -1295,6 +1296,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                       wpnumber: model.full_number,
                       id: model.id,
                       model: model,
+                      isArch: model.isArchived,
                     ),
                   ),
                 ).then((onValue) {
@@ -1520,15 +1522,16 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       });
     }
 
-    // CLEAR LISTS FIRST
-    tempLeadModelList.clear();
-    allLeads.clear();
-    // backupListModel.clear();
-    pinnedLeads.clear();
+   
 
     await Provider.of<LeadListViewModel>(context, listen: false)
         .fetch()
         .then((onValue) {
+           // CLEAR LISTS FIRST
+    tempLeadModelList.clear();
+    allLeads.clear();
+    // backupListModel.clear();
+    pinnedLeads.clear();
       for (var viewModel in leadlistvm.viewModels) {
         var leadmodel = viewModel.model;
         if (leadmodel?.records != null) {
