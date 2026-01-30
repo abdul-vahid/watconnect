@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -230,7 +231,7 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
     leadlistvm = Provider.of<LeadListViewModel>(context);
 
     return FocusDetector(
-      onFocusGained: (){
+      onFocusGained: () {
         getLeadList(showLoading: false);
       },
       child: Scaffold(
@@ -261,20 +262,24 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                 )
               : const Text(
                   'Archive Chats',
-                  style:
-                      TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600),
                 ),
           centerTitle: true,
-          leading: IconButton(onPressed: (){
-            Navigator.pop(context);
-          }, icon: Icon(Icons.arrow_back,color: Colors.white,)),
+          leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+              )),
           elevation: 5,
           actions: [
-      
-        // IconButton(onPressed: (){
-        //   Navigator.push(context, MaterialPageRoute(builder: (context)=>RecentArchieveChatView()));
-        // }, icon: Icon(Icons.archive),color: Colors.white,),
-      
+            // IconButton(onPressed: (){
+            //   Navigator.push(context, MaterialPageRoute(builder: (context)=>RecentArchieveChatView()));
+            // }, icon: Icon(Icons.archive),color: Colors.white,),
+
             showPin
                 ? Row(
                     children: [
@@ -293,7 +298,7 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                           ),
                         ),
                       ),
-      
+
                       // Pin Icon
                       Padding(
                         padding: const EdgeInsets.only(right: 16.0),
@@ -756,7 +761,7 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                                               }
                                             }
 
-                                            return   leadRecordList(
+                                            return leadRecordList(
                                                 lead, unreadCount);
                                           },
                                         ),
@@ -864,7 +869,7 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
 
     bool hasUnread = unreadMsgCount != "0" && unreadMsgCount.isNotEmpty;
 
-    return   GestureDetector(
+    return GestureDetector(
       onLongPress: () {
         setState(() {
           showPin = true;
@@ -958,7 +963,7 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                             leadName: model.contactname ?? "",
                             wpnumber: model.full_number,
                             id: model.id,
-                          isArch: model.isArchived,
+                            isArch: model.isArchived,
                             contryCode: model.countrycode,
                           ),
                         ),
@@ -1096,7 +1101,6 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                         ),
                       ),
                     ),
-               
                   PopupMenuButton<String>(
                     padding: EdgeInsets.zero,
                     icon: const Icon(Icons.more_vert,
@@ -1106,9 +1110,26 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                         _handlePinAction(model);
                       } else if (value == 'tags') {
                         _showTagsBottomSheet(context, model);
+                      } else if (value == 'archieve') {
+                        _toggleArchiveStatus(model.id ?? "");
                       }
                     },
                     itemBuilder: (BuildContext context) => [
+                      PopupMenuItem<String>(
+                        value: 'archieve',
+                        child: Row(
+                          children: [
+                            Icon(
+                              FontAwesomeIcons.tags,
+                              color: tagIconColor,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('Un-Archive',
+                                style: TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                      ),
                       PopupMenuItem<String>(
                         value: 'pin',
                         child: Row(
@@ -1143,9 +1164,7 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 8),
-
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1168,28 +1187,29 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
     );
   }
 
-  String _formatMessageTime(String isoString) {
-    try {
-      final inputDate = DateTime.parse(isoString).toLocal();
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final yesterday = today.subtract(const Duration(days: 1));
+String _formatMessageTime(String isoString) {
+  try {
+    final inputDate = DateTime.parse(isoString).toLocal();
+    final now = DateTime.now();
 
-      final messageDate =
-          DateTime(inputDate.year, inputDate.month, inputDate.day);
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final messageDate =
+        DateTime(inputDate.year, inputDate.month, inputDate.day);
 
-      if (messageDate == today) {
-        return DateFormat('h:mm a').format(inputDate); // Today: show time
-      } else if (messageDate == yesterday) {
-        return 'Yesterday';
-      } else {
-        // For all other days: show date only
-        return DateFormat('MM/dd/yy').format(inputDate);
-      }
-    } catch (e) {
-      return '';
+    final time = DateFormat('h:mm a').format(inputDate);
+
+    if (messageDate == today) {
+      return time; // Today → only time
+    } else if (messageDate == yesterday) {
+      return 'Yesterday, $time'; // Yesterday → text + time
+    } else {
+      return DateFormat('MM/dd/yy').format(inputDate); // Older → date only
     }
+  } catch (e) {
+    return '';
   }
+}
 
   Future<void> _removeTagFromLead(Records lead, String tagId) async {
     showDialog(
@@ -2307,5 +2327,28 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
     final prefs = await SharedPreferences.getInstance();
     shouldHideLeadNumber = prefs.getBool(SharedPrefsConstants.shouldHideNumber);
     setState(() {});
+  }
+
+  Future<void> _toggleArchiveStatus(String id) async {
+    try {
+      final LeadListViewModel leadData =
+          Provider.of<LeadListViewModel>(context, listen: false);
+
+      Map<String, dynamic> body = {"id": id, "is_archived": false};
+
+      EasyLoading.show(status: 'Processing...');
+
+      await leadData.updatelead(body, id ?? "");
+
+      EasyLoading.dismiss();
+
+      EasyLoading.showToast('Chat Un-Archive successfully');
+
+      getLeadList(showLoading: false);
+    } catch (e) {
+      EasyLoading.dismiss();
+      EasyLoading.showToast('Failed to update archive status');
+      print('Error in _toggleArchiveStatus: $e');
+    }
   }
 }

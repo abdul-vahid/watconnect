@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -1104,8 +1105,32 @@ class _RecentChatViewState extends State<RecentChatView> {
                       } else if (value == 'tags') {
                         _showTagsBottomSheet(context, model);
                       }
+
+                      else if (value == 'archieve') {
+                        _toggleArchiveStatus(model?.lead_id??"");
+                      }
                     },
                     itemBuilder: (BuildContext context) => [
+
+
+
+                       PopupMenuItem<String>(
+                        value: 'archieve',
+                        child: Row(
+                          children: [
+                            Icon(
+                              model.isArchived ?? false 
+                                  ? Icons.archive
+                                  : Icons.unarchive,
+                              color: Colors.black87,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(model.isArchived ?? false ? 'Un-Archive' : 'Archive',
+                                style: const TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                      ),
                       PopupMenuItem<String>(
                         value: 'pin',
                         child: Row(
@@ -1165,28 +1190,30 @@ class _RecentChatViewState extends State<RecentChatView> {
     );
   }
 
-  String _formatMessageTime(String isoString) {
-    try {
-      final inputDate = DateTime.parse(isoString).toLocal();
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final yesterday = today.subtract(const Duration(days: 1));
+String _formatMessageTime(String isoString) {
+  try {
+    final inputDate = DateTime.parse(isoString).toLocal();
+    final now = DateTime.now();
 
-      final messageDate =
-          DateTime(inputDate.year, inputDate.month, inputDate.day);
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final messageDate =
+        DateTime(inputDate.year, inputDate.month, inputDate.day);
 
-      if (messageDate == today) {
-        return DateFormat('h:mm a').format(inputDate); // Today: show time
-      } else if (messageDate == yesterday) {
-        return 'Yesterday';
-      } else {
-        // For all other days: show date only
-        return DateFormat('MM/dd/yy').format(inputDate);
-      }
-    } catch (e) {
-      return '';
+    final time = DateFormat('h:mm a').format(inputDate);
+
+    if (messageDate == today) {
+      return time; 
+    } else if (messageDate == yesterday) {
+      return 'Yesterday, $time'; 
+    } else {
+      return DateFormat('MM/dd/yy').format(inputDate); 
     }
+  } catch (e) {
+    return '';
   }
+}
+
 
   Future<void> _removeTagFromLead(Records lead, String tagId) async {
     showDialog(
@@ -2305,4 +2332,42 @@ class _RecentChatViewState extends State<RecentChatView> {
     shouldHideLeadNumber = prefs.getBool(SharedPrefsConstants.shouldHideNumber);
     setState(() {});
   }
-}
+  
+  Future<void> _toggleArchiveStatus(String id) async {
+    try {
+      final LeadListViewModel leadData =
+          Provider.of<LeadListViewModel>(context, listen: false);
+
+   
+
+      Map<String, dynamic> body = {
+        "id": id,
+        "is_archived": true
+      };
+
+      EasyLoading.show(status: 'Processing...');
+
+      await leadData.updatelead(body, id ?? "");
+
+      EasyLoading.dismiss();
+
+     
+
+     
+      EasyLoading.showToast(
+           'Chat Archived Successfully'
+          );
+
+            getLeadList();
+
+   
+
+    } catch (e) {
+      EasyLoading.dismiss();
+      EasyLoading.showToast('Failed to update archive status');
+      print('Error in _toggleArchiveStatus: $e');
+    }
+  }
+  
+  
+  }
