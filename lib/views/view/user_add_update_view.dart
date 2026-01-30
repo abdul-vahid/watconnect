@@ -304,58 +304,116 @@ class _Forms extends State<UserAddView> {
         ),
       ),
       body: _pageBody(),
-      bottomNavigationBar: Container(
-        // decoration: InputDecoration(border: Border.all(12)),
-        height: 49,
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: Row(
-          children: [
-            // First button (Submit/Update)
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColor.cardsColor,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                ),
-                onPressed: isEdit ? updateData : onButtonPressed,
-                child: Text(
-                  isEdit ? "Update" : "Submit",
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
+      // bottomNavigationBar: Container(
+      //   // decoration: InputDecoration(border: Border.all(12)),
+      //   height: 49,
+      //   color: Colors.white,
+      //   padding: const EdgeInsets.symmetric(horizontal: 10),
+      //   child: Row(
+      //     children: [
+      //       // First button (Submit/Update)
+      //       Expanded(
+      //         child: ElevatedButton(
+      //           style: ElevatedButton.styleFrom(
+      //             backgroundColor: AppColor.cardsColor,
+      //             padding: const EdgeInsets.symmetric(vertical: 10),
+      //           ),
+      //           onPressed: isEdit ? updateData : onButtonPressed,
+      //           child: Text(
+      //             isEdit ? "Update" : "Submit",
+      //             style: const TextStyle(
+      //               fontSize: 14,
+      //               fontWeight: FontWeight.w600,
+      //               color: Colors.white,
+      //             ),
+      //           ),
+      //         ),
+      //       ),
 
-            const SizedBox(width: 10), // Space between buttons
+      //       const SizedBox(width: 10), // Space between buttons
 
-            // Second button (Cancel)
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  side: const BorderSide(
-                    width: 1.0,
-                    color: Colors.black,
+      //       // Second button (Cancel)
+      //       Expanded(
+      //         child: OutlinedButton(
+      //           onPressed: () {
+      //             Navigator.pop(context);
+      //           },
+      //           style: OutlinedButton.styleFrom(
+      //             padding: const EdgeInsets.symmetric(vertical: 10),
+      //             side: const BorderSide(
+      //               width: 1.0,
+      //               color: Colors.black,
+      //             ),
+      //           ),
+      //           child: const Text(
+      //             'Cancel',
+      //             style: TextStyle(
+      //               fontSize: 14,
+      //               fontWeight: FontWeight.w500,
+      //               color: Colors.black,
+      //             ),
+      //           ),
+      //         ),
+      //       ),
+      //     ],
+      //   ),
+      // ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(
+              bottom: 8.0,
+              left: 10,
+              right: 10), // Adjust bottom padding as needed
+          child: Container(
+            height: 49,
+            color: Colors.white,
+            child: Row(
+              children: [
+                // First button (Submit/Update)
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor.cardsColor,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    onPressed: isEdit ? updateData : onButtonPressed,
+                    child: Text(
+                      isEdit ? "Update" : "Submit",
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
+                const SizedBox(width: 10),
+                // Second button (Cancel)
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      side: const BorderSide(
+                        width: 1.0,
+                        color: Colors.black,
+                      ),
+                    ),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
