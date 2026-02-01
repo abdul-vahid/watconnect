@@ -8018,26 +8018,23 @@ class _MyAppState extends State<MyApp> {
         debug("⚠️ No matching lead found, creating dummy");
         matchedLead = SfDrawerItemModel(
           id: leadPhone,
-          name: "Unknown ($leadPhone)",
+          name: " ($leadPhone)",
           whatsappNumber: leadPhone,
           countryCode: "91",
           // phone_number: leadPhone,
         );
       }
 
-      // ✅ CRITICAL: Set selected contact info BEFORE navigation
       debug("📱 Setting selected contact: ${matchedLead.name}");
       debug("📱 Contact phone: ${matchedLead.whatsappNumber}");
       debug("📱 Contact ID: ${matchedLead.id}");
       
       dbController.setSelectedContaactInfo(matchedLead);
 
-      // ✅ Also set pinned info if needed
       dbController.setSelectedPinnedInfo(null);
 
       debug("🚀 Opening Chat for ${matchedLead.whatsappNumber}");
 
-      // Navigate to chat screen
       await _navigateToChatScreen(
         context,
         matchedLead,
