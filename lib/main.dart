@@ -6414,6 +6414,7 @@
 // //         Uri uri = Uri.parse(url);
 // //         List<String> segments = uri.pathSegments;
 
+       
 // //         if (segments.length >= 3) {
 // //           for (int i = 0; i < segments.length - 1; i++) {
 // //             if (segments[i].toLowerCase() == "chat" &&
@@ -6548,7 +6549,7 @@
 
 // //   //         if (leadmodel?.records != null) {
 // //   //           for (var record in leadmodel!.records!) {
-
+       
 // //   //             if (record.pinned == true) {
 // //   //               pinnedLeads.add(record);
 // //   //             }
@@ -6605,6 +6606,7 @@
 // //     if (context == null) return;
 // //  DashBoardController dbController =
 // //           Provider.of(navigatorKey.currentContext!, listen: false);
+     
 
 // //     /// ✅ SAFE API CALL
 // //     String type = dbController.drawerItems.isNotEmpty
@@ -6655,6 +6657,8 @@
 // //     debug("❌ Deep link navigation error: $e");
 // //   }
 // // }
+
+
 
 // //   bool _isPhoneMatch(String recordPhone, String searchPhone) {
 // //     String recordDigits = recordPhone.replaceAll(RegExp(r'[^\d]'), '');
@@ -7310,11 +7314,11 @@
 //         // }
 
 //         // Check for phone match - IMPORTANT: Check multiple phone fields
-//         String? phoneToCheck = item.whatsAppNumberField ??
+//         String? phoneToCheck = item.whatsAppNumberField ?? 
 //                               item.whatsAppNumberField ;
-//                               // item.phone_number ??
+//                               // item.phone_number ?? 
 //                               // item.full_number;
-
+        
 //         if (phoneToCheck != null && _isPhoneMatch(phoneToCheck, leadPhone)) {
 //           // matchedLead = item;
 //           // debug("✅ Found matching lead: ${item.name} - ${phoneToCheck}");
@@ -7373,7 +7377,7 @@
 //     // ✅ Get ChatMessageController and load messages BEFORE navigation
 //     ChatMessageController chatController =
 //         Provider.of<ChatMessageController>(context, listen: false);
-
+    
 //     String phoneNumber = matchedLead.whatsappNumber ?? "";
 //     if (phoneNumber.isNotEmpty) {
 //       debug("📥 Loading messages for: $phoneNumber");
@@ -7949,188 +7953,188 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _findAndNavigateToLead(
-      String leadPhone, String objectType) async {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        final BuildContext? context = navigatorKey.currentContext;
-        if (context == null) {
-          debug("❌ Context is null, retrying...");
-          Future.delayed(const Duration(milliseconds: 500), () {
-            _findAndNavigateToLead(leadPhone, objectType);
-          });
-          return;
-        }
-
-        debug("🔍 Searching for lead with phone: $leadPhone");
-        debug("   Object Type: $objectType");
-
-        // ✅ Get dashboard controller FIRST
-        final DashBoardController? dbController =
-            Provider.of<DashBoardController>(context, listen: false);
-
-        if (dbController == null) {
-          debug("❌ DashBoardController not found");
-          return;
-        }
-
-        // ✅ Call dashboard API before processing
-        await _callDashboardApi(context);
-
-        // Call drawer list API
-        String type = dbController.drawerItems.isNotEmpty &&
-                dbController.drawerItems.first.sObjectName != null
-            ? dbController.drawerItems.first.sObjectName!
-            : "Lead";
-
-        await dbController.drawerListApiCall(type: type);
-
-        SfDrawerItemModel? matchedLead;
-        final List<SfDrawerItemModel> pinnedLeads = [];
-
-        // 🔍 Find the matching lead in drawer items
-        for (var item in dbController.drawerItems) {
-          // Check if item is pinned
-          // if (item.configName == true) {
-          //   pinnedLeads.add(item);
-          // }
-
-          // Check for phone match - Check multiple phone fields
-          // String? phoneToCheck = item.whatsappNumber ??
-          //                       item.whatsAppNumberField ??
-          //                       item.phone_number ??
-          //                       item.phone ??
-          //                       item.full_number ??
-          //                       item.mobilePhone;
-
-          // if (phoneToCheck != null && _isPhoneMatch(phoneToCheck, leadPhone)) {
-          //   matchedLead = item;
-          //   debug("✅ Found matching lead: ${item.name} - ${phoneToCheck}");
-          //   break;
-          // }
-        }
-
-        // ❗ Create dummy lead if not found
-        if (matchedLead == null) {
-          debug("⚠️ No matching lead found, creating dummy");
-          matchedLead = SfDrawerItemModel(
-            id: leadPhone,
-            name: "${type} ($leadPhone)",
-            whatsappNumber: leadPhone,
-            countryCode: "91",
-            // phone_number: leadPhone,
-          );
-        }
-
-        // ✅ CRITICAL: Set selected contact info BEFORE navigation
-        debug("📱 Setting selected contact: ${matchedLead.name}");
-        debug("📱 Contact phone: ${matchedLead.whatsappNumber}");
-        debug("📱 Contact ID: ${matchedLead.id}");
-
-        dbController.setSelectedContaactInfo(matchedLead);
-
-        // ✅ Also set pinned info if needed
-        dbController.setSelectedPinnedInfo(null);
-
-        debug("🚀 Opening Chat for ${matchedLead.whatsappNumber}");
-
-        // Navigate to chat screen
-        await _navigateToChatScreen(
-          context,
-          matchedLead,
-          pinnedLeads,
-          objectType,
-        );
-      } catch (e, stackTrace) {
-        debug("❌ Error in _findAndNavigateToLead: $e");
-        debug("Stack trace: $stackTrace");
-        _handleNavigationError(leadPhone, e);
-      }
-    });
-  }
-
-  Future<void> _navigateToChatScreen(
-    BuildContext context,
-    SfDrawerItemModel matchedLead,
-    List<SfDrawerItemModel> pinnedLeads,
-    String objectType,
-  ) async {
+    String leadPhone, String objectType) async {
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
     try {
-      debug("📍 Navigating to chat screen...");
-      debug("   Lead Name: ${matchedLead.name}");
-      debug("   Phone: ${matchedLead.whatsappNumber}");
+      final BuildContext? context = navigatorKey.currentContext;
+      if (context == null) {
+        debug("❌ Context is null, retrying...");
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _findAndNavigateToLead(leadPhone, objectType);
+        });
+        return;
+      }
+
+      debug("🔍 Searching for lead with phone: $leadPhone");
       debug("   Object Type: $objectType");
 
-      // ✅ Get ChatMessageController and load messages BEFORE navigation
-      ChatMessageController chatController =
-          Provider.of<ChatMessageController>(context, listen: false);
+      // ✅ Get dashboard controller FIRST
+      final DashBoardController? dbController =
+          Provider.of<DashBoardController>(context, listen: false);
 
-      String phoneNumber = matchedLead.whatsappNumber ?? "";
-      if (phoneNumber.isNotEmpty) {
-        debug("📥 Loading messages for: $phoneNumber");
-        await chatController.messageHistoryApiCall(
-          userNumber: phoneNumber,
-          isFirstTime: true,
+      if (dbController == null) {
+        debug("❌ DashBoardController not found");
+        return;
+      }
+
+      // ✅ Call dashboard API before processing
+      await _callDashboardApi(context);
+
+      // Call drawer list API
+      String type = dbController.drawerItems.isNotEmpty &&
+              dbController.drawerItems.first.sObjectName != null
+          ? dbController.drawerItems.first.sObjectName!
+          : "Lead";
+
+      await dbController.drawerListApiCall(type: type);
+
+      SfDrawerItemModel? matchedLead;
+      final List<SfDrawerItemModel> pinnedLeads = [];
+
+      // 🔍 Find the matching lead in drawer items
+      for (var item in dbController.drawerItems) {
+        // Check if item is pinned
+        // if (item.configName == true) {
+        //   pinnedLeads.add(item);
+        // }
+
+        // Check for phone match - Check multiple phone fields
+        // String? phoneToCheck = item.whatsappNumber ?? 
+        //                       item.whatsAppNumberField ??
+        //                       item.phone_number ??
+        //                       item.phone ??
+        //                       item.full_number ??
+        //                       item.mobilePhone;
+        
+        // if (phoneToCheck != null && _isPhoneMatch(phoneToCheck, leadPhone)) {
+        //   matchedLead = item;
+        //   debug("✅ Found matching lead: ${item.name} - ${phoneToCheck}");
+        //   break;
+        // }
+      }
+
+      // ❗ Create dummy lead if not found
+      if (matchedLead == null) {
+        debug("⚠️ No matching lead found, creating dummy");
+        matchedLead = SfDrawerItemModel(
+          id: leadPhone,
+          name: "Unknown ($leadPhone)",
+          whatsappNumber: leadPhone,
+          countryCode: "91",
+          // phone_number: leadPhone,
         );
       }
 
-      // Navigate to Salesforce chat screen
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => SfMessageChatScreen(
-            pinnedLeadsList: pinnedLeads,
-            isFromRecentChat: false,
-          ),
-        ),
-        (route) => route.isFirst,
-      );
+      // ✅ CRITICAL: Set selected contact info BEFORE navigation
+      debug("📱 Setting selected contact: ${matchedLead.name}");
+      debug("📱 Contact phone: ${matchedLead.whatsappNumber}");
+      debug("📱 Contact ID: ${matchedLead.id}");
+      
+      dbController.setSelectedContaactInfo(matchedLead);
 
-      pendingDeepLink = null;
-      debug("✅ Navigation completed successfully!");
+      // ✅ Also set pinned info if needed
+      dbController.setSelectedPinnedInfo(null);
+
+      debug("🚀 Opening Chat for ${matchedLead.whatsappNumber}");
+
+      // Navigate to chat screen
+      await _navigateToChatScreen(
+        context,
+        matchedLead,
+        pinnedLeads,
+        objectType,
+      );
     } catch (e, stackTrace) {
-      debug("❌ Navigation error: $e");
+      debug("❌ Error in _findAndNavigateToLead: $e");
       debug("Stack trace: $stackTrace");
-      rethrow;
+      _handleNavigationError(leadPhone, e);
     }
-  }
+  });
+}
 
-  void _handleNavigationError(String leadPhone, Object error) {
-    debug("⚠️ Handling navigation error: $error");
+Future<void> _navigateToChatScreen(
+  BuildContext context,
+  SfDrawerItemModel matchedLead,
+  List<SfDrawerItemModel> pinnedLeads,
+  String objectType,
+) async {
+  try {
+    debug("📍 Navigating to chat screen...");
+    debug("   Lead Name: ${matchedLead.name}");
+    debug("   Phone: ${matchedLead.whatsappNumber}");
+    debug("   Object Type: $objectType");
 
-    final BuildContext? context = navigatorKey.currentContext;
-    if (context == null) {
-      debug("❌ Context is null, cannot handle error");
-      return;
-    }
-
-    // Even on error, try to navigate with dummy lead
-    try {
-      SfDrawerItemModel dummyLead = SfDrawerItemModel(
-        id: leadPhone,
-        name: "Unknown ($leadPhone)",
-        whatsappNumber: leadPhone,
-        countryCode: "91",
-        // phone_number: leadPhone,
+    // ✅ Get ChatMessageController and load messages BEFORE navigation
+    ChatMessageController chatController =
+        Provider.of<ChatMessageController>(context, listen: false);
+    
+    String phoneNumber = matchedLead.whatsappNumber ?? "";
+    if (phoneNumber.isNotEmpty) {
+      debug("📥 Loading messages for: $phoneNumber");
+      await chatController.messageHistoryApiCall(
+        userNumber: phoneNumber,
+        isFirstTime: true,
       );
+    }
 
-      // ✅ Set contact info before navigation
-      DashBoardController dbController =
-          Provider.of<DashBoardController>(context, listen: false);
-      dbController.setSelectedContaactInfo(dummyLead);
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => SfMessageChatScreen(
-            isFromRecentChat: false,
-          ),
+    // Navigate to Salesforce chat screen
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SfMessageChatScreen(
+          pinnedLeadsList: pinnedLeads,
+          isFromRecentChat: false,
         ),
-        (route) => route.isFirst,
-      );
-    } catch (e) {
-      debug("❌ Even fallback navigation failed: $e");
-    }
+      ),
+      (route) => route.isFirst,
+    );
+
+    pendingDeepLink = null;
+    debug("✅ Navigation completed successfully!");
+  } catch (e, stackTrace) {
+    debug("❌ Navigation error: $e");
+    debug("Stack trace: $stackTrace");
+    rethrow;
   }
+}
+
+void _handleNavigationError(String leadPhone, Object error) {
+  debug("⚠️ Handling navigation error: $error");
+
+  final BuildContext? context = navigatorKey.currentContext;
+  if (context == null) {
+    debug("❌ Context is null, cannot handle error");
+    return;
+  }
+
+  // Even on error, try to navigate with dummy lead
+  try {
+    SfDrawerItemModel dummyLead = SfDrawerItemModel(
+      id: leadPhone,
+      name: "Unknown ($leadPhone)",
+      whatsappNumber: leadPhone,
+      countryCode: "91",
+      // phone_number: leadPhone,
+    );
+
+    // ✅ Set contact info before navigation
+    DashBoardController dbController =
+        Provider.of<DashBoardController>(context, listen: false);
+    dbController.setSelectedContaactInfo(dummyLead);
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SfMessageChatScreen(
+          isFromRecentChat: false,
+        ),
+      ),
+      (route) => route.isFirst,
+    );
+  } catch (e) {
+    debug("❌ Even fallback navigation failed: $e");
+  }
+}
 
   Future<void> _callDashboardApi(BuildContext context) async {
     try {
@@ -8153,7 +8157,7 @@ class _MyAppState extends State<MyApp> {
   bool _isPhoneMatch(String recordPhone, String searchPhone) {
     try {
       if (recordPhone.isEmpty || searchPhone.isEmpty) return false;
-
+      
       final String recordDigits = recordPhone.replaceAll(RegExp(r'[^\d]'), '');
       final String searchDigits = searchPhone.replaceAll(RegExp(r'[^\d]'), '');
 
