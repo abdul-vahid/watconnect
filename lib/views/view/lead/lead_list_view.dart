@@ -3,6 +3,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:focus_detector/focus_detector.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -199,6 +200,14 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                     // && idsToDelete.length > 1
                     ? Row(
                         children: [
+
+                       InkWell(
+                        onTap: (){
+                          _toggleArchiveStatus(selectedLead?.lead_id??"", selectedLead?.isArchived??false);
+                        },
+                        child: Icon(Icons.archive,color: Colors.white,)),
+
+
                           PopupMenuButton<String>(
                             onSelected: (value) {
                               switch (value) {
@@ -302,9 +311,10 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           automaticallyImplyLeading: false,
           title: const Text(
             'Leads',
+            
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
           ),
-          centerTitle: true,
+          centerTitle: showPin? false : true,
           elevation: 5,
         ),
         body: GestureDetector(
@@ -1870,4 +1880,29 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       },
     );
   }
+
+
+ Future<void> _toggleArchiveStatus(String id,bool isArc) async {
+    try {
+      final LeadListViewModel leadData =
+          Provider.of<LeadListViewModel>(context, listen: false);
+
+      Map<String, dynamic> body = {"id": id, "is_archived": isArc};
+
+      EasyLoading.show(status: 'Processing...');
+
+      await leadData.updatelead(body, id ?? "");
+
+      EasyLoading.dismiss();
+
+      EasyLoading.showToast(isArc ? "Chat Archive successfully":'Chat Un-Archive successfully');
+
+      getLeadList(showLoading: false);
+    } catch (e) {
+      EasyLoading.dismiss();
+      EasyLoading.showToast('Failed to update archive status');
+      print('Error in _toggleArchiveStatus: $e');
+    }
+  }
+
 }
