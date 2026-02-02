@@ -7848,13 +7848,11 @@ class _MyAppState extends State<MyApp> {
 
         debug("  Path segments: $segments");
 
-        // नया पैटर्न: /chat/Lead/7740989118 या /chat/Contact/7740989118
         if (segments.length >= 3) {
           for (int i = 0; i < segments.length - 2; i++) {
             if (segments[i].toLowerCase() == "chat" &&
                 i + 2 < segments.length) {
-              // segments[i+1] object type है (Lead/Contact)
-              // segments[i+2] phone number है
+          
               String phone = segments[i + 2];
               debug("  Found phone in chat/object/phone pattern: $phone");
               return phone;
@@ -7862,7 +7860,6 @@ class _MyAppState extends State<MyApp> {
           }
         }
 
-        // पुराना पैटर्न: /Lead/chat/91740989118
         if (segments.length >= 3) {
           for (int i = 0; i < segments.length - 1; i++) {
             if (segments[i].toLowerCase() == "chat" &&
@@ -7877,8 +7874,6 @@ class _MyAppState extends State<MyApp> {
         debug(" Could not parse URL: $e");
       }
 
-      // Fallback to regex patterns
-      // नया पैटर्न: /chat/Lead/7740989118 या /chat/Contact/7740989118
       final RegExp newChatPattern = RegExp(
           r'/chat/(?:Lead|lead|Contact|contact|Opportunity|opportunity)/(\d{10,})');
       final Match? newPatternMatch = newChatPattern.firstMatch(url);
@@ -7888,7 +7883,7 @@ class _MyAppState extends State<MyApp> {
         return phone;
       }
 
-      // Pattern: /Lead/chat/91740989118
+  
       final RegExp leadChatRegex = RegExp(r'/(?:Lead|lead)/chat/(\d{10,})');
       final Match? leadMatch = leadChatRegex.firstMatch(url);
       if (leadMatch != null && leadMatch.group(1) != null) {
@@ -7897,7 +7892,7 @@ class _MyAppState extends State<MyApp> {
         return phone;
       }
 
-      // Pattern: /Contact/chat/91740989118
+      
       final RegExp contactChatRegex =
           RegExp(r'/(?:Contact|contact)/chat/(\d{10,})');
       final Match? contactMatch = contactChatRegex.firstMatch(url);
@@ -7907,7 +7902,6 @@ class _MyAppState extends State<MyApp> {
         return phone;
       }
 
-      // Pattern: /chat/91740989118 (simple chat)
       final RegExp simpleChatRegex = RegExp(r'/chat/(\d{10,})');
       final Match? simpleMatch = simpleChatRegex.firstMatch(url);
       if (simpleMatch != null && simpleMatch.group(1) != null) {
