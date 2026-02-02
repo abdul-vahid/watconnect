@@ -294,7 +294,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
 
             // Checkbox
             const SizedBox(height: 16),
-            _buildCheckbox(),
+            // _buildCheckbox(),
           ],
         ),
       ),
@@ -494,19 +494,19 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
             ),
           ),
           const SizedBox(width: 12),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => isChecked = !isChecked),
-              child: const Text(
-                "Send on login user WhatsApp number also",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
+          // Expanded(
+          //   child: GestureDetector(
+          //     onTap: () => setState(() => isChecked = !isChecked),
+          //     child: const Text(
+          //       "Send on login user WhatsApp number also",
+          //       style: TextStyle(
+          //         fontSize: 14,
+          //         color: Colors.black87,
+          //         fontWeight: FontWeight.w500,
+          //       ),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

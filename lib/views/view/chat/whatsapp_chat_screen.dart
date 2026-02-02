@@ -106,7 +106,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
   List<TextEditingController> controllers = [];
 
   int _lastMessageCount = 0;
-  
+
   // Local state for archive status
   bool _isArchived = false;
 
@@ -115,7 +115,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     super.initState();
     // Initialize local archive state from widget parameter
     _isArchived = widget.isArch == true;
-    
+
     loadChatHistory(showLoaing: true);
     getWalletStatus();
     MessageController msgController = Provider.of(context, listen: false);
@@ -179,14 +179,14 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
 
             socketManager.connectSocket(context, widget.wpnumber);
           },
-
           onFocusLost: () => socketManager.disconnectSocket(),
           child: SafeArea(
             child: Scaffold(
               backgroundColor: AppColor.pageBgGrey,
               appBar: AppBar(
                 leading: const BackButton(color: Colors.white),
-                title: const Text("Chat", style: TextStyle(color: Colors.white)),
+                title:
+                    const Text("Chat", style: TextStyle(color: Colors.white)),
                 actions: [
                   if (hasCalls)
                     IconButton(
@@ -280,8 +280,8 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                                 model: widget.model == null
                                                     ? null
                                                     : model,
-                                                isArch: model.is_archived ??
-                                                    false,
+                                                isArch:
+                                                    model.is_archived ?? false,
                                               ),
                                             ),
                                           ).then((onValue) {
@@ -369,8 +369,8 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: Padding(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         child: Row(
                           children: [
                             Expanded(
@@ -409,8 +409,8 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                               fontFamily: AppFonts.medium,
-                                              color:
-                                                  Color.fromARGB(255, 59, 52, 52),
+                                              color: Color.fromARGB(
+                                                  255, 59, 52, 52),
                                             ),
                                           ),
                                           // Show archive indicator based on local state
@@ -418,7 +418,8 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                             const Row(
                                               children: [
                                                 Icon(Icons.archive,
-                                                    size: 12, color: Colors.grey),
+                                                    size: 12,
+                                                    color: Colors.grey),
                                                 SizedBox(width: 4),
                                                 Text(
                                                   'Archived',
@@ -441,24 +442,24 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                             // Copy and Delete buttons when messages are selected
                             if (msgController.msgToDelete.isNotEmpty) ...[
                               IconButton(
-                                icon: const Icon(Icons.copy, color: Colors.black),
+                                icon:
+                                    const Icon(Icons.copy, color: Colors.black),
                                 onPressed: () {
                                   _copyMultipleMessages();
                                 },
                               ),
                               IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.black),
+                                icon: const Icon(Icons.delete,
+                                    color: Colors.black),
                                 onPressed: () {
                                   _showSimpleDialog("");
                                 },
                               ),
                             ],
 
-                            // More options menu - using local _isArchived state
                             PopupMenuButton<String>(
-                              icon:
-                                  const Icon(Icons.more_vert, color: Colors.black),
+                              icon: const Icon(Icons.more_vert,
+                                  color: Colors.black),
                               onSelected: (value) async {
                                 if (value == 'Clear Chat') {
                                   _showDeleteDialog();
@@ -477,10 +478,11 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                         ? 'Unarchive Chat'
                                         : 'Archive Chat'),
                                   ),
-                                  const PopupMenuItem<String>(
-                                    value: 'Clear Chat',
-                                    child: Text('Clear Chat'),
-                                  ),
+                                  if (allMessages.isNotEmpty)
+                                    const PopupMenuItem<String>(
+                                      value: 'Clear Chat',
+                                      child: Text('Clear Chat'),
+                                    ),
                                 ];
                               },
                             ),
@@ -488,7 +490,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                         ),
                       ),
                     ),
-
                     const Divider(),
                     chatLoader
                         ? const Expanded(
@@ -598,7 +599,8 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     });
   }
 
-  Future<void> loadChatHistory({bool showLoaing = false, bool clearFile = true}) async {
+  Future<void> loadChatHistory(
+      {bool showLoaing = false, bool clearFile = true}) async {
     final prefs = await SharedPreferences.getInstance();
     final number = prefs.getString('phoneNumber');
     final messageVM = Provider.of<MessageViewModel>(context, listen: false);
@@ -1554,7 +1556,6 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
       // Optional: Refresh the lead list in the background
       // This will update the archive status in the main list
       leadData.fetch();
-
     } catch (e) {
       EasyLoading.dismiss();
       EasyLoading.showToast('Failed to update archive status');
@@ -1626,8 +1627,8 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text('${msgController.msgToDelete.length} messages copied to clipboard'),
+          content: Text(
+              '${msgController.msgToDelete.length} messages copied to clipboard'),
           duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
