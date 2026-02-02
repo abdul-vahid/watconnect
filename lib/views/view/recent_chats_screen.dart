@@ -1190,6 +1190,31 @@ class _RecentChatViewState extends State<RecentChatView> {
     );
   }
 
+// String _formatMessageTime(String isoString) {
+//   try {
+//     final inputDate = DateTime.parse(isoString).toLocal();
+//     final now = DateTime.now();
+
+//     final today = DateTime(now.year, now.month, now.day);
+//     final yesterday = today.subtract(const Duration(days: 1));
+//     final messageDate =
+//         DateTime(inputDate.year, inputDate.month, inputDate.day);
+
+//     final time = DateFormat('h:mm a').format(inputDate);
+
+//     if (messageDate == today) {
+//       return time; 
+//     } else if (messageDate == yesterday) {
+//       return 'Yesterday, $time'; 
+//     } else {
+//       return DateFormat('MM/dd/yy').format(inputDate); 
+//     }
+//   } catch (e) {
+//     return '';
+//   }
+// }
+
+
 String _formatMessageTime(String isoString) {
   try {
     final inputDate = DateTime.parse(isoString).toLocal();
@@ -1207,13 +1232,12 @@ String _formatMessageTime(String isoString) {
     } else if (messageDate == yesterday) {
       return 'Yesterday, $time'; 
     } else {
-      return DateFormat('MM/dd/yy').format(inputDate); 
+      return DateFormat('dd/MM/yy').format(inputDate); // 👈 changed
     }
   } catch (e) {
     return '';
   }
 }
-
 
   Future<void> _removeTagFromLead(Records lead, String tagId) async {
     showDialog(

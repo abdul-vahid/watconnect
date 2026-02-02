@@ -85,7 +85,7 @@
 // // // // // //     runApp(const MyApp());
 // // // // // //     await NotificationService.handleInitialMessage();
 // // // // // //   } catch (e) {
-// // // // // //     debug("❌ Error in main(): $e");
+// // // // // //     debug("  Error in main(): $e");
 // // // // // //     runApp(
 // // // // // //       MaterialApp(
 // // // // // //         home: Scaffold(
@@ -129,7 +129,7 @@
 // // // // // //         }
 // // // // // //       });
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Error in MyApp initState: $e");
+// // // // // //       debug("  Error in MyApp initState: $e");
 // // // // // //     }
 // // // // // //   }
 
@@ -144,7 +144,7 @@
 // // // // // //         _processPendingDeepLink();
 // // // // // //       }
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Initial URI error: $e");
+// // // // // //       debug("  Initial URI error: $e");
 // // // // // //     }
 // // // // // //   }
 
@@ -157,7 +157,7 @@
 // // // // // //         _processPendingDeepLink();
 // // // // // //       },
 // // // // // //       onError: (err) {
-// // // // // //         debug("❌ URI Stream error: $err");
+// // // // // //         debug("  URI Stream error: $err");
 // // // // // //       },
 // // // // // //     );
 // // // // // //   }
@@ -172,7 +172,7 @@
 // // // // // //   void _processDeepLink() async {
 // // // // // //     try {
 // // // // // //       if (pendingDeepLink == null) {
-// // // // // //         debug("⚠️ No pending deep link to process");
+// // // // // //         debug(" No pending deep link to process");
 // // // // // //         return;
 // // // // // //       }
 
@@ -184,24 +184,24 @@
 // // // // // //       final String leadPhone = _extractLeadPhoneFromUrl(uriString);
 
 // // // // // //       if (leadPhone.isEmpty) {
-// // // // // //         debug("❌ No phone number found in URL");
+// // // // // //         debug("  No phone number found in URL");
 // // // // // //         return;
 // // // // // //       }
 
-// // // // // //       debug("📱 Extracted from URL:");
+// // // // // //       debug(" Extracted from URL:");
 // // // // // //       debug("   Lead Phone: $leadPhone");
 
 // // // // // //       // Find matching lead from LeadListViewModel
 // // // // // //       await _findAndNavigateToLead(leadPhone);
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Error in _processDeepLink: $e");
+// // // // // //       debug("  Error in _processDeepLink: $e");
 // // // // // //     }
 // // // // // //   }
 
 // // // // // //   /// 🔹 Extract lead phone number from URL - NEW PATTERN: /chat/917740989118
 // // // // // //   String _extractLeadPhoneFromUrl(String url) {
 // // // // // //     try {
-// // // // // //       debug("🔍 Extracting phone number from URL: $url");
+// // // // // //       debug("  Extracting phone number from URL: $url");
 
 // // // // // //       // NEW PATTERN: /chat/917740989118
 // // // // // //       final RegExp phoneRegex = RegExp(r'/chat/(\+?\d+)');
@@ -217,7 +217,7 @@
 // // // // // //           phone = '+$phone';
 // // // // // //         }
 
-// // // // // //         debug("✅ Found phone in URL path: $phone");
+// // // // // //         debug("  Found phone in URL path: $phone");
 // // // // // //         return phone;
 // // // // // //       }
 
@@ -235,14 +235,14 @@
 // // // // // //           phone = '+$phone';
 // // // // // //         }
 
-// // // // // //         debug("✅ Found phone with alt pattern: $phone");
+// // // // // //         debug("  Found phone with alt pattern: $phone");
 // // // // // //         return phone;
 // // // // // //       }
 
-// // // // // //       debug("❌ No phone number found in URL");
+// // // // // //       debug("  No phone number found in URL");
 // // // // // //       return "";
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Error extracting phone from URL: $e");
+// // // // // //       debug("  Error extracting phone from URL: $e");
 // // // // // //       return "";
 // // // // // //     }
 // // // // // //   }
@@ -253,7 +253,7 @@
 // // // // // //       try {
 // // // // // //         final context = navigatorKey.currentContext;
 // // // // // //         if (context == null) {
-// // // // // //           debug("❌ Context is null, retrying in 500ms...");
+// // // // // //           debug("  Context is null, retrying in 500ms...");
 // // // // // //           Future.delayed(const Duration(milliseconds: 500), () {
 // // // // // //             _findAndNavigateToLead(leadPhone);
 // // // // // //           });
@@ -272,7 +272,7 @@
 // // // // // //         LeadModel? matchedModel;
 // // // // // //         final List<LeadModel> pinnedLeads = [];
 
-// // // // // //         debug("🔍 Searching for lead with phone: $leadPhone");
+// // // // // //         debug("  Searching for lead with phone: $leadPhone");
 
 // // // // // //         for (var viewModel in leadListVm.viewModels) {
 // // // // // //           final leadmodel = viewModel.model;
@@ -314,7 +314,7 @@
 
 // // // // // //                 if (isMatch) {
 // // // // // //                   matchedModel = record;
-// // // // // //                   debug("✅ Found matching lead: ${record.contactname} - ${record.full_number}");
+// // // // // //                   debug("  Found matching lead: ${record.contactname} - ${record.full_number}");
 // // // // // //                   break;
 // // // // // //                 }
 // // // // // //               }
@@ -325,7 +325,7 @@
 // // // // // //         }
 
 // // // // // //         if (matchedModel == null) {
-// // // // // //           debug("❌ No matching lead found for phone: $leadPhone");
+// // // // // //           debug("  No matching lead found for phone: $leadPhone");
 // // // // // //           // Create a dummy lead with the phone number
 // // // // // //           matchedModel = LeadModel(
 // // // // // //             id: leadPhone, // Use phone as ID
@@ -333,13 +333,13 @@
 // // // // // //             full_number: leadPhone,
 // // // // // //             pinned: false,
 // // // // // //           );
-// // // // // //           debug("⚠️ Using dummy lead with phone number");
+// // // // // //           debug(" Using dummy lead with phone number");
 // // // // // //         }
 
 // // // // // //         // Navigate to chat screen
 // // // // // //         _navigateToChatScreen(matchedModel, pinnedLeads);
 // // // // // //       } catch (e) {
-// // // // // //         debug("❌ Error finding lead: $e");
+// // // // // //         debug("  Error finding lead: $e");
 // // // // // //       }
 // // // // // //     });
 // // // // // //   }
@@ -349,18 +349,18 @@
 // // // // // //     try {
 // // // // // //       final context = navigatorKey.currentContext;
 // // // // // //       if (context == null) {
-// // // // // //         debug("❌ Context is null for navigation");
+// // // // // //         debug("  Context is null for navigation");
 // // // // // //         return;
 // // // // // //       }
 
 // // // // // //       final currentRoute = ModalRoute.of(context);
 // // // // // //       if (currentRoute?.settings.name?.contains('chat') == true) {
-// // // // // //         debug("⚠️ Already on chat screen");
+// // // // // //         debug(" Already on chat screen");
 // // // // // //         pendingDeepLink = null;
 // // // // // //         return;
 // // // // // //       }
 
-// // // // // //       debug("✅ Navigating to WhatsappChatScreen with:");
+// // // // // //       debug("  Navigating to WhatsappChatScreen with:");
 // // // // // //       debug("   Lead Name: ${matchedModel.contactname}");
 // // // // // //       debug("   Lead Phone: ${matchedModel.full_number}");
 // // // // // //       debug("   ID: ${matchedModel.id}");
@@ -382,7 +382,7 @@
 // // // // // //       pendingDeepLink = null;
 // // // // // //       debug("🎉 Navigation successful!");
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Navigation error: $e");
+// // // // // //       debug("  Navigation error: $e");
 // // // // // //     }
 // // // // // //   }
 
@@ -558,7 +558,7 @@
 // // // // //     runApp(const MyApp());
 // // // // //     await NotificationService.handleInitialMessage();
 // // // // //   } catch (e) {
-// // // // //     debug("❌ Error in main(): $e");
+// // // // //     debug("  Error in main(): $e");
 // // // // //     runApp(
 // // // // //       MaterialApp(
 // // // // //         home: Scaffold(
@@ -602,7 +602,7 @@
 // // // // //         }
 // // // // //       });
 // // // // //     } catch (e) {
-// // // // //       debug("❌ Error in MyApp initState: $e");
+// // // // //       debug("  Error in MyApp initState: $e");
 // // // // //     }
 // // // // //   }
 
@@ -617,7 +617,7 @@
 // // // // //         _processPendingDeepLink();
 // // // // //       }
 // // // // //     } catch (e) {
-// // // // //       debug("❌ Initial URI error: $e");
+// // // // //       debug("  Initial URI error: $e");
 // // // // //     }
 // // // // //   }
 
@@ -629,7 +629,7 @@
 // // // // //         _processPendingDeepLink();
 // // // // //       },
 // // // // //       onError: (err) {
-// // // // //         debug("❌ URI Stream error: $err");
+// // // // //         debug("  URI Stream error: $err");
 // // // // //       },
 // // // // //     );
 // // // // //   }
@@ -644,7 +644,7 @@
 // // // // //   void _processDeepLink() async {
 // // // // //     try {
 // // // // //       if (pendingDeepLink == null) {
-// // // // //         debug("⚠️ No pending deep link to process");
+// // // // //         debug(" No pending deep link to process");
 // // // // //         return;
 // // // // //       }
 
@@ -657,17 +657,17 @@
 // // // // //       final String? leadPhone = extractedData['phone'];
 // // // // //       final String? objectType = extractedData['objectType'];
 // // // // //       if (leadPhone == null || leadPhone.isEmpty) {
-// // // // //         debug("❌ No phone number found in URL");
+// // // // //         debug("  No phone number found in URL");
 // // // // //         return;
 // // // // //       }
 
-// // // // //       debug("📱 Extracted from URL:");
+// // // // //       debug(" Extracted from URL:");
 // // // // //       debug("   Lead Phone: $leadPhone");
 // // // // //       debug("   Object Type: $objectType");
 
 // // // // //       await _findAndNavigateToLead(leadPhone, objectType);
 // // // // //     } catch (e) {
-// // // // //       debug("❌ Error in _processDeepLink: $e");
+// // // // //       debug("  Error in _processDeepLink: $e");
 // // // // //     }
 // // // // //   }
 
@@ -676,7 +676,7 @@
 // // // // //     Map<String, String> result = {'phone': '', 'objectType': ''};
 
 // // // // //     try {
-// // // // //       debug("🔍 Extracting data from URL: $url");
+// // // // //       debug("  Extracting data from URL: $url");
 
 // // // // //       // PATTERN 1: /chat/9198824246750 (WhatsApp direct chat)
 // // // // //       if (url.contains('/chat/') &&
@@ -691,7 +691,7 @@
 // // // // //           phone = _formatPhoneNumber(phone);
 // // // // //           result['phone'] = phone;
 // // // // //           result['objectType'] = 'whatsapp';
-// // // // //           debug("✅ Found WhatsApp direct chat number: $phone");
+// // // // //           debug("  Found WhatsApp direct chat number: $phone");
 // // // // //           return result;
 // // // // //         }
 // // // // //       }
@@ -711,7 +711,7 @@
 // // // // //         result['phone'] = phone;
 // // // // //         result['objectType'] =
 // // // // //             objectType.toLowerCase(); // lead, contact, opportunity
-// // // // //         debug("✅ Found Salesforce $objectType chat number: $phone");
+// // // // //         debug("  Found Salesforce $objectType chat number: $phone");
 // // // // //         return result;
 // // // // //       }
 
@@ -736,14 +736,14 @@
 
 // // // // //         result['phone'] = phone;
 // // // // //         debug(
-// // // // //             "✅ Found phone with alt pattern: $phone (type: ${result['objectType']})");
+// // // // //             "  Found phone with alt pattern: $phone (type: ${result['objectType']})");
 // // // // //         return result;
 // // // // //       }
 
-// // // // //       debug("❌ No valid data found in URL");
+// // // // //       debug("  No valid data found in URL");
 // // // // //       return result;
 // // // // //     } catch (e) {
-// // // // //       debug("❌ Error extracting data from URL: $e");
+// // // // //       debug("  Error extracting data from URL: $e");
 // // // // //       return result;
 // // // // //     }
 // // // // //   }
@@ -770,7 +770,7 @@
 // // // // //       try {
 // // // // //         final context = navigatorKey.currentContext;
 // // // // //         if (context == null) {
-// // // // //           debug("❌ Context is null, retrying in 500ms...");
+// // // // //           debug("  Context is null, retrying in 500ms...");
 // // // // //           Future.delayed(const Duration(milliseconds: 500), () {
 // // // // //             _findAndNavigateToLead(leadPhone, objectType);
 // // // // //           });
@@ -791,7 +791,7 @@
 // // // // //         final List<LeadModel> pinnedLeads = [];
 
 // // // // //         debug(
-// // // // //             "🔍 Searching for lead with phone: $leadPhone (object type: $objectType)");
+// // // // //             "  Searching for lead with phone: $leadPhone (object type: $objectType)");
 
 // // // // //         for (var viewModel in leadListVm.viewModels) {
 // // // // //           final leadmodel = viewModel.model;
@@ -826,7 +826,7 @@
 // // // // //                 if (isMatch) {
 // // // // //                   matchedModel = record;
 // // // // //                   debug(
-// // // // //                       "✅ Found matching lead: ${record.contactname} - ${record.full_number}");
+// // // // //                       "  Found matching lead: ${record.contactname} - ${record.full_number}");
 // // // // //                   break;
 // // // // //                 }
 // // // // //               }
@@ -837,19 +837,19 @@
 // // // // //         }
 
 // // // // //         if (matchedModel == null) {
-// // // // //           debug("❌ No matching lead found for phone: $leadPhone");
+// // // // //           debug("  No matching lead found for phone: $leadPhone");
 // // // // //           matchedModel = LeadModel(
 // // // // //             id: leadPhone,
 // // // // //             contactname: leadPhone,
 // // // // //             full_number: leadPhone,
 // // // // //             pinned: false,
 // // // // //           );
-// // // // //           debug("⚠️ Using dummy lead with phone number");
+// // // // //           debug(" Using dummy lead with phone number");
 // // // // //         }
 
 // // // // //         await _navigateToChatScreen(matchedModel, pinnedLeads, objectType);
 // // // // //       } catch (e) {
-// // // // //         debug("❌ Error finding lead: $e");
+// // // // //         debug("  Error finding lead: $e");
 // // // // //       }
 // // // // //     });
 // // // // //   }
@@ -859,13 +859,13 @@
 // // // // //     try {
 // // // // //       final context = navigatorKey.currentContext;
 // // // // //       if (context == null) {
-// // // // //         debug("❌ Context is null for navigation");
+// // // // //         debug("  Context is null for navigation");
 // // // // //         return;
 // // // // //       }
 
 // // // // //       final currentRoute = ModalRoute.of(context);
 // // // // //       if (currentRoute?.settings.name?.contains('chat') == true) {
-// // // // //         debug("⚠️ Already on chat screen");
+// // // // //         debug(" Already on chat screen");
 // // // // //         pendingDeepLink = null;
 // // // // //         return;
 // // // // //       }
@@ -912,14 +912,14 @@
 
 // // // // //           debug("📞 Making API call for sObject: $sObjectName");
 
-// // // // //           // ✅ ACTUAL NAVIGATION TO SALESFORCE CHAT SCREEN ADDED HERE
+// // // // //           //   ACTUAL NAVIGATION TO SALESFORCE CHAT SCREEN ADDED HERE
 // // // // //           _navigateToSalesforceChat(
 // // // // //               context, matchedModel, pinnedLeads, sObjectName);
 
 // // // // //           pendingDeepLink = null;
 // // // // //           debug("🎉 Salesforce navigation successful for $objectType!");
 // // // // //         } catch (e) {
-// // // // //           debug("❌ Salesforce API/ Navigation error: $e");
+// // // // //           debug("  Salesforce API/ Navigation error: $e");
 
 // // // // //           _navigateToWhatsAppChat(context, matchedModel, pinnedLeads);
 // // // // //         }
@@ -936,11 +936,11 @@
 
 // // // // //         _navigateToWhatsAppChat(context, matchedModel, pinnedLeads);
 // // // // //       } else {
-// // // // //         debug("⚠️ Unknown URL pattern - falling back to WhatsApp chat");
+// // // // //         debug(" Unknown URL pattern - falling back to WhatsApp chat");
 // // // // //         _navigateToWhatsAppChat(context, matchedModel, pinnedLeads);
 // // // // //       }
 // // // // //     } catch (e) {
-// // // // //       debug("❌ Navigation error: $e");
+// // // // //       debug("  Navigation error: $e");
 // // // // //       // Final fallback
 // // // // //       final context = navigatorKey.currentContext;
 // // // // //       if (context != null) {
@@ -949,7 +949,7 @@
 // // // // //     }
 // // // // //   }
 
-// // // // // // ✅ NEW FUNCTION TO NAVIGATE TO SALESFORCE CHAT SCREEN
+// // // // // //   NEW FUNCTION TO NAVIGATE TO SALESFORCE CHAT SCREEN
 // // // // //   void _navigateToSalesforceChat(
 // // // // //     BuildContext context,
 // // // // //     LeadModel matchedModel,
@@ -1192,7 +1192,7 @@
 // // // // // // // // // // //         _handleDeepLink(initialUri);
 // // // // // // // // // // //       }
 // // // // // // // // // // //     } catch (e) {
-// // // // // // // // // // //       debug("❌ Initial URI error: $e");
+// // // // // // // // // // //       debug("  Initial URI error: $e");
 // // // // // // // // // // //     }
 // // // // // // // // // // //   }
 
@@ -1204,7 +1204,7 @@
 // // // // // // // // // // //         _handleDeepLink(uri);
 // // // // // // // // // // //       },
 // // // // // // // // // // //       onError: (err) {
-// // // // // // // // // // //         debug("❌ URI Stream error: $err");
+// // // // // // // // // // //         debug("  URI Stream error: $err");
 // // // // // // // // // // //       },
 // // // // // // // // // // //     );
 // // // // // // // // // // //   }
@@ -1421,7 +1421,7 @@
 // // // // // // // // // // //         pendingDeepLink = initialUri;
 // // // // // // // // // // //       }
 // // // // // // // // // // //     } catch (e) {
-// // // // // // // // // // //       debug("❌ Initial URI error: $e");
+// // // // // // // // // // //       debug("  Initial URI error: $e");
 // // // // // // // // // // //     }
 // // // // // // // // // // //   }
 
@@ -1434,7 +1434,7 @@
 // // // // // // // // // // //         _processDeepLink();
 // // // // // // // // // // //       },
 // // // // // // // // // // //       onError: (err) {
-// // // // // // // // // // //         debug("❌ URI Stream error: $err");
+// // // // // // // // // // //         debug("  URI Stream error: $err");
 // // // // // // // // // // //       },
 // // // // // // // // // // //     );
 // // // // // // // // // // //   }
@@ -1651,7 +1651,7 @@
 
 // // // // // // // // // //     final notificationData = prefs.getString('pending_notification_data');
 // // // // // // // // // //     if (notificationData != null && notificationData.isNotEmpty) {
-// // // // // // // // // //       debug("📱 Processing pending notification data: $notificationData");
+// // // // // // // // // //       debug(" Processing pending notification data: $notificationData");
 
 // // // // // // // // // //       final phoneNumber = _extractPhoneNumberFromNotification(notificationData);
 // // // // // // // // // //       final leadName = _extractLeadNameFromNotification(notificationData);
@@ -1666,7 +1666,7 @@
 // // // // // // // // // //       }
 // // // // // // // // // //     }
 // // // // // // // // // //   } catch (e) {
-// // // // // // // // // //     debug("❌ Error processing pending notification: $e");
+// // // // // // // // // //     debug("  Error processing pending notification: $e");
 // // // // // // // // // //   }
 // // // // // // // // // // }
 
@@ -1743,7 +1743,7 @@
 // // // // // // // // // //         _checkAndProcessDeepLink();
 // // // // // // // // // //       }
 // // // // // // // // // //     } catch (e) {
-// // // // // // // // // //       debug("❌ Initial URI error: $e");
+// // // // // // // // // //       debug("  Initial URI error: $e");
 // // // // // // // // // //     }
 // // // // // // // // // //   }
 
@@ -1756,7 +1756,7 @@
 // // // // // // // // // //         _checkAndProcessDeepLink();
 // // // // // // // // // //       },
 // // // // // // // // // //       onError: (err) {
-// // // // // // // // // //         debug("❌ URI Stream error: $err");
+// // // // // // // // // //         debug("  URI Stream error: $err");
 // // // // // // // // // //       },
 // // // // // // // // // //     );
 // // // // // // // // // //   }
@@ -1789,7 +1789,7 @@
 // // // // // // // // // //     WidgetsBinding.instance.addPostFrameCallback((_) {
 // // // // // // // // // //       final context = navigatorKey.currentContext;
 // // // // // // // // // //       if (context == null) {
-// // // // // // // // // //         debug("❌ Context is null, cannot navigate");
+// // // // // // // // // //         debug("  Context is null, cannot navigate");
 // // // // // // // // // //         return;
 // // // // // // // // // //       }
 
@@ -1827,14 +1827,14 @@
 
 // // // // // // // // // //       if (phoneNumber.isEmpty) {
 // // // // // // // // // //         final fcmToken = await FirebaseMessaging.instance.getToken();
-// // // // // // // // // //         debug("📱 FCM Token: $fcmToken");
+// // // // // // // // // //         debug(" FCM Token: $fcmToken");
 
 // // // // // // // // // //       }
 
-// // // // // // // // // //       debug("📱 Extracted phone number from token: $phoneNumber");
+// // // // // // // // // //       debug(" Extracted phone number from token: $phoneNumber");
 // // // // // // // // // //       return phoneNumber;
 // // // // // // // // // //     } catch (e) {
-// // // // // // // // // //       debug("❌ Error extracting phone number from token: $e");
+// // // // // // // // // //       debug("  Error extracting phone number from token: $e");
 // // // // // // // // // //       return '';
 // // // // // // // // // //     }
 // // // // // // // // // //   }
@@ -2031,7 +2031,7 @@
 // // // // // // // // //     runApp(const MyApp());
 // // // // // // // // //     await NotificationService.handleInitialMessage();
 // // // // // // // // //   } catch (e) {
-// // // // // // // // //     debug("❌ Error in main(): $e");
+// // // // // // // // //     debug("  Error in main(): $e");
 // // // // // // // // //     // You might want to show an error screen here
 // // // // // // // // //     runApp(
 // // // // // // // // //       MaterialApp(
@@ -2078,7 +2078,7 @@
 // // // // // // // // //         }
 // // // // // // // // //       });
 // // // // // // // // //     } catch (e) {
-// // // // // // // // //       debug("❌ Error in MyApp initState: $e");
+// // // // // // // // //       debug("  Error in MyApp initState: $e");
 // // // // // // // // //     }
 // // // // // // // // //   }
 
@@ -2093,7 +2093,7 @@
 // // // // // // // // //         _checkAndProcessDeepLink();
 // // // // // // // // //       }
 // // // // // // // // //     } catch (e) {
-// // // // // // // // //       debug("❌ Initial URI error: $e");
+// // // // // // // // //       debug("  Initial URI error: $e");
 // // // // // // // // //     }
 // // // // // // // // //   }
 
@@ -2106,7 +2106,7 @@
 // // // // // // // // //         _checkAndProcessDeepLink();
 // // // // // // // // //       },
 // // // // // // // // //       onError: (err) {
-// // // // // // // // //         debug("❌ URI Stream error: $err");
+// // // // // // // // //         debug("  URI Stream error: $err");
 // // // // // // // // //       },
 // // // // // // // // //     );
 // // // // // // // // //   }
@@ -2123,7 +2123,7 @@
 
 // // // // // // // // //       _processDeepLink();
 // // // // // // // // //     } catch (e) {
-// // // // // // // // //       debug("❌ Error in checkAndProcessDeepLink: $e");
+// // // // // // // // //       debug("  Error in checkAndProcessDeepLink: $e");
 // // // // // // // // //     }
 // // // // // // // // //   }
 
@@ -2135,14 +2135,14 @@
 // // // // // // // // //     };
 
 // // // // // // // // //     try {
-// // // // // // // // //       debug("🔍 Extracting phone numbers from URI: $uri");
+// // // // // // // // //       debug("  Extracting phone numbers from URI: $uri");
 
 // // // // // // // // //       // Extract lead phone from path (e.g., /message/history/+917740989118)
 // // // // // // // // //       final pathSegments = uri.pathSegments;
 // // // // // // // // //       for (var segment in pathSegments) {
 // // // // // // // // //         if (segment.startsWith('+') && segment.length > 10) {
 // // // // // // // // //           phoneNumbers['leadPhone'] = segment;
-// // // // // // // // //           debug("📱 Found lead phone in path: ${phoneNumbers['leadPhone']}");
+// // // // // // // // //           debug(" Found lead phone in path: ${phoneNumbers['leadPhone']}");
 // // // // // // // // //           break;
 // // // // // // // // //         }
 // // // // // // // // //       }
@@ -2153,7 +2153,7 @@
 // // // // // // // // //         phoneNumbers['whatsappSettingNumber'] =
 // // // // // // // // //             queryParams['whatsapp_setting_number']!;
 // // // // // // // // //         debug(
-// // // // // // // // //             "📱 Found whatsapp setting number: ${phoneNumbers['whatsappSettingNumber']}");
+// // // // // // // // //             " Found whatsapp setting number: ${phoneNumbers['whatsappSettingNumber']}");
 // // // // // // // // //       }
 
 // // // // // // // // //       // If not found in query, try to extract from full URL
@@ -2164,13 +2164,13 @@
 // // // // // // // // //         if (match != null && match.group(1) != null) {
 // // // // // // // // //           phoneNumbers['whatsappSettingNumber'] = match.group(1)!;
 // // // // // // // // //           debug(
-// // // // // // // // //               "📱 Extracted whatsapp setting number from URL: ${phoneNumbers['whatsappSettingNumber']}");
+// // // // // // // // //               " Extracted whatsapp setting number from URL: ${phoneNumbers['whatsappSettingNumber']}");
 // // // // // // // // //         }
 // // // // // // // // //       }
 
 // // // // // // // // //       return phoneNumbers;
 // // // // // // // // //     } catch (e) {
-// // // // // // // // //       debug("❌ Error extracting phone numbers: $e");
+// // // // // // // // //       debug("  Error extracting phone numbers: $e");
 // // // // // // // // //       return phoneNumbers;
 // // // // // // // // //     }
 // // // // // // // // //   }
@@ -2179,7 +2179,7 @@
 // // // // // // // // //   void _processDeepLink() async {
 // // // // // // // // //     try {
 // // // // // // // // //       if (pendingDeepLink == null) {
-// // // // // // // // //         debug("⚠️ No pending deep link to process");
+// // // // // // // // //         debug(" No pending deep link to process");
 // // // // // // // // //         return;
 // // // // // // // // //       }
 
@@ -2198,7 +2198,7 @@
 // // // // // // // // //             phoneNumbers['whatsappSettingNumber'] ?? '';
 
 // // // // // // // // //         if (leadPhone.isEmpty) {
-// // // // // // // // //           debug("❌ Lead phone number not found in URL");
+// // // // // // // // //           debug("  Lead phone number not found in URL");
 // // // // // // // // //           return;
 // // // // // // // // //         }
 
@@ -2211,7 +2211,7 @@
 // // // // // // // // //           try {
 // // // // // // // // //             final context = navigatorKey.currentContext;
 // // // // // // // // //             if (context == null) {
-// // // // // // // // //               debug("❌ Context is null, cannot navigate");
+// // // // // // // // //               debug("  Context is null, cannot navigate");
 // // // // // // // // //               // Try again after delay
 // // // // // // // // //               Future.delayed(const Duration(milliseconds: 500), () {
 // // // // // // // // //                 _processDeepLink();
@@ -2222,7 +2222,7 @@
 // // // // // // // // //             // Check if we're already on chat screen
 // // // // // // // // //             final currentRoute = ModalRoute.of(context);
 // // // // // // // // //             if (currentRoute?.settings.name?.contains('chat') == true) {
-// // // // // // // // //               debug("⚠️ Already on chat screen, skipping navigation");
+// // // // // // // // //               debug(" Already on chat screen, skipping navigation");
 // // // // // // // // //               pendingDeepLink = null;
 // // // // // // // // //               return;
 // // // // // // // // //             }
@@ -2245,7 +2245,7 @@
 
 // // // // // // // // //             pendingDeepLink = null;
 // // // // // // // // //           } catch (e) {
-// // // // // // // // //             debug("❌ Navigation error: $e");
+// // // // // // // // //             debug("  Navigation error: $e");
 // // // // // // // // //           }
 // // // // // // // // //         });
 // // // // // // // // //       } else {
@@ -2265,7 +2265,7 @@
 // // // // // // // // //             try {
 // // // // // // // // //               final context = navigatorKey.currentContext;
 // // // // // // // // //               if (context == null) {
-// // // // // // // // //                 debug("❌ Context is null, cannot navigate");
+// // // // // // // // //                 debug("  Context is null, cannot navigate");
 // // // // // // // // //                 Future.delayed(const Duration(milliseconds: 500), () {
 // // // // // // // // //                   _processDeepLink();
 // // // // // // // // //                 });
@@ -2285,13 +2285,13 @@
 
 // // // // // // // // //               pendingDeepLink = null;
 // // // // // // // // //             } catch (e) {
-// // // // // // // // //               debug("❌ Navigation error: $e");
+// // // // // // // // //               debug("  Navigation error: $e");
 // // // // // // // // //             }
 // // // // // // // // //           });
 // // // // // // // // //         }
 // // // // // // // // //       }
 // // // // // // // // //     } catch (e) {
-// // // // // // // // //       debug("❌ Error processing deep link: $e");
+// // // // // // // // //       debug("  Error processing deep link: $e");
 // // // // // // // // //     }
 // // // // // // // // //   }
 
@@ -2333,7 +2333,7 @@
 // // // // // // // // //             }
 // // // // // // // // //           }
 // // // // // // // // //         } catch (e) {
-// // // // // // // // //           debug("❌ Error parsing user data: $e");
+// // // // // // // // //           debug("  Error parsing user data: $e");
 // // // // // // // // //         }
 // // // // // // // // //       }
 
@@ -2342,7 +2342,7 @@
 
 // // // // // // // // //       return userData;
 // // // // // // // // //     } catch (e) {
-// // // // // // // // //       debug("❌ Error getting user data from tokens: $e");
+// // // // // // // // //       debug("  Error getting user data from tokens: $e");
 // // // // // // // // //       return userData;
 // // // // // // // // //     }
 // // // // // // // // //   }
@@ -2380,10 +2380,10 @@
 // // // // // // // // //       }
 
 // // // // // // // // //       debug(
-// // // // // // // // //           "📱 Extracted phone number from token: ${phoneNumber.isNotEmpty ? phoneNumber : 'Not found'}");
+// // // // // // // // //           " Extracted phone number from token: ${phoneNumber.isNotEmpty ? phoneNumber : 'Not found'}");
 // // // // // // // // //       return phoneNumber;
 // // // // // // // // //     } catch (e) {
-// // // // // // // // //       debug("❌ Error extracting phone number from token: $e");
+// // // // // // // // //       debug("  Error extracting phone number from token: $e");
 // // // // // // // // //       return '';
 // // // // // // // // //     }
 // // // // // // // // //   }
@@ -2411,7 +2411,7 @@
 // // // // // // // // //       }
 // // // // // // // // //       return '';
 // // // // // // // // //     } catch (e) {
-// // // // // // // // //       debug("❌ Error extracting phone from user data: $e");
+// // // // // // // // //       debug("  Error extracting phone from user data: $e");
 // // // // // // // // //       return '';
 // // // // // // // // //     }
 // // // // // // // // //   }
@@ -2423,7 +2423,7 @@
 // // // // // // // // //         final parts = accessToken.split('.');
 // // // // // // // // //         if (parts.length >= 2) {
 // // // // // // // // //           final payload = parts[1];
-// // // // // // // // //           debug("🔍 Extracting phone from access token payload$payload");
+// // // // // // // // //           debug("  Extracting phone from access token payload$payload");
 // // // // // // // // //           if (payload.contains('phone') || payload.contains('mobile')) {
 // // // // // // // // //             final regex = RegExp(r'phone[^:]*:\s*"([^"]+)"');
 // // // // // // // // //             final match = regex.firstMatch(payload);
@@ -2435,7 +2435,7 @@
 // // // // // // // // //       }
 // // // // // // // // //       return '';
 // // // // // // // // //     } catch (e) {
-// // // // // // // // //       debug("❌ Error extracting phone from access token: $e");
+// // // // // // // // //       debug("  Error extracting phone from access token: $e");
 // // // // // // // // //       return '';
 // // // // // // // // //     }
 // // // // // // // // //   }
@@ -2449,7 +2449,7 @@
 // // // // // // // // //         _checkAndProcessDeepLink();
 // // // // // // // // //       }
 // // // // // // // // //     } catch (e) {
-// // // // // // // // //       debug("❌ Error in onProvidersReady: $e");
+// // // // // // // // //       debug("  Error in onProvidersReady: $e");
 // // // // // // // // //     }
 // // // // // // // // //   }
 
@@ -2624,7 +2624,7 @@
 // // // // // // //     runApp(const MyApp());
 // // // // // // //     await NotificationService.handleInitialMessage();
 // // // // // // //   } catch (e) {
-// // // // // // //     debug("❌ Error in main(): $e");
+// // // // // // //     debug("  Error in main(): $e");
 // // // // // // //     // You might want to show an error screen here
 // // // // // // //     runApp(
 // // // // // // //       MaterialApp(
@@ -2670,7 +2670,7 @@
 // // // // // // //         }
 // // // // // // //       });
 // // // // // // //     } catch (e) {
-// // // // // // //       debug("❌ Error in MyApp initState: $e");
+// // // // // // //       debug("  Error in MyApp initState: $e");
 // // // // // // //     }
 // // // // // // //   }
 
@@ -2684,7 +2684,7 @@
 // // // // // // //         _checkAndProcessDeepLink();
 // // // // // // //       }
 // // // // // // //     } catch (e) {
-// // // // // // //       debug("❌ Initial URI error: $e");
+// // // // // // //       debug("  Initial URI error: $e");
 // // // // // // //     }
 // // // // // // //   }
 
@@ -2696,7 +2696,7 @@
 // // // // // // //         _checkAndProcessDeepLink();
 // // // // // // //       },
 // // // // // // //       onError: (err) {
-// // // // // // //         debug("❌ URI Stream error: $err");
+// // // // // // //         debug("  URI Stream error: $err");
 // // // // // // //       },
 // // // // // // //     );
 // // // // // // //   }
@@ -2713,7 +2713,7 @@
 
 // // // // // // //       _processDeepLink();
 // // // // // // //     } catch (e) {
-// // // // // // //       debug("❌ Error in checkAndProcessDeepLink: $e");
+// // // // // // //       debug("  Error in checkAndProcessDeepLink: $e");
 // // // // // // //     }
 // // // // // // //   }
 
@@ -2725,14 +2725,14 @@
 // // // // // // //     };
 
 // // // // // // //     try {
-// // // // // // //       debug("🔍 Extracting phone numbers from URI: $uri");
+// // // // // // //       debug("  Extracting phone numbers from URI: $uri");
 
 // // // // // // //       // Extract lead phone from path (e.g., /message/history/+917740989118)
 // // // // // // //       final pathSegments = uri.pathSegments;
 // // // // // // //       for (var segment in pathSegments) {
 // // // // // // //         if (segment.startsWith('+') && segment.length > 10) {
 // // // // // // //           phoneNumbers['leadPhone'] = segment;
-// // // // // // //           debug("📱 Found lead phone in path: ${phoneNumbers['leadPhone']}");
+// // // // // // //           debug(" Found lead phone in path: ${phoneNumbers['leadPhone']}");
 // // // // // // //           break;
 // // // // // // //         }
 // // // // // // //       }
@@ -2743,7 +2743,7 @@
 // // // // // // //         phoneNumbers['whatsappSettingNumber'] =
 // // // // // // //             queryParams['whatsapp_setting_number']!;
 // // // // // // //         debug(
-// // // // // // //             "📱 Found whatsapp setting number: ${phoneNumbers['whatsappSettingNumber']}");
+// // // // // // //             " Found whatsapp setting number: ${phoneNumbers['whatsappSettingNumber']}");
 // // // // // // //       }
 
 // // // // // // //       // If not found in query, try to extract from full URL
@@ -2754,13 +2754,13 @@
 // // // // // // //         if (match != null && match.group(1) != null) {
 // // // // // // //           phoneNumbers['whatsappSettingNumber'] = match.group(1)!;
 // // // // // // //           debug(
-// // // // // // //               "📱 Extracted whatsapp setting number from URL: ${phoneNumbers['whatsappSettingNumber']}");
+// // // // // // //               " Extracted whatsapp setting number from URL: ${phoneNumbers['whatsappSettingNumber']}");
 // // // // // // //         }
 // // // // // // //       }
 
 // // // // // // //       return phoneNumbers;
 // // // // // // //     } catch (e) {
-// // // // // // //       debug("❌ Error extracting phone numbers: $e");
+// // // // // // //       debug("  Error extracting phone numbers: $e");
 // // // // // // //       return phoneNumbers;
 // // // // // // //     }
 // // // // // // //   }
@@ -2769,7 +2769,7 @@
 // // // // // // // //   void _processDeepLink() async {
 // // // // // // // //     try {
 // // // // // // // //       if (pendingDeepLink == null) {
-// // // // // // // //         debug("⚠️ No pending deep link to process");
+// // // // // // // //         debug(" No pending deep link to process");
 // // // // // // // //         return;
 // // // // // // // //       }
 
@@ -2799,11 +2799,11 @@
 // // // // // // // //         // If lead phone is empty but we have user's whatsapp number, use that
 // // // // // // // //         if (leadPhone.isEmpty && userWhatsappNumber.isNotEmpty) {
 // // // // // // // //           leadPhone = userWhatsappNumber;
-// // // // // // // //           debug("📱 Using user's whatsapp number as lead phone: $leadPhone");
+// // // // // // // //           debug(" Using user's whatsapp number as lead phone: $leadPhone");
 // // // // // // // //         }
 
 // // // // // // // //         if (leadPhone.isEmpty) {
-// // // // // // // //           debug("❌ Lead phone number not found in URL or tokens");
+// // // // // // // //           debug("  Lead phone number not found in URL or tokens");
 // // // // // // // //           return;
 // // // // // // // //         }
 
@@ -2812,7 +2812,7 @@
 // // // // // // // //           try {
 // // // // // // // //             final context = navigatorKey.currentContext;
 // // // // // // // //             if (context == null) {
-// // // // // // // //               debug("❌ Context is null, cannot navigate");
+// // // // // // // //               debug("  Context is null, cannot navigate");
 // // // // // // // //               // Try again after delay
 // // // // // // // //               Future.delayed(const Duration(milliseconds: 500), () {
 // // // // // // // //                 _processDeepLink();
@@ -2823,7 +2823,7 @@
 // // // // // // // //             // Check if we're already on chat screen
 // // // // // // // //             final currentRoute = ModalRoute.of(context);
 // // // // // // // //             if (currentRoute?.settings.name?.contains('chat') == true) {
-// // // // // // // //               debug("⚠️ Already on chat screen, skipping navigation");
+// // // // // // // //               debug(" Already on chat screen, skipping navigation");
 // // // // // // // //               pendingDeepLink = null;
 // // // // // // // //               return;
 // // // // // // // //             }
@@ -2847,7 +2847,7 @@
 
 // // // // // // // //             pendingDeepLink = null;
 // // // // // // // //           } catch (e) {
-// // // // // // // //             debug("❌ Navigation error: $e");
+// // // // // // // //             debug("  Navigation error: $e");
 // // // // // // // //           }
 // // // // // // // //         });
 // // // // // // // //       } else {
@@ -2868,7 +2868,7 @@
 // // // // // // // //             try {
 // // // // // // // //               final context = navigatorKey.currentContext;
 // // // // // // // //               if (context == null) {
-// // // // // // // //                 debug("❌ Context is null, cannot navigate");
+// // // // // // // //                 debug("  Context is null, cannot navigate");
 // // // // // // // //                 Future.delayed(const Duration(milliseconds: 500), () {
 // // // // // // // //                   _processDeepLink();
 // // // // // // // //                 });
@@ -2888,19 +2888,19 @@
 
 // // // // // // // //               pendingDeepLink = null;
 // // // // // // // //             } catch (e) {
-// // // // // // // //               debug("❌ Navigation error: $e");
+// // // // // // // //               debug("  Navigation error: $e");
 // // // // // // // //             }
 // // // // // // // //           });
 // // // // // // // //         }
 // // // // // // // //       }
 // // // // // // // //     } catch (e) {
-// // // // // // // //       debug("❌ Error processing deep link: $e");
+// // // // // // // //       debug("  Error processing deep link: $e");
 // // // // // // // //     }
 // // // // // // // //   }
 // // // // // // //   void _processDeepLink() async {
 // // // // // // //     try {
 // // // // // // //       if (pendingDeepLink == null) {
-// // // // // // //         debug("⚠️ No pending deep link to process");
+// // // // // // //         debug(" No pending deep link to process");
 // // // // // // //         return;
 // // // // // // //       }
 
@@ -2925,7 +2925,7 @@
 // // // // // // //       // Navigate immediately - no conditions
 // // // // // // //       _navigateToChatScreen(leadName, leadPhone, whatsappSettingNumber);
 // // // // // // //     } catch (e) {
-// // // // // // //       debug("❌ Error in _processDeepLink: $e");
+// // // // // // //       debug("  Error in _processDeepLink: $e");
 // // // // // // //     }
 // // // // // // //   }
 
@@ -2936,7 +2936,7 @@
 // // // // // // //       try {
 // // // // // // //         final context = navigatorKey.currentContext;
 // // // // // // //         if (context == null) {
-// // // // // // //           debug("❌ Context is null, retrying in 500ms...");
+// // // // // // //           debug("  Context is null, retrying in 500ms...");
 // // // // // // //           // Retry after delay
 // // // // // // //           Future.delayed(const Duration(milliseconds: 500), () {
 // // // // // // //             _navigateToChatScreen(leadName, leadPhone, whatsappSettingNumber);
@@ -2947,12 +2947,12 @@
 // // // // // // //         // Check if already on chat screen
 // // // // // // //         final currentRoute = ModalRoute.of(context);
 // // // // // // //         if (currentRoute?.settings.name?.contains('chat') == true) {
-// // // // // // //           debug("⚠️ Already on chat screen");
+// // // // // // //           debug(" Already on chat screen");
 // // // // // // //           pendingDeepLink = null;
 // // // // // // //           return;
 // // // // // // //         }
 
-// // // // // // //         debug("✅ Navigating to WhatsappChatScreen");
+// // // // // // //         debug("  Navigating to WhatsappChatScreen");
 
 // // // // // // //         Navigator.push(
 // // // // // // //           context,
@@ -2968,7 +2968,7 @@
 // // // // // // //         pendingDeepLink = null;
 // // // // // // //         debug("🎉 Navigation successful!");
 // // // // // // //       } catch (e) {
-// // // // // // //         debug("❌ Navigation error: $e");
+// // // // // // //         debug("  Navigation error: $e");
 // // // // // // //       }
 // // // // // // //     });
 // // // // // // //   }
@@ -2992,7 +2992,7 @@
 // // // // // // //           // Check if it has authToken
 // // // // // // //           if (jsonData['authToken'] != null) {
 // // // // // // //             final String authToken = jsonData['authToken'].toString();
-// // // // // // //             debug("✅ Found authToken");
+// // // // // // //             debug("  Found authToken");
 
 // // // // // // //             // Decode JWT
 // // // // // // //             final Map<String, dynamic>? decodedToken =
@@ -3019,7 +3019,7 @@
 // // // // // // //             userData['leadName'] = jsonData['username'].toString();
 // // // // // // //           }
 // // // // // // //         } catch (e) {
-// // // // // // //           debug("⚠️ JSON parse failed: $e");
+// // // // // // //           debug(" JSON parse failed: $e");
 // // // // // // //           // String extraction fallback
 // // // // // // //           if (userKey.contains('username')) {
 // // // // // // //             final regex = RegExp(r'"username":\s*"([^"]+)"');
@@ -3034,7 +3034,7 @@
 // // // // // // //       debug("👤 User Data: ${userData['leadName']}");
 // // // // // // //       return userData;
 // // // // // // //     } catch (e) {
-// // // // // // //       debug("❌ Error getting user data: $e");
+// // // // // // //       debug("  Error getting user data: $e");
 // // // // // // //       return userData;
 // // // // // // //     }
 // // // // // // //   }
@@ -3044,7 +3044,7 @@
 // // // // // // //     try {
 // // // // // // //       final parts = token.split('.');
 // // // // // // //       if (parts.length != 3) {
-// // // // // // //         debug("❌ Invalid JWT format");
+// // // // // // //         debug("  Invalid JWT format");
 // // // // // // //         return null;
 // // // // // // //       }
 
@@ -3056,7 +3056,7 @@
 // // // // // // //       final decoded = utf8.decode(base64Url.decode(payload));
 // // // // // // //       return json.decode(decoded);
 // // // // // // //     } catch (e) {
-// // // // // // //       debug("❌ JWT decode failed: $e");
+// // // // // // //       debug("  JWT decode failed: $e");
 // // // // // // //       return null;
 // // // // // // //     }
 // // // // // // //   }
@@ -3083,7 +3083,7 @@
 // // // // // // //   //     // Extract user data from userKey (which contains your JSON)
 // // // // // // //   //     if (userKey != null && userKey.isNotEmpty) {
 // // // // // // //   //       try {
-// // // // // // //   //         debug("🔍 Parsing user JSON data");
+// // // // // // //   //         debug("  Parsing user JSON data");
 
 // // // // // // //   //         // Parse the JSON
 // // // // // // //   //         final Map<String, dynamic> userJson = json.decode(userKey);
@@ -3107,7 +3107,7 @@
 // // // // // // //   //           }
 
 // // // // // // //   //           userData['whatsappNumber'] = whatsappNumber;
-// // // // // // //   //           debug("📱 Found whatsapp_number: ${userData['whatsappNumber']}");
+// // // // // // //   //           debug(" Found whatsapp_number: ${userData['whatsappNumber']}");
 // // // // // // //   //         }
 
 // // // // // // //   //         // Also extract phone for backward compatibility
@@ -3118,7 +3118,7 @@
 // // // // // // //   //         }
 
 // // // // // // //   //       } catch (e) {
-// // // // // // //   //         debug("❌ Error parsing user JSON: $e");
+// // // // // // //   //         debug("  Error parsing user JSON: $e");
 
 // // // // // // //   //         // Fallback: try to extract from string if JSON parsing fails
 // // // // // // //   //         if (userKey.contains('whatsapp_number')) {
@@ -3126,7 +3126,7 @@
 // // // // // // //   //           final match = regex.firstMatch(userKey);
 // // // // // // //   //           if (match != null && match.group(1) != null) {
 // // // // // // //   //             userData['whatsappNumber'] = '+91${match.group(1)!}';
-// // // // // // //   //             debug("📱 Extracted whatsapp_number from string: ${userData['whatsappNumber']}");
+// // // // // // //   //             debug(" Extracted whatsapp_number from string: ${userData['whatsappNumber']}");
 // // // // // // //   //           }
 // // // // // // //   //         }
 
@@ -3147,7 +3147,7 @@
 
 // // // // // // //   //     return userData;
 // // // // // // //   //   } catch (e) {
-// // // // // // //   //     debug("❌ Error getting user data from tokens: $e");
+// // // // // // //   //     debug("  Error getting user data from tokens: $e");
 // // // // // // //   //     return userData;
 // // // // // // //   //   }
 // // // // // // //   // }
@@ -3176,10 +3176,10 @@
 // // // // // // //       }
 
 // // // // // // //       debug(
-// // // // // // //           "📱 Extracted phone number from token: ${phoneNumber.isNotEmpty ? phoneNumber : 'Not found'}");
+// // // // // // //           " Extracted phone number from token: ${phoneNumber.isNotEmpty ? phoneNumber : 'Not found'}");
 // // // // // // //       return phoneNumber;
 // // // // // // //     } catch (e) {
-// // // // // // //       debug("❌ Error extracting phone number from token: $e");
+// // // // // // //       debug("  Error extracting phone number from token: $e");
 // // // // // // //       return '';
 // // // // // // //     }
 // // // // // // //   }
@@ -3187,13 +3187,13 @@
 // // // // // // //   /// 🔹 Extract whatsapp number from user data string
 // // // // // // //   String _extractWhatsappNumberFromUserData(String userData) {
 // // // // // // //     try {
-// // // // // // //       debug("🔍 Searching for whatsapp_number in user data");
+// // // // // // //       debug("  Searching for whatsapp_number in user data");
 
 // // // // // // //       // First try to parse as JSON
 // // // // // // //       try {
 // // // // // // //         // Decode the JSON string
 // // // // // // //         final Map<String, dynamic> jsonData = json.decode(userData);
-// // // // // // //         debug("✅ Parsed JSON: $jsonData");
+// // // // // // //         debug("  Parsed JSON: $jsonData");
 
 // // // // // // //         // Check if whatsapp_number exists
 // // // // // // //         if (jsonData['whatsapp_number'] != null) {
@@ -3211,10 +3211,10 @@
 // // // // // // //           debug("Final WhatsApp number: $number");
 // // // // // // //           return number;
 // // // // // // //         } else {
-// // // // // // //           debug("⚠️ whatsapp_number not found in JSON");
+// // // // // // //           debug(" whatsapp_number not found in JSON");
 // // // // // // //         }
 // // // // // // //       } catch (e) {
-// // // // // // //         debug("⚠️ Failed to parse JSON, trying string extraction. Error: $e");
+// // // // // // //         debug(" Failed to parse JSON, trying string extraction. Error: $e");
 // // // // // // //       }
 
 // // // // // // //       // Try different patterns for whatsapp number
@@ -3235,7 +3235,7 @@
 // // // // // // //             match.group(1) != null &&
 // // // // // // //             match.group(1)!.isNotEmpty) {
 // // // // // // //           String number = match.group(1)!;
-// // // // // // //           debug("✅ Found number with pattern $pattern: $number");
+// // // // // // //           debug("  Found number with pattern $pattern: $number");
 
 // // // // // // //           // Add country code if it's a whatsapp_number and doesn't have +
 // // // // // // //           if (pattern.contains('whatsapp') && !number.startsWith('+')) {
@@ -3245,10 +3245,10 @@
 // // // // // // //         }
 // // // // // // //       }
 
-// // // // // // //       debug("❌ No phone number found in user data");
+// // // // // // //       debug("  No phone number found in user data");
 // // // // // // //       return '';
 // // // // // // //     } catch (e) {
-// // // // // // //       debug("❌ Error extracting whatsapp number from user data: $e");
+// // // // // // //       debug("  Error extracting whatsapp number from user data: $e");
 // // // // // // //       return '';
 // // // // // // //     }
 // // // // // // //   }
@@ -3256,7 +3256,7 @@
 // // // // // // //   /// 🔹 Extract phone number from access token
 // // // // // // //   String _extractPhoneFromAccessToken(String accessToken) {
 // // // // // // //     try {
-// // // // // // //       debug("🔍 Extracting phone from access token");
+// // // // // // //       debug("  Extracting phone from access token");
 
 // // // // // // //       // First check if it's JWT
 // // // // // // //       if (accessToken.contains('.')) {
@@ -3288,7 +3288,7 @@
 // // // // // // //               return payloadJson['mobile'].toString();
 // // // // // // //             }
 // // // // // // //           } catch (e) {
-// // // // // // //             debug("⚠️ Could not decode JWT payload: $e");
+// // // // // // //             debug(" Could not decode JWT payload: $e");
 // // // // // // //           }
 // // // // // // //         }
 // // // // // // //       }
@@ -3304,7 +3304,7 @@
 
 // // // // // // //       return '';
 // // // // // // //     } catch (e) {
-// // // // // // //       debug("❌ Error extracting phone from access token: $e");
+// // // // // // //       debug("  Error extracting phone from access token: $e");
 // // // // // // //       return '';
 // // // // // // //     }
 // // // // // // //   }
@@ -3319,7 +3319,7 @@
 // // // // // // //         _checkAndProcessDeepLink();
 // // // // // // //       }
 // // // // // // //     } catch (e) {
-// // // // // // //       debug("❌ Error in onProvidersReady: $e");
+// // // // // // //       debug("  Error in onProvidersReady: $e");
 // // // // // // //     }
 // // // // // // //   }
 
@@ -3495,7 +3495,7 @@
 // // // // // // // //     runApp(const MyApp());
 // // // // // // // //     await NotificationService.handleInitialMessage();
 // // // // // // // //   } catch (e) {
-// // // // // // // //     debug("❌ Error in main(): $e");
+// // // // // // // //     debug("  Error in main(): $e");
 // // // // // // // //     runApp(
 // // // // // // // //       MaterialApp(
 // // // // // // // //         home: Scaffold(
@@ -3539,7 +3539,7 @@
 // // // // // // // //         }
 // // // // // // // //       });
 // // // // // // // //     } catch (e) {
-// // // // // // // //       debug("❌ Error in MyApp initState: $e");
+// // // // // // // //       debug("  Error in MyApp initState: $e");
 // // // // // // // //     }
 // // // // // // // //   }
 
@@ -3554,7 +3554,7 @@
 // // // // // // // //         _processPendingDeepLink();
 // // // // // // // //       }
 // // // // // // // //     } catch (e) {
-// // // // // // // //       debug("❌ Initial URI error: $e");
+// // // // // // // //       debug("  Initial URI error: $e");
 // // // // // // // //     }
 // // // // // // // //   }
 
@@ -3567,7 +3567,7 @@
 // // // // // // // //         _processPendingDeepLink();
 // // // // // // // //       },
 // // // // // // // //       onError: (err) {
-// // // // // // // //         debug("❌ URI Stream error: $err");
+// // // // // // // //         debug("  URI Stream error: $err");
 // // // // // // // //       },
 // // // // // // // //     );
 // // // // // // // //   }
@@ -3593,7 +3593,7 @@
 // // // // // // // //       final String whatsappSettingNumber = extractedData['whatsappSettingNumber'] ?? '';
 
 // // // // // // // //       if (leadPhone.isEmpty) {
-// // // // // // // //         debug("❌ No phone number found in URL");
+// // // // // // // //         debug("  No phone number found in URL");
 // // // // // // // //         return;
 // // // // // // // //       }
 
@@ -3602,15 +3602,15 @@
 // // // // // // // //       final String userPhone = userData['phone'] ?? '';
 // // // // // // // //       final String userName = userData['name'] ?? 'WatConnect User';
 
-// // // // // // // //       debug("📱 URL Lead Phone: $leadPhone");
-// // // // // // // //       debug("📱 User Phone from Token: $userPhone");
+// // // // // // // //       debug(" URL Lead Phone: $leadPhone");
+// // // // // // // //       debug(" User Phone from Token: $userPhone");
 // // // // // // // //       debug("👤 User Name: $userName");
 
 // // // // // // // //       // Navigate to chat screen
 // // // // // // // //       WidgetsBinding.instance.addPostFrameCallback((_) {
 // // // // // // // //         final context = navigatorKey.currentContext;
 // // // // // // // //         if (context == null) {
-// // // // // // // //           debug("❌ Context is null, retrying...");
+// // // // // // // //           debug("  Context is null, retrying...");
 // // // // // // // //           Future.delayed(const Duration(milliseconds: 500), () {
 // // // // // // // //             _processDeepLink();
 // // // // // // // //           });
@@ -3633,7 +3633,7 @@
 // // // // // // // //         pendingDeepLink = null;
 // // // // // // // //       });
 // // // // // // // //     } catch (e) {
-// // // // // // // //       debug("❌ Error in _processDeepLink: $e");
+// // // // // // // //       debug("  Error in _processDeepLink: $e");
 // // // // // // // //     }
 // // // // // // // //   }
 
@@ -3645,7 +3645,7 @@
 // // // // // // // //     };
 
 // // // // // // // //     try {
-// // // // // // // //       debug("🔍 Extracting data from URL: $uri");
+// // // // // // // //       debug("  Extracting data from URL: $uri");
 
 // // // // // // // //       // Extract lead phone from path
 // // // // // // // //       for (var segment in uri.pathSegments) {
@@ -3661,7 +3661,7 @@
 
 // // // // // // // //       return data;
 // // // // // // // //     } catch (e) {
-// // // // // // // //       debug("❌ Error extracting data from URL: $e");
+// // // // // // // //       debug("  Error extracting data from URL: $e");
 // // // // // // // //       return data;
 // // // // // // // //     }
 // // // // // // // //   }
@@ -3683,7 +3683,7 @@
 // // // // // // // //         // Parse JSON
 // // // // // // // //         try {
 // // // // // // // //           final Map<String, dynamic> jsonData = json.decode(userKey);
-// // // // // // // //           debug("✅ JSON parsed successfully");
+// // // // // // // //           debug("  JSON parsed successfully");
 
 // // // // // // // //           // Check if it's the response structure with authToken
 // // // // // // // //           if (jsonData['authToken'] != null) {
@@ -3706,7 +3706,7 @@
 // // // // // // // //             userData['phone'] = _extractPhoneFromJson(jsonData);
 // // // // // // // //           }
 // // // // // // // //         } catch (e) {
-// // // // // // // //           debug("⚠️ JSON parse failed: $e, trying string extraction");
+// // // // // // // //           debug(" JSON parse failed: $e, trying string extraction");
 
 // // // // // // // //           // String extraction fallback
 // // // // // // // //           userData['name'] = _extractFromString(userKey, 'username') ??
@@ -3716,10 +3716,10 @@
 // // // // // // // //         }
 // // // // // // // //       }
 
-// // // // // // // //       debug("📱 Final user data - Name: ${userData['name']}, Phone: ${userData['phone']}");
+// // // // // // // //       debug(" Final user data - Name: ${userData['name']}, Phone: ${userData['phone']}");
 // // // // // // // //       return userData;
 // // // // // // // //     } catch (e) {
-// // // // // // // //       debug("❌ Error getting user phone number: $e");
+// // // // // // // //       debug("  Error getting user phone number: $e");
 // // // // // // // //       return userData;
 // // // // // // // //     }
 // // // // // // // //   }
@@ -3739,7 +3739,7 @@
 // // // // // // // //       debug("🔓 Decoded JWT payload");
 // // // // // // // //       return json.decode(decoded);
 // // // // // // // //     } catch (e) {
-// // // // // // // //       debug("❌ JWT decode failed: $e");
+// // // // // // // //       debug("  JWT decode failed: $e");
 // // // // // // // //       return null;
 // // // // // // // //     }
 // // // // // // // //   }
@@ -3754,7 +3754,7 @@
 // // // // // // // //         if (!number.startsWith('+')) {
 // // // // // // // //           number = '$countryCode$number';
 // // // // // // // //         }
-// // // // // // // //         debug("✅ Extracted whatsapp_number from JSON: $number");
+// // // // // // // //         debug("  Extracted whatsapp_number from JSON: $number");
 // // // // // // // //         return number;
 // // // // // // // //       }
 
@@ -3762,14 +3762,14 @@
 // // // // // // // //       final phoneFields = ['phone', 'mobile', 'phoneNumber', 'contact'];
 // // // // // // // //       for (var field in phoneFields) {
 // // // // // // // //         if (json[field] != null) {
-// // // // // // // //           debug("✅ Extracted $field from JSON: ${json[field]}");
+// // // // // // // //           debug("  Extracted $field from JSON: ${json[field]}");
 // // // // // // // //           return json[field].toString();
 // // // // // // // //         }
 // // // // // // // //       }
 
 // // // // // // // //       return '';
 // // // // // // // //     } catch (e) {
-// // // // // // // //       debug("❌ Error extracting phone from JSON: $e");
+// // // // // // // //       debug("  Error extracting phone from JSON: $e");
 // // // // // // // //       return '';
 // // // // // // // //     }
 // // // // // // // //   }
@@ -3822,7 +3822,7 @@
 
 // // // // // // // //       return '';
 // // // // // // // //     } catch (e) {
-// // // // // // // //       debug("❌ Error extracting phone from string: $e");
+// // // // // // // //       debug("  Error extracting phone from string: $e");
 // // // // // // // //       return '';
 // // // // // // // //     }
 // // // // // // // //   }
@@ -3993,7 +3993,7 @@
 // // // // // //     runApp(const MyApp());
 // // // // // //     await NotificationService.handleInitialMessage();
 // // // // // //   } catch (e) {
-// // // // // //     debug("❌ Error in main(): $e");
+// // // // // //     debug("  Error in main(): $e");
 // // // // // //     runApp(
 // // // // // //       MaterialApp(
 // // // // // //         home: Scaffold(
@@ -4037,7 +4037,7 @@
 // // // // // //         }
 // // // // // //       });
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Error in MyApp initState: $e");
+// // // // // //       debug("  Error in MyApp initState: $e");
 // // // // // //     }
 // // // // // //   }
 
@@ -4052,7 +4052,7 @@
 // // // // // //         _processPendingDeepLink();
 // // // // // //       }
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Initial URI error: $e");
+// // // // // //       debug("  Initial URI error: $e");
 // // // // // //     }
 // // // // // //   }
 
@@ -4065,7 +4065,7 @@
 // // // // // //         _processPendingDeepLink();
 // // // // // //       },
 // // // // // //       onError: (err) {
-// // // // // //         debug("❌ URI Stream error: $err");
+// // // // // //         debug("  URI Stream error: $err");
 // // // // // //       },
 // // // // // //     );
 // // // // // //   }
@@ -4081,7 +4081,7 @@
 // // // // // //   void _processDeepLink() async {
 // // // // // //     try {
 // // // // // //       if (pendingDeepLink == null) {
-// // // // // //         debug("⚠️ No pending deep link to process");
+// // // // // //         debug(" No pending deep link to process");
 // // // // // //         return;
 // // // // // //       }
 
@@ -4093,7 +4093,7 @@
 // // // // // //       final String leadPhone = _extractLeadPhoneFromUrl(uriString);
 
 // // // // // //       if (leadPhone.isEmpty) {
-// // // // // //         debug("❌ No phone number found in URL");
+// // // // // //         debug("  No phone number found in URL");
 // // // // // //         return;
 // // // // // //       }
 
@@ -4105,7 +4105,7 @@
 // // // // // //       final userData = await _getUserDataFromTokens();
 // // // // // //       final String leadName = userData['leadName'] ?? leadPhone;
 
-// // // // // //       debug("📱 Extracted from URL:");
+// // // // // //       debug(" Extracted from URL:");
 // // // // // //       debug("   Lead Phone: $leadPhone");
 // // // // // //       debug("   WhatsApp Setting Number: $whatsappSettingNumber");
 // // // // // //       debug("   User Name: $leadName");
@@ -4113,21 +4113,21 @@
 // // // // // //       // Navigate to chat screen
 // // // // // //       _navigateToChatScreen(leadName, leadPhone, whatsappSettingNumber);
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Error in _processDeepLink: $e");
+// // // // // //       debug("  Error in _processDeepLink: $e");
 // // // // // //     }
 // // // // // //   }
 
 // // // // // //   /// 🔹 Extract lead phone number from URL
 // // // // // //   String _extractLeadPhoneFromUrl(String url) {
 // // // // // //     try {
-// // // // // //       debug("🔍 Extracting phone number from URL: $url");
+// // // // // //       debug("  Extracting phone number from URL: $url");
 
 // // // // // //       final RegExp phoneRegex = RegExp(r'/history/(\+?\d+)');
 // // // // // //       final Match? match = phoneRegex.firstMatch(url);
 
 // // // // // //       if (match != null && match.group(1) != null) {
 // // // // // //         String phone = match.group(1)!;
-// // // // // //         debug("✅ Found phone in URL path: $phone");
+// // // // // //         debug("  Found phone in URL path: $phone");
 // // // // // //         return phone;
 // // // // // //       }
 
@@ -4137,7 +4137,7 @@
 
 // // // // // //       if (altMatch != null && altMatch.group(1) != null) {
 // // // // // //         String phone = altMatch.group(1)!;
-// // // // // //         debug("✅ Found phone with alt pattern: $phone");
+// // // // // //         debug("  Found phone with alt pattern: $phone");
 // // // // // //         return phone;
 // // // // // //       }
 
@@ -4151,14 +4151,14 @@
 // // // // // //         if (!phone.startsWith('+91') && phone.length == 10) {
 // // // // // //           phone = '+91$phone';
 // // // // // //         }
-// // // // // //         debug("✅ Found phone with last resort pattern: $phone");
+// // // // // //         debug("  Found phone with last resort pattern: $phone");
 // // // // // //         return phone;
 // // // // // //       }
 
-// // // // // //       debug("❌ No phone number found in URL");
+// // // // // //       debug("  No phone number found in URL");
 // // // // // //       return "";
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Error extracting phone from URL: $e");
+// // // // // //       debug("  Error extracting phone from URL: $e");
 // // // // // //       return "";
 // // // // // //     }
 // // // // // //   }
@@ -4166,7 +4166,7 @@
 // // // // // //   /// 🔹 Extract whatsapp setting number from URL
 // // // // // //   String _extractWhatsappSettingNumberFromUrl(String url) {
 // // // // // //     try {
-// // // // // //       debug("🔍 Extracting whatsapp setting number from URL");
+// // // // // //       debug("  Extracting whatsapp setting number from URL");
 
 // // // // // //       // Extract from query parameter: whatsapp_setting_number=918306524244
 // // // // // //       final RegExp regex = RegExp(r'whatsapp_setting_number=(\+?\d+)');
@@ -4174,14 +4174,14 @@
 
 // // // // // //       if (match != null && match.group(1) != null) {
 // // // // // //         String number = match.group(1)!;
-// // // // // //         debug("✅ Found whatsapp setting number: $number");
+// // // // // //         debug("  Found whatsapp setting number: $number");
 // // // // // //         return number;
 // // // // // //       }
 
-// // // // // //       debug("⚠️ No whatsapp setting number found in URL");
+// // // // // //       debug(" No whatsapp setting number found in URL");
 // // // // // //       return "";
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Error extracting whatsapp setting number: $e");
+// // // // // //       debug("  Error extracting whatsapp setting number: $e");
 // // // // // //       return "";
 // // // // // //     }
 // // // // // //   }
@@ -4193,7 +4193,7 @@
 // // // // // //       try {
 // // // // // //         final context = navigatorKey.currentContext;
 // // // // // //         if (context == null) {
-// // // // // //           debug("❌ Context is null, retrying in 500ms...");
+// // // // // //           debug("  Context is null, retrying in 500ms...");
 // // // // // //           // Retry after delay
 // // // // // //           Future.delayed(const Duration(milliseconds: 500), () {
 // // // // // //             _navigateToChatScreen(leadName, leadPhone, whatsappSettingNumber);
@@ -4204,12 +4204,12 @@
 // // // // // //         // Check if already on chat screen with same number
 // // // // // //         final currentRoute = ModalRoute.of(context);
 // // // // // //         if (currentRoute?.settings.name?.contains('chat') == true) {
-// // // // // //           debug("⚠️ Already on chat screen");
+// // // // // //           debug(" Already on chat screen");
 // // // // // //           pendingDeepLink = null;
 // // // // // //           return;
 // // // // // //         }
 
-// // // // // //         debug("✅ Navigating to WhatsappChatScreen with:");
+// // // // // //         debug("  Navigating to WhatsappChatScreen with:");
 // // // // // //         debug("   Lead Name: $leadName");
 // // // // // //         debug("   Lead Phone: $leadPhone");
 // // // // // //         debug("   ID: $whatsappSettingNumber");
@@ -4229,7 +4229,7 @@
 // // // // // //         pendingDeepLink = null;
 // // // // // //         debug("🎉 Navigation successful!");
 // // // // // //       } catch (e) {
-// // // // // //         debug("❌ Navigation error: $e");
+// // // // // //         debug("  Navigation error: $e");
 // // // // // //       }
 // // // // // //     });
 // // // // // //   }
@@ -4247,7 +4247,7 @@
 
 // // // // // //       if (userKey != null && userKey.isNotEmpty) {
 // // // // // //         try {
-// // // // // //           debug("🔍 Parsing user data JSON");
+// // // // // //           debug("  Parsing user data JSON");
 
 // // // // // //           final Map<String, dynamic> jsonData = json.decode(userKey);
 
@@ -4271,7 +4271,7 @@
 // // // // // //             userData['phone'] = _extractPhoneFromJson(jsonData);
 // // // // // //           }
 // // // // // //         } catch (e) {
-// // // // // //           debug("⚠️ JSON parse failed: $e, trying string extraction");
+// // // // // //           debug(" JSON parse failed: $e, trying string extraction");
 
 // // // // // //           // String extraction fallback
 // // // // // //           userData['leadName'] = _extractFromString(userKey, 'username') ??
@@ -4285,7 +4285,7 @@
 // // // // // //           "👤 User Data - Name: ${userData['leadName']}, Phone: ${userData['phone']}");
 // // // // // //       return userData;
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Error getting user data: $e");
+// // // // // //       debug("  Error getting user data: $e");
 // // // // // //       return userData;
 // // // // // //     }
 // // // // // //   }
@@ -4295,7 +4295,7 @@
 // // // // // //     try {
 // // // // // //       final parts = token.split('.');
 // // // // // //       if (parts.length != 3) {
-// // // // // //         debug("❌ Invalid JWT format");
+// // // // // //         debug("  Invalid JWT format");
 // // // // // //         return null;
 // // // // // //       }
 
@@ -4308,7 +4308,7 @@
 // // // // // //       debug("🔓 Decoded JWT payload");
 // // // // // //       return json.decode(decoded);
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ JWT decode failed: $e");
+// // // // // //       debug("  JWT decode failed: $e");
 // // // // // //       return null;
 // // // // // //     }
 // // // // // //   }
@@ -4323,7 +4323,7 @@
 // // // // // //         if (!number.startsWith('+')) {
 // // // // // //           number = '$countryCode$number';
 // // // // // //         }
-// // // // // //         debug("✅ Extracted whatsapp_number from JSON: $number");
+// // // // // //         debug("  Extracted whatsapp_number from JSON: $number");
 // // // // // //         return number;
 // // // // // //       }
 
@@ -4331,14 +4331,14 @@
 // // // // // //       final phoneFields = ['phone', 'mobile', 'phoneNumber', 'contact'];
 // // // // // //       for (var field in phoneFields) {
 // // // // // //         if (json[field] != null) {
-// // // // // //           debug("✅ Extracted $field from JSON: ${json[field]}");
+// // // // // //           debug("  Extracted $field from JSON: ${json[field]}");
 // // // // // //           return json[field].toString();
 // // // // // //         }
 // // // // // //       }
 
 // // // // // //       return '';
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Error extracting phone from JSON: $e");
+// // // // // //       debug("  Error extracting phone from JSON: $e");
 // // // // // //       return '';
 // // // // // //     }
 // // // // // //   }
@@ -4391,7 +4391,7 @@
 
 // // // // // //       return '';
 // // // // // //     } catch (e) {
-// // // // // //       debug("❌ Error extracting phone from string: $e");
+// // // // // //       debug("  Error extracting phone from string: $e");
 // // // // // //       return '';
 // // // // // //     }
 // // // // // //   }
@@ -4565,7 +4565,7 @@
 // // // //     runApp(const MyApp());
 // // // //     await NotificationService.handleInitialMessage();
 // // // //   } catch (e) {
-// // // //     debug("❌ Error in main(): $e");
+// // // //     debug("  Error in main(): $e");
 // // // //     runApp(
 // // // //       MaterialApp(
 // // // //         home: Scaffold(
@@ -4609,7 +4609,7 @@
 // // // //         }
 // // // //       });
 // // // //     } catch (e) {
-// // // //       debug("❌ Error in MyApp initState: $e");
+// // // //       debug("  Error in MyApp initState: $e");
 // // // //     }
 // // // //   }
 
@@ -4624,7 +4624,7 @@
 // // // //         _processPendingDeepLink();
 // // // //       }
 // // // //     } catch (e) {
-// // // //       debug("❌ Initial URI error: $e");
+// // // //       debug("  Initial URI error: $e");
 // // // //     }
 // // // //   }
 
@@ -4637,7 +4637,7 @@
 // // // //         _processPendingDeepLink();
 // // // //       },
 // // // //       onError: (err) {
-// // // //         debug("❌ URI Stream error: $err");
+// // // //         debug("  URI Stream error: $err");
 // // // //       },
 // // // //     );
 // // // //   }
@@ -4652,7 +4652,7 @@
 // // // //   void _processDeepLink() async {
 // // // //     try {
 // // // //       if (pendingDeepLink == null) {
-// // // //         debug("⚠️ No pending deep link to process");
+// // // //         debug(" No pending deep link to process");
 // // // //         return;
 // // // //       }
 
@@ -4663,7 +4663,7 @@
 // // // //       final String leadPhone = _extractLeadPhoneFromUrl(uriString);
 
 // // // //       if (leadPhone.isEmpty) {
-// // // //         debug("❌ No phone number found in URL");
+// // // //         debug("  No phone number found in URL");
 // // // //         return;
 // // // //       }
 
@@ -4671,21 +4671,21 @@
 // // // //       final String whatsappSettingNumber =
 // // // //           _extractWhatsappSettingNumberFromUrl(uriString);
 
-// // // //       debug("📱 Extracted from URL:");
+// // // //       debug(" Extracted from URL:");
 // // // //       debug("   Lead Phone: $leadPhone");
 // // // //       debug("   WhatsApp Setting Number: $whatsappSettingNumber");
 
 // // // //       // Find matching lead from LeadListViewModel
 // // // //       await _findAndNavigateToLead(leadPhone, whatsappSettingNumber);
 // // // //     } catch (e) {
-// // // //       debug("❌ Error in _processDeepLink: $e");
+// // // //       debug("  Error in _processDeepLink: $e");
 // // // //     }
 // // // //   }
 
 // // // //   /// 🔹 Extract lead phone number from URL
 // // // //   String _extractLeadPhoneFromUrl(String url) {
 // // // //     try {
-// // // //       debug("🔍 Extracting phone number from URL: $url");
+// // // //       debug("  Extracting phone number from URL: $url");
 
 // // // //       // Salesforce URL: /Lead/chat/{phone}
 // // // //       final RegExp leadChatRegex = RegExp(r'/Lead/chat/(\d+)');
@@ -4701,10 +4701,10 @@
 // // // //         return '+91${nodeMatch.group(1)!}';
 // // // //       }
 
-// // // //       debug("❌ No phone number found in URL");
+// // // //       debug("  No phone number found in URL");
 // // // //       return "";
 // // // //     } catch (e) {
-// // // //       debug("❌ Error extracting phone from URL: $e");
+// // // //       debug("  Error extracting phone from URL: $e");
 // // // //       return "";
 // // // //     }
 // // // //   }
@@ -4712,7 +4712,7 @@
 // // // //   /// 🔹 Extract whatsapp setting number from URL
 // // // //   String _extractWhatsappSettingNumberFromUrl(String url) {
 // // // //     try {
-// // // //       debug("🔍 Extracting whatsapp setting number from URL");
+// // // //       debug("  Extracting whatsapp setting number from URL");
 
 // // // //       // Extract from query parameter: whatsapp_setting_number=918306524244
 // // // //       final RegExp regex = RegExp(r'whatsapp_setting_number=(\+?\d+)');
@@ -4720,14 +4720,14 @@
 
 // // // //       if (match != null && match.group(1) != null) {
 // // // //         String number = match.group(1)!;
-// // // //         debug("✅ Found whatsapp setting number: $number");
+// // // //         debug("  Found whatsapp setting number: $number");
 // // // //         return number;
 // // // //       }
 
-// // // //       debug("⚠️ No whatsapp setting number found in URL");
+// // // //       debug(" No whatsapp setting number found in URL");
 // // // //       return "";
 // // // //     } catch (e) {
-// // // //       debug("❌ Error extracting whatsapp setting number: $e");
+// // // //       debug("  Error extracting whatsapp setting number: $e");
 // // // //       return "";
 // // // //     }
 // // // //   }
@@ -4739,7 +4739,7 @@
 // // // //       try {
 // // // //         final context = navigatorKey.currentContext;
 // // // //         if (context == null) {
-// // // //           debug("❌ Context is null, retrying in 500ms...");
+// // // //           debug("  Context is null, retrying in 500ms...");
 // // // //           Future.delayed(const Duration(milliseconds: 500), () {
 // // // //             _findAndNavigateToLead(leadPhone, whatsappSettingNumber);
 // // // //           });
@@ -4759,7 +4759,7 @@
 // // // //         LeadModel? matchedModel;
 // // // //         final List<LeadModel> pinnedLeads = [];
 
-// // // //         debug("🔍 Searching for lead with phone: $leadPhone");
+// // // //         debug("  Searching for lead with phone: $leadPhone");
 
 // // // //         for (var viewModel in leadListVm.viewModels) {
 // // // //           final leadmodel = viewModel.model;
@@ -4797,7 +4797,7 @@
 // // // //                     recordPhoneWithPrefix == leadPhone) {
 // // // //                   matchedModel = record;
 // // // //                   debug(
-// // // //                       "✅ Found matching lead: ${record.contactname} - ${record.full_number}");
+// // // //                       "  Found matching lead: ${record.contactname} - ${record.full_number}");
 // // // //                   break;
 // // // //                 }
 // // // //               }
@@ -4808,7 +4808,7 @@
 // // // //         }
 
 // // // //         if (matchedModel == null) {
-// // // //           debug("❌ No matching lead found for phone: $leadPhone");
+// // // //           debug("  No matching lead found for phone: $leadPhone");
 // // // //           // Create a dummy lead with the phone number
 // // // //           matchedModel = LeadModel(
 // // // //             id: whatsappSettingNumber,
@@ -4817,13 +4817,13 @@
 // // // //             pinned: false,
 // // // //             // is_archived: false,
 // // // //           );
-// // // //           debug("⚠️ Using dummy lead with phone number");
+// // // //           debug(" Using dummy lead with phone number");
 // // // //         }
 
 // // // //         // Navigate to chat screen
 // // // //         _navigateToChatScreen(matchedModel, pinnedLeads, whatsappSettingNumber);
 // // // //       } catch (e) {
-// // // //         debug("❌ Error finding lead: $e");
+// // // //         debug("  Error finding lead: $e");
 // // // //       }
 // // // //     });
 // // // //   }
@@ -4855,13 +4855,13 @@
 // // // //     try {
 // // // //       final context = navigatorKey.currentContext;
 // // // //       if (context == null) {
-// // // //         debug("❌ Context is null for navigation");
+// // // //         debug("  Context is null for navigation");
 // // // //         return;
 // // // //       }
 
 // // // //       final currentRoute = ModalRoute.of(context);
 // // // //       if (currentRoute?.settings.name?.contains('chat') == true) {
-// // // //         debug("⚠️ Already on chat screen");
+// // // //         debug(" Already on chat screen");
 // // // //         pendingDeepLink = null;
 // // // //         return;
 // // // //       }
@@ -4908,14 +4908,14 @@
 
 // // // //           debug("📞 Making API call for sObject: $sObjectName");
 
-// // // //           // ✅ ACTUAL NAVIGATION TO SALESFORCE CHAT SCREEN ADDED HERE
+// // // //           //   ACTUAL NAVIGATION TO SALESFORCE CHAT SCREEN ADDED HERE
 // // // //           _navigateToSalesforceChat(
 // // // //               context, matchedModel, pinnedLeads, sObjectName);
 
 // // // //           pendingDeepLink = null;
 // // // //           debug("🎉 Salesforce navigation successful for $objectType!");
 // // // //         } catch (e) {
-// // // //           debug("❌ Salesforce API/ Navigation error: $e");
+// // // //           debug("  Salesforce API/ Navigation error: $e");
 
 // // // //           _navigateToWhatsAppChat(context, matchedModel, pinnedLeads);
 // // // //         }
@@ -4932,11 +4932,11 @@
 
 // // // //         _navigateToWhatsAppChat(context, matchedModel, pinnedLeads);
 // // // //       } else {
-// // // //         debug("⚠️ Unknown URL pattern - falling back to WhatsApp chat");
+// // // //         debug(" Unknown URL pattern - falling back to WhatsApp chat");
 // // // //         _navigateToWhatsAppChat(context, matchedModel, pinnedLeads);
 // // // //       }
 // // // //     } catch (e) {
-// // // //       debug("❌ Navigation error: $e");
+// // // //       debug("  Navigation error: $e");
 // // // //       // Final fallback
 // // // //       final context = navigatorKey.currentContext;
 // // // //       if (context != null) {
@@ -4982,19 +4982,19 @@
 // // // //   //   try {
 // // // //   //     final context = navigatorKey.currentContext;
 // // // //   //     if (context == null) {
-// // // //   //       debug("❌ Context is null for navigation");
+// // // //   //       debug("  Context is null for navigation");
 // // // //   //       return;
 // // // //   //     }
 
 // // // //   //     // Check if already on chat screen with same number
 // // // //   //     final currentRoute = ModalRoute.of(context);
 // // // //   //     if (currentRoute?.settings.name?.contains('chat') == true) {
-// // // //   //       debug("⚠️ Already on chat screen");
+// // // //   //       debug(" Already on chat screen");
 // // // //   //       pendingDeepLink = null;
 // // // //   //       return;
 // // // //   //     }
 
-// // // //   //     debug("✅ Navigating to WhatsappChatScreen with:");
+// // // //   //     debug("  Navigating to WhatsappChatScreen with:");
 // // // //   //     debug("   Lead Name: ${matchedModel.contactname}");
 // // // //   //     debug("   Lead Phone: ${matchedModel.full_number}");
 // // // //   //     debug("   ID: ${matchedModel.id}");
@@ -5019,7 +5019,7 @@
 // // // //   //     pendingDeepLink = null;
 // // // //   //     debug("🎉 Navigation successful!");
 // // // //   //   } catch (e) {
-// // // //   //     debug("❌ Navigation error: $e");
+// // // //   //     debug("  Navigation error: $e");
 // // // //   //   }
 // // // //   // }
 
@@ -5190,7 +5190,7 @@
 // // // // //     runApp(const MyApp());
 // // // // //     await NotificationService.handleInitialMessage();
 // // // // //   } catch (e) {
-// // // // //     debug("❌ Error in main(): $e");
+// // // // //     debug("  Error in main(): $e");
 // // // // //     runApp(
 // // // // //       MaterialApp(
 // // // // //         home: Scaffold(
@@ -5234,7 +5234,7 @@
 // // // // //         }
 // // // // //       });
 // // // // //     } catch (e) {
-// // // // //       debug("❌ Error in MyApp initState: $e");
+// // // // //       debug("  Error in MyApp initState: $e");
 // // // // //     }
 // // // // //   }
 
@@ -5249,7 +5249,7 @@
 // // // // //         _processPendingDeepLink();
 // // // // //       }
 // // // // //     } catch (e) {
-// // // // //       debug("❌ Initial URI error: $e");
+// // // // //       debug("  Initial URI error: $e");
 // // // // //     }
 // // // // //   }
 
@@ -5262,7 +5262,7 @@
 // // // // //         _processPendingDeepLink();
 // // // // //       },
 // // // // //       onError: (err) {
-// // // // //         debug("❌ URI Stream error: $err");
+// // // // //         debug("  URI Stream error: $err");
 // // // // //       },
 // // // // //     );
 // // // // //   }
@@ -5277,7 +5277,7 @@
 // // // // //   void _processDeepLink() async {
 // // // // //     try {
 // // // // //       if (pendingDeepLink == null) {
-// // // // //         debug("⚠️ No pending deep link to process");
+// // // // //         debug(" No pending deep link to process");
 // // // // //         return;
 // // // // //       }
 
@@ -5289,24 +5289,24 @@
 // // // // //       final String leadPhone = _extractLeadPhoneFromUrl(uriString);
 
 // // // // //       if (leadPhone.isEmpty) {
-// // // // //         debug("❌ No phone number found in URL");
+// // // // //         debug("  No phone number found in URL");
 // // // // //         return;
 // // // // //       }
 
-// // // // //       debug("📱 Extracted from URL:");
+// // // // //       debug(" Extracted from URL:");
 // // // // //       debug("   Lead Phone: $leadPhone");
 
 // // // // //       // Find matching lead from LeadListViewModel
 // // // // //       await _findAndNavigateToLead(leadPhone);
 // // // // //     } catch (e) {
-// // // // //       debug("❌ Error in _processDeepLink: $e");
+// // // // //       debug("  Error in _processDeepLink: $e");
 // // // // //     }
 // // // // //   }
 
 // // // // //   /// 🔹 Extract lead phone number from URL - NEW PATTERN: /chat/917740989118
 // // // // //   String _extractLeadPhoneFromUrl(String url) {
 // // // // //     try {
-// // // // //       debug("🔍 Extracting phone number from URL: $url");
+// // // // //       debug("  Extracting phone number from URL: $url");
 
 // // // // //       // NEW PATTERN: /chat/917740989118
 // // // // //       final RegExp phoneRegex = RegExp(r'/chat/(\+?\d+)');
@@ -5322,7 +5322,7 @@
 // // // // //           phone = '+$phone';
 // // // // //         }
 
-// // // // //         debug("✅ Found phone in URL path: $phone");
+// // // // //         debug("  Found phone in URL path: $phone");
 // // // // //         return phone;
 // // // // //       }
 
@@ -5340,14 +5340,14 @@
 // // // // //           phone = '+$phone';
 // // // // //         }
 
-// // // // //         debug("✅ Found phone with alt pattern: $phone");
+// // // // //         debug("  Found phone with alt pattern: $phone");
 // // // // //         return phone;
 // // // // //       }
 
-// // // // //       debug("❌ No phone number found in URL");
+// // // // //       debug("  No phone number found in URL");
 // // // // //       return "";
 // // // // //     } catch (e) {
-// // // // //       debug("❌ Error extracting phone from URL: $e");
+// // // // //       debug("  Error extracting phone from URL: $e");
 // // // // //       return "";
 // // // // //     }
 // // // // //   }
@@ -5358,7 +5358,7 @@
 // // // // //       try {
 // // // // //         final context = navigatorKey.currentContext;
 // // // // //         if (context == null) {
-// // // // //           debug("❌ Context is null, retrying in 500ms...");
+// // // // //           debug("  Context is null, retrying in 500ms...");
 // // // // //           Future.delayed(const Duration(milliseconds: 500), () {
 // // // // //             _findAndNavigateToLead(leadPhone);
 // // // // //           });
@@ -5377,7 +5377,7 @@
 // // // // //         LeadModel? matchedModel;
 // // // // //         final List<LeadModel> pinnedLeads = [];
 
-// // // // //         debug("🔍 Searching for lead with phone: $leadPhone");
+// // // // //         debug("  Searching for lead with phone: $leadPhone");
 
 // // // // //         for (var viewModel in leadListVm.viewModels) {
 // // // // //           final leadmodel = viewModel.model;
@@ -5419,7 +5419,7 @@
 
 // // // // //                 if (isMatch) {
 // // // // //                   matchedModel = record;
-// // // // //                   debug("✅ Found matching lead: ${record.contactname} - ${record.full_number}");
+// // // // //                   debug("  Found matching lead: ${record.contactname} - ${record.full_number}");
 // // // // //                   break;
 // // // // //                 }
 // // // // //               }
@@ -5430,7 +5430,7 @@
 // // // // //         }
 
 // // // // //         if (matchedModel == null) {
-// // // // //           debug("❌ No matching lead found for phone: $leadPhone");
+// // // // //           debug("  No matching lead found for phone: $leadPhone");
 // // // // //           // Create a dummy lead with the phone number
 // // // // //           matchedModel = LeadModel(
 // // // // //             id: leadPhone, // Use phone as ID
@@ -5438,13 +5438,13 @@
 // // // // //             full_number: leadPhone,
 // // // // //             pinned: false,
 // // // // //           );
-// // // // //           debug("⚠️ Using dummy lead with phone number");
+// // // // //           debug(" Using dummy lead with phone number");
 // // // // //         }
 
 // // // // //         // Navigate to chat screen
 // // // // //         _navigateToChatScreen(matchedModel, pinnedLeads);
 // // // // //       } catch (e) {
-// // // // //         debug("❌ Error finding lead: $e");
+// // // // //         debug("  Error finding lead: $e");
 // // // // //       }
 // // // // //     });
 // // // // //   }
@@ -5454,19 +5454,19 @@
 // // // // //     try {
 // // // // //       final context = navigatorKey.currentContext;
 // // // // //       if (context == null) {
-// // // // //         debug("❌ Context is null for navigation");
+// // // // //         debug("  Context is null for navigation");
 // // // // //         return;
 // // // // //       }
 
 // // // // //       // Check if already on chat screen with same number
 // // // // //       final currentRoute = ModalRoute.of(context);
 // // // // //       if (currentRoute?.settings.name?.contains('chat') == true) {
-// // // // //         debug("⚠️ Already on chat screen");
+// // // // //         debug(" Already on chat screen");
 // // // // //         pendingDeepLink = null;
 // // // // //         return;
 // // // // //       }
 
-// // // // //       debug("✅ Navigating to WhatsappChatScreen with:");
+// // // // //       debug("  Navigating to WhatsappChatScreen with:");
 // // // // //       debug("   Lead Name: ${matchedModel.contactname}");
 // // // // //       debug("   Lead Phone: ${matchedModel.full_number}");
 // // // // //       debug("   ID: ${matchedModel.id}");
@@ -5488,7 +5488,7 @@
 // // // // //       pendingDeepLink = null;
 // // // // //       debug("🎉 Navigation successful!");
 // // // // //     } catch (e) {
-// // // // //       debug("❌ Navigation error: $e");
+// // // // //       debug("  Navigation error: $e");
 // // // // //     }
 // // // // //   }
 
@@ -5660,7 +5660,7 @@
 // // //     runApp(const MyApp());
 // // //     await NotificationService.handleInitialMessage();
 // // //   } catch (e) {
-// // //     debug("❌ Error in main(): $e");
+// // //     debug("  Error in main(): $e");
 // // //     runApp(
 // // //       MaterialApp(
 // // //         home: Scaffold(
@@ -5704,7 +5704,7 @@
 // // //         }
 // // //       });
 // // //     } catch (e) {
-// // //       debug("❌ Error in MyApp initState: $e");
+// // //       debug("  Error in MyApp initState: $e");
 // // //     }
 // // //   }
 
@@ -5719,7 +5719,7 @@
 // // //         _processPendingDeepLink();
 // // //       }
 // // //     } catch (e) {
-// // //       debug("❌ Initial URI error: $e");
+// // //       debug("  Initial URI error: $e");
 // // //     }
 // // //   }
 
@@ -5732,7 +5732,7 @@
 // // //         _processPendingDeepLink();
 // // //       },
 // // //       onError: (err) {
-// // //         debug("❌ URI Stream error: $err");
+// // //         debug("  URI Stream error: $err");
 // // //       },
 // // //     );
 // // //   }
@@ -5747,7 +5747,7 @@
 // // //  void _processDeepLink() async {
 // // //   try {
 // // //     if (pendingDeepLink == null) {
-// // //       debug("⚠️ No pending deep link to process");
+// // //       debug(" No pending deep link to process");
 // // //       return;
 // // //     }
 
@@ -5769,27 +5769,27 @@
 // // //     final String leadPhone = _extractLeadPhoneFromUrl(uriString);
 
 // // //     if (leadPhone.isEmpty) {
-// // //       debug("❌ No phone number found in URL");
+// // //       debug("  No phone number found in URL");
 // // //       return;
 // // //     }
 
 // // //     // Extract object type from URL (Lead, Contact, Opportunity, or whatsapp)
 // // //     final String objectType = _extractObjectTypeFromUrl(uriString);
 
-// // //     debug("📱 Extracted from URL:");
+// // //     debug(" Extracted from URL:");
 // // //     debug("   Lead Phone: $leadPhone");
 // // //     debug("   Object Type: $objectType");
 
 // // //     // Find matching lead from LeadListViewModel
 // // //     await _findAndNavigateToLead(leadPhone, objectType);
 // // //   } catch (e) {
-// // //     debug("❌ Error in _processDeepLink: $e");
+// // //     debug("  Error in _processDeepLink: $e");
 // // //   }
 // // // }
 // // //   /// 🔹 Extract lead phone number from URL
 // // //   String _extractLeadPhoneFromUrl(String url) {
 // // //     try {
-// // //       debug("🔍 Extracting phone number from URL: $url");
+// // //       debug("  Extracting phone number from URL: $url");
 
 // // //       // Salesforce URL: /Lead/chat/{phone}
 // // //       final RegExp leadChatRegex = RegExp(r'/Lead/chat/(\d+)');
@@ -5847,10 +5847,10 @@
 // // //         return phone;
 // // //       }
 
-// // //       debug("❌ No phone number found in URL");
+// // //       debug("  No phone number found in URL");
 // // //       return "";
 // // //     } catch (e) {
-// // //       debug("❌ Error extracting phone from URL: $e");
+// // //       debug("  Error extracting phone from URL: $e");
 // // //       return "";
 // // //     }
 // // //   }
@@ -5858,7 +5858,7 @@
 // // //   /// 🔹 Extract object type from URL (Lead, Contact, Opportunity)
 // // //   String _extractObjectTypeFromUrl(String url) {
 // // //     try {
-// // //       debug("🔍 Extracting object type from URL");
+// // //       debug("  Extracting object type from URL");
 
 // // //       if (url.contains('/Lead/chat/')) {
 // // //         return 'lead';
@@ -5870,10 +5870,10 @@
 // // //         return 'whatsapp'; // Regular WhatsApp chat
 // // //       }
 
-// // //       debug("⚠️ No object type found in URL");
+// // //       debug(" No object type found in URL");
 // // //       return "whatsapp"; // Default to whatsapp
 // // //     } catch (e) {
-// // //       debug("❌ Error extracting object type: $e");
+// // //       debug("  Error extracting object type: $e");
 // // //       return "whatsapp";
 // // //     }
 // // //   }
@@ -5885,7 +5885,7 @@
 // // //       try {
 // // //         final context = navigatorKey.currentContext;
 // // //         if (context == null) {
-// // //           debug("❌ Context is null, retrying in 500ms...");
+// // //           debug("  Context is null, retrying in 500ms...");
 // // //           Future.delayed(const Duration(milliseconds: 500), () {
 // // //             _findAndNavigateToLead(leadPhone, objectType);
 // // //           });
@@ -5905,7 +5905,7 @@
 // // //         LeadModel? matchedModel;
 // // //         final List<LeadModel> pinnedLeads = [];
 
-// // //         debug("🔍 Searching for lead with phone: $leadPhone");
+// // //         debug("  Searching for lead with phone: $leadPhone");
 
 // // //         for (var viewModel in leadListVm.viewModels) {
 // // //           final leadmodel = viewModel.model;
@@ -5943,7 +5943,7 @@
 // // //                     recordPhoneWithPrefix == leadPhone) {
 // // //                   matchedModel = record;
 // // //                   debug(
-// // //                       "✅ Found matching lead: ${record.contactname} - ${record.full_number}");
+// // //                       "  Found matching lead: ${record.contactname} - ${record.full_number}");
 // // //                   break;
 // // //                 }
 // // //               }
@@ -5954,7 +5954,7 @@
 // // //         }
 
 // // //         if (matchedModel == null) {
-// // //           debug("❌ No matching lead found for phone: $leadPhone");
+// // //           debug("  No matching lead found for phone: $leadPhone");
 // // //           // Create a dummy lead with the phone number
 // // //           matchedModel = LeadModel(
 // // //             id: leadPhone, // Use phone as ID for dummy lead
@@ -5962,13 +5962,13 @@
 // // //             full_number: leadPhone,
 // // //             pinned: false,
 // // //           );
-// // //           debug("⚠️ Using dummy lead with phone number");
+// // //           debug(" Using dummy lead with phone number");
 // // //         }
 
 // // //         // Navigate to chat screen
 // // //         _navigateToChatScreen(matchedModel, pinnedLeads, objectType);
 // // //       } catch (e) {
-// // //         debug("❌ Error finding lead: $e");
+// // //         debug("  Error finding lead: $e");
 // // //       }
 // // //     });
 // // //   }
@@ -6000,13 +6000,13 @@
 // // //       try {
 // // //         final context = navigatorKey.currentContext;
 // // //         if (context == null) {
-// // //           debug("❌ Context is null for navigation");
+// // //           debug("  Context is null for navigation");
 // // //           return;
 // // //         }
 
 // // //         final currentRoute = ModalRoute.of(context);
 // // //         if (currentRoute?.settings.name?.contains('chat') == true) {
-// // //           debug("⚠️ Already on chat screen");
+// // //           debug(" Already on chat screen");
 // // //           pendingDeepLink = null;
 // // //           return;
 // // //         }
@@ -6059,7 +6059,7 @@
 // // //             pendingDeepLink = null;
 // // //             debug("🎉 Salesforce navigation successful for $objectType!");
 // // //           } catch (e) {
-// // //             debug("❌ Salesforce API/ Navigation error: $e");
+// // //             debug("  Salesforce API/ Navigation error: $e");
 
 // // //             _navigateToWhatsAppChat(context, matchedModel, pinnedLeads);
 // // //           }
@@ -6076,11 +6076,11 @@
 
 // // //           _navigateToWhatsAppChat(context, matchedModel, pinnedLeads);
 // // //         } else {
-// // //           debug("⚠️ Unknown URL pattern - falling back to WhatsApp chat");
+// // //           debug(" Unknown URL pattern - falling back to WhatsApp chat");
 // // //           _navigateToWhatsAppChat(context, matchedModel, pinnedLeads);
 // // //         }
 // // //       } catch (e) {
-// // //         debug("❌ Navigation error: $e");
+// // //         debug("  Navigation error: $e");
 // // //         // Final fallback
 // // //         final context = navigatorKey.currentContext;
 // // //         if (context != null) {
@@ -6373,7 +6373,7 @@
 // //     debug("hfghjkljhgjkljhgjkljhgjkljhg");
 // //     try {
 // //       if (pendingDeepLink == null) {
-// //         debug("⚠️ No pending deep link to process");
+// //         debug(" No pending deep link to process");
 // //         return;
 // //       }
 
@@ -6391,18 +6391,18 @@
 // //       final String leadPhone = _extractLeadPhoneFromUrl(uriString);
 // //       final String objectType = _extractObjectTypeFromUrl(uriString);
 
-// //       debug("📱 EXTRACTED INFORMATION:");
+// //       debug(" EXTRACTED INFORMATION:");
 // //       debug("   Phone Number: $leadPhone");
 // //       debug("   Object Type: $objectType");
 // //       debug("=" * 50);
 
 // //       if (leadPhone.isEmpty) {
-// //         debug("❌ No phone number found in URL");
+// //         debug("  No phone number found in URL");
 // //         return;
 // //       }
 // //       await _findAndNavigateToLead(leadPhone, objectType);
 // //     } catch (e) {
-// //       debug("❌ Error in _processDeepLink: $e");
+// //       debug("  Error in _processDeepLink: $e");
 // //     }
 // //   }
 
@@ -6419,13 +6419,13 @@
 // //             if (segments[i].toLowerCase() == "chat" &&
 // //                 i + 1 < segments.length) {
 // //               String phone = segments[i + 1];
-// //               debug("✅ Found phone in path segments: $phone");
+// //               debug("  Found phone in path segments: $phone");
 // //               return phone;
 // //             }
 // //           }
 // //         }
 // //       } catch (e) {
-// //         debug("⚠️ Could not parse URL: $e");
+// //         debug(" Could not parse URL: $e");
 // //       }
 
 // //       // Fallback to regex patterns
@@ -6434,7 +6434,7 @@
 // //       final Match? leadMatch = leadChatRegex.firstMatch(url);
 // //       if (leadMatch != null && leadMatch.group(1) != null) {
 // //         String phone = leadMatch.group(1)!;
-// //         debug("✅ Found phone with Lead pattern: $phone");
+// //         debug("  Found phone with Lead pattern: $phone");
 // //         return phone;
 // //       }
 
@@ -6444,7 +6444,7 @@
 // //       final Match? contactMatch = contactChatRegex.firstMatch(url);
 // //       if (contactMatch != null && contactMatch.group(1) != null) {
 // //         String phone = contactMatch.group(1)!;
-// //         debug("✅ Found phone with Contact pattern: $phone");
+// //         debug("  Found phone with Contact pattern: $phone");
 // //         return phone;
 // //       }
 
@@ -6453,14 +6453,14 @@
 // //       final Match? simpleMatch = simpleChatRegex.firstMatch(url);
 // //       if (simpleMatch != null && simpleMatch.group(1) != null) {
 // //         String phone = simpleMatch.group(1)!;
-// //         debug("✅ Found phone with simple chat pattern: $phone");
+// //         debug("  Found phone with simple chat pattern: $phone");
 // //         return phone;
 // //       }
 
-// //       debug("❌ No phone number found in URL");
+// //       debug("  No phone number found in URL");
 // //       return "";
 // //     } catch (e) {
-// //       debug("❌ Error extracting phone from URL: $e");
+// //       debug("  Error extracting phone from URL: $e");
 // //       return "";
 // //     }
 // //   }
@@ -6476,42 +6476,42 @@
 // //           String firstSegment = segments[0].toLowerCase();
 
 // //           if (firstSegment == "lead") {
-// //             debug("✅ Object type: lead");
+// //             debug("  Object type: lead");
 // //             return "lead";
 // //           } else if (firstSegment == "contact") {
-// //             debug("✅ Object type: contact");
+// //             debug("  Object type: contact");
 // //             return "contact";
 // //           } else if (firstSegment == "opportunity") {
-// //             debug("✅ Object type: opportunity");
+// //             debug("  Object type: opportunity");
 // //             return "opportunity";
 // //           } else if (firstSegment == "chat") {
-// //             debug("✅ Object type: whatsapp");
+// //             debug("  Object type: whatsapp");
 // //             return "Lead";
 // //           }
 // //         }
 // //       } catch (e) {
-// //         debug("⚠️ Could not parse URL for object type: $e");
+// //         debug(" Could not parse URL for object type: $e");
 // //       }
 
 // //       // Fallback to string matching
 // //       if (url.toLowerCase().contains('/lead/chat/')) {
-// //         debug("✅ Object type: lead (string match)");
+// //         debug("  Object type: lead (string match)");
 // //         return 'lead';
 // //       } else if (url.toLowerCase().contains('/contact/chat/')) {
-// //         debug("✅ Object type: contact (string match)");
+// //         debug("  Object type: contact (string match)");
 // //         return 'contact';
 // //       } else if (url.toLowerCase().contains('/opportunity/chat/')) {
-// //         debug("✅ Object type: opportunity (string match)");
+// //         debug("  Object type: opportunity (string match)");
 // //         return 'opportunity';
 // //       } else if (url.toLowerCase().contains('/chat/')) {
-// //         debug("✅ Object type: whatsapp (string match)");
+// //         debug("  Object type: whatsapp (string match)");
 // //         return 'whatsapp';
 // //       }
 
-// //       debug("⚠️ No object type found, defaulting to whatsapp");
+// //       debug(" No object type found, defaulting to whatsapp");
 // //       return "whatsapp";
 // //     } catch (e) {
-// //       debug("❌ Error extracting object type: $e");
+// //       debug("  Error extracting object type: $e");
 // //       return "whatsapp";
 // //     }
 // //   }
@@ -6522,14 +6522,14 @@
 // //   //     try {
 // //   //       final context = navigatorKey.currentContext;
 // //   //       if (context == null) {
-// //   //         debug("❌ Context is null, retrying...");
+// //   //         debug("  Context is null, retrying...");
 // //   //         Future.delayed(const Duration(milliseconds: 500), () {
 // //   //           _findAndNavigateToLead(leadPhone, objectType);
 // //   //         });
 // //   //         return;
 // //   //       }
 
-// //   //       debug("🔍 Searching for lead with phone: $leadPhone");
+// //   //       debug("  Searching for lead with phone: $leadPhone");
 // //   //       debug("   Object Type: $objectType");
 
 // //   //       final leadListVm =
@@ -6557,7 +6557,7 @@
 // //   //                 _isPhoneMatch(record.full_number!, leadPhone)) {
 // //   //               matchedModel = record;
 // //   //               debug(
-// //   //                   "✅ Found matching lead: ${record.contactname} (${record.full_number})");
+// //   //                   "  Found matching lead: ${record.contactname} (${record.full_number})");
 // //   //               break;
 // //   //             }
 // //   //           }
@@ -6567,7 +6567,7 @@
 // //   //       }
 
 // //   //       if (matchedModel == null) {
-// //   //         debug("❌ No matching lead found, creating dummy lead");
+// //   //         debug("  No matching lead found, creating dummy lead");
 // //   //         // Create dummy lead
 // //   //         matchedModel = LeadModel(
 // //   //           id: leadPhone,
@@ -6581,7 +6581,7 @@
 // //   //       debug("🚀 Navigating to chat screen...");
 // //   //       // _navigateToAppropriateChatScreen(matchedModel, pinnedLeads, objectType);
 // //   //     } catch (e) {
-// //   //       debug("❌ Error finding lead: $e");
+// //   //       debug("  Error finding lead: $e");
 // //   //       // Even if there's an error, try to navigate with dummy lead
 // //   //       final context = navigatorKey.currentContext;
 // //   //       if (context != null) {
@@ -6606,7 +6606,7 @@
 // //  DashBoardController dbController =
 // //           Provider.of(navigatorKey.currentContext!, listen: false);
 
-// //     /// ✅ SAFE API CALL
+// //     ///   SAFE API CALL
 // //     String type = dbController.drawerItems.isNotEmpty
 // //         ? dbController.drawerItems.first.sObjectName ?? "Lead"
 // //         : "Lead";
@@ -6616,7 +6616,7 @@
 // //     LeadModel? matchedLead;
 // //     List<LeadModel> pinnedLeads = [];
 
-// //     /// 🔍 FIND LEAD
+// //     ///   FIND LEAD
 // //     for (var item in dbController.drawerItems) {
 
 // //       if (item.configName == true) {
@@ -6652,7 +6652,7 @@
 // //     );
 
 // //   } catch (e) {
-// //     debug("❌ Deep link navigation error: $e");
+// //     debug("  Deep link navigation error: $e");
 // //   }
 // // }
 
@@ -6677,7 +6677,7 @@
 // //   //   try {
 // //   //     final context = navigatorKey.currentContext;
 // //   //     if (context == null) {
-// //   //       debug("❌ Context is null for navigation");
+// //   //       debug("  Context is null for navigation");
 // //   //       return;
 // //   //     }
 
@@ -6711,9 +6711,9 @@
 // //   //     }
 
 // //   //     pendingDeepLink = null;
-// //   //     debug("✅ Navigation completed!");
+// //   //     debug("  Navigation completed!");
 // //   //   } catch (e) {
-// //   //     debug("❌ Navigation error: $e");
+// //   //     debug("  Navigation error: $e");
 // //   //     // Fallback to WhatsApp chat
 // //   //     final context = navigatorKey.currentContext;
 // //   //     if (context != null) {
@@ -6756,7 +6756,7 @@
 // //       ),
 // //       (route) => route.isFirst, // Go back to home if needed
 // //     );
-// //     debug("✅ WhatsApp Chat opened successfully!");
+// //     debug("  WhatsApp Chat opened successfully!");
 // //   }
 
 // //   /// 🔹 Navigate to Salesforce Chat Screen
@@ -6787,7 +6787,7 @@
 // //   //   //   (route) => route.isFirst,
 // //   //   // );
 
-// //   //   debug("✅ Salesforce Chat opened successfully!");
+// //   //   debug("  Salesforce Chat opened successfully!");
 // //   // }
 
 // //   @override
@@ -6960,7 +6960,7 @@
 //     runApp(const MyApp());
 //     await NotificationService.handleInitialMessage();
 //   } catch (e) {
-//     debug("❌ Error in main(): $e");
+//     debug("  Error in main(): $e");
 //     runApp(
 //       MaterialApp(
 //         home: Scaffold(
@@ -7004,7 +7004,7 @@
 //         }
 //       });
 //     } catch (e) {
-//       debug("❌ Error in MyApp initState: $e");
+//       debug("  Error in MyApp initState: $e");
 //     }
 //   }
 
@@ -7018,7 +7018,7 @@
 //         _processPendingDeepLink();
 //       }
 //     } catch (e) {
-//       debug("❌ Error in _handleInitialUri: $e");
+//       debug("  Error in _handleInitialUri: $e");
 //     }
 //   }
 
@@ -7030,7 +7030,7 @@
 //         _processPendingDeepLink();
 //       },
 //       onError: (err) {
-//         debug("❌ Error in URI Stream: $err");
+//         debug("  Error in URI Stream: $err");
 //       },
 //     );
 //   }
@@ -7043,7 +7043,7 @@
 //   void _processDeepLink() async {
 //     try {
 //       if (pendingDeepLink == null) {
-//         debug("⚠️ No pending deep link to process");
+//         debug(" No pending deep link to process");
 //         return;
 //       }
 
@@ -7061,18 +7061,18 @@
 //       final String leadPhone = _extractLeadPhoneFromUrl(uriString);
 //       final String objectType = _extractObjectTypeFromUrl(uriString);
 
-//       debug("📱 EXTRACTED INFORMATION:");
+//       debug(" EXTRACTED INFORMATION:");
 //       debug("   Phone Number: $leadPhone");
 //       debug("   Object Type: $objectType");
 //       debug("=" * 50);
 
 //       if (leadPhone.isEmpty) {
-//         debug("❌ No phone number found in URL");
+//         debug("  No phone number found in URL");
 //         return;
 //       }
 //       await _findAndNavigateToLead(leadPhone, objectType);
 //     } catch (e) {
-//       debug("❌ Error in _processDeepLink: $e");
+//       debug("  Error in _processDeepLink: $e");
 //     }
 //   }
 
@@ -7089,13 +7089,13 @@
 //             if (segments[i].toLowerCase() == "chat" &&
 //                 i + 1 < segments.length) {
 //               String phone = segments[i + 1];
-//               debug("✅ Found phone in path segments: $phone");
+//               debug("  Found phone in path segments: $phone");
 //               return phone;
 //             }
 //           }
 //         }
 //       } catch (e) {
-//         debug("⚠️ Could not parse URL: $e");
+//         debug(" Could not parse URL: $e");
 //       }
 
 //       // Fallback to regex patterns
@@ -7104,7 +7104,7 @@
 //       final Match? leadMatch = leadChatRegex.firstMatch(url);
 //       if (leadMatch != null && leadMatch.group(1) != null) {
 //         String phone = leadMatch.group(1)!;
-//         debug("✅ Found phone with Lead pattern: $phone");
+//         debug("  Found phone with Lead pattern: $phone");
 //         return phone;
 //       }
 
@@ -7114,7 +7114,7 @@
 //       final Match? contactMatch = contactChatRegex.firstMatch(url);
 //       if (contactMatch != null && contactMatch.group(1) != null) {
 //         String phone = contactMatch.group(1)!;
-//         debug("✅ Found phone with Contact pattern: $phone");
+//         debug("  Found phone with Contact pattern: $phone");
 //         return phone;
 //       }
 
@@ -7123,14 +7123,14 @@
 //       final Match? simpleMatch = simpleChatRegex.firstMatch(url);
 //       if (simpleMatch != null && simpleMatch.group(1) != null) {
 //         String phone = simpleMatch.group(1)!;
-//         debug("✅ Found phone with simple chat pattern: $phone");
+//         debug("  Found phone with simple chat pattern: $phone");
 //         return phone;
 //       }
 
-//       debug("❌ No phone number found in URL");
+//       debug("  No phone number found in URL");
 //       return "";
 //     } catch (e) {
-//       debug("❌ Error extracting phone from URL: $e");
+//       debug("  Error extracting phone from URL: $e");
 //       return "";
 //     }
 //   }
@@ -7146,42 +7146,42 @@
 //           String firstSegment = segments[0].toLowerCase();
 
 //           if (firstSegment == "lead") {
-//             debug("✅ Object type: lead");
+//             debug("  Object type: lead");
 //             return "lead";
 //           } else if (firstSegment == "contact") {
-//             debug("✅ Object type: contact");
+//             debug("  Object type: contact");
 //             return "contact";
 //           } else if (firstSegment == "opportunity") {
-//             debug("✅ Object type: opportunity");
+//             debug("  Object type: opportunity");
 //             return "opportunity";
 //           } else if (firstSegment == "chat") {
-//             debug("✅ Object type: whatsapp");
+//             debug("  Object type: whatsapp");
 //             return "Lead";
 //           }
 //         }
 //       } catch (e) {
-//         debug("⚠️ Could not parse URL for object type: $e");
+//         debug(" Could not parse URL for object type: $e");
 //       }
 
 //       // Fallback to string matching
 //       if (url.toLowerCase().contains('/lead/chat/')) {
-//         debug("✅ Object type: lead (string match)");
+//         debug("  Object type: lead (string match)");
 //         return 'lead';
 //       } else if (url.toLowerCase().contains('/contact/chat/')) {
-//         debug("✅ Object type: contact (string match)");
+//         debug("  Object type: contact (string match)");
 //         return 'contact';
 //       } else if (url.toLowerCase().contains('/opportunity/chat/')) {
-//         debug("✅ Object type: opportunity (string match)");
+//         debug("  Object type: opportunity (string match)");
 //         return 'opportunity';
 //       } else if (url.toLowerCase().contains('/chat/')) {
-//         debug("✅ Object type: whatsapp (string match)");
+//         debug("  Object type: whatsapp (string match)");
 //         return 'whatsapp';
 //       }
 
-//       debug("⚠️ No object type found, defaulting to whatsapp");
+//       debug(" No object type found, defaulting to whatsapp");
 //       return "whatsapp";
 //     } catch (e) {
-//       debug("❌ Error extracting object type: $e");
+//       debug("  Error extracting object type: $e");
 //       return "whatsapp";
 //     }
 //   }
@@ -7192,17 +7192,17 @@
 //   //     try {
 //   //       final BuildContext? context = navigatorKey.currentContext;
 //   //       if (context == null) {
-//   //         debug("❌ Context is null, retrying...");
+//   //         debug("  Context is null, retrying...");
 //   //         Future.delayed(const Duration(milliseconds: 500), () {
 //   //           _findAndNavigateToLead(leadPhone, objectType);
 //   //         });
 //   //         return;
 //   //       }
 
-//   //       debug("🔍 Searching for lead with phone: $leadPhone");
+//   //       debug("  Searching for lead with phone: $leadPhone");
 //   //       debug("   Object Type: $objectType");
 
-//   //       // ✅ Call dashboard API before processing
+//   //       //   Call dashboard API before processing
 //   //       await _callDashboardApi(context);
 
 //   //       // Get the dashboard controller
@@ -7210,7 +7210,7 @@
 //   //           Provider.of<DashBoardController>(context, listen: false);
 
 //   //       if (dbController == null) {
-//   //         debug("❌ DashBoardController not found");
+//   //         debug("  DashBoardController not found");
 //   //         return;
 //   //       }
 
@@ -7225,7 +7225,7 @@
 //   //       LeadModel? matchedLead;
 //   //       final List<LeadModel> pinnedLeads = [];
 
-//   //       // 🔍 Find the matching lead in drawer items
+//   //       //   Find the matching lead in drawer items
 //   //       for (var item in dbController.drawerItems) {
 //   //         // Check if item is pinned
 //   //         if (item.configName == true) {
@@ -7258,7 +7258,7 @@
 //   //         objectType,
 //   //       );
 //   //     } catch (e) {
-//   //       debug("❌ Error in _findAndNavigateToLead: $e");
+//   //       debug("  Error in _findAndNavigateToLead: $e");
 //   //       _handleNavigationError(leadPhone, e);
 //   //     }
 //   //   });
@@ -7269,26 +7269,26 @@
 //     try {
 //       final BuildContext? context = navigatorKey.currentContext;
 //       if (context == null) {
-//         debug("❌ Context is null, retrying...");
+//         debug("  Context is null, retrying...");
 //         Future.delayed(const Duration(milliseconds: 500), () {
 //           _findAndNavigateToLead(leadPhone, objectType);
 //         });
 //         return;
 //       }
 
-//       debug("🔍 Searching for lead with phone: $leadPhone");
+//       debug("  Searching for lead with phone: $leadPhone");
 //       debug("   Object Type: $objectType");
 
-//       // ✅ Get dashboard controller FIRST
+//       //   Get dashboard controller FIRST
 //       final DashBoardController? dbController =
 //           Provider.of<DashBoardController>(context, listen: false);
 
 //       if (dbController == null) {
-//         debug("❌ DashBoardController not found");
+//         debug("  DashBoardController not found");
 //         return;
 //       }
 
-//       // ✅ Call dashboard API before processing
+//       //   Call dashboard API before processing
 //       await _callDashboardApi(context);
 
 //       // Call drawer list API
@@ -7302,7 +7302,7 @@
 //       SfDrawerItemModel? matchedLead;
 //       final List<SfDrawerItemModel> pinnedLeads = [];
 
-//       // 🔍 Find the matching lead in drawer items
+//       //   Find the matching lead in drawer items
 //       for (var item in dbController.drawerItems) {
 //         // Check if item is pinned
 //         // if (item.configName == true) {
@@ -7317,14 +7317,14 @@
 
 //         if (phoneToCheck != null && _isPhoneMatch(phoneToCheck, leadPhone)) {
 //           // matchedLead = item;
-//           // debug("✅ Found matching lead: ${item.name} - ${phoneToCheck}");
+//           // debug("  Found matching lead: ${item.name} - ${phoneToCheck}");
 //           break;
 //         }
 //       }
 
 //       // ❗ Create dummy lead if not found
 //       if (matchedLead == null) {
-//         debug("⚠️ No matching lead found, creating dummy");
+//         debug(" No matching lead found, creating dummy");
 //         matchedLead = SfDrawerItemModel(
 //           id: leadPhone,
 //           name: "Unknown ($leadPhone)",
@@ -7334,11 +7334,11 @@
 //         );
 //       }
 
-//       // ✅ CRITICAL: Set selected contact info BEFORE navigation
-//       debug("📱 Setting selected contact: ${matchedLead.name}");
+//       //   CRITICAL: Set selected contact info BEFORE navigation
+//       debug(" Setting selected contact: ${matchedLead.name}");
 //       dbController.setSelectedContaactInfo(matchedLead);
 
-//       // ✅ Also set pinned info if needed
+//       //   Also set pinned info if needed
 //       dbController.setSelectedPinnedInfo(null);
 
 //       debug("🚀 Opening Chat for ${matchedLead.whatsappNumber}");
@@ -7351,7 +7351,7 @@
 //         objectType,
 //       );
 //     } catch (e, stackTrace) {
-//       debug("❌ Error in _findAndNavigateToLead: $e");
+//       debug("  Error in _findAndNavigateToLead: $e");
 //       debug("Stack trace: $stackTrace");
 //       _handleNavigationError(leadPhone, e);
 //     }
@@ -7370,7 +7370,7 @@
 //     debug("   Phone: ${matchedLead.whatsappNumber}");
 //     debug("   Object Type: $objectType");
 
-//     // ✅ Get ChatMessageController and load messages BEFORE navigation
+//     //   Get ChatMessageController and load messages BEFORE navigation
 //     ChatMessageController chatController =
 //         Provider.of<ChatMessageController>(context, listen: false);
 
@@ -7396,20 +7396,20 @@
 //     );
 
 //     pendingDeepLink = null;
-//     debug("✅ Navigation completed successfully!");
+//     debug("  Navigation completed successfully!");
 //   } catch (e, stackTrace) {
-//     debug("❌ Navigation error: $e");
+//     debug("  Navigation error: $e");
 //     debug("Stack trace: $stackTrace");
 //     rethrow;
 //   }
 // }
 
 // void _handleNavigationError(String leadPhone, Object error) {
-//   debug("⚠️ Handling navigation error: $error");
+//   debug(" Handling navigation error: $error");
 
 //   final BuildContext? context = navigatorKey.currentContext;
 //   if (context == null) {
-//     debug("❌ Context is null, cannot handle error");
+//     debug("  Context is null, cannot handle error");
 //     return;
 //   }
 
@@ -7423,7 +7423,7 @@
 //       countryCode: "91",
 //     );
 
-//     // ✅ Set contact info before navigation
+//     //   Set contact info before navigation
 //     DashBoardController dbController =
 //         Provider.of<DashBoardController>(context, listen: false);
 //     dbController.setSelectedContaactInfo(dummyLead);
@@ -7438,7 +7438,7 @@
 //       (route) => route.isFirst,
 //     );
 //   } catch (e) {
-//     debug("❌ Even fallback navigation failed: $e");
+//     debug("  Even fallback navigation failed: $e");
 //   }
 // }
 
@@ -7450,12 +7450,12 @@
 
 //       if (dbController != null) {
 //         await dbController.getDasBoardReportApiCall();
-//         debug("✅ Dashboard API called successfully");
+//         debug("  Dashboard API called successfully");
 //       } else {
-//         debug("⚠️ DashboardController not available");
+//         debug(" DashboardController not available");
 //       }
 //     } catch (e) {
-//       debug("❌ Error calling dashboard API: $e");
+//       debug("  Error calling dashboard API: $e");
 //       // Continue execution even if dashboard API fails
 //     }
 //   }
@@ -7488,19 +7488,19 @@
 //   //     );
 
 //   //     pendingDeepLink = null;
-//   //     debug("✅ Navigation completed successfully!");
+//   //     debug("  Navigation completed successfully!");
 //   //   } catch (e) {
-//   //     debug("❌ Navigation error: $e");
+//   //     debug("  Navigation error: $e");
 //   //     rethrow;
 //   //   }
 //   // }
 
 //   // void _handleNavigationError(String leadPhone, Object error) {
-//   //   debug("⚠️ Handling navigation error: $error");
+//   //   debug(" Handling navigation error: $error");
 
 //   //   final BuildContext? context = navigatorKey.currentContext;
 //   //   if (context == null) {
-//   //     debug("❌ Context is null, cannot handle error");
+//   //     debug("  Context is null, cannot handle error");
 //   //     return;
 //   //   }
 
@@ -7523,7 +7523,7 @@
 //   //       (route) => route.isFirst,
 //   //     );
 //   //   } catch (e) {
-//   //     debug("❌ Even fallback navigation failed: $e");
+//   //     debug("  Even fallback navigation failed: $e");
 //   //   }
 //   // }
 
@@ -7547,7 +7547,7 @@
 
 //       return false;
 //     } catch (e) {
-//       debug("❌ Error in phone matching: $e");
+//       debug("  Error in phone matching: $e");
 //       return false;
 //     }
 //   }
@@ -7722,7 +7722,7 @@ void main() async {
     runApp(const MyApp());
     await NotificationService.handleInitialMessage();
   } catch (e) {
-    debug("❌ Error in main(): $e");
+    debug("  Error in main(): $e");
     runApp(
       MaterialApp(
         home: Scaffold(
@@ -7766,7 +7766,7 @@ class _MyAppState extends State<MyApp> {
         }
       });
     } catch (e) {
-      debug("❌ Error in MyApp initState: $e");
+      debug("  Error in MyApp initState: $e");
     }
   }
 
@@ -7780,7 +7780,7 @@ class _MyAppState extends State<MyApp> {
         _processPendingDeepLink();
       }
     } catch (e) {
-      debug("❌ Error in _handleInitialUri: $e");
+      debug("  Error in _handleInitialUri: $e");
     }
   }
 
@@ -7792,7 +7792,7 @@ class _MyAppState extends State<MyApp> {
         _processPendingDeepLink();
       },
       onError: (err) {
-        debug("❌ Error in URI Stream: $err");
+        debug("  Error in URI Stream: $err");
       },
     );
   }
@@ -7805,7 +7805,7 @@ class _MyAppState extends State<MyApp> {
   void _processDeepLink() async {
     try {
       if (pendingDeepLink == null) {
-        debug("⚠️ No pending deep link to process");
+        debug(" No pending deep link to process");
         return;
       }
 
@@ -7823,18 +7823,18 @@ class _MyAppState extends State<MyApp> {
       final String leadPhone = _extractLeadPhoneFromUrl(uriString);
       final String objectType = _extractObjectTypeFromUrl(uriString);
 
-      debug("📱 EXTRACTED INFORMATION:");
+      debug(" EXTRACTED INFORMATION:");
       debug("   Phone Number: $leadPhone");
       debug("   Object Type: $objectType");
       debug("=" * 50);
 
       if (leadPhone.isEmpty) {
-        debug("❌ No phone number found in URL");
+        debug("  No phone number found in URL");
         return;
       }
       await _findAndNavigateToLead(leadPhone, objectType);
     } catch (e) {
-      debug("❌ Error in _processDeepLink: $e");
+      debug("  Error in _processDeepLink: $e");
     }
   }
 
@@ -7846,27 +7846,54 @@ class _MyAppState extends State<MyApp> {
         Uri uri = Uri.parse(url);
         List<String> segments = uri.pathSegments;
 
+        debug("  Path segments: $segments");
+
+        // नया पैटर्न: /chat/Lead/7740989118 या /chat/Contact/7740989118
+        if (segments.length >= 3) {
+          for (int i = 0; i < segments.length - 2; i++) {
+            if (segments[i].toLowerCase() == "chat" &&
+                i + 2 < segments.length) {
+              // segments[i+1] object type है (Lead/Contact)
+              // segments[i+2] phone number है
+              String phone = segments[i + 2];
+              debug("  Found phone in chat/object/phone pattern: $phone");
+              return phone;
+            }
+          }
+        }
+
+        // पुराना पैटर्न: /Lead/chat/91740989118
         if (segments.length >= 3) {
           for (int i = 0; i < segments.length - 1; i++) {
             if (segments[i].toLowerCase() == "chat" &&
                 i + 1 < segments.length) {
               String phone = segments[i + 1];
-              debug("✅ Found phone in path segments: $phone");
+              debug("  Found phone in path segments: $phone");
               return phone;
             }
           }
         }
       } catch (e) {
-        debug("⚠️ Could not parse URL: $e");
+        debug(" Could not parse URL: $e");
       }
 
       // Fallback to regex patterns
+      // नया पैटर्न: /chat/Lead/7740989118 या /chat/Contact/7740989118
+      final RegExp newChatPattern = RegExp(
+          r'/chat/(?:Lead|lead|Contact|contact|Opportunity|opportunity)/(\d{10,})');
+      final Match? newPatternMatch = newChatPattern.firstMatch(url);
+      if (newPatternMatch != null && newPatternMatch.group(1) != null) {
+        String phone = newPatternMatch.group(1)!;
+        debug("  Found phone with new chat pattern: $phone");
+        return phone;
+      }
+
       // Pattern: /Lead/chat/91740989118
       final RegExp leadChatRegex = RegExp(r'/(?:Lead|lead)/chat/(\d{10,})');
       final Match? leadMatch = leadChatRegex.firstMatch(url);
       if (leadMatch != null && leadMatch.group(1) != null) {
         String phone = leadMatch.group(1)!;
-        debug("✅ Found phone with Lead pattern: $phone");
+        debug("  Found phone with Lead pattern: $phone");
         return phone;
       }
 
@@ -7876,75 +7903,106 @@ class _MyAppState extends State<MyApp> {
       final Match? contactMatch = contactChatRegex.firstMatch(url);
       if (contactMatch != null && contactMatch.group(1) != null) {
         String phone = contactMatch.group(1)!;
-        debug("✅ Found phone with Contact pattern: $phone");
+        debug("  Found phone with Contact pattern: $phone");
         return phone;
       }
 
-      // Pattern: /chat/91740989118
+      // Pattern: /chat/91740989118 (simple chat)
       final RegExp simpleChatRegex = RegExp(r'/chat/(\d{10,})');
       final Match? simpleMatch = simpleChatRegex.firstMatch(url);
       if (simpleMatch != null && simpleMatch.group(1) != null) {
         String phone = simpleMatch.group(1)!;
-        debug("✅ Found phone with simple chat pattern: $phone");
+        debug("  Found phone with simple chat pattern: $phone");
         return phone;
       }
 
-      debug("❌ No phone number found in URL");
+      debug("  No phone number found in URL");
       return "";
     } catch (e) {
-      debug("❌ Error extracting phone from URL: $e");
+      debug("  Error extracting phone from URL: $e");
       return "";
     }
   }
 
   String _extractObjectTypeFromUrl(String url) {
     try {
-      debug("🏷️ Extracting object type from URL");
+      debug("🏷️ Extracting object type from URL: $url");
+
       try {
         Uri uri = Uri.parse(url);
         List<String> segments = uri.pathSegments;
 
+        debug("  All segments: $segments");
+
+        if (segments.length >= 3) {
+          for (int i = 0; i < segments.length - 2; i++) {
+            if (segments[i].toLowerCase() == "chat" &&
+                i + 1 < segments.length) {
+              String objectType = segments[i + 1].toLowerCase();
+              // debug(
+              //     "  Found object type in chat/object/phone pattern: $objectType");
+
+              if (objectType == "lead")
+                return "lead";
+              else if (objectType == "contact")
+                return "contact";
+              else if (objectType == "opportunity") return "opportunity";
+            }
+          }
+        }
+
         if (segments.isNotEmpty) {
           String firstSegment = segments[0].toLowerCase();
 
-          if (firstSegment == "lead") {
-            debug("✅ Object type: lead");
+          if (firstSegment == "Lead") {
+            debug("  Object type: lead (first segment)");
             return "lead";
-          } else if (firstSegment == "contact") {
-            debug("✅ Object type: contact");
+          } else if (firstSegment == "Contact") {
+            debug("  Object type: contact (first segment)");
             return "contact";
           } else if (firstSegment == "opportunity") {
-            debug("✅ Object type: opportunity");
+            debug("  Object type: opportunity (first segment)");
             return "opportunity";
           } else if (firstSegment == "chat") {
-            debug("✅ Object type: whatsapp");
-            return "Lead";
+            debug("  Object type: whatsapp (first segment is chat)");
+            return ""; // Default lead
           }
         }
       } catch (e) {
-        debug("⚠️ Could not parse URL for object type: $e");
+        debug(" Could not parse URL for object type: $e");
       }
 
-      // Fallback to string matching
+      if (RegExp(r'/chat/(?:Lead|lead)/\d').hasMatch(url)) {
+        debug("  Object type: lead (new chat pattern)");
+        return 'lead';
+      } else if (RegExp(r'/chat/(?:Contact|contact)/\d').hasMatch(url)) {
+        debug("  Object type: contact (new chat pattern)");
+        return 'contact';
+      } else if (RegExp(r'/chat/(?:Opportunity|opportunity)/\d')
+          .hasMatch(url)) {
+        debug("  Object type: opportunity (new chat pattern)");
+        return 'opportunity';
+      }
+
       if (url.toLowerCase().contains('/lead/chat/')) {
-        debug("✅ Object type: lead (string match)");
+        debug("  Object type: lead (old pattern)");
         return 'lead';
       } else if (url.toLowerCase().contains('/contact/chat/')) {
-        debug("✅ Object type: contact (string match)");
+        debug("  Object type: contact (old pattern)");
         return 'contact';
       } else if (url.toLowerCase().contains('/opportunity/chat/')) {
-        debug("✅ Object type: opportunity (string match)");
+        debug("  Object type: opportunity (old pattern)");
         return 'opportunity';
       } else if (url.toLowerCase().contains('/chat/')) {
-        debug("✅ Object type: whatsapp (string match)");
-        return 'whatsapp';
+        debug("  Object type: whatsapp (simple chat)");
+        return 'lead';
       }
 
-      debug("⚠️ No object type found, defaulting to whatsapp");
-      return "whatsapp";
+      debug(" No object type found, defaulting to lead");
+      return "lead";
     } catch (e) {
-      debug("❌ Error extracting object type: $e");
-      return "whatsapp";
+      debug("  Error extracting object type: $e");
+      return "lead";
     }
   }
 
@@ -7962,52 +8020,74 @@ class _MyAppState extends State<MyApp> {
         final BuildContext? context = navigatorKey.currentContext;
 
         if (context == null) {
-          debug("❌ Context null, retrying...");
+          debug("  Context null, retrying...");
           Future.delayed(const Duration(milliseconds: 500), () {
             _findAndNavigateToLead(leadPhone, objectType);
           });
           return;
         }
 
-        debug("🔍 Searching lead: $leadPhone");
+        debug("  Searching lead: $leadPhone");
 
         final DashBoardController dbController =
             Provider.of<DashBoardController>(context, listen: false);
 
         await _callDashboardApi(context);
 
-        String type = "Lead";
+        String type = objectType.toLowerCase();
+        if (type.isNotEmpty) {
+          type = type[0].toUpperCase() + type.substring(1);
+        }
 
         debug("Drawer type->$type");
         await dbController.drawerListApiCall(type: type);
 
         SfDrawerItemModel? matchedLead;
         final List<SfDrawerItemModel> pinnedLeads = [];
-
-        // ✅ PHONE MATCHING
         final normalizedLeadPhone = normalizePhone(leadPhone);
 
+        debug("🔍 Searching for: $leadPhone");
+        debug("🔍 Normalized Lead Phone: $normalizedLeadPhone");
+
+        for (var item in dbController.drawerListItems) {
+          debug("📞 List Number Raw: ${item.whatsappNumber}");
+          debug(
+              "📞 List Number Normalized: ${normalizePhone(item.whatsappNumber)}");
+        }
+
         matchedLead = dbController.drawerListItems.firstWhere(
-          (item) => normalizePhone(item.whatsappNumber) == normalizedLeadPhone,
-          orElse: () => SfDrawerItemModel(),
+          (item) {
+            final normalizedItemPhone = normalizePhone(item.whatsappNumber);
+
+            debug("➡️ Comparing:");
+            debug("   Lead: $normalizedLeadPhone");
+            debug("   Item: $normalizedItemPhone");
+
+            return normalizedItemPhone == normalizedLeadPhone;
+          },
+          orElse: () {
+            debug("❌ No matching lead found");
+            return SfDrawerItemModel();
+          },
         );
 
         if (matchedLead.whatsappNumber != null &&
             matchedLead.whatsappNumber!.isNotEmpty) {
-          debug("✅ Found lead: ${matchedLead.name}");
+          debug("✅ MATCH FOUND!");
+          debug("👤 Name: ${matchedLead.name}");
+          debug("📱 Phone: ${matchedLead.whatsappNumber}");
         } else {
-          // ✅ Dummy create
-          debug("⚠️ No match found, creating dummy");
+          debug(" No match found, creating dummy");
 
           matchedLead = SfDrawerItemModel(
             id: leadPhone,
-            name: leadPhone, // ya "$leadName ($leadPhone)"
+            name: leadPhone,
             whatsappNumber: leadPhone,
             countryCode: "91",
           );
         }
 
-        debug("📱 Selected: ${matchedLead.name}");
+        debug(" Selected: ${matchedLead.name}");
 
         dbController.setSelectedContaactInfo(matchedLead);
         dbController.setSelectedPinnedInfo(null);
@@ -8021,12 +8101,109 @@ class _MyAppState extends State<MyApp> {
           objectType,
         );
       } catch (e, stackTrace) {
-        debug("❌ Error: $e");
+        debug("  Error: $e");
         debug("Stack: $stackTrace");
         _handleNavigationError(leadPhone, e);
       }
     });
   }
+//   Future<void> _findAndNavigateToLead(
+//       String leadPhone, String objectType) async {
+//     WidgetsBinding.instance.addPostFrameCallback((_) async {
+//       try {
+//         final BuildContext? context = navigatorKey.currentContext;
+
+//         if (context == null) {
+//           debug("  Context null, retrying...");
+//           Future.delayed(const Duration(milliseconds: 500), () {
+//             _findAndNavigateToLead(leadPhone, objectType);
+//           });
+//           return;
+//         }
+
+//         debug("  Searching lead: $leadPhone");
+
+//         final DashBoardController dbController =
+//             Provider.of<DashBoardController>(context, listen: false);
+
+//         await _callDashboardApi(context);
+// debug("objectTypeobjectType$objectType");
+//         String type = objectType;
+//         // String type = "Lead";
+
+//         debug("Drawer type->$type");
+//         await dbController.drawerListApiCall(type: type);
+
+//         SfDrawerItemModel? matchedLead;
+//         final List<SfDrawerItemModel> pinnedLeads = [];
+// final normalizedLeadPhone = normalizePhone(leadPhone);
+
+// debug("🔍 Searching for: $leadPhone");
+// debug("🔍 Normalized Lead Phone: $normalizedLeadPhone");
+
+// // Print all numbers from list
+// for (var item in dbController.drawerListItems) {
+//   debug("📞 List Number Raw: ${item.whatsappNumber}");
+//   debug("📞 List Number Normalized: ${normalizePhone(item.whatsappNumber)}");
+// }
+
+// matchedLead = dbController.drawerListItems.firstWhere(
+//   (item) {
+//     final normalizedItemPhone = normalizePhone(item.whatsappNumber);
+
+//     debug("➡️ Comparing:");
+//     debug("   Lead: $normalizedLeadPhone");
+//     debug("   Item: $normalizedItemPhone");
+
+//     return normalizedItemPhone == normalizedLeadPhone;
+//   },
+//   orElse: () {
+//     debug("❌ No matching lead found");
+//     return SfDrawerItemModel();
+//   },
+// );
+
+// if (matchedLead.whatsappNumber != null &&
+//     matchedLead.whatsappNumber!.isNotEmpty) {
+//   debug("✅ MATCH FOUND!");
+//   debug("👤 Name: ${matchedLead.name}");
+//   debug("📱 Phone: ${matchedLead.whatsappNumber}");
+// }
+
+//         if (matchedLead.whatsappNumber != null &&
+//             matchedLead.whatsappNumber!.isNotEmpty) {
+//           debug(" Found lead: ${matchedLead.name}");
+//         } else {
+//           debug(" No match found, creating dummy");
+
+//           matchedLead = SfDrawerItemModel(
+//             id: leadPhone,
+//             name: leadPhone,
+//             whatsappNumber: leadPhone,
+//             countryCode: "91",
+//           );
+//         }
+
+//         debug(" Selected: ${matchedLead.name}");
+
+//         dbController.setSelectedContaactInfo(matchedLead);
+//         dbController.setSelectedPinnedInfo(null);
+
+//         debug("🚀 Opening chat");
+
+//         await _navigateToChatScreen(
+//           context,
+//           matchedLead,
+//           pinnedLeads,
+//           objectType,
+//         );
+//       } catch (e, stackTrace) {
+//         debug("  Error: $e");
+//         debug("Stack: $stackTrace");
+//         _handleNavigationError(leadPhone, e);
+//       }
+//     });
+//   }
 
   Future<void> _navigateToChatScreen(
     BuildContext context,
@@ -8064,20 +8241,20 @@ class _MyAppState extends State<MyApp> {
       );
 
       pendingDeepLink = null;
-      debug("✅ Navigation completed successfully!");
+      debug("  Navigation completed successfully!");
     } catch (e, stackTrace) {
-      debug("❌ Navigation error: $e");
+      debug("  Navigation error: $e");
       debug("Stack trace: $stackTrace");
       rethrow;
     }
   }
 
   void _handleNavigationError(String leadPhone, Object error) {
-    debug("⚠️ Handling navigation error: $error");
+    debug(" Handling navigation error: $error");
 
     final BuildContext? context = navigatorKey.currentContext;
     if (context == null) {
-      debug("❌ Context is null, cannot handle error");
+      debug("  Context is null, cannot handle error");
       return;
     }
 
@@ -8091,7 +8268,7 @@ class _MyAppState extends State<MyApp> {
         // phone_number: leadPhone,
       );
 
-      // ✅ Set contact info before navigation
+      //   Set contact info before navigation
       DashBoardController dbController =
           Provider.of<DashBoardController>(context, listen: false);
       dbController.setSelectedContaactInfo(dummyLead);
@@ -8106,7 +8283,7 @@ class _MyAppState extends State<MyApp> {
         (route) => route.isFirst,
       );
     } catch (e) {
-      debug("❌ Even fallback navigation failed: $e");
+      debug("  Even fallback navigation failed: $e");
     }
   }
 
@@ -8118,12 +8295,12 @@ class _MyAppState extends State<MyApp> {
 
       if (dbController != null) {
         await dbController.getDasBoardReportApiCall();
-        debug("✅ Dashboard API called successfully");
+        debug("  Dashboard API called successfully");
       } else {
-        debug("⚠️ DashboardController not available");
+        debug(" DashboardController not available");
       }
     } catch (e) {
-      debug("❌ Error calling dashboard API: $e");
+      debug("  Error calling dashboard API: $e");
       // Continue execution even if dashboard API fails
     }
   }
@@ -8164,7 +8341,7 @@ class _MyAppState extends State<MyApp> {
 
       return false;
     } catch (e) {
-      debug("❌ Error in phone matching: $e");
+      debug("  Error in phone matching: $e");
       return false;
     }
   }
