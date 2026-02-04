@@ -31,6 +31,7 @@ class LeadListViewModel extends BaseListViewModel {
 
   Future<void> fetchRecentChat() async {
     String url = AppUtils.getUrl(AppConstants.recentChat);
+    debug("urlurlurlurlurl$url");
     await get(url: url, baseModel: RecentChatModel());
   }
 

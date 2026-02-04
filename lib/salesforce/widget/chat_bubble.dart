@@ -26,6 +26,7 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return Consumer<ChatMessageController>(builder: (context, ref, child) {
       return InkWell(
         splashColor: Colors.transparent,

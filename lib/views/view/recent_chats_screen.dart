@@ -22,6 +22,7 @@ import 'package:whatsapp/views/view/recent_archieve_chat.dart';
 import '../../models/lead_model.dart';
 import '../../utils/app_color.dart';
 import '../../utils/app_utils.dart';
+import '../../utils/function_lib.dart';
 import '../../view_models/lead_list_vm.dart';
 
 class RecentChatView extends StatefulWidget {
@@ -29,7 +30,6 @@ class RecentChatView extends StatefulWidget {
   @override
   State<RecentChatView> createState() => _RecentChatViewState();
 }
-
 class _RecentChatViewState extends State<RecentChatView> {
   final List<Color> tagColors = [
     Colors.blue,
@@ -231,7 +231,7 @@ class _RecentChatViewState extends State<RecentChatView> {
     leadlistvm = Provider.of<LeadListViewModel>(context);
 
     return FocusDetector(
-      onFocusGained: (){
+      onFocusGained: () {
         getLeadList(showLoading: false);
       },
       child: Scaffold(
@@ -262,17 +262,22 @@ class _RecentChatViewState extends State<RecentChatView> {
                 )
               : const Text(
                   'Chats',
-                  style:
-                      TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600),
                 ),
           centerTitle: true,
           elevation: 5,
           actions: [
-      
-        IconButton(onPressed: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>RecentArchieveChatView()));
-        }, icon: Icon(Icons.archive),color: Colors.white,),
-      
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => RecentArchieveChatView()));
+              },
+              icon: Icon(Icons.archive),
+              color: Colors.white,
+            ),
             showPin
                 ? Row(
                     children: [
@@ -291,7 +296,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                           ),
                         ),
                       ),
-      
+
                       // Pin Icon
                       Padding(
                         padding: const EdgeInsets.only(right: 16.0),
@@ -754,7 +759,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                               }
                                             }
 
-                                            return   leadRecordList(
+                                            return leadRecordList(
                                                 lead, unreadCount);
                                           },
                                         ),
@@ -796,6 +801,7 @@ class _RecentChatViewState extends State<RecentChatView> {
               allRecentChats.add(record);
               tempLeadModelList.add(record);
               if (record.pinned) {
+                debug("pinne");
                 pinnedLeads.add(record);
               }
             }
@@ -862,332 +868,337 @@ class _RecentChatViewState extends State<RecentChatView> {
 
     bool hasUnread = unreadMsgCount != "0" && unreadMsgCount.isNotEmpty;
 
-    return  model.isArchived! ? const SizedBox() : GestureDetector(
-      onLongPress: () {
-        setState(() {
-          showPin = true;
-          pinnedLeadId = model.lead_id ?? "";
-          isPinned = model.pinned ?? false;
-          currentLeadForTagEditing = model;
-        });
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: showPin && pinnedLeadId == model.lead_id
-              ? AppColor.pageBgGrey
-              : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border(
-            left: BorderSide(
-              color: statusColor,
-              width: 5,
-            ),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
-              spreadRadius: 3,
-              offset: const Offset(2, 4),
-            ),
-          ],
-        ),
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: CircleAvatar(
-                      radius: 22,
-                      backgroundColor: AppColor.navBarIconColor,
-                      child: Text(
-                        model.contactname?.isNotEmpty == true
-                            ? model.contactname![0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (model.pinned ?? false)
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.push_pin,
-                          size: 12,
-                          color: Colors.orange,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: InkWell(
-                  onTap: () {
-                    setState(() {
-                      pinnedLeadId = "";
-                      showPin = false;
-                      isPinned = false;
-                    });
-                    if (model.full_number != null) {
-                      _marksread(model.full_number ?? "");
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => WhatsappChatScreen(
-                            pinnedLeads: pinnedLeads,
-                            leadName: model.contactname ?? "",
-                            wpnumber: model.full_number,
-                            id: model.lead_id,
-                          isArch: model.isArchived,
-                            contryCode: model.countrycode,
-                          ),
-                        ),
-                      ).then((_) {
-                        _getUnreadCount();
-                        setState(() {});
-                      });
-                      leads?.viewModels.clear();
-                      Provider.of<LeadListViewModel>(context, listen: false)
-                          .fetchRecentChat();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('No Phone Number '),
-                          duration: Duration(seconds: 3),
-                          backgroundColor: AppColor.motivationCar1Color,
-                        ),
-                      );
-                    }
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      // Name and Tag Icon
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                // Contact name with ellipsis
-                                Flexible(
-                                  child: Text(
-                                    "${model.contactname}",
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontFamily: AppFonts.semiBold,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                // Tag icon with bigger size and scope
-                                if (visibleTags.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 6),
-                                    child: InkWell(
-                                      onTap: () {
-                                        _showTagsBottomSheet(context, model);
-                                      },
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              FontAwesomeIcons.tag,
-                                              size: 20,
-                                              color: tagIconColor,
-                                            ),
-                                            // Tags count दिखाएं
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 4),
-                                              child: Text(
-                                                // Total tags count दिखाएं
-                                                '+${model.tag_names?.length ?? 0}',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: tagIconColor,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-
-                      // Phone number
-                      Text(
-                        formatPhoneNumber(model.full_number),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-
-                      // Last message
-                      Text(
-                        "${model.message}",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
+    return model.isArchived!
+        ? const SizedBox()
+        : GestureDetector(
+            onLongPress: () {
+              setState(() {
+                showPin = true;
+                pinnedLeadId = model.lead_id ?? "";
+                isPinned = model.pinned ?? false;
+                currentLeadForTagEditing = model;
+              });
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: showPin && pinnedLeadId == model.lead_id
+                    ? AppColor.pageBgGrey
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border(
+                  left: BorderSide(
+                    color: statusColor,
+                    width: 5,
                   ),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 5,
+                    spreadRadius: 3,
+                    offset: const Offset(2, 4),
+                  ),
+                ],
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (hasUnread)
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          unreadMsgCount,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: CircleAvatar(
+                            radius: 22,
+                            backgroundColor: AppColor.navBarIconColor,
+                            child: Text(
+                              model.contactname?.isNotEmpty == true
+                                  ? model.contactname![0].toUpperCase()
+                                  : '?',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
+                        ),
+                        if (model.pinned ?? false)
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.push_pin,
+                                size: 12,
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            pinnedLeadId = "";
+                            showPin = false;
+                            isPinned = false;
+                          });
+                          if (model.full_number != null) {
+                            _marksread(model.full_number ?? "");
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => WhatsappChatScreen(
+                                  pinnedLeads: pinnedLeads,
+                                  leadName: model.contactname ?? "",
+                                  wpnumber: model.full_number,
+                                  id: model.lead_id,
+                                  isArch: model.isArchived,
+                                  contryCode: model.countrycode,
+                                ),
+                              ),
+                            ).then((_) {
+                              _getUnreadCount();
+                              setState(() {});
+                            });
+                            leads?.viewModels.clear();
+                            Provider.of<LeadListViewModel>(context,
+                                    listen: false)
+                                .fetchRecentChat();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('No Phone Number '),
+                                duration: Duration(seconds: 3),
+                                backgroundColor: AppColor.motivationCar1Color,
+                              ),
+                            );
+                          }
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            // Name and Tag Icon
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      // Contact name with ellipsis
+                                      Flexible(
+                                        child: Text(
+                                          "${model.contactname}",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontFamily: AppFonts.semiBold,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      // Tag icon with bigger size and scope
+                                      if (visibleTags.isNotEmpty)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 6),
+                                          child: InkWell(
+                                            onTap: () {
+                                              _showTagsBottomSheet(
+                                                  context, model);
+                                            },
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    FontAwesomeIcons.tag,
+                                                    size: 20,
+                                                    color: tagIconColor,
+                                                  ),
+                                                  // Tags count दिखाएं
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 4),
+                                                    child: Text(
+                                                      // Total tags count दिखाएं
+                                                      '+${model.tag_names?.length ?? 0}',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: tagIconColor,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+
+                            // Phone number
+                            Text(
+                              formatPhoneNumber(model.full_number),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+
+                            // Last message
+                            Text(
+                              "${model.message}",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-               
-                  PopupMenuButton<String>(
-                    padding: EdgeInsets.zero,
-                    icon: const Icon(Icons.more_vert,
-                        size: 18, color: Colors.black54),
-                    onSelected: (value) {
-                      if (value == 'pin') {
-                        _handlePinAction(model);
-                      } else if (value == 'tags') {
-                        _showTagsBottomSheet(context, model);
-                      }
-
-                      else if (value == 'archieve') {
-                        _toggleArchiveStatus(model?.lead_id??"");
-                      }
-                    },
-                    itemBuilder: (BuildContext context) => [
-
-
-
-                       PopupMenuItem<String>(
-                        value: 'archieve',
-                        child: Row(
-                          children: [
-                            Icon(
-                              model.isArchived ?? false 
-                                  ? Icons.archive
-                                  : Icons.unarchive,
-                              color: Colors.black87,
-                              size: 18,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (hasUnread)
+                          Container(
+                            width: 20,
+                            height: 20,
+                            decoration: const BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
                             ),
-                            const SizedBox(width: 8),
-                            Text(model.isArchived ?? false ? 'Un-Archive' : 'Archive',
-                                style: const TextStyle(fontSize: 14)),
+                            child: Center(
+                              child: Text(
+                                unreadMsgCount,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        PopupMenuButton<String>(
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(Icons.more_vert,
+                              size: 18, color: Colors.black54),
+                          onSelected: (value) {
+                            if (value == 'pin') {
+                              _handlePinAction(model);
+                            } else if (value == 'tags') {
+                              _showTagsBottomSheet(context, model);
+                            } else if (value == 'archieve') {
+                              _toggleArchiveStatus(model?.lead_id ?? "");
+                            }
+                          },
+                          itemBuilder: (BuildContext context) => [
+                            PopupMenuItem<String>(
+                              value: 'archieve',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    model.isArchived ?? false
+                                        ? Icons.archive
+                                        : Icons.unarchive,
+                                    color: Colors.black87,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                      model.isArchived ?? false
+                                          ? 'Un-Archive'
+                                          : 'Archive',
+                                      style: const TextStyle(fontSize: 14)),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'pin',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    model.pinned ?? false
+                                        ? Icons.push_pin
+                                        : Icons.push_pin_outlined,
+                                    color: Colors.black87,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(model.pinned ?? false ? 'Unpin' : 'Pin',
+                                      style: const TextStyle(fontSize: 14)),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'tags',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    FontAwesomeIcons.tags,
+                                    color: tagIconColor,
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text('Manage Tags',
+                                      style: TextStyle(fontSize: 14)),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'pin',
-                        child: Row(
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              model.pinned ?? false
-                                  ? Icons.push_pin
-                                  : Icons.push_pin_outlined,
-                              color: Colors.black87,
-                              size: 18,
+                            Text(
+                              _formatMessageTime(model.createddate.toString()),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
                             ),
-                            const SizedBox(width: 8),
-                            Text(model.pinned ?? false ? 'Unpin' : 'Pin',
-                                style: const TextStyle(fontSize: 14)),
+                            const SizedBox(width: 6),
                           ],
                         ),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'tags',
-                        child: Row(
-                          children: [
-                            Icon(
-                              FontAwesomeIcons.tags,
-                              color: tagIconColor,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 8),
-                            const Text('Manage Tags',
-                                style: TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _formatMessageTime(model.createddate.toString()),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                    ],
-                  ),
-                ],
-              )
-            ],
-          ),
-        ),
-      ),
-    );
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
   }
 
 // String _formatMessageTime(String isoString) {
@@ -1203,41 +1214,40 @@ class _RecentChatViewState extends State<RecentChatView> {
 //     final time = DateFormat('h:mm a').format(inputDate);
 
 //     if (messageDate == today) {
-//       return time; 
+//       return time;
 //     } else if (messageDate == yesterday) {
-//       return 'Yesterday, $time'; 
+//       return 'Yesterday, $time';
 //     } else {
-//       return DateFormat('MM/dd/yy').format(inputDate); 
+//       return DateFormat('MM/dd/yy').format(inputDate);
 //     }
 //   } catch (e) {
 //     return '';
 //   }
 // }
 
+  String _formatMessageTime(String isoString) {
+    try {
+      final inputDate = DateTime.parse(isoString).toLocal();
+      final now = DateTime.now();
 
-String _formatMessageTime(String isoString) {
-  try {
-    final inputDate = DateTime.parse(isoString).toLocal();
-    final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+      final messageDate =
+          DateTime(inputDate.year, inputDate.month, inputDate.day);
 
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-    final messageDate =
-        DateTime(inputDate.year, inputDate.month, inputDate.day);
+      final time = DateFormat('h:mm a').format(inputDate);
 
-    final time = DateFormat('h:mm a').format(inputDate);
-
-    if (messageDate == today) {
-      return time; 
-    } else if (messageDate == yesterday) {
-      return 'Yesterday, $time'; 
-    } else {
-      return DateFormat('dd/MM/yy').format(inputDate); // 👈 changed
+      if (messageDate == today) {
+        return time;
+      } else if (messageDate == yesterday) {
+        return 'Yesterday, $time';
+      } else {
+        return DateFormat('dd/MM/yy').format(inputDate); // 👈 changed
+      }
+    } catch (e) {
+      return '';
     }
-  } catch (e) {
-    return '';
   }
-}
 
   Future<void> _removeTagFromLead(Records lead, String tagId) async {
     showDialog(
@@ -2356,18 +2366,13 @@ String _formatMessageTime(String isoString) {
     shouldHideLeadNumber = prefs.getBool(SharedPrefsConstants.shouldHideNumber);
     setState(() {});
   }
-  
+
   Future<void> _toggleArchiveStatus(String id) async {
     try {
       final LeadListViewModel leadData =
           Provider.of<LeadListViewModel>(context, listen: false);
 
-   
-
-      Map<String, dynamic> body = {
-        "id": id,
-        "is_archived": true
-      };
+      Map<String, dynamic> body = {"id": id, "is_archived": true};
 
       EasyLoading.show(status: 'Processing...');
 
@@ -2375,23 +2380,13 @@ String _formatMessageTime(String isoString) {
 
       EasyLoading.dismiss();
 
-     
+      EasyLoading.showToast('Chat Archived Successfully');
 
-     
-      EasyLoading.showToast(
-           'Chat Archived Successfully'
-          );
-
-            getLeadList();
-
-   
-
+      getLeadList();
     } catch (e) {
       EasyLoading.dismiss();
       EasyLoading.showToast('Failed to update archive status');
       print('Error in _toggleArchiveStatus: $e');
     }
   }
-  
-  
-  }
+}

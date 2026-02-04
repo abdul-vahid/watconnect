@@ -11,6 +11,7 @@ import 'package:whatsapp/salesforce/controller/network_Services.dart';
 import 'package:whatsapp/salesforce/model/template_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
+import 'package:whatsapp/utils/function_lib.dart';
 
 class TemplateController extends ChangeNotifier {
   Future<void> notify() async {
@@ -48,6 +49,7 @@ class TemplateController extends ChangeNotifier {
 
   TemplateModel? selectedTemplate;
   setSelectedTemp(TemplateModel? selTemp) {
+    debug("selTempselTempselTempselTemp${selTemp}");
     selectedTemplate = selTemp;
     notify();
   }
@@ -131,35 +133,43 @@ class TemplateController extends ChangeNotifier {
       required List<String> params,
       String? docId,
       String? url,
-      String? mimetyp}) async {
+      String? mimetyp,
+      String? category}) async {
+    debug("categorycategorycategorycategory${category}");
     setSentTempLoader(true);
     // String apiUrl = AppConstants.sfSendTemplate;
 
     String apiUrl = await AppUtils.getSFUrl(AppConstants.sfSendTemplate);
-
+    debug("sfSendTemplatesfSendTemplatesfSendTemplate$apiUrl");
     final prefs = await SharedPreferences.getInstance();
     // final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
     Map<String, dynamic> body = {};
     var paramToSend = buildParamsJson(params);
+    debug("paramToSendparamToSendparamToSendparamToSend$paramToSend");
     if (params.isEmpty) {
       body = {
         "businessnumber": busNum,
         "userWhatsAppNumber": usrNumber,
         "metaTemplateId": tempId
       };
+      debug("boddddddddddddy$body");
     } else {
       body = {
         "businessnumber": busNum,
         "userWhatsAppNumber": usrNumber,
         "metaTemplateId": tempId,
-        "params": paramToSend
+        "params": paramToSend,
+        "document_id": docId,
+        "category": category
       };
+      debug("basdodybodybody$body");
     }
 
     print("docId::: ${docId}  url::: ${url}  mimetyp::: ${mimetyp}");
 
     if (docId != null) {
+      debug("docIddocId$docId");
       body["document_id"] = docId;
       body["url"] = url;
       body["content_type"] = mimetyp;
@@ -167,7 +177,10 @@ class TemplateController extends ChangeNotifier {
 
     final response = await NetworkService.makeRequest(
         url: apiUrl, method: 'POST', body: body);
+    print("response response ${response!.statusCode}");
+
     if (response != null && response.statusCode == 200) {
+      debug("Template sent successfully");
       EasyLoading.showToast("Template Send Successfully");
       ChatMessageController msgCtrl =
           Provider.of(navigatorKey.currentContext!, listen: false);
@@ -178,7 +191,22 @@ class TemplateController extends ChangeNotifier {
     notify();
   }
 
-  String buildParamsJson(List<String> values) {
+  // String buildParamsJson(List<String> values) {
+  //   debug("valuesvaluesvaluesvaluesvalues${values}");
+  //   final List<Map<String, String>> paramList = [];
+
+  //   for (int i = 0; i < values.length; i++) {
+  //     paramList.add({
+  //       "name": "{{${i + 1}}}",
+  //       "value": values[i],
+  //     });
+  //   }
+
+  //   String jsonString = jsonEncode(paramList);
+  //   print("temp param as encoded strigify format::::::::::::   ${jsonString}");
+  //   return jsonString;
+  // }
+  List<Map<String, String>> buildParamsJson(List<String> values) {
     final List<Map<String, String>> paramList = [];
 
     for (int i = 0; i < values.length; i++) {
@@ -188,9 +216,9 @@ class TemplateController extends ChangeNotifier {
       });
     }
 
-    String jsonString = jsonEncode(paramList);
-    print("temp param as encoded strigify format::::::::::::   ${jsonString}");
-    return jsonString;
+    debugPrint("PARAM LIST::: $paramList");
+
+    return paramList;
   }
 
   List<TextEditingController> textControllers = [];

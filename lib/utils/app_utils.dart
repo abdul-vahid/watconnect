@@ -381,7 +381,7 @@ class AppUtils {
   static Future<String> getSFUrl(String path) async {
     final prefs = await SharedPreferences.getInstance();
     final storedUrl = prefs.getString(SharedPrefsConstants.sfBaseUrl) ?? "";
-
+debug("storedUrlstoredUrlstoredUrl$storedUrl");
     // final prefs = await SharedPreferences.getInstance();
     String val = prefs.getString(SharedPrefsConstants.sfLoginType) ?? "";
 

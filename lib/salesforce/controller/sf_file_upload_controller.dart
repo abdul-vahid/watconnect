@@ -59,17 +59,26 @@ class SfFileUploadController extends ChangeNotifier {
   }
 
   String filePubUrl = "";
-  setPublicUrlId(String title) async {
+
+  setPublicUrlId(String? title) async {
+    if (title == null || title.isEmpty) {
+      log("❌ Title is null/empty. URL not set.");
+      return;
+    }
+
+    final encodedTitle = Uri.encodeComponent(title);
+
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(SharedPrefsConstants.sfNodeTennatCode) ?? "";
-
     final nodeBaseUrlSf =
         prefs.getString(SharedPrefsConstants.sfNodeBaseUrl) ?? "";
     String baseImgUrl = nodeBaseUrlSf.contains('sandbox.watconnect')
         ? "https://sandbox.watconnect.com/"
         : "https://admin.watconnect.com/";
-    filePubUrl = "${baseImgUrl}public/$token/attachment/$title";
-    log("file upload public url::::::   $filePubUrl");
+
+    filePubUrl = "${baseImgUrl}public/$token/attachment/$encodedTitle";
+
+    log("file upload public url:::::: $filePubUrl");
 
     notify();
   }
@@ -261,12 +270,22 @@ class SfFileUploadController extends ChangeNotifier {
 
     try {
       final streamedResponse = await request.send();
+      debug("streamedResponse${streamedResponse.statusCode}");
       final responseBody = await streamedResponse.stream.bytesToString();
 
       if (streamedResponse.statusCode == 200) {
         setFileUploadLoader(false);
         final map = jsonDecode(responseBody);
-        setPublicUrlId(map['records'][0]['title']);
+        log("map['records']: ${map['records'][0]['id']}");
+        log("map['rezzzzzzzzzcords']: $map");
+        // setPublicUrlId(map['records'][0]['title']);
+        final title = map['records']?[0]?['title'];
+
+        if (title != null && title.toString().isNotEmpty) {
+          setPublicUrlId(title);
+        } else {
+          log("❌ Title missing in response");
+        }
         await uploadFile(file, cntryCode, txtMsg, ursNo,
             isTemplate: isFromTemplate);
         return responseBody;
@@ -293,6 +312,7 @@ class SfFileUploadController extends ChangeNotifier {
 
   Future<dynamic> uploadFile(File file, String code, String mesg, String numbr,
       {required bool isTemplate}) async {
+    debug("uploadFileuploadFileuploadFile");
     setFileUploadLoader(true);
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
@@ -306,6 +326,7 @@ class SfFileUploadController extends ChangeNotifier {
     final url = Uri.parse(
       "${AppConstants.baseUrl}/api/webhook_template/documentId?whatsapp_setting_number=$busNum",
     );
+    debug("upload file url::::::   $url");
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
     final fileStream = http.ByteStream(file.openRead());
     final length = await file.length();
@@ -328,10 +349,15 @@ class SfFileUploadController extends ChangeNotifier {
     final response = await request.send();
     final responseBody = await response.stream.bytesToString();
     debug("File uploaded successfully: webhook_template $responseBody");
+    debug(
+        "File uploaded successfully: webhook_template $responseBody.statusCode ${response.statusCode}");
     if (response.statusCode == 200) {
+      debug("File uploaded successfully: webhook_template $responseBody");
       setFileUploadLoader(false);
       // debug("File uploaded successfully: webhook_template $responseBody");
       var mp = jsonDecode(responseBody);
+      debug("mp['id']:sssssssss::::${mp}");
+      debug("mp['id']::::::${mp['id']}");
       setFileDocId(mp['id']);
 
       if (isTemplate) {
