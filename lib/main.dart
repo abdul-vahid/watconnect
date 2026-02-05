@@ -7852,7 +7852,6 @@ class _MyAppState extends State<MyApp> {
           for (int i = 0; i < segments.length - 2; i++) {
             if (segments[i].toLowerCase() == "chat" &&
                 i + 2 < segments.length) {
-          
               String phone = segments[i + 2];
               debug("  Found phone in chat/object/phone pattern: $phone");
               return phone;
@@ -7883,7 +7882,6 @@ class _MyAppState extends State<MyApp> {
         return phone;
       }
 
-  
       final RegExp leadChatRegex = RegExp(r'/(?:Lead|lead)/chat/(\d{10,})');
       final Match? leadMatch = leadChatRegex.firstMatch(url);
       if (leadMatch != null && leadMatch.group(1) != null) {
@@ -7892,7 +7890,6 @@ class _MyAppState extends State<MyApp> {
         return phone;
       }
 
-      
       final RegExp contactChatRegex =
           RegExp(r'/(?:Contact|contact)/chat/(\d{10,})');
       final Match? contactMatch = contactChatRegex.firstMatch(url);
@@ -8009,6 +8006,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _findAndNavigateToLead(
       String leadPhone, String objectType) async {
+    debug("objectTypeobjectType $objectType");
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         final BuildContext? context = navigatorKey.currentContext;
@@ -8222,7 +8220,8 @@ class _MyAppState extends State<MyApp> {
           isFirstTime: true,
         );
       }
-
+// future.delay()
+      // Future.delayed(Duration(seconds: 4), () {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
@@ -8231,8 +8230,19 @@ class _MyAppState extends State<MyApp> {
             isFromRecentChat: false,
           ),
         ),
-        (route) => route.isFirst,
+        (route) => false,
       );
+      // });
+      // Navigator.pushAndRemoveUntil(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (_) => SfMessageChatScreen(
+      //       pinnedLeadsList: pinnedLeads,
+      //       isFromRecentChat: false,
+      //     ),
+      //   ),
+      //   (route) => route.isFirst,
+      // );
 
       pendingDeepLink = null;
       debug("  Navigation completed successfully!");
