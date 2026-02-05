@@ -336,7 +336,7 @@ class _Forms extends State<LeadAddView> {
       if (model1.userrole == 'ADMIN') {
         defaultSel = model1.username;
         _asignStaff = defaultSel;
-        defaultUsrId = model1?.id ?? "";
+        defaultUsrId = model1.id ?? "";
       }
     }
 

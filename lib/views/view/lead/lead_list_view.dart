@@ -200,14 +200,16 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                     // && idsToDelete.length > 1
                     ? Row(
                         children: [
-
-                       InkWell(
-                        onTap: (){
-                          _toggleArchiveStatus(selectedLead?.lead_id??"", selectedLead?.isArchived??false);
-                        },
-                        child: Icon(Icons.archive,color: Colors.white,)),
-
-
+                          InkWell(
+                              onTap: () {
+                                _toggleArchiveStatus(
+                                    selectedLead?.lead_id ?? "",
+                                    selectedLead?.isArchived ?? false);
+                              },
+                              child: Icon(
+                                Icons.archive,
+                                color: Colors.white,
+                              )),
                           PopupMenuButton<String>(
                             onSelected: (value) {
                               switch (value) {
@@ -311,10 +313,9 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
           automaticallyImplyLeading: false,
           title: const Text(
             'Leads',
-            
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
           ),
-          centerTitle: showPin? false : true,
+          centerTitle: showPin ? false : true,
           elevation: 5,
         ),
         body: GestureDetector(
@@ -422,7 +423,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                   selectleadList = selected;
                                 });
                               },
-                              initialValue: const [],
+                              initialValue: selectleadList,
                             ),
                             const SizedBox(height: 16),
                             Wrap(
@@ -475,11 +476,12 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                           width: 10,
                         ),
                         ElevatedButton(
-                          onPressed: () {
-                            filterLeads(selectleadList);
-                            Navigator.pop(context);
-                            // Navigator.of(context).pop();
-                          },
+                          onPressed: selectleadList.isEmpty
+                              ? null // disabled
+                              : () {
+                                  filterLeads(selectleadList);
+                                  Navigator.pop(context);
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColor.cardsColor,
                             padding: const EdgeInsets.symmetric(
@@ -525,11 +527,16 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   }
 
   Future<void> _pullRefresh() async {
-    // Clear all lists first
+    // Clear all lists
     leads?.viewModels.clear();
     tempLeadModelList.clear();
     allLeads.clear();
     pinnedLeads.clear();
+
+    setState(() {
+      selectleadList.clear(); // filter remove
+      // filterCount = 0;          // agar count variable hai
+    });
 
     await Provider.of<LeadListViewModel>(context, listen: false).fetch();
     await Provider.of<UnreadCountVm>(context, listen: false)
@@ -1532,16 +1539,14 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       });
     }
 
-   
-
     await Provider.of<LeadListViewModel>(context, listen: false)
         .fetch()
         .then((onValue) {
-           // CLEAR LISTS FIRST
-    tempLeadModelList.clear();
-    allLeads.clear();
-    // backupListModel.clear();
-    pinnedLeads.clear();
+      // CLEAR LISTS FIRST
+      tempLeadModelList.clear();
+      allLeads.clear();
+      // backupListModel.clear();
+      pinnedLeads.clear();
       for (var viewModel in leadlistvm.viewModels) {
         var leadmodel = viewModel.model;
         if (leadmodel?.records != null) {
@@ -1881,8 +1886,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     );
   }
 
-
- Future<void> _toggleArchiveStatus(String id,bool isArc) async {
+  Future<void> _toggleArchiveStatus(String id, bool isArc) async {
     try {
       final LeadListViewModel leadData =
           Provider.of<LeadListViewModel>(context, listen: false);
@@ -1895,7 +1899,8 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
 
       EasyLoading.dismiss();
 
-      EasyLoading.showToast(isArc ? "Chat Archive successfully":'Chat Un-Archive successfully');
+      EasyLoading.showToast(
+          isArc ? "Chat Archive successfully" : 'Chat Un-Archive successfully');
 
       getLeadList(showLoading: false);
     } catch (e) {
@@ -1904,5 +1909,4 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
       print('Error in _toggleArchiveStatus: $e');
     }
   }
-
 }

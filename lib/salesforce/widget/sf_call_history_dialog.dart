@@ -154,7 +154,7 @@ void showSfCallDialog(
 String formatDuration(int seconds) {
   debugPrint("Duration seconds: $seconds");
 
-  if (seconds == null || seconds <= 0) {
+  if (seconds <= 0) {
     return "0s";
   }
 

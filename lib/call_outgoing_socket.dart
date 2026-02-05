@@ -232,11 +232,6 @@ class outgoingCall {
         number = prefs.getString('phoneNumber');
       }
 
-      if (number == null) {
-        print("⚠️ Business number not found.");
-        return false;
-      }
-
       Map<String, dynamic> acceptBody = {
         "payload": {
           "messaging_product": "whatsapp",
