@@ -5,6 +5,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -60,7 +61,8 @@ class _TempleteListView extends State<TempleteListView> {
     super.initState();
     allTemplates = [];
     tempTemplates = [];
-    selectTempList = ['approved'];
+    // selectTempList = ['approved'];
+    selectTempList = [];
     searchTemp = "";
     // _controller = NotchBottomBarController();
     _getNumberFromPreferences();
@@ -172,52 +174,48 @@ class _TempleteListView extends State<TempleteListView> {
                                   color: Colors.grey,
                                 ),
                               ),
+                              chipDisplay: MultiSelectChipDisplay.none(),
                               onConfirm: (List<String> selected) {
                                 setState(() {
                                   // Update selectleadList with the confirmed selections
                                   selectTempList = selected;
                                 });
                               },
-                              initialValue: const [],
+                              initialValue: selectTempList,
                             ),
                             const SizedBox(height: 16),
-                            Wrap(
-                              spacing: 8.0,
-                              children: selectTempList.map((selectedItem) {
-                                return Chip(
-                                  label: Text(selectedItem),
-                                  deleteIcon: const Icon(Icons.close),
-                                  onDeleted: () {
-                                    setState(() {
-                                      selectTempList.remove(selectedItem);
-                                    });
-                                  },
-                                  backgroundColor: Colors.blue.withOpacity(0.2),
-                                  labelStyle:
-                                      const TextStyle(color: Colors.blue),
-                                );
-                              }).toList(),
-                            ),
+                            if (selectTempList.isNotEmpty)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  border:
+                                      Border.all(color: Colors.grey.shade300),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Wrap(
+                                  spacing: 8.0,
+                                  runSpacing: 8.0,
+                                  children: selectTempList.map((selectedItem) {
+                                    return Chip(
+                                      label: Text(selectedItem),
+                                      deleteIcon:
+                                          const Icon(Icons.close, size: 16),
+                                      onDeleted: () {
+                                        setState(() {
+                                          selectTempList.remove(selectedItem);
+                                        });
+                                      },
+                                      backgroundColor:
+                                          Colors.blue.withOpacity(0.2),
+                                      labelStyle:
+                                          const TextStyle(color: Colors.blue),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
                           ],
                         )),
-                    // DropdownButtonFormField<String>(
-                    //   isDense: true,
-                    //   // isExpanded: true,
-                    //   // menuMaxHeight: 10,
-                    //   hint: const Text('Select Template Status'),
-                    //   items: uniqtempletestatus.map((String value) {
-                    //     return DropdownMenuItem<String>(
-                    //       value: value,
-                    //       child: Text(value),
-                    //     );
-                    //   }).toList(),
-                    //   onChanged: (String? newValue) {
-                    //     setState(() {
-                    //       selecttemplte = newValue;
-                    //     });
-                    //   },
-                    //   value: selecttemplte,
-                    // ),
                     const SizedBox(height: 7),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -248,23 +246,67 @@ class _TempleteListView extends State<TempleteListView> {
                           width: 8,
                         ),
                         ElevatedButton(
-                          onPressed: () {
-                            filterLeads(selectTempList);
-                          },
+                          onPressed: selectTempList.isEmpty
+                              ? null
+                              : () {
+                                  // Close keyboard if open
+                                  FocusScope.of(context).unfocus();
+
+                                  filterLeads(selectTempList);
+
+                                  // Show success message
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        selectTempList.contains('All') ||
+                                                selectTempList.isEmpty
+                                            ? 'Showing all templates'
+                                            : 'Applied ${selectTempList.length} filter(s)',
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
+                                      backgroundColor: AppColor.navBarIconColor,
+                                      duration: const Duration(seconds: 1),
+                                    ),
+                                  );
+                                },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.cardsColor,
+                            backgroundColor: selectTempList.isEmpty
+                                ? Colors.grey.shade400
+                                : AppColor.cardsColor,
+                            foregroundColor: selectTempList.isEmpty
+                                ? Colors.white.withOpacity(0.7)
+                                : Colors.white,
                             padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
+                              vertical: 10,
+                              horizontal: 20,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text(
-                            'Apply Filters',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (selectTempList.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 6.0),
+                                  child: Text(
+                                    '(${selectTempList.length})',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              const Text(
+                                'Apply Filters',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -307,6 +349,14 @@ class _TempleteListView extends State<TempleteListView> {
   Future<void> _pullRefresh() async {
     setState(() {
       contacts?.viewModels.clear();
+      // Clear filters on refresh
+      selectTempList = ['approved']; // Reset to default
+      selecttemplte = null;
+      textController.clear();
+      searchTemp = "";
+    });
+
+    setState(() {
       isRefresh = true;
     });
     return Future<void>.delayed(const Duration(seconds: 2));
@@ -350,21 +400,36 @@ class _TempleteListView extends State<TempleteListView> {
                               size: 20,
                             ),
                           ),
-                          selectTempList.isEmpty
-                              ? const SizedBox()
-                              : Container(
-                                  decoration: const BoxDecoration(
-                                      color: AppColor.navBarIconColor,
-                                      shape: BoxShape.circle),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "${selectTempList.length}",
-                                      style:
-                                          const TextStyle(color: Colors.white),
-                                    ),
+                          if (selectTempList.isNotEmpty &&
+                              !(selectTempList.length == 1 &&
+                                  selectTempList.contains('approved')))
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: AppColor.navBarIconColor,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                child: Text(
+                                  selectTempList.contains('All') &&
+                                          selectTempList.length == 1
+                                      ? '0'
+                                      : "${selectTempList.length}",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                )
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -455,7 +520,6 @@ class _TempleteListView extends State<TempleteListView> {
                           String statusText = "";
 
                           if (allTemplates[index].status == "APPROVED") {
-                            print("shshhsshshh");
                             statusColor = AppColor.navBarIconColor;
                             statusText = "Approved";
                           } else if (allTemplates[index].status == 'REJECTED') {
@@ -478,10 +542,10 @@ class _TempleteListView extends State<TempleteListView> {
                                     color: AppColor.navBarIconColor,
                                     width: 5,
                                   ),
-                                  right: BorderSide(
-                                    color: AppColor.navBarIconColor,
-                                    width: 5,
-                                  ),
+                                  // right: BorderSide(
+                                  //   color: AppColor.navBarIconColor,
+                                  //   width: 5,
+                                  // ),
                                 ),
                                 boxShadow: [
                                   BoxShadow(
@@ -604,7 +668,6 @@ class _TempleteListView extends State<TempleteListView> {
       String statusText = "";
 
       if (record.status == "APPROVED") {
-        print("shshhsshshh");
         statusColor = AppColor.navBarIconColor;
         statusText = "Approved";
       } else if (record.status == 'REJECTED') {
@@ -747,53 +810,83 @@ class _TempleteListView extends State<TempleteListView> {
     }
   }
 
+  // void getAllTemp() {
+  //   templeteViewModel =
+  //       Provider.of<TempleteListViewModel>(context, listen: false);
+
+  //   for (var viewModel in templeteViewModel!.viewModels) {
+  //     var campginmodel = viewModel.model;
+  //     if (campginmodel?.data != null) {
+  //       allTemplates = [];
+  //       log("selecttemplte:::: $selecttemplte");
+  //       for (var record in campginmodel!.data!) {
+  //         if (record.status != null) {
+  //           tempTemplates.add(record);
+  //           templetefilter.add(record.status!);
+  //           if (selecttemplte == 'All') {
+  //             allTemplates.add(record);
+  //           } else if (selecttemplte != null &&
+  //               selecttemplte != '' &&
+  //               selecttemplte?.toLowerCase() != "approved") {
+  //             if (record.status.toString().toLowerCase() ==
+  //                 selecttemplte?.toLowerCase()) {
+  //               allTemplates.add(record);
+  //             }
+  //           } else {
+  //             selecttemplte = null;
+
+  //             if (record.status.toString().toLowerCase() == "approved") {
+  //               if (record.status.toString().toLowerCase() == "approved") {
+  //                 allTemplates.add(record);
+  //               }
+  //             }
+  //           }
+
+  //           if (searchTemp.isNotEmpty) {
+  //             List tempUsers = allTemplates;
+  //             allTemplates = [];
+  //             allTemplates = tempUsers.where((user) {
+  //               var firstName = user.name?.toLowerCase() ?? '';
+  //               print(
+  //                   "Checking user: ${user.name}, Result: ${firstName.contains(searchTemp)}");
+  //               return firstName.contains(searchTemp);
+  //             }).toList();
+  //           }
+  //         }
+  //       }
+  //       setState(() {});
+  //     }
+  //   }
+  // }
   void getAllTemp() {
     templeteViewModel =
         Provider.of<TempleteListViewModel>(context, listen: false);
 
+    allTemplates.clear();
+    tempTemplates.clear();
+    templetefilter.clear();
+
     for (var viewModel in templeteViewModel!.viewModels) {
       var campginmodel = viewModel.model;
       if (campginmodel?.data != null) {
-        allTemplates = [];
-        log("selecttemplte:::: $selecttemplte");
         for (var record in campginmodel!.data!) {
           if (record.status != null) {
             tempTemplates.add(record);
-            templetefilter.add(record.status!);
-            if (selecttemplte == 'All') {
-              allTemplates.add(record);
-            } else if (selecttemplte != null &&
-                selecttemplte != '' &&
-                selecttemplte?.toLowerCase() != "approved") {
-              if (record.status.toString().toLowerCase() ==
-                  selecttemplte?.toLowerCase()) {
-                allTemplates.add(record);
-              }
-            } else {
-              selecttemplte = null;
 
-              if (record.status.toString().toLowerCase() == "approved") {
-                if (record.status.toString().toLowerCase() == "approved") {
-                  allTemplates.add(record);
-                }
-              }
+            if (!templetefilter.contains(record.status!)) {
+              templetefilter.add(record.status!);
             }
-
-            if (searchTemp.isNotEmpty) {
-              List tempUsers = allTemplates;
-              allTemplates = [];
-              allTemplates = tempUsers.where((user) {
-                var firstName = user.name?.toLowerCase() ?? '';
-                print(
-                    "Checking user: ${user.name}, Result: ${firstName.contains(searchTemp)}");
-                return firstName.contains(searchTemp);
-              }).toList();
+            if (selectTempList.isEmpty || selectTempList.contains('All')) {
+              allTemplates.add(record);
+            } else if (selectTempList.contains(record.status!.toLowerCase())) {
+              allTemplates.add(record);
             }
           }
         }
-        setState(() {});
       }
     }
+
+    setState(() {});
   }
 
   String formatTemplateName(String? name) {

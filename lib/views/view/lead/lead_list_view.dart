@@ -834,6 +834,10 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                         showPin = false;
                                         idsToDelete.clear();
                                         isPinned = false;
+                                        if (index == 0) {
+                                          selectleadList.clear();
+                                          selectTagFilterList.clear();
+                                        }
                                       });
                                       if (index == 1) {
                                         unreadChatFilter();

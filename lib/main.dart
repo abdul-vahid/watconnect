@@ -8248,7 +8248,7 @@ class _MyAppState extends State<MyApp> {
       debug("  Navigation completed successfully!");
     } catch (e, stackTrace) {
       debug("  Navigation error: $e");
-      debug("Stack trace: $stackTrace");
+      debug("Stack trace: $stackTrace");  
       rethrow;
     }
   }

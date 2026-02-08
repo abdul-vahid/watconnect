@@ -126,6 +126,13 @@ class _CampaignListView extends State<CampaignListView> {
   }
 
   Future<void> _pullRefresh() async {
+    setState(() {
+      selectCampList.clear();
+      selectedcampaign = null;
+      textController.clear();
+      searchcampaign = "";
+    });
+
     campaign?.viewModels.clear();
     Provider.of<CampaignViewModel>(context, listen: false).fetch();
     campaign = Provider.of<CampaignViewModel>(context, listen: false);
@@ -219,13 +226,13 @@ class _CampaignListView extends State<CampaignListView> {
                                   color: Colors.grey,
                                 ),
                               ),
+                              // chipDisplay: MultiSelectChipDisplay.none(),
                               onConfirm: (List<String> selected) {
                                 setState(() {
-                                  // Update selectleadList with the confirmed selections
                                   selectCampList = selected;
                                 });
                               },
-                              initialValue: const [],
+                              initialValue: selectCampList,
                             ),
                             const SizedBox(height: 16),
                             Wrap(
@@ -295,11 +302,15 @@ class _CampaignListView extends State<CampaignListView> {
                           width: 8,
                         ),
                         ElevatedButton(
-                          onPressed: () {
-                            _filterLeads(selectCampList);
-                          },
+                          onPressed: selectCampList.isEmpty
+                              ? null
+                              : () {
+                                  _filterLeads(selectCampList);
+                                },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.cardsColor,
+                            backgroundColor: selectCampList.isEmpty
+                                ? Colors.grey
+                                : AppColor.cardsColor,
                             padding: const EdgeInsets.symmetric(
                                 vertical: 8, horizontal: 12),
                             shape: RoundedRectangleBorder(
@@ -590,60 +601,67 @@ class _CampaignListView extends State<CampaignListView> {
                                       }
                                     },
                                     child: ListTile(
-  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-  title: Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-          
-            Text(
-              allCampaigns[index].campaignName ?? "",
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 8),
+                                      title: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  allCampaigns[index]
+                                                          .campaignName ??
+                                                      "",
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  allCampaigns[index]
+                                                          .campaignType ??
+                                                      "",
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.lightBlue
+                                                        .withOpacity(0.7),
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  allCampaigns[index]
+                                                          .campaignStatus ??
+                                                      "",
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
 
-            const SizedBox(height: 4),
-
-        
-            Text(
-              allCampaigns[index].campaignType ?? "",
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.lightBlue.withOpacity(0.7),
-              ),
-            ),
-
-            const SizedBox(height: 4),
-
-          
-            Text(
-              allCampaigns[index].campaignStatus ?? "",
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-          ],
-        ),
-      ),
-
-      /// Optional trailing widget (enable if needed)
-      /*
+                                          /// Optional trailing widget (enable if needed)
+                                          /*
       const SizedBox(width: 8),
       if (allCampaigns[index].campaignStatus != 'Completed')
         Column(
@@ -660,10 +678,9 @@ class _CampaignListView extends State<CampaignListView> {
           ],
         ),
       */
-    ],
-  ),
-),
-
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),

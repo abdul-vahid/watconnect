@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/models/tags_list_model.dart';
@@ -90,33 +91,50 @@ class _TagsListViewState extends State<TagsListView> {
                 ),
                 prefixIcon: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Stack(
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.filter_list,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          _showFilterBottomSheet(context);
-                        },
+                  child: GestureDetector(
+                    onTap: () {
+                      _showFilterBottomSheet(context);
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      child: Stack(
+                        clipBehavior: Clip.none, // ✅ Important: Allow overflow
+                        children: [
+                          const Positioned(
+                            left: 10,
+                            top: 10,
+                            child: Icon(
+                              Icons.filter_list,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              size: 22,
+                            ),
+                          ),
+                          if (selectTagList.isNotEmpty)
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: const BoxDecoration(
+                                  color: AppColor.navBarIconColor,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  selectTagList.length > 9
+                                      ? "9+"
+                                      : "${selectTagList.length}",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                      // selectleadList.isEmpty
-                      // ? const SizedBox()
-                      // : Container(
-                      //     decoration: const BoxDecoration(
-                      //         color: AppColor.navBarIconColor,
-                      //         shape: BoxShape.circle),
-                      //     child: Padding(
-                      //       padding: const EdgeInsets.all(8.0),
-                      //       child: Text(
-                      //         "${selectleadList.length}",
-                      //         style: const TextStyle(color: Colors.white),
-                      //       ),
-                      //     ),
-                      //   )
-                    ],
+                    ),
                   ),
                 ),
                 prefixIconConstraints: const BoxConstraints(minWidth: 40),
@@ -505,13 +523,14 @@ class _TagsListViewState extends State<TagsListView> {
                                   color: Colors.grey,
                                 ),
                               ),
+                              chipDisplay: MultiSelectChipDisplay.none(),
                               onConfirm: (List<String> selected) {
                                 setState(() {
                                   // Update selectleadList with the confirmed selections
                                   selectTagList = selected;
                                 });
                               },
-                              initialValue: const [],
+                              initialValue: selectTagList,
                             ),
                             const SizedBox(height: 16),
                             Wrap(
@@ -564,11 +583,27 @@ class _TagsListViewState extends State<TagsListView> {
                               },
                             );
                             Navigator.pop(context);
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              setState(() {
+                                selectTagList = [];
+                                allTagsList = tempTagsList;
+                              });
+                            });
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Filters cleared'),
+                                backgroundColor: Colors.grey,
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColor.cardsColor,
                             padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
+                              vertical: 10,
+                              horizontal: 20,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -585,29 +620,70 @@ class _TagsListViewState extends State<TagsListView> {
                           width: 8,
                         ),
                         ElevatedButton(
-                          onPressed: () {
-                            print("selectTagList:::  ::   $selectTagList");
-                            allTagsList = [];
-                            _applyFilter(selectTagList);
+                          onPressed: selectTagList.isEmpty
+                              ? null // ✅ Disabled when no filter selected
+                              : () {
+                                  print(
+                                      "selectTagList:::  ::   $selectTagList");
+                                  allTagsList = [];
+                                  _applyFilter(selectTagList);
 
-                            setState(() {});
-                            Navigator.pop(context);
-                            // _filterLeads(selectCampList);
-                          },
+                                  // Close keyboard if open
+                                  FocusScope.of(context).unfocus();
+
+                                  // Show success message
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Applied ${selectTagList.length} filter(s)',
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
+                                      backgroundColor: AppColor.navBarIconColor,
+                                      duration: const Duration(seconds: 1),
+                                    ),
+                                  );
+
+                                  setState(() {});
+                                  Navigator.pop(context);
+                                },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.cardsColor,
+                            backgroundColor: selectTagList.isEmpty
+                                ? Colors.grey.shade400 // ✅ Gray when disabled
+                                : AppColor.cardsColor,
+                            foregroundColor: selectTagList.isEmpty
+                                ? Colors.white.withOpacity(0.7)
+                                : Colors.white,
                             padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
+                              vertical: 10, // ✅ Increase padding slightly
+                              horizontal: 20,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text(
-                            'Apply Filters',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (selectTagList.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 6.0),
+                                  child: Text(
+                                    '(${selectTagList.length})',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              const Text(
+                                'Apply Filters',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
