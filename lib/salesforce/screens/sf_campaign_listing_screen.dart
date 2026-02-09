@@ -378,165 +378,180 @@ class _SfCampaignScreenState extends State<SfCampaignScreen> {
 
   void _showFilterBottomSheet(BuildContext context) {
     showModalBottomSheet(
-        context: context,
-        useSafeArea: true,
-        isScrollControlled: true,
-        enableDrag: false,
-        builder: (BuildContext context) {
-          return Consumer<SfcampaignController>(
-              builder: (context, campController, child) {
-            return Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      enableDrag: false,
+      builder: (BuildContext context) {
+        return Consumer<SfcampaignController>(
+          builder: (context, campController, child) {
+            // चेक करें कि क्या कोई फिल्टर चुना गया है
+            final hasSelectedFilters =
+                campController.campaignStatusList.isNotEmpty;
+
+            return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(15)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: AppColor.navBarIconColor,
-                                borderRadius: BorderRadius.circular(8)),
-                            height: 40,
-                            width: 350,
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Center(
-                                child: Text(
-                                  'Campaign Status Filter',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color:
-                                          Color.fromARGB(255, 255, 255, 255)),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColor.navBarIconColor,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                height: 40,
+                                width: 350,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Center(
+                                    child: Text(
+                                      'Campaign Status Filter',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color:
+                                            Color.fromARGB(255, 255, 255, 255),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        MultiSelectDialogField<String>(
+                          items: [
+                            'All',
+                            'In Progress',
+                            'Completed',
+                            'Pending',
+                          ].map((e) => MultiSelectItem<String>(e, e)).toList(),
+                          title: const Flexible(
+                            child: Text(
+                              "Select Campaign Status",
+                              style: TextStyle(fontSize: 18),
+                            ),
                           ),
-                        )
+                          buttonText: const Text("Select Campaign Status"),
+                          searchable: true,
+                          dialogWidth: 300,
+                          dialogHeight: 250,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          onConfirm: (List<String> selected) {
+                            campController.setCampStatusList(selected);
+                            // State को update करने के लिए setState call करें
+                            setState(() {});
+                          },
+                          chipDisplay: MultiSelectChipDisplay.none(),
+                          initialValue: campController.campaignStatusList,
+                        ),
+                        const SizedBox(height: 16),
+                        // Wrap widget to display selected chips
+                        if (campController.campaignStatusList.isNotEmpty) ...[
+                          Wrap(
+                            spacing: 8.0,
+                            children: campController.campaignStatusList
+                                .map((selectedItem) {
+                              return Chip(
+                                label: Text(selectedItem),
+                                deleteIcon: const Icon(Icons.close),
+                                onDeleted: () {
+                                  campController
+                                      .removeFromCampStatusList(selectedItem);
+                                  setState(() {});
+                                },
+                                backgroundColor: Colors.blue.withOpacity(0.2),
+                                labelStyle: const TextStyle(color: Colors.blue),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        const SizedBox(height: 25),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                campController.resetCampStatusList();
+                                campController.filterCamp();
+                                Navigator.pop(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColor.cardsColor,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Clear Filters',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            // Show Apply Filters button with conditional background color
+                            ElevatedButton(
+                              onPressed: hasSelectedFilters
+                                  ? () {
+                                      campController.filterCamp();
+                                      Navigator.pop(context);
+                                    }
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: hasSelectedFilters
+                                    ? AppColor.cardsColor
+                                    : Colors.grey, // Disabled color
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Apply Filters',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 25),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    MultiSelectDialogField<String>(
-                      items: [
-                        'All',
-                        'In Progress',
-                        'Completed',
-                        'Pending',
-                      ].map((e) => MultiSelectItem<String>(e, e)).toList(),
-                      title: const Flexible(
-                        child: Text(
-                          "Select Campaign Status",
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ),
-                      buttonText: const Text("Select Campaign Status"),
-                      searchable: true,
-                      dialogWidth: 300,
-                      dialogHeight: 250,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.grey,
-                        ),
-                      ),
-                      onConfirm: (List<String> selected) {
-                        campController.setCampStatusList(selected);
-                        // Update selectleadList with the confirmed selections
-                        // selectleadList = selected;
-                      },
-                      chipDisplay: MultiSelectChipDisplay.none(),
-                      initialValue: const [],
-                    ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8.0,
-                      children:
-                          campController.campaignStatusList.map((selectedItem) {
-                        return Chip(
-                          label: Text(selectedItem),
-                          deleteIcon: const Icon(Icons.close),
-                          onDeleted: () {
-                            campController
-                                .removeFromCampStatusList(selectedItem);
-                          },
-                          backgroundColor: Colors.blue.withOpacity(0.2),
-                          labelStyle: const TextStyle(color: Colors.blue),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(
-                      height: 25,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            campController.resetCampStatusList();
-                            campController.filterCamp();
-
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.cardsColor,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text(
-                            'Clear Filters',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            campController.filterCamp();
-                            Navigator.pop(context);
-                            // Navigator.of(context).pop();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.cardsColor,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text(
-                            'Apply Filters',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 25,
-                    )
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
-          });
-        });
+          },
+        );
+      },
+    );
   }
 }
 

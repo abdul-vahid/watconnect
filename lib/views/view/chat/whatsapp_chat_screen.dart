@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_sound/public/flutter_sound_player.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -36,6 +37,7 @@ import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/view_models/wallet_controller.dart';
 import 'package:whatsapp/views/view/call/call_screen.dart';
 import 'package:whatsapp/views/view/lead_detail_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:whatsapp/views/widgets/chat_msg_tile.dart';
 import 'package:whatsapp/views/widgets/chat_socket_manager.dart';
@@ -140,6 +142,38 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       scrollToBottom();
     });
+  }
+
+  Future<void> _launchWhatsApp(String phoneNumber) async {
+    final url = 'https://wa.me/$phoneNumber';
+
+    final cleanedPhoneNumber =
+        phoneNumber.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(' WhatsApp: $phoneNumber')),
+      );
+    }
+  }
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final cleanedPhoneNumber =
+        phoneNumber.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    final telUrl = 'tel:$cleanedPhoneNumber';
+    final wtaiUrl = 'wtai://wp/mc;$cleanedPhoneNumber';
+
+    if (await canLaunch(telUrl)) {
+      await launch(telUrl);
+    } else if (await canLaunch(wtaiUrl)) {
+      await launch(wtaiUrl);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('PHONE: $phoneNumber')),
+      );
+    }
   }
 
   setTemplteEmpty() {
@@ -355,6 +389,260 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
             const SizedBox(
               height: 15,
             ),
+            // Expanded(
+            //   child: Container(
+            //     decoration: const BoxDecoration(
+            //       color: Colors.white,
+            //       borderRadius: BorderRadius.only(
+            //         topLeft: Radius.circular(30),
+            //         topRight: Radius.circular(30),
+            //       ),
+            //     ),
+            //     child: Column(
+            //       children: [
+            //         SizedBox(
+            //           width: double.infinity,
+            //           child: Padding(
+            //             padding: const EdgeInsets.symmetric(
+            //                 horizontal: 8, vertical: 4),
+            //             child: Row(
+            //               children: [
+            //                 GestureDetector(
+            //                   onTap: () {
+            //                     // 导航到 LeadDetailView 页面
+            //                     Navigator.push(
+            //                       context,
+            //                       MaterialPageRoute(
+            //                         builder: (context) => LeadDetailView(
+            //                           model: widget.model,
+            //                         ),
+            //                       ),
+            //                     );
+            //                   },
+            //                   child: Expanded(
+            //                     child: InkWell(
+            //                       onTap: () async {
+            //                         if (widget.model == null) return;
+
+            //                         final result = await Navigator.push(
+            //                           context,
+            //                           MaterialPageRoute(
+            //                             builder: (context) => LeadDetailView(
+            //                               model: widget.model,
+            //                             ),
+            //                           ),
+            //                         );
+
+            //                         if (result == true) {
+            //                           Navigator.pop(context, true);
+            //                         }
+            //                       },
+            //                       child: Row(
+            //                         children: [
+            //                           const CircleAvatar(
+            //                             backgroundImage: NetworkImage(
+            //                               'https://www.w3schools.com/w3images/avatar2.png',
+            //                             ),
+            //                           ),
+            //                           const SizedBox(width: 10),
+            //                           Expanded(
+            //                             child: Column(
+            //                               crossAxisAlignment:
+            //                                   CrossAxisAlignment.start,
+            //                               children: [
+            //                                 Text(
+            //                                   widget.leadName ?? "",
+            //                                   overflow: TextOverflow.ellipsis,
+            //                                   style: const TextStyle(
+            //                                     fontFamily: AppFonts.medium,
+            //                                     color: Color.fromARGB(
+            //                                         255, 59, 52, 52),
+            //                                   ),
+            //                                 ),
+            //                                 Text(
+            //                                   widget.wpnumber ?? "",
+            //                                   overflow: TextOverflow.ellipsis,
+            //                                   style: const TextStyle(
+            //                                     fontFamily: AppFonts.medium,
+            //                                     color: Color.fromARGB(
+            //                                         255, 59, 52, 52),
+            //                                   ),
+            //                                 ),
+            //                                 // Show archive indicator based on local state
+            //                                 if (_isArchived)
+            //                                   const Row(
+            //                                     children: [
+            //                                       Icon(Icons.archive,
+            //                                           size: 12,
+            //                                           color: Colors.grey),
+            //                                       SizedBox(width: 4),
+            //                                       Text(
+            //                                         'Archived',
+            //                                         style: TextStyle(
+            //                                           fontSize: 11,
+            //                                           color: Colors.grey,
+            //                                           fontStyle:
+            //                                               FontStyle.italic,
+            //                                         ),
+            //                                       ),
+            //                                     ],
+            //                                   ),
+            //                               ],
+            //                             ),
+            //                           ),
+            //                         ],
+            //                       ),
+            //                     ),
+            //                   ),
+            //                 ),
+            //                 if (msgController.msgToDelete.isNotEmpty) ...[
+            //                   IconButton(
+            //                     icon:
+            //                         const Icon(Icons.copy, color: Colors.black),
+            //                     onPressed: () {
+            //                       _copyMultipleMessages();
+            //                     },
+            //                   ),
+            //                   IconButton(
+            //                     icon: const Icon(Icons.delete,
+            //                         color: Colors.black),
+            //                     onPressed: () {
+            //                       _showSimpleDialog("");
+            //                     },
+            //                   ),
+            //                 ],
+            //                 PopupMenuButton<String>(
+            //                   icon: const Icon(Icons.more_vert,
+            //                       color: Colors.black),
+            //                   onSelected: (value) async {
+            //                     final phoneNumber = widget.wpnumber;
+
+            //                     if (value == 'Clear Chat') {
+            //                       _showDeleteDialog();
+            //                     } else if (value == 'Archive Chat' ||
+            //                         value == 'Unarchive Chat') {
+            //                       await _toggleArchiveStatus();
+            //                     } else if (value == 'Open in WhatsApp') {
+            //                       _launchWhatsApp(phoneNumber!);
+            //                     } else if (value == 'Call') {
+            //                       _makePhoneCall(phoneNumber!);
+            //                     }
+            //                   },
+            //                   itemBuilder: (context) {
+            //                     return [
+            //                       PopupMenuItem<String>(
+            //                         value: _isArchived
+            //                             ? 'Unarchive Chat'
+            //                             : 'Archive Chat',
+            //                         child: Text(_isArchived
+            //                             ? 'Unarchive Chat'
+            //                             : 'Archive Chat'),
+            //                       ),
+            //                       if (allMessages.isNotEmpty)
+            //                         const PopupMenuItem<String>(
+            //                           value: 'Clear Chat',
+            //                           child: Text('Clear Chat'),
+            //                         ),
+            //                       const PopupMenuItem<String>(
+            //                         value: 'Open in WhatsApp',
+            //                         child: Row(
+            //                           children: [
+            //                             FaIcon(FontAwesomeIcons.whatsapp,
+            //                                 color: Colors.green),
+            //                             SizedBox(width: 8),
+            //                             Text('Open in WhatsApp'),
+            //                           ],
+            //                         ),
+            //                       ),
+            //                       const PopupMenuItem<String>(
+            //                         value: 'Call',
+            //                         child: Row(
+            //                           children: [
+            //                             Icon(Icons.phone, color: Colors.blue),
+            //                             SizedBox(width: 8),
+            //                             Text('Call'),
+            //                           ],
+            //                         ),
+            //                       ),
+            //                     ];
+            //                   },
+            //                 ),
+            //               ],
+            //             ),
+            //           ),
+            //         ),
+            //         const Divider(),
+            //         chatLoader
+            //             ? const Expanded(
+            //                 child: Center(child: CircularProgressIndicator()))
+            //             : allMessages.isEmpty
+            //                 ? const Expanded(
+            //                     child: Center(
+            //                     child: Text(
+            //                       "No Chats Available...",
+            //                       style: TextStyle(
+            //                           fontFamily: AppFonts.medium,
+            //                           fontSize: 16),
+            //                     ),
+            //                   ))
+            //                 : Expanded(
+            //                     child: NotificationListener<ScrollNotification>(
+            //                       onNotification: (scrollNotification) {
+            //                         if (scrollNotification
+            //                             is ScrollEndNotification) {
+            //                           _lastMessageCount = allMessages.length;
+            //                         }
+            //                         return false;
+            //                       },
+            //                       child: ListView.builder(
+            //                         controller: _scrollController,
+            //                         itemCount: allMessages.length,
+            //                         itemBuilder: (context, index) {
+            //                           final message = allMessages[index];
+            //                           final previousMessage = index > 0
+            //                               ? allMessages[index - 1]
+            //                               : null;
+
+            //                           return message.category ==
+            //                                   "AUTHENTICATION"
+            //                               ? const SizedBox()
+            //                               : ConstrainedBox(
+            //                                   constraints: const BoxConstraints(
+            //                                       minHeight: 0),
+            //                                   child: Padding(
+            //                                     padding: const EdgeInsets.only(
+            //                                         bottom: 8.0),
+            //                                     child: Container(
+            //                                       color: msgController
+            //                                               .msgToDelete
+            //                                               .contains(
+            //                                                   allMessages[index]
+            //                                                       .id)
+            //                                           ? Colors.grey.shade300
+            //                                           : Colors.transparent,
+            //                                       child: ChatMessageTile(
+            //                                         message: message,
+            //                                         previousMessage:
+            //                                             previousMessage,
+            //                                         userName: userName,
+            //                                         tenetCode: TenetCode,
+            //                                         onTap: msgController
+            //                                             .updateDeleteMsgList,
+            //                                         selectedMessages:
+            //                                             msgController
+            //                                                 .msgToDelete,
+            //                                       ),
+            //                                     ),
+            //                                   ),
+            //                                 );
+            //                         },
+            //                       ),
+            //                     ),
+            //                   )
+            //       ],
+            //     ),
+            //   ),
+            // ),
             Expanded(
               child: Container(
                 decoration: const BoxDecoration(
@@ -375,21 +663,19 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                           children: [
                             Expanded(
                               child: InkWell(
-                                onTap: () async {
-                                  if (widget.model == null) return;
+                                onTap: () {
+                                  if (widget.model == null) {
+                                    return;
+                                  }
 
-                                  final result = await Navigator.push(
+                                  Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => LeadDetailView(
-                                        model: widget.model,
+                                        model: widget.model!,
                                       ),
                                     ),
                                   );
-
-                                  if (result == true) {
-                                    Navigator.pop(context, true);
-                                  }
                                 },
                                 child: Row(
                                   children: [
@@ -405,7 +691,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            widget.leadName ?? "",
+                                            widget.leadName ?? "Unnamed",
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                               fontFamily: AppFonts.medium,
@@ -413,7 +699,16 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                                   255, 59, 52, 52),
                                             ),
                                           ),
-                                          // Show archive indicator based on local state
+                                          Text(
+                                            widget.wpnumber ??
+                                                "No phone number",
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontFamily: AppFonts.medium,
+                                              color: Color.fromARGB(
+                                                  255, 59, 52, 52),
+                                            ),
+                                          ),
                                           if (_isArchived)
                                             const Row(
                                               children: [
@@ -439,7 +734,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                               ),
                             ),
 
-                            // Copy and Delete buttons when messages are selected
+                            // Action buttons area
                             if (msgController.msgToDelete.isNotEmpty) ...[
                               IconButton(
                                 icon:
@@ -457,18 +752,47 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                               ),
                             ],
 
+                            // Menu button
                             PopupMenuButton<String>(
                               icon: const Icon(Icons.more_vert,
                                   color: Colors.black),
                               onSelected: (value) async {
+                                final phoneNumber = widget.wpnumber;
+
                                 if (value == 'Clear Chat') {
                                   _showDeleteDialog();
                                 } else if (value == 'Archive Chat' ||
                                     value == 'Unarchive Chat') {
                                   await _toggleArchiveStatus();
+                                } else if (value == 'Open in WhatsApp') {
+                                  if (phoneNumber != null &&
+                                      phoneNumber.isNotEmpty) {
+                                    _launchWhatsApp(phoneNumber);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text('Phone number is empty')),
+                                    );
+                                  }
+                                } else if (value == 'Call') {
+                                  if (phoneNumber != null &&
+                                      phoneNumber.isNotEmpty) {
+                                    _makePhoneCall(phoneNumber);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text('Phone number is empty')),
+                                    );
+                                  }
                                 }
                               },
                               itemBuilder: (context) {
+                                final phoneNumber = widget.wpnumber;
+                                final hasPhoneNumber = phoneNumber != null &&
+                                    phoneNumber.isNotEmpty;
+
                                 return [
                                   PopupMenuItem<String>(
                                     value: _isArchived
@@ -483,6 +807,38 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                       value: 'Clear Chat',
                                       child: Text('Clear Chat'),
                                     ),
+                                  PopupMenuItem<String>(
+                                    value: 'Open in WhatsApp',
+                                    enabled: hasPhoneNumber,
+                                    child: Row(
+                                      children: [
+                                        FaIcon(FontAwesomeIcons.whatsapp,
+                                            color: hasPhoneNumber
+                                                ? Colors.green
+                                                : Colors.grey),
+                                        const SizedBox(width: 8),
+                                        Text(hasPhoneNumber
+                                            ? 'Open in WhatsApp'
+                                            : 'No phone number'),
+                                      ],
+                                    ),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    value: 'Call',
+                                    enabled: hasPhoneNumber,
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.phone,
+                                            color: hasPhoneNumber
+                                                ? Colors.blue
+                                                : Colors.grey),
+                                        const SizedBox(width: 8),
+                                        Text(hasPhoneNumber
+                                            ? 'Call'
+                                            : 'No phone number'),
+                                      ],
+                                    ),
+                                  ),
                                 ];
                               },
                             ),
@@ -490,7 +846,10 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                         ),
                       ),
                     ),
+
                     const Divider(),
+
+                    // Chat content area
                     chatLoader
                         ? const Expanded(
                             child: Center(child: CircularProgressIndicator()))
@@ -562,6 +921,8 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                 ),
               ),
             ),
+
+// Message input area (assuming this is your existing method)
             _buildMessageInputArea(),
           ],
         ),

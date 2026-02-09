@@ -30,6 +30,7 @@ class RecentChatView extends StatefulWidget {
   @override
   State<RecentChatView> createState() => _RecentChatViewState();
 }
+
 class _RecentChatViewState extends State<RecentChatView> {
   final List<Color> tagColors = [
     Colors.blue,
@@ -1490,6 +1491,8 @@ class _RecentChatViewState extends State<RecentChatView> {
                     ],
                   ),
                   const Divider(height: 20),
+
+                  // Selected Tags Preview
                   if (selectedFilterTagIds.isNotEmpty)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1565,6 +1568,40 @@ class _RecentChatViewState extends State<RecentChatView> {
                         const SizedBox(height: 16),
                       ],
                     ),
+
+                  // Selection Instructions
+                  if (selectedFilterTagIds.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.info_outline,
+                            color: Colors.blue.shade700,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'Select at least one label to enable Apply Filter',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  const SizedBox(height: 12),
+
+                  // Label Selection Header
                   const Text(
                     'Select Labels to Filter:',
                     style: TextStyle(
@@ -1573,6 +1610,8 @@ class _RecentChatViewState extends State<RecentChatView> {
                     ),
                   ),
                   const SizedBox(height: 8),
+
+                  // Labels List
                   Expanded(
                     child: allUniqueTags.isEmpty
                         ? const Center(
@@ -1648,17 +1687,38 @@ class _RecentChatViewState extends State<RecentChatView> {
                           ),
                   ),
                   const SizedBox(height: 10),
+
+                  // Action Buttons
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
+                            // Clear all filters and update parent state
                             setState(() {
                               selectedTagsForFilter.clear();
                               isTagFilterActive = false;
                               allRecentChats = tempLeadModelList;
+
+                              // Also clear the local selected tags in bottom sheet
+                              selectedFilterTagIds.clear();
                             });
+
+                            // Call callback to update parent widget if needed
+                            // if (widget.onFilterCleared != null) {
+                            //   widget.onFilterCleared!();
+                            // }
+
+                            // Navigate back
                             Navigator.pop(context);
+
+                            // Show success message
+                            EasyLoading.showSuccess('Filter cleared');
+
+                            // Refresh the parent widget
+                            if (mounted) {
+                              setState(() {});
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey.shade200,
@@ -1681,32 +1741,41 @@ class _RecentChatViewState extends State<RecentChatView> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              selectedTagsForFilter = allUniqueTags
-                                  .where((tag) =>
-                                      selectedFilterTagIds.contains(tag['id']))
-                                  .toList();
-                              isTagFilterActive =
-                                  selectedTagsForFilter.isNotEmpty;
-                              _applyTagFilter();
-                            });
-                            Navigator.pop(context);
-                          },
+                          onPressed: selectedFilterTagIds.isEmpty
+                              ? null // Disable button when no tags selected
+                              : () {
+                                  setState(() {
+                                    selectedTagsForFilter = allUniqueTags
+                                        .where((tag) => selectedFilterTagIds
+                                            .contains(tag['id']))
+                                        .toList();
+                                    isTagFilterActive =
+                                        selectedTagsForFilter.isNotEmpty;
+                                    _applyTagFilter();
+                                  });
+                                  Navigator.pop(context);
+                                },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.navBarIconColor,
-                            foregroundColor: Colors.white,
+                            backgroundColor: selectedFilterTagIds.isEmpty
+                                ? Colors.grey.shade300 // Disabled color
+                                : AppColor.navBarIconColor,
+                            foregroundColor: selectedFilterTagIds.isEmpty
+                                ? Colors.grey.shade600 // Disabled text color
+                                : Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Apply Filter',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
+                              color: selectedFilterTagIds.isEmpty
+                                  ? Colors.grey.shade600
+                                  : Colors.white,
                             ),
                           ),
                         ),

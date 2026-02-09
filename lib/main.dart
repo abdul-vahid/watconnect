@@ -7915,6 +7915,10 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  String _normalizeObject(String value) {
+    return value.toLowerCase().replaceAll('__c', '');
+  }
+
   String _extractObjectTypeFromUrl(String url) {
     try {
       debug("🏷️ Extracting object type from URL: $url");
@@ -7924,23 +7928,55 @@ class _MyAppState extends State<MyApp> {
         List<String> segments = uri.pathSegments;
 
         debug("  All segments: $segments");
-
         if (segments.length >= 3) {
           for (int i = 0; i < segments.length - 2; i++) {
             if (segments[i].toLowerCase() == "chat" &&
                 i + 1 < segments.length) {
-              String objectType = segments[i + 1].toLowerCase();
-              // debug(
-              //     "  Found object type in chat/object/phone pattern: $objectType");
+              String rawObject = segments[i + 1];
+              String objectType = _normalizeObject(rawObject);
 
-              if (objectType == "lead")
-                return "lead";
-              else if (objectType == "contact")
-                return "contact";
-              else if (objectType == "opportunity") return "opportunity";
+              if (rawObject.endsWith('__c')) {
+                return rawObject;
+              }
+              // String objectType = _normalizeObject(segments[i + 1]);
+
+              if (objectType == "lead") return "lead";
+              if (objectType == "contact") return "contact";
+              if (objectType == "opportunity") return "opportunity";
             }
           }
         }
+
+        if (segments.isNotEmpty) {
+          String firstRaw = segments[0];
+
+          if (firstRaw.endsWith('__c')) {
+            return firstRaw;
+          }
+
+          String firstSegment = _normalizeObject(firstRaw);
+
+          if (firstSegment == "lead") return "lead";
+          if (firstSegment == "contact") return "contact";
+          if (firstSegment == "opportunity") return "opportunity";
+        }
+
+        // if (segments.length >= 3) {
+        //   for (int i = 0; i < segments.length - 2; i++) {
+        //     if (segments[i].toLowerCase() == "chat" &&
+        //         i + 1 < segments.length) {
+        //       String objectType = segments[i + 1].toLowerCase();
+        //       // debug(
+        //       //     "  Found object type in chat/object/phone pattern: $objectType");
+
+        //       if (objectType == "lead")
+        //         return "lead";
+        //       else if (objectType == "contact")
+        //         return "contact";
+        //       else if (objectType == "opportunity") return "opportunity";
+        //     }
+        //   }
+        // }
 
         if (segments.isNotEmpty) {
           String firstSegment = segments[0].toLowerCase();
@@ -8248,7 +8284,7 @@ class _MyAppState extends State<MyApp> {
       debug("  Navigation completed successfully!");
     } catch (e, stackTrace) {
       debug("  Navigation error: $e");
-      debug("Stack trace: $stackTrace");  
+      debug("Stack trace: $stackTrace");
       rethrow;
     }
   }

@@ -53,10 +53,8 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
     return Consumer<DashBoardController>(builder: (context, ref, child) {
       return FocusDetector(
         onFocusLost: () {
-          
           if (ref.configUnreadCountList.isNotEmpty) {
-            ref.drawerListUnreadCountApiCall(
-                type: ref.selectedTitle);
+            ref.drawerListUnreadCountApiCall(type: ref.selectedTitle);
           }
         },
         child: Scaffold(
@@ -116,6 +114,14 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
   }
 
   Future<void> _pullRefresh() async {
+    DashBoardController dbProvider = Provider.of(context, listen: false);
+
+    dbProvider.resetConfigStatusList();
+    dbProvider.filterConfig();
+    setState(() {
+      _messageFilter = 'All';
+    });
+
     return Future<void>.delayed(const Duration(seconds: 1));
   }
 
@@ -644,170 +650,185 @@ class _ConfigListingScreenState extends State<ConfigListingScreen> {
 
   void _showFilterBottomSheet(BuildContext context) {
     showModalBottomSheet(
-        context: context,
-        useSafeArea: true,
-        isScrollControlled: true,
-        enableDrag: false,
-        builder: (BuildContext context) {
-          return Consumer<DashBoardController>(
-              builder: (context, dashbrdController, child) {
-            return Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      enableDrag: false,
+      builder: (BuildContext context) {
+        return Consumer<DashBoardController>(
+          builder: (context, dashbrdController, child) {
+            // Local state for managing selections in the dialog
+            List<String> tempSelectedStatus =
+                List.from(dashbrdController.configStatusList);
+
+            return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(15)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: AppColor.navBarIconColor,
-                                borderRadius: BorderRadius.circular(8)),
-                            height: 40,
-                            width: 350,
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Center(
-                                child: Text(
-                                  'Status Filter',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color:
-                                          Color.fromARGB(255, 255, 255, 255)),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColor.navBarIconColor,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                height: 40,
+                                width: 350,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Center(
+                                    child: Text(
+                                      'Status Filter',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color:
+                                            Color.fromARGB(255, 255, 255, 255),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        MultiSelectDialogField<String>(
+                          items: [
+                            'New',
+                            'Contacted',
+                            'Under Discussion',
+                            'Follow-Up',
+                            "No Response",
+                            "Close Lost",
+                            "Qualified",
+                            "Closed Converted"
+                          ].map((e) => MultiSelectItem<String>(e, e)).toList(),
+                          title: const Flexible(
+                            child: Text(
+                              "Select Status",
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          ),
+                          buttonText: const Text("Select Status"),
+                          searchable: true,
+                          dialogWidth: 300,
+                          dialogHeight: 250,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.grey,
+                            ),
+                          ),
+                          onConfirm: (List<String> selected) {
+                            setState(() {
+                              tempSelectedStatus = selected;
+                            });
+                          },
+                          initialValue: tempSelectedStatus,
+                          chipDisplay: MultiSelectChipDisplay.none(),
+                        ),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8.0,
+                          children: tempSelectedStatus.map((selectedItem) {
+                            return Chip(
+                              label: Text(selectedItem),
+                              deleteIcon: const Icon(Icons.close),
+                              onDeleted: () {
+                                setState(() {
+                                  tempSelectedStatus.remove(selectedItem);
+                                });
+                              },
+                              backgroundColor: Colors.blue.withOpacity(0.2),
+                              labelStyle: const TextStyle(color: Colors.blue),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 25),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                dashbrdController.resetConfigStatusList();
+                                dashbrdController.filterConfig();
+                                Navigator.pop(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColor.cardsColor,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Clear Filters',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
-                          ),
-                        )
+                            const SizedBox(width: 10),
+                            ElevatedButton(
+                              onPressed: tempSelectedStatus.isEmpty
+                                  ? null // Disable button when no selection
+                                  : () {
+                                      dashbrdController.setConfigStatusList(
+                                          tempSelectedStatus);
+                                      dashbrdController.filterConfig();
+                                      Navigator.pop(context);
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: tempSelectedStatus.isEmpty
+                                    ? Colors.grey // Disabled color
+                                    : AppColor
+                                        .navBarIconColor, // Enabled color (blue)
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Apply Filters',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 25),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    MultiSelectDialogField<String>(
-                      items: [
-                        'All',
-                        'New',
-                        'Contacted',
-                        'Under Discussion',
-                        'Follow-Up',
-                        "No Response",
-                        "Close Lost",
-                        "Qualified",
-                        "Closed Converted"
-                      ].map((e) => MultiSelectItem<String>(e, e)).toList(),
-                      title: const Flexible(
-                        child: Text(
-                          "Select Status",
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ),
-                      buttonText: const Text("Select Leads Status"),
-                      searchable: true,
-                      dialogWidth: 300,
-                      dialogHeight: 250,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.grey,
-                        ),
-                      ),
-                      onConfirm: (List<String> selected) {
-                        dashbrdController.setConfigStatusList(selected);
-                        // Update selectleadList with the confirmed selections
-                        // selectleadList = selected;
-                      },
-                      initialValue: const [],
-                      chipDisplay: MultiSelectChipDisplay.none(),
-                    ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8.0,
-                      children: dashbrdController.configStatusList
-                          .map((selectedItem) {
-                        return Chip(
-                          label: Text(selectedItem),
-                          deleteIcon: const Icon(Icons.close),
-                          onDeleted: () {
-                            dashbrdController
-                                .removeFromConfigStatusList(selectedItem);
-                          },
-                          backgroundColor: Colors.blue.withOpacity(0.2),
-                          labelStyle: const TextStyle(color: Colors.blue),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(
-                      height: 25,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            dashbrdController.resetConfigStatusList();
-                            dashbrdController.filterConfig();
-
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.cardsColor,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text(
-                            'Clear Filters',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            dashbrdController.filterConfig();
-                            Navigator.pop(context);
-                            // Navigator.of(context).pop();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.cardsColor,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text(
-                            'Apply Filters',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 25,
-                    )
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
-          });
-        });
+          },
+        );
+      },
+    );
   }
 }
 

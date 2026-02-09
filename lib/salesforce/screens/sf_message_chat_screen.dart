@@ -7761,6 +7761,122 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     );
   }
 
+  Widget _buildFilePreview(ChatMessageController chatMsgController) {
+    if (chatMsgController.selectedFile == null) {
+      return const SizedBox();
+    }
+
+    File file = chatMsgController.selectedFile!;
+    String fileName = file.path.split('/').last;
+    String fileExtension = fileName.split('.').last.toLowerCase();
+
+    // Check file type
+    bool isImage = ['jpg', 'jpeg', 'png', 'gif'].contains(fileExtension);
+    bool isVideo = ['mp4', 'mov', 'avi', 'mkv'].contains(fileExtension);
+    bool isAudio = ['mp3', 'aac', 'wav', 'm4a'].contains(fileExtension);
+
+    return Container(
+      width: 40,
+      height: 40,
+      margin: const EdgeInsets.only(right: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: Colors.grey[200],
+      ),
+      child: Stack(
+        children: [
+          // Image Preview
+          if (isImage)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.file(
+                file,
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+              ),
+            ),
+
+          // Video Preview
+          if (isVideo)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                color: Colors.black,
+                child: const Center(
+                  child: Icon(
+                    Icons.play_arrow,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+
+          // Audio Preview
+          if (isAudio)
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.blue[100],
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.audio_file,
+                  color: Colors.blue,
+                  size: 20,
+                ),
+              ),
+            ),
+
+          // Document Preview
+          if (!isImage && !isVideo && !isAudio)
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.grey[300],
+              ),
+              child: Center(
+                child: Text(
+                  fileExtension.length > 3
+                      ? fileExtension.substring(0, 3).toUpperCase()
+                      : fileExtension.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+
+          // Close button to remove file
+          // Positioned(
+          //   top: -5,
+          //   right: -5,
+          //   child: InkWell(
+          //     onTap: () {
+          //       chatMsgController.setSelectedFile(null);
+          //     },
+          //     child: Container(
+          //       decoration: const BoxDecoration(
+          //         shape: BoxShape.circle,
+          //         color: Colors.red,
+          //       ),
+          //       padding: const EdgeInsets.all(2),
+          //       child: const Icon(
+          //         Icons.close,
+          //         size: 12,
+          //         color: Colors.white,
+          //       ),
+          //     ),
+          //   ),
+          // ),
+        ],
+      ),
+    );
+  }
+
   sendMsgRow() {
     return Consumer3<TemplateController, SfFileUploadController,
             ChatMessageController>(
@@ -7782,20 +7898,18 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
               Expanded(
                 child: Row(
                   children: [
+                    // Attachment button
                     IconButton(
-                        icon: const Icon(Icons.attach_file),
-                        onPressed: () {
-                          showPicker(context);
-                        }),
-                    chatMsgController.isDoc
-                        ? const Icon(Icons.edit_document)
-                        : chatMsgController.isImage
-                            ? const Icon(Icons.image)
-                            : chatMsgController.isVideo
-                                ? const Icon(Icons.videocam_rounded)
-                                : chatMsgController.isAudio
-                                    ? const Icon(Icons.mic)
-                                    : const SizedBox(),
+                      icon: const Icon(Icons.attach_file),
+                      onPressed: () {
+                        showPicker(context);
+                      },
+                    ),
+
+                    // File Preview (NEW) - shows actual file thumbnail
+                    _buildFilePreview(chatMsgController),
+
+                    // Text Field
                     Expanded(
                       child: TextField(
                         controller: msgController,
@@ -7803,19 +7917,22 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                         minLines: 1,
                         keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
-                            hintText: 'Type a message...',
-                            hintMaxLines: 1,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: const Color(0xffE6E6E6)),
+                          hintText: 'Type a message...',
+                          hintMaxLines: 1,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xffE6E6E6),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
+
+              // Voice Message Button
               Padding(
                 padding: const EdgeInsets.only(left: 4.0),
                 child: Listener(
@@ -7838,18 +7955,21 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                   ),
                 ),
               ),
+
+              // Template Button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: InkWell(
                   onTap: () async {
                     if (tempCtrl.getTempLoader) {
+                      return;
                     } else {
                       tempCtrl.setSelectedTemp(null);
                       tempCtrl.setSelectedTempName("Select");
-
                       tempCtrl.setSeletcedTempCate("ALL");
                       await tempCtrl.getTemplateApiCall(
-                          category: tempCtrl.selectedTempCategory);
+                        category: tempCtrl.selectedTempCategory,
+                      );
                       TemplatebottomSheetShow(context);
                     }
                   },
@@ -7859,34 +7979,37 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
-                        child: Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: tempCtrl.getTempLoader
-                          ? const SizedBox(
-                              height: 25,
-                              width: 25,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Icon(Icons.code, color: Colors.white),
-                    )),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: tempCtrl.getTempLoader
+                            ? const SizedBox(
+                                height: 25,
+                                width: 25,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.code, color: Colors.white),
+                      ),
+                    ),
                   ),
                 ),
               ),
+
+              // Send Button
               InkWell(
                 onTap: () async {
-                  Future.delayed(const Duration(milliseconds: 1000), () async {
-                    FocusScope.of(context).unfocus();
-                  });
+                  FocusScope.of(context).unfocus();
                   ChatMessageController chatMsgCtrl =
                       Provider.of(context, listen: false);
+
                   if (msgController.text.isNotEmpty &&
                       chatMsgCtrl.selectedFile == null) {
                     await sendMsg(msgController.text.trim());
-                  }
-                  if (chatMsgCtrl.selectedFile != null) {
-                    sendFile();
+                  } else if (chatMsgCtrl.selectedFile != null) {
+                    await sendFile();
+                  } else {
+                    EasyLoading.showToast("Type a message or select a file");
                   }
                 },
                 child: Container(
@@ -7895,19 +8018,20 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
-                      child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: chatMsgController.sendMsgLoader == true ||
-                            fileUploadController.fileUploadLoader == true
-                        ? const SizedBox(
-                            height: 25,
-                            width: 25,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.send_rounded, color: Colors.white),
-                  )),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: chatMsgController.sendMsgLoader == true ||
+                              fileUploadController.fileUploadLoader == true
+                          ? const SizedBox(
+                              height: 25,
+                              width: 25,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.send_rounded, color: Colors.white),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -7958,19 +8082,57 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     chatMsgController.resetMsgDeleteList();
   }
 
+  // Future<void> sendFile({bool isAudio = false}) async {
+  //   SfFileUploadController sfFileController =
+  //       Provider.of(context, listen: false);
+  //   ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
+  //   DashBoardController dbController = Provider.of(context, listen: false);
+  //   var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
+  //   var code = dbController.selectedContactInfo?.countryCode ?? "91";
+
+  //   if (chatMsgCtrl.selectedFile != null) {
+  //     await sfFileController.uploadFiledb(chatMsgCtrl.selectedFile!, code,
+  //         msgController.text.trim(), usrNumber);
+  //   }
+  //   msgController.clear();
+  // }
+
   Future<void> sendFile({bool isAudio = false}) async {
     SfFileUploadController sfFileController =
         Provider.of(context, listen: false);
     ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
     DashBoardController dbController = Provider.of(context, listen: false);
+
     var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
     var code = dbController.selectedContactInfo?.countryCode ?? "91";
 
     if (chatMsgCtrl.selectedFile != null) {
-      await sfFileController.uploadFiledb(chatMsgCtrl.selectedFile!, code,
-          msgController.text.trim(), usrNumber);
+      EasyLoading.show(status: 'Sending file...', dismissOnTap: false);
+
+      try {
+        await sfFileController.uploadFiledb(chatMsgCtrl.selectedFile!, code,
+            msgController.text.trim(), usrNumber);
+
+        chatMsgCtrl.setSelectedFile(null);
+
+        msgController.clear();
+
+        EasyLoading.dismiss();
+        EasyLoading.showSuccess('File sent!');
+
+        if (mounted) {
+          setState(() {});
+        }
+
+        Future.delayed(const Duration(seconds: 2), () {});
+      } catch (e) {
+        EasyLoading.dismiss();
+        debugPrint("❌ Error sending file: $e");
+        EasyLoading.showError('Failed to send file');
+      }
+    } else {
+      EasyLoading.showToast("No file selected");
     }
-    msgController.clear();
   }
 
   Future<void> connectSocket() async {
@@ -8023,7 +8185,6 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
             .build(),
       );
 
-      /// ✅ Connected
       socket!.onConnect((_) {
         print('✅ Connected to WebSocket');
         print('🆔 Socket ID: ${socket!.id}');
@@ -8493,8 +8654,8 @@ void reviewBottomSheetShow(BuildContext context, {bool fromCamp = false}) {
 
                                       if (fromCamp) {
                                         tempc.resetTempParamList();
-                                        sendCampTemp(
-                                            context, tempc.textControllers);
+                                        // sendCampTemp(
+                                        //     context, tempc.textControllers);
                                       } else {
                                         sendChatTemp(
                                             context, tempc.textControllers);
@@ -8531,6 +8692,62 @@ void reviewBottomSheetShow(BuildContext context, {bool fromCamp = false}) {
       });
 }
 
+// Future<void> sendChatTemp(
+//     context, List<TextEditingController> controllers) async {
+//   debug(" sending template to chat");
+//   TemplateController tempc = Provider.of(context, listen: false);
+//   var templateData = tempc.selectedTemplate;
+//   debug("templateDatatemplateData$templateData");
+//   DashBoardController dbController = Provider.of(context, listen: false);
+
+//   var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
+//   var code = dbController.selectedContactInfo?.countryCode ?? "91";
+//   var templateCategory = tempc.selectedTempCategory ?? "UTILITY";
+
+//   String userNumer = "$code$usrNumber";
+//   List<String> userInputs = controllers.map((e) => e.text.trim()).toList();
+//   ChatMessageController chatMsgController = Provider.of(context, listen: false);
+//   SfFileUploadController sfFileUploadController =
+//       Provider.of(context, listen: false);
+//   if (chatMsgController.selectedFile != null) {
+//     await sfFileUploadController
+//         .uploadFiledb(chatMsgController.selectedFile!, code, "", usrNumber,
+//             isFromTemplate: true)
+//         .then(
+//       (value) {
+//         print(
+//             "sfFileUploadController.fileDocId::::: ${sfFileUploadController.fileDocId}");
+//         print(
+//             "sfFileUploadController.filePubUrl,${sfFileUploadController.filePubUrl}");
+//         debug("sending template with file");
+//         tempc
+//             .sendTemplateApiCall(
+//                 tempId: templateData?.templateId ?? "",
+//                 usrNumber: userNumer,
+//                 params: userInputs,
+//                 docId: sfFileUploadController.fileDocId,
+//                 url: sfFileUploadController.filePubUrl,
+//                 mimetyp: sfFileUploadController.fileMimeType,
+//                 category: templateCategory)
+//             .then((onValue) {
+//           Navigator.pop(context);
+//         });
+//       },
+//     );
+//   } else {
+//     debug("sending template without file");
+//     tempc
+//         .sendTemplateApiCall(
+//             tempId: templateData?.templateId ?? "",
+//             usrNumber: userNumer,
+//             params: userInputs,
+//             category: templateCategory)
+//         .then((onValue) {
+//       Navigator.pop(context);
+//     });
+//   }
+// }
+
 Future<void> sendChatTemp(
     context, List<TextEditingController> controllers) async {
   debug(" sending template to chat");
@@ -8548,63 +8765,84 @@ Future<void> sendChatTemp(
   ChatMessageController chatMsgController = Provider.of(context, listen: false);
   SfFileUploadController sfFileUploadController =
       Provider.of(context, listen: false);
-  if (chatMsgController.selectedFile != null) {
-    await sfFileUploadController
-        .uploadFiledb(chatMsgController.selectedFile!, code, "", usrNumber,
-            isFromTemplate: true)
-        .then(
-      (value) {
-        print(
-            "sfFileUploadController.fileDocId::::: ${sfFileUploadController.fileDocId}");
-        print(
-            "sfFileUploadController.filePubUrl,${sfFileUploadController.filePubUrl}");
-        debug("sending template with file");
-        tempc
-            .sendTemplateApiCall(
-                tempId: templateData?.templateId ?? "",
-                usrNumber: userNumer,
-                params: userInputs,
-                docId: sfFileUploadController.fileDocId,
-                url: sfFileUploadController.filePubUrl,
-                mimetyp: sfFileUploadController.fileMimeType,
-                category: templateCategory)
-            .then((onValue) {
-          Navigator.pop(context);
-        });
-      },
-    );
-  } else {
-    debug("sending template without file");
-    tempc
-        .sendTemplateApiCall(
-            tempId: templateData?.templateId ?? "",
-            usrNumber: userNumer,
-            params: userInputs,
-            category: templateCategory)
-        .then((onValue) {
-      Navigator.pop(context);
-    });
+
+  // Reset file upload controller before starting
+  sfFileUploadController.resetFileUpload();
+
+  try {
+    if (chatMsgController.selectedFile != null) {
+      // First upload the file
+      await sfFileUploadController.uploadFiledb(
+        chatMsgController.selectedFile!,
+        code,
+        "",
+        usrNumber,
+        isFromTemplate: true,
+      );
+
+      // Check if upload was successful
+      if (sfFileUploadController.fileDocId == null ||
+          sfFileUploadController.filePubUrl == null) {
+        EasyLoading.showToast("File upload failed");
+        return;
+      }
+
+      debug("sending template with file");
+
+      // Send template with file information
+      await tempc
+          .sendTemplateApiCall(
+        tempId: templateData?.templateId ?? "",
+        usrNumber: userNumer,
+        params: userInputs,
+        docId: sfFileUploadController.fileDocId!,
+        url: sfFileUploadController.filePubUrl!,
+        mimetyp: sfFileUploadController.fileMimeType ?? "",
+        // fileName: chatMsgController.selectedFile?.path.split('/').last ?? "",
+        category: templateCategory,
+      )
+          .then((onValue) {
+        // Clear file after successful send
+        chatMsgController.setSelectedFile(null);
+        Navigator.pop(context);
+      });
+    } else {
+      debug("sending template without file");
+      await tempc
+          .sendTemplateApiCall(
+        tempId: templateData?.templateId ?? "",
+        usrNumber: userNumer,
+        params: userInputs,
+        category: templateCategory,
+      )
+          .then((onValue) {
+        Navigator.pop(context);
+      });
+    }
+  } catch (e) {
+    debugPrint("Error sending template: $e");
+    EasyLoading.showToast("Failed to send template");
   }
 }
 
-void sendCampTemp(context, List<TextEditingController> controllers) {
-  debug("sending template to campaign");
-  Navigator.pop(context);
-  TemplateController tempc = Provider.of(context, listen: false);
-  List<String> userInputs = controllers.map((e) => e.text.trim()).toList();
-  tempc.setTempParams(userInputs);
-  tempc.setCampTempController(tempc.selectedTempName);
+// void sendCampTemp(context, List<TextEditingController> controllers) {
+//   debug("sending template to campaign");
+//   Navigator.pop(context);
+//   TemplateController tempc = Provider.of(context, listen: false);
+//   List<String> userInputs = controllers.map((e) => e.text.trim()).toList();
+//   tempc.setTempParams(userInputs);
+//   tempc.setCampTempController(tempc.selectedTempName);
 
-  // TemplateController tempc = Provider.of(context, listen: false);
-  // var templateData = tempc.selectedTemplate;
-  // DashBoardController dbController = Provider.of(context, listen: false);
+//   // TemplateController tempc = Provider.of(context, listen: false);
+//   // var templateData = tempc.selectedTemplate;
+//   // DashBoardController dbController = Provider.of(context, listen: false);
 
-  // var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
-  // var code = dbController.selectedContactInfo?.countryCode ?? "91";
-  // String userNumer = "${code}${usrNumber}";
-  // List<String> userInputs = controllers.map((e) => e.text.trim()).toList();
-  // print("User Inputs: $userInputs");
-}
+//   // var usrNumber = dbController.selectedContactInfo?.whatsappNumber ?? "";
+//   // var code = dbController.selectedContactInfo?.countryCode ?? "91";
+//   // String userNumer = "${code}${usrNumber}";
+//   // List<String> userInputs = controllers.map((e) => e.text.trim()).toList();
+//   // print("User Inputs: $userInputs");
+// }
 
 Future<void> pickMedia(BuildContext context, String type) async {
   final chatMsgController =
