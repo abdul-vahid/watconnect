@@ -29,16 +29,11 @@ class SplashView extends StatefulWidget {
 class _SplashViewState extends State<SplashView> {
   @override
   void initState() {
-   
     super.initState();
     // registerToken();
     startTimer();
     // setupFirebase();
   }
-
-
-
-
 
   void startTimer() async {
     const duration = Duration(seconds: 3);
@@ -46,10 +41,9 @@ class _SplashViewState extends State<SplashView> {
   }
 
   void _isLoggedIn() async {
-
-
     String signature = await SmsAutoFill().getAppSignature;
-print(" for sms autofill this is right now for test>>>>>>>>>>>>>>>>>>>. $signature");
+    print(
+        " for sms autofill this is right now for test>>>>>>>>>>>>>>>>>>>. $signature");
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String sfAccessToken =
@@ -126,7 +120,4 @@ print(" for sms autofill this is right now for test>>>>>>>>>>>>>>>>>>>. $signatu
       ),
     );
   }
-
-
-
 }

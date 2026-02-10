@@ -7420,6 +7420,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                                 : Expanded(
                                     child: ListView.builder(
                                       controller: _scrollController,
+                                      key : const PageStorageKey<String>('chat_message_list'),
                                       itemCount: ref.chatHistoryList.length,
                                       itemBuilder: (context, index) {
                                         final item = ref.chatHistoryList[index];

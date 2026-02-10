@@ -174,19 +174,32 @@ class TemplateController extends ChangeNotifier {
       body["url"] = url;
       body["content_type"] = mimetyp;
     }
-
     final response = await NetworkService.makeRequest(
         url: apiUrl, method: 'POST', body: body);
-    print("response response ${response!.statusCode}");
 
-    if (response != null && response.statusCode == 200) {
+    if (response == null) {
+      debug("Error: Response is null");
+      setSentTempLoader(false);
+      return;
+    }
+
+    if (response.statusCode == 200) {
       debug("Template sent successfully");
       EasyLoading.showToast("Template Send Successfully");
-      ChatMessageController msgCtrl =
-          Provider.of(navigatorKey.currentContext!, listen: false);
-      await msgCtrl.messageHistoryApiCall(
-          userNumber: usrNumber, isFirstTime: false);
+
+      final context = navigatorKey.currentContext;
+      if (context != null) {
+        ChatMessageController msgCtrl =
+            Provider.of<ChatMessageController>(context, listen: false);
+        await msgCtrl.messageHistoryApiCall(
+            userNumber: usrNumber, isFirstTime: false);
+      } else {
+        debug("navigatorKey.currentContext is null, cannot fetch chat history");
+      }
+    } else {
+      debug("Error sending template: ${response.statusCode} ${response.body}");
     }
+
     setSentTempLoader(false);
     notify();
   }

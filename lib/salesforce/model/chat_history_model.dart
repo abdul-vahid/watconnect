@@ -17,39 +17,44 @@ class SfChatHistoryModel {
   String? templateId;
   String? id;
   String? publicUrl;
+  String? Delivery_Status;
 
-  SfChatHistoryModel(
-      {this.templateBody,
-      this.button,
-      this.templateName,
-      this.templateParams,
-      this.messageId,
-      this.createdDate,
-      this.name,
-      this.contentType,
-      this.attachmentUrl,
-      this.messageType,
-      this.message,
-      this.id,
-      this.templateId,
-      this.publicUrl});
+  SfChatHistoryModel({
+    this.templateBody,
+    this.button,
+    this.templateName,
+    this.templateParams,
+    this.messageId,
+    this.createdDate,
+    this.name,
+    this.contentType,
+    this.attachmentUrl,
+    this.messageType,
+    this.message,
+    this.id,
+    this.templateId,
+    this.publicUrl,
+    this.Delivery_Status,
+  });
 
   factory SfChatHistoryModel.fromJson(Map<String, dynamic> json) {
     return SfChatHistoryModel(
-        name: json['Name'] ?? "",
-        button: json['button'] ?? "",
-        templateBody: json['Tempalate_Body'] ?? "",
-        templateParams: json["Template_Params__r.Params_value__c"] ?? "",
-        templateName: json['Tempalate_Name'] ?? "",
-        messageId: json['Meta_Message_Id__c'] ?? "",
-        createdDate: json['CreatedDate'] ?? "",
-        contentType: json['content_type'] ?? "",
-        attachmentUrl: json['Attachment_URL__c'] ?? "",
-        messageType: json['Message_Type__c'] ?? "",
-        message: json['Message'] ?? "",
-        templateId: json['templateId'] ?? "",
-        id: json['Id'] ?? "",
-        publicUrl: json['Public_Url__c'] ?? "");
+      name: json['Name'] ?? "",
+      button: json['button'] ?? "",
+      templateBody: json['Tempalate_Body'] ?? "",
+      templateParams: json["Template_Params__r.Params_value__c"] ?? "",
+      templateName: json['Tempalate_Name'] ?? "",
+      messageId: json['Meta_Message_Id__c'] ?? "",
+      createdDate: json['CreatedDate'] ?? "",
+      contentType: json['content_type'] ?? "",
+      attachmentUrl: json['Attachment_URL__c'] ?? "",
+      messageType: json['Message_Type__c'] ?? "",
+      message: json['Message'] ?? "",
+      templateId: json['templateId'] ?? "",
+      id: json['Id'] ?? "",
+      publicUrl: json['Public_Url__c'] ?? "",
+      Delivery_Status: json['Delivery_Status'] ?? "",
+    );
   }
 
   List<ButtonItem> getParsedButtons() {
