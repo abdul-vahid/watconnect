@@ -18,6 +18,7 @@ class SfChatHistoryModel {
   String? id;
   String? publicUrl;
   String? Delivery_Status;
+  String? Error_Msg;
 
   SfChatHistoryModel({
     this.templateBody,
@@ -35,6 +36,7 @@ class SfChatHistoryModel {
     this.templateId,
     this.publicUrl,
     this.Delivery_Status,
+    this.Error_Msg,
   });
 
   factory SfChatHistoryModel.fromJson(Map<String, dynamic> json) {
@@ -54,6 +56,7 @@ class SfChatHistoryModel {
       id: json['Id'] ?? "",
       publicUrl: json['Public_Url__c'] ?? "",
       Delivery_Status: json['Delivery_Status'] ?? "",
+      Error_Msg: json['Error_Msg'] ?? "",
     );
   }
 

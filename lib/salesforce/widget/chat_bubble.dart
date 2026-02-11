@@ -481,9 +481,8 @@ class ChatBubble extends StatelessWidget {
                         ],
                       ),
                       child: Column(
-                        crossAxisAlignment: item.messageType == "Outgoing"
-                            ? CrossAxisAlignment.start
-                            : CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start, // align all to start
                         children: [
                           if (item.contentType?.isNotEmpty == true ||
                               item.attachmentUrl?.isNotEmpty == true)
@@ -534,6 +533,8 @@ class ChatBubble extends StatelessWidget {
                               ],
                             ),
                           const SizedBox(height: 4),
+
+                          // Row for Time & Delivery Status ONLY
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -547,11 +548,26 @@ class ChatBubble extends StatelessWidget {
                                       : Colors.grey[600],
                                 ),
                               ),
-                              const SizedBox(width: 6),
                               if (item.messageType == "Outgoing")
                                 _buildDeliveryStatusWithTime(item, currentTime),
+                              const SizedBox(width: 6),
                             ],
                           ),
+
+                          // Error Message BELOW the Row
+                          if (item.Error_Msg != null)
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                  maxWidth: 200), // optional width
+                              child: Text(
+                                item.Error_Msg!,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.red,
+                                ),
+                                softWrap: true,
+                              ),
+                            ),
                         ],
                       ),
                     ), /*
@@ -584,34 +600,31 @@ class ChatBubble extends StatelessWidget {
 
   Widget _buildDeliveryStatusWithTime(
       SfChatHistoryModel item, DateTime currentTime) {
-    // Get the delivery status from the item
     final deliveryStatus = item.Delivery_Status?.toLowerCase();
 
-    // Default single tick
     Widget statusWidget = const Icon(
       Icons.check,
-      size: 14, // ✅ थोड़ा बड़ा size (12 से 14)
+      size: 14,
       color: Colors.grey,
     );
 
-    // Check for specific status values
     if (deliveryStatus != null && deliveryStatus.isNotEmpty) {
       switch (deliveryStatus) {
         case 'read':
           statusWidget = SizedBox(
-            width: 20, // Fixed width for overlapping icons
+            width: 20,
             child: Stack(
               children: [
                 const Icon(
                   Icons.check,
-                  size: 14, // ✅ बड़ा size
+                  size: 14,
                   color: Colors.blue,
                 ),
                 Positioned(
-                  left: 8, // Overlap position
+                  left: 8,
                   child: const Icon(
                     Icons.check,
-                    size: 14, // ✅ बड़ा size
+                    size: 14,
                     color: Colors.blue,
                   ),
                 ),
@@ -627,14 +640,14 @@ class ChatBubble extends StatelessWidget {
               children: [
                 const Icon(
                   Icons.check,
-                  size: 14, // ✅ बड़ा size
+                  size: 14,
                   color: Colors.grey,
                 ),
                 Positioned(
                   left: 8,
                   child: const Icon(
                     Icons.check,
-                    size: 14, // ✅ बड़ा size
+                    size: 14,
                     color: Colors.grey,
                   ),
                 ),
@@ -646,7 +659,7 @@ class ChatBubble extends StatelessWidget {
         case 'sent':
           statusWidget = const Icon(
             Icons.check,
-            size: 14, // ✅ बड़ा size
+            size: 14,
             color: Colors.grey,
           );
           break;

@@ -10,6 +10,8 @@ import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/screens/confige_listing_screen.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/app_color.dart';
+import 'package:flutter_emoji/flutter_emoji.dart';
+import 'package:html_unescape/html_unescape.dart';
 
 class SfRecentChatScreen extends StatefulWidget {
   const SfRecentChatScreen({super.key});
@@ -19,6 +21,8 @@ class SfRecentChatScreen extends StatefulWidget {
 }
 
 class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
+  final parser = EmojiParser();
+  final unescape = HtmlUnescape();
   @override
   void initState() {
     DashBoardController dasbController = Provider.of(context, listen: false);
@@ -440,7 +444,8 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              drawerListItem.lastMsg ?? "",
+                              parser.emojify(unescape
+                                  .convert(drawerListItem.lastMsg ?? "")),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(

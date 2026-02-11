@@ -7420,7 +7420,8 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                                 : Expanded(
                                     child: ListView.builder(
                                       controller: _scrollController,
-                                      key : const PageStorageKey<String>('chat_message_list'),
+                                      key: const PageStorageKey<String>(
+                                          'chat_message_list'),
                                       itemCount: ref.chatHistoryList.length,
                                       itemBuilder: (context, index) {
                                         final item = ref.chatHistoryList[index];
@@ -8042,30 +8043,34 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
     });
   }
 
-  sendMsg(String msg) {
-    print("we are calling this:::  $msg");
+  Future<void> sendMsg(String msg) async {
     if (msg.trim().isEmpty) {
       EasyLoading.showToast("Type something.....",
           toastPosition: EasyLoadingToastPosition.center);
-    } else {
-      DashBoardController dbController = Provider.of(context, listen: false);
-
-      ChatMessageController messageController =
-          Provider.of(context, listen: false);
-      messageController.sendMessageApiCall(
-        msg: msg,
-        usrNumber: dbController.selectedContactInfo?.whatsappNumber ?? "",
-        code: dbController.selectedContactInfo?.countryCode ?? "91",
-      );
-      msgController.clear();
-
-      Future.delayed(const Duration(milliseconds: 100), () async {
-        _scrollToBottom();
-        FocusScope.of(context).unfocus();
-      });
-
-      // Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+      return;
     }
+
+    
+    ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
+
+    if (chatMsgCtrl.selectedFile != null) {
+      debugPrint("📝 File selected - skipping sendMsg");
+      return; 
+    }
+
+    DashBoardController dbController = Provider.of(context, listen: false);
+    ChatMessageController messageController =
+        Provider.of(context, listen: false);
+
+    await messageController.sendMessageApiCall(
+      msg: msg,
+      usrNumber: dbController.selectedContactInfo?.whatsappNumber ?? "",
+      code: dbController.selectedContactInfo?.countryCode ?? "91",
+    );
+
+    msgController.clear();
+    _scrollToBottom();
+    FocusScope.of(context).unfocus();
   }
 
   bool isSameDay(DateTime a, DateTime b) {

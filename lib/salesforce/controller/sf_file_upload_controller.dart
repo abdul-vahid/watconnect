@@ -282,7 +282,12 @@ class SfFileUploadController extends ChangeNotifier {
         final title = map['records']?[0]?['title'];
 
         if (title != null && title.toString().isNotEmpty) {
-          setPublicUrlId(title);
+          // setPublicUrlId(title);
+          final docId = map['records']?[0]?['id']?.toString();
+          if (docId != null && docId.isNotEmpty) {
+            setFileDocId(docId);
+            await setPublicUrlId(map['records'][0]['title']); // URL ke liye
+          }
         } else {
           log("❌ Title missing in response");
         }
@@ -310,10 +315,78 @@ class SfFileUploadController extends ChangeNotifier {
     }
   }
 
+//   Future<dynamic> uploadFile(File file, String code, String mesg, String numbr,
+//       {required bool isTemplate}) async {
+//     debug("uploadFileuploadFileuploadFile");
+//     setFileUploadLoader(true);
+//     final prefs = await SharedPreferences.getInstance();
+//     final token = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
+
+//     if (token.isEmpty) {
+//       debug("Missing token!");
+//       return null;
+//     }
+
+//     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+//     final url = Uri.parse(
+//       "${AppConstants.baseUrl}/api/webhook_template/documentId?whatsapp_setting_number=$busNum",
+//     );
+//     debug("upload file url::::::   $url");
+//     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
+//     final fileStream = http.ByteStream(file.openRead());
+//     final length = await file.length();
+//     final multipartFile = http.MultipartFile(
+//       'file',
+//       fileStream,
+//       length,
+//       filename: file.path.split('/').last,
+//       contentType: MediaType.parse(mimeType),
+//     );
+//     final request = http.MultipartRequest("POST", url)
+//       ..files.add(multipartFile)
+//       ..headers.addAll({
+//         "Authorization": token,
+//         // No need to add Content-Type for multipart
+//       });
+
+//     log("Uploading file to $url");
+
+//     final response = await request.send();
+//     final responseBody = await response.stream.bytesToString();
+//     debug("File uploaded successfully: webhook_template $responseBody");
+//     debug(
+//         "File uploaded successfully: webhook_template $responseBody.statusCode ${response.statusCode}");
+//     if (response.statusCode == 200) {
+//       debug("File uploaded successfully: webhook_template $responseBody");
+//       setFileUploadLoader(false);
+//       // debug("File uploaded successfully: webhook_template $responseBody");
+//       var mp = jsonDecode(responseBody);
+//       debug("mp['id']:sssssssss::::${mp}");
+//       debug("mp['id']::::::${mp['id']}");
+//       setFileDocId(mp['id']);
+//       if (!isTemplate) {
+//         // sendFileApiCall(code: code, fil: file, msg: mesg, usrNumber: numbr);
+//       }
+// // Template ke liye bhi file attach karni hai!
+//       sendFileApiCall(code: code, fil: file, msg: mesg, usrNumber: numbr);
+//       // if (isTemplate) {
+//       // } else {
+//       //   sendFileApiCall(code: code, fil: file, msg: mesg, usrNumber: numbr);
+//       // }
+
+//       return responseBody;
+//     } else {
+//       setFileUploadLoader(false);
+//       debug(
+//           "File upload failed: ${response.statusCode} - ${response.reasonPhrase}");
+//       return null;
+//     }
+//   }
   Future<dynamic> uploadFile(File file, String code, String mesg, String numbr,
       {required bool isTemplate}) async {
     debug("uploadFileuploadFileuploadFile");
     setFileUploadLoader(true);
+
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
 
@@ -326,10 +399,11 @@ class SfFileUploadController extends ChangeNotifier {
     final url = Uri.parse(
       "${AppConstants.baseUrl}/api/webhook_template/documentId?whatsapp_setting_number=$busNum",
     );
-    debug("upload file url::::::   $url");
+
     final mimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
     final fileStream = http.ByteStream(file.openRead());
     final length = await file.length();
+
     final multipartFile = http.MultipartFile(
       'file',
       fileStream,
@@ -337,39 +411,29 @@ class SfFileUploadController extends ChangeNotifier {
       filename: file.path.split('/').last,
       contentType: MediaType.parse(mimeType),
     );
+
     final request = http.MultipartRequest("POST", url)
       ..files.add(multipartFile)
-      ..headers.addAll({
-        "Authorization": token,
-        // No need to add Content-Type for multipart
-      });
-
-    log("Uploading file to $url");
+      ..headers.addAll({"Authorization": token});
 
     final response = await request.send();
     final responseBody = await response.stream.bytesToString();
-    debug("File uploaded successfully: webhook_template $responseBody");
-    debug(
-        "File uploaded successfully: webhook_template $responseBody.statusCode ${response.statusCode}");
+
     if (response.statusCode == 200) {
-      debug("File uploaded successfully: webhook_template $responseBody");
       setFileUploadLoader(false);
-      // debug("File uploaded successfully: webhook_template $responseBody");
       var mp = jsonDecode(responseBody);
-      debug("mp['id']:sssssssss::::${mp}");
-      debug("mp['id']::::::${mp['id']}");
       setFileDocId(mp['id']);
 
-      if (isTemplate) {
-      } else {
-        sendFileApiCall(code: code, fil: file, msg: mesg, usrNumber: numbr);
-      }
+      // ✅ YAHI SE TEXT + PDF EK SAATH JAYEGA!
+      sendFileApiCall(
+          code: code,
+          fil: file,
+          msg: mesg, // 🟢 USER KA TEXT YAHAN SE JAYE!
+          usrNumber: numbr);
 
       return responseBody;
     } else {
       setFileUploadLoader(false);
-      debug(
-          "File upload failed: ${response.statusCode} - ${response.reasonPhrase}");
       return null;
     }
   }

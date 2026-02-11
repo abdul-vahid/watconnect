@@ -535,14 +535,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                   const SizedBox(height: 4),
                                   SizedBox(
                                     width: 60,
-                                    child: Text(
-                                      model.contactname ?? '',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                          fontFamily: AppFonts.semiBold),
-                                    ),
+                                    child: Text("jh"),
                                   ),
                                 ],
                               ),
