@@ -8050,12 +8050,11 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
       return;
     }
 
-    
     ChatMessageController chatMsgCtrl = Provider.of(context, listen: false);
 
     if (chatMsgCtrl.selectedFile != null) {
       debugPrint("📝 File selected - skipping sendMsg");
-      return; 
+      return;
     }
 
     DashBoardController dbController = Provider.of(context, listen: false);
@@ -8479,6 +8478,7 @@ void reviewBottomSheetShow(BuildContext context, {bool fromCamp = false}) {
   showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: false,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -8537,7 +8537,16 @@ void reviewBottomSheetShow(BuildContext context, {bool fromCamp = false}) {
                                         fontWeight: FontWeight.bold),
                                   ),
                                   IconButton(
-                                    onPressed: () => Navigator.pop(context),
+                                    onPressed: () {
+                                      ChatMessageController
+                                          sfFileUploadController =
+                                          Provider.of(context, listen: false);
+
+                                         sfFileUploadController.setSelectedFile(null);
+
+                                   
+                                      Navigator.pop(context);
+                                    },
                                     icon: const Icon(Icons.cancel_outlined),
                                   )
                                 ],

@@ -425,11 +425,13 @@ class SfFileUploadController extends ChangeNotifier {
       setFileDocId(mp['id']);
 
       // ✅ YAHI SE TEXT + PDF EK SAATH JAYEGA!
-      sendFileApiCall(
-          code: code,
-          fil: file,
-          msg: mesg, // 🟢 USER KA TEXT YAHAN SE JAYE!
-          usrNumber: numbr);
+      if (isTemplate == false) {
+        sendFileApiCall(
+            code: code,
+            fil: file,
+            msg: mesg, // 🟢 USER KA TEXT YAHAN SE JAYE!
+            usrNumber: numbr);
+      }
 
       return responseBody;
     } else {
