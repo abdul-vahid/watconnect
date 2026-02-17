@@ -56,8 +56,8 @@ class _SplashViewState extends State<SplashView> {
     // log("token js:: ${jstokn}  ");
     // log("user:: ${user}  ");
 
-    if (prefs.containsKey(SharedPrefsConstants.userKey) ||
-        prefs.containsKey(SharedPrefsConstants.sfAccessToken)) {
+    // FIXED: Check if values are NOT EMPTY, not just if keys exist
+    if (sfAccessToken.isNotEmpty || user.isNotEmpty) {
       if (user.isEmpty) {
         DashBoardController dashBoardController =
             Provider.of(context, listen: false);

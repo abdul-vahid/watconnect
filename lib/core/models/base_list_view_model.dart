@@ -105,31 +105,51 @@ class BaseListViewModel extends ChangeNotifier {
       if (prefs.containsKey(SharedPrefsConstants.refreshTokenKey)) {
         refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!;
       }
+      
+      if (refreshToken.isEmpty) {
+        log("❌ Refresh token is empty in _refreshToken");
+        AppUtils.logout(AppUtils.currentContext);
+        return;
+      }
+      
       Map<String, String> body = {"refreshToken": refreshToken};
-      debug("rftgyhjuhgtfrderftghyjkjhygttgyhuj$body");
+      log("🔄 Refresh token request to: $refreshTokenUrl");
+      log("🔄 Refresh token body: $body");
+      
       final jsonObject = await postForRefreshToken(
           url: refreshTokenUrl, body: jsonEncode(body));
-      accessToken = jsonObject["authToken"];
-      refreshToken = jsonObject["refreshToken"];
-      await prefs.setString(SharedPrefsConstants.accessTokenKey, accessToken);
-      await prefs.setString(SharedPrefsConstants.refreshTokenKey, refreshToken);
-      await prefs.setString(
-          SharedPrefsConstants.sessionTimeKey, DateTime.now().toString());
+          
+      if (jsonObject != null && jsonObject["authToken"] != null) {
+        accessToken = jsonObject["authToken"];
+        refreshToken = jsonObject["refreshToken"];
+        await prefs.setString(SharedPrefsConstants.accessTokenKey, accessToken);
+        await prefs.setString(SharedPrefsConstants.refreshTokenKey, refreshToken);
+        await prefs.setString(
+            SharedPrefsConstants.sessionTimeKey, DateTime.now().toString());
+        log("✅ Token refreshed successfully in _refreshToken");
+      } else {
+        log("❌ Token refresh failed - no authToken in response");
+        AppUtils.logout(AppUtils.currentContext);
+      }
     } on UnauthorisedException {
+      log("❌ UnauthorisedException in _refreshToken");
       AppUtils.getAlert(AppUtils.currentContext!, [
         "You have been logged out!",
       ], onPressed: () {
         AppUtils.logout(AppUtils.currentContext);
       });
     } on AppException catch (error) {
+      log("❌ AppException in _refreshToken: $error");
       exception = error;
       status = "Error";
       viewModels.add(BaseViewModel(model: BaseModel()));
     } on Exception catch (error) {
+      log("❌ Exception in _refreshToken: $error");
       status = "Error";
       exception = error;
       viewModels.add(BaseViewModel(model: BaseModel()));
     } catch (e) {
+      log("❌ Catch block error in _refreshToken: $e");
       status = "Error";
       exception = Exception(e.toString());
       viewModels.add(BaseViewModel(model: BaseModel()));

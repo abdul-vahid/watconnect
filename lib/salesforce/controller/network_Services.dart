@@ -115,7 +115,7 @@ class NetworkService {
               method: method,
               headers: updatedHeaders,
               body: body,
-              useAuth: false, 
+              useAuth: false,
             );
           } else {
             EasyLoading.showToast("Session expired. Please log in again.");
@@ -194,49 +194,54 @@ class NetworkService {
 //   }
 // }
 
+  static Future<bool> getSfRefreshTokenApiApiCall() async {
+    final prefs = await SharedPreferences.getInstance();
+    final env = prefs.getString(SharedPrefsConstants.sfEnv) ?? "Prod";
+    final refreshToken =
+        prefs.getString(SharedPrefsConstants.sfRefreshToken) ?? "";
 
-static Future<bool> getSfRefreshTokenApiApiCall() async {
-  final prefs = await SharedPreferences.getInstance();
-  final env = prefs.getString(SharedPrefsConstants.sfEnv) ?? "Prod";
-  final refreshToken = prefs.getString(SharedPrefsConstants.sfRefreshToken) ?? "";
-
-  if(refreshToken.isEmpty) return false;
-
-  Map<String, String> body = {
-    "grant_type": "refresh_token",
-    "client_id": "YOUR_CLIENT_ID",
-    "client_secret": "YOUR_CLIENT_SECRET",
-    "refresh_token": refreshToken,
-    "redirect_uri": env == 'Test'
-        ? "https://test.salesforce.com/services/oauth2/success"
-        : "https://login.salesforce.com/services/oauth2/success",
-  };
-
-  try {
-    final response = await http.post(
-      Uri.parse(env == 'Test' ? AppConstants.getTestToken : AppConstants.getToken),
-      headers: {"Content-Type": "application/x-www-form-urlencoded"},
-      body: Uri(queryParameters: body).query,
-    );
-
-    if(response.statusCode == 200){
-      final parsedJson = jsonDecode(response.body);
-      final accessToken = parsedJson["access_token"] ?? "";
-      final newRefreshToken = parsedJson["refresh_token"] ?? refreshToken; // fallback
-
-      if(accessToken.isNotEmpty){
-        await prefs.setString(SharedPrefsConstants.sfAccessToken, accessToken);
-        await prefs.setString(SharedPrefsConstants.sfRefreshToken, newRefreshToken);
-        log("✅ Access token refreshed successfully");
-        return true;
-      }
-    } else {
-      log("❌ Refresh token failed: ${response.statusCode} ${response.body}");
+    if (refreshToken.isEmpty) {
+      log("❌ Refresh token is empty");
+      return false;
     }
-  } catch(e){
-    log("❌ Error in token refresh: $e");
-  }
 
-  return false;
-}
+    Map<String, String> body = {
+      "grant_type": "refresh_token",
+      "client_id": AppConstants.clientId,
+      "client_secret": AppConstants.clientSecret,
+      "refresh_token": refreshToken,
+    };
+
+    try {
+      log("🔄 Attempting token refresh for env: $env");
+      final response = await http.post(
+        Uri.parse(env == 'Test' ? AppConstants.getTestToken : AppConstants.getToken),
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: Uri(queryParameters: body).query,
+      );
+
+      log("Token refresh response status: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final parsedJson = jsonDecode(response.body);
+        final accessToken = parsedJson["access_token"] ?? "";
+        final newRefreshToken = parsedJson["refresh_token"] ?? refreshToken;
+
+        if (accessToken.isNotEmpty) {
+          await prefs.setString(SharedPrefsConstants.sfAccessToken, accessToken);
+          await prefs.setString(SharedPrefsConstants.sfRefreshToken, newRefreshToken);
+          log("✅ Access token refreshed successfully");
+          return true;
+        } else {
+          log("❌ Access token not found in response");
+        }
+      } else {
+        log("❌ Refresh token failed: ${response.statusCode} ${response.body}");
+      }
+    } catch (e) {
+      log("❌ Error in token refresh: $e");
+    }
+
+    return false;
+  }
 }

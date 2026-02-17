@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/salesforce/controller/network_Services.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 
@@ -130,14 +131,46 @@ class APIService {
       case 401:
       case 403:
         debug("Unauthorized  url>>>>>>>>>>>   $url");
-        print("error is coming from api service");
-        EasyLoading.showToast("Session Expired!\n Login Again");
-        AppUtils.logout(AppUtils.currentContext);
+        print("error is coming from api service - attempting token refresh");
+        
+        // Try to refresh token first before logging out
+        _handleUnauthorizedAndRetry(url);
+        
         throw UnauthorisedException(response.body.toString());
       case 500:
       default:
         throw FetchDataException(
             'Error occurred while communicating with server. Status code: ${response.statusCode}');
+    }
+  }
+
+  /// Handle 401 by attempting token refresh
+  void _handleUnauthorizedAndRetry(String url) async {
+    log("🔐 APIService: Attempting token refresh before logout...");
+    
+    try {
+      bool refreshed = await NetworkService.getSfRefreshTokenApiApiCall();
+      
+      if (refreshed) {
+        log("✅ APIService: Token refreshed successfully. Please retry the request.");
+        EasyLoading.showToast("Session refreshed. Please try again.");
+      } else {
+        log("❌ APIService: Token refresh failed. Logging out...");
+        EasyLoading.showToast("Session Expired!\nLogin Again");
+        
+        // Only logout if context is available
+        if (AppUtils.currentContext != null) {
+          AppUtils.logout(AppUtils.currentContext);
+        } else {
+          log("❌ Cannot logout - currentContext is null");
+          // Clear cache anyway
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.clear();
+        }
+      }
+    } catch (e) {
+      log("❌ APIService: Error during token refresh handling: $e");
+      EasyLoading.showToast("Session Expired!\nLogin Again");
     }
   }
 

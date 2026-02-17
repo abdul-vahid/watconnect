@@ -23,8 +23,12 @@ class AppUtils {
   static int notificationCount = 0;
   static BuildContext? currentContext;
   static void onLoading(BuildContext? context, String? label) {
+    if (context == null) {
+      log("❌ onLoading called with null context");
+      return;
+    }
     showDialog(
-        context: context!,
+        context: context,
         barrierDismissible: false,
         builder: (context) {
           return Dialog(
@@ -41,7 +45,7 @@ class AppUtils {
                         AlwaysStoppedAnimation<Color>(Colors.blueAccent),
                   ),
                   Text(
-                    label!,
+                    label ?? "Loading...",
                   )
                 ],
               ),
@@ -381,7 +385,7 @@ class AppUtils {
   static Future<String> getSFUrl(String path) async {
     final prefs = await SharedPreferences.getInstance();
     final storedUrl = prefs.getString(SharedPrefsConstants.sfBaseUrl) ?? "";
-debug("storedUrlstoredUrlstoredUrl$storedUrl");
+    debug("storedUrlstoredUrlstoredUrl$storedUrl");
     // final prefs = await SharedPreferences.getInstance();
     String val = prefs.getString(SharedPrefsConstants.sfLoginType) ?? "";
 
@@ -418,18 +422,53 @@ debug("storedUrlstoredUrlstoredUrl$storedUrl");
     return string[0].toUpperCase() + string.substring(1);
   }
 
-  static void logout(context) {
+  static void logout(context) async {
     onLoading(context, "Logging out...");
 
-    SharedPreferences.getInstance().then((prefs) {
-      NotificationUtil.deleteFCMTokenOnLogout();
-      prefs.clear();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Delete FCM token first
+      await NotificationUtil.deleteFCMTokenOnLogout();
+
+      // Explicitly remove all authentication tokens
+      await prefs.remove(SharedPrefsConstants.sfAccessToken);
+      await prefs.remove(SharedPrefsConstants.sfRefreshToken);
+      await prefs.remove(SharedPrefsConstants.accessTokenKey);
+      await prefs.remove(SharedPrefsConstants.refreshTokenKey);
+      await prefs.remove(SharedPrefsConstants.userKey);
+      await prefs.remove(SharedPrefsConstants.idTokenKey);
+      await prefs.remove(SharedPrefsConstants.sfInstanceurl);
+      await prefs.remove(SharedPrefsConstants.sfBaseUrl);
+      await prefs.remove(SharedPrefsConstants.sfBusinessNumber);
+      await prefs.remove(SharedPrefsConstants.sfNodeToken);
+      await prefs.remove(SharedPrefsConstants.sfNodeRefreshToken);
+      await prefs.remove(SharedPrefsConstants.sfLoginType);
+      await prefs.remove(SharedPrefsConstants.sfEnv);
+
+      // Clear all SharedPreferences cache completely
+      await prefs.clear();
+
+      log("✅ All cache and tokens cleared successfully on logout");
+
+      // Small delay to ensure clear() completes
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Navigate to login screen
       Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginView()),
-          (route) => false);
-      //viewPush(context, const LoginHome());
-    });
+        context,
+        MaterialPageRoute(builder: (context) => const LoginView()),
+        (route) => false,
+      );
+    } catch (e) {
+      log("❌ Error during logout: $e");
+      // Still navigate to login even if there's an error
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginView()),
+        (route) => false,
+      );
+    }
   }
 
   static void isLoggedOut(context) {
