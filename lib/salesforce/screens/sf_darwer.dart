@@ -393,6 +393,7 @@ class _SfAppDrawerWidgetState extends State<SfAppDrawerWidget> {
   }
 
   Future<void> _logoutUser() async {
+    
     NotificationUtil.deleteFCMTokenOnLogout();
     AppUtils.logout(context);
   }

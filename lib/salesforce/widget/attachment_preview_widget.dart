@@ -7,6 +7,7 @@ import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
 import 'package:whatsapp/views/view/view_fullscreen_img.dart';
 import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/build_attachment_widget.dart';
+import 'package:whatsapp/salesforce/screens/forward_message_screen.dart';
 
 class AttachmentPreviewWidget extends StatelessWidget {
   final String? contentType;
@@ -48,30 +49,35 @@ class AttachmentPreviewWidget extends StatelessWidget {
   }
 
   Widget _buildImagePreview(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PreviewImage(imgUrl: attachmentUrl ?? ""),
-          ),
-        );
+    return GestureDetector(
+      onLongPress: () {
+        _showImageContextMenu(context);
       },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: CachedNetworkImage(
-          imageUrl: attachmentUrl ?? '',
-          width: double.infinity,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Image.asset(
-            "assets/images/img_place.png",
-            height: 150,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PreviewImage(imgUrl: attachmentUrl ?? ""),
+            ),
+          );
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: CachedNetworkImage(
+            imageUrl: attachmentUrl ?? '',
+            width: double.infinity,
             fit: BoxFit.cover,
-          ),
-          errorWidget: (context, url, error) => Image.asset(
-            "assets/images/img_place.png",
-            height: 150,
-            fit: BoxFit.cover,
+            placeholder: (context, url) => Image.asset(
+              "assets/images/img_place.png",
+              height: 150,
+              fit: BoxFit.cover,
+            ),
+            errorWidget: (context, url, error) => Image.asset(
+              "assets/images/img_place.png",
+              height: 150,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),
@@ -228,7 +234,7 @@ class AttachmentPreviewWidget extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          fileSize!,
+                          fileSize ?? "",
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade600,
@@ -323,5 +329,83 @@ class AttachmentPreviewWidget extends StatelessWidget {
         nameWithoutExtension.substring(0, maxLength - extension.length - 3);
 
     return '$truncatedName...$extension';
+  }
+
+  void _showImageContextMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              const Text(
+                'Image Options',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Forward Image Option
+              ListTile(
+                leading: const Icon(Icons.forward, color: Colors.green),
+                title: const Text('Forward Image'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _forwardImage(context);
+                },
+              ),
+              
+              // Save Image Option
+              ListTile(
+                leading: const Icon(Icons.save, color: Colors.blue),
+                title: const Text('Save Image'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _saveImage();
+                },
+              ),
+              
+              // Cancel Button
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[300],
+                  foregroundColor: Colors.black,
+                ),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _forwardImage(BuildContext context) {
+    // Navigate to contact selection screen to forward the image
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ForwardMessageScreen(
+          message: null,
+          attachmentUrl: attachmentUrl ?? '',
+          contentType: contentType ?? '',
+        ),
+      ),
+    );
+  }
+
+  void _saveImage() {
+    // Implementation for saving image would go here
+    // This would typically involve downloading the image and saving it to device storage
   }
 }

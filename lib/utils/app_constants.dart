@@ -277,6 +277,7 @@ abstract class AppConstants {
 
   static const String sfGetTemplates = "watconnect/templates?";
   static const String sfDeleteChatHistory = "watconnect/messages/delete?";
+  static const String sfPinChat = "watconnect/chat/pin";
   static const String sfDeleteChatMsg =
       "watconnect/messages/selectdMessageDelete?";
   static const String sfSendTemplate = "watconnect/messages?type=Template";

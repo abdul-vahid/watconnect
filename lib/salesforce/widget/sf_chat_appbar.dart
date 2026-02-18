@@ -31,6 +31,26 @@ class SfChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       centerTitle: true,
       actions: [
+        // Pin/Unpin button
+        Consumer<DashBoardController>(
+          builder: (context, dbController, child) {
+            final isPinned = dbController.selectedContactInfo?.isPinned ?? false;
+            final parentId = dbController.selectedContactInfo?.id ?? '';
+            
+            return parentId.isNotEmpty
+                ? IconButton(
+                    icon: Icon(
+                      isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                      color: isPinned ? Colors.yellow : Colors.white,
+                    ),
+                    onPressed: () {
+                      _togglePinChat(context, parentId, !isPinned, dbController);
+                    },
+                    tooltip: isPinned ? 'Unpin Chat' : 'Pin Chat',
+                  )
+                : const SizedBox();
+          },
+        ),
         hasCalls
             ? Padding(
                 padding: const EdgeInsets.only(right: 10.0),
@@ -165,4 +185,20 @@ class SfChatAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  void _togglePinChat(BuildContext context, String parentId, bool pin, DashBoardController dbController) async {
+    final chatController = Provider.of<ChatMessageController>(context, listen: false);
+    
+    try {
+      await chatController.pinChatApiCall(parentId, pin);
+      
+      // Update the local state
+      if (dbController.selectedContactInfo != null) {
+        dbController.selectedContactInfo!.isPinned = pin;
+        dbController.notify();
+      }
+    } catch (e) {
+      EasyLoading.showToast('Failed to ${pin ? 'pin' : 'unpin'} chat');
+    }
+  }
 }

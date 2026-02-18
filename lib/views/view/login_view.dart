@@ -411,7 +411,7 @@ class _LoginViewState extends State<LoginView> {
 
     String clientId = loginType == sfLoginType.WatConnect
         ? "3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ"
-        : "3MVG9dAEux2v1sLu9_ht_e8ED9j_Wh5cLRVVeAomQlCsjtBdsLgLF1G11oQuiZngKyW71zVbjIdGHlvKp9AMd"; // You can change this for SFWatConnect
+        : "3MVG9dAEux2v1sLu9_ht_e8ED9vCM5br3PAMdEIJiJ4BmAN5eKQ7aSvd0wZGn3gq3KQy1Z3aDIf8xQUGDTXcc"; // You can change this for SFWatConnect
 
     return "$baseUrl/services/oauth2/authorize?response_type=code&client_id=$clientId&redirect_uri=https://login.salesforce.com/services/oauth2/success";
   }

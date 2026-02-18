@@ -275,6 +275,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
@@ -283,6 +284,8 @@ import 'package:whatsapp/salesforce/widget/attachment_preview_widget.dart';
 import 'package:whatsapp/salesforce/widget/chat_buttons.dart';
 import 'package:whatsapp/salesforce/widget/chat_sender_lable.dart';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:whatsapp/utils/app_utils.dart';
+import 'package:whatsapp/salesforce/screens/forward_message_screen.dart';
 
 import 'package:flutter_emoji/flutter_emoji.dart';
 
@@ -313,7 +316,7 @@ class ChatBubble extends StatelessWidget {
         hoverColor: Colors.transparent,
         focusColor: Colors.transparent,
         onLongPress: () {
-          ref.setMsgDeleteList(item.id ?? "");
+          _showMessageContextMenu(context, item);
         },
         onTap: () {
           if (ref.msgDeleteList.isNotEmpty) {
@@ -560,7 +563,7 @@ class ChatBubble extends StatelessWidget {
                               constraints: const BoxConstraints(
                                   maxWidth: 200), // optional width
                               child: Text(
-                                item.Error_Msg!,
+                                item.Error_Msg ?? "",
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: Colors.red,
@@ -684,5 +687,98 @@ class ChatBubble extends StatelessWidget {
 
   String formatTime(DateTime dt) {
     return DateFormat.jm().format(dt);
+  }
+
+  void _showMessageContextMenu(BuildContext context, SfChatHistoryModel item) {
+    final hasText = (item.message?.isNotEmpty ?? false) || tempBody.isNotEmpty;
+    final hasImage = (item.contentType?.contains("image") ?? false) &&
+        (item.attachmentUrl?.isNotEmpty ?? false);
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              const Text(
+                'Message Options',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Copy Text Option
+              if (hasText)
+                ListTile(
+                  leading: const Icon(Icons.copy, color: Colors.blue),
+                  title: const Text('Copy Text'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _copyMessageText(context, item);
+                  },
+                ),
+
+              // Forward Option
+              if (hasText || hasImage)
+                ListTile(
+                  leading: const Icon(Icons.forward, color: Colors.green),
+                  title: const Text('Forward'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _forwardMessage(context, item);
+                  },
+                ),
+
+              // Cancel Button
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[300],
+                  foregroundColor: Colors.black,
+                ),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _copyMessageText(BuildContext context, SfChatHistoryModel item) {
+    String textToCopy = item.message ?? tempBody;
+    if (textToCopy.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: textToCopy));
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Text copied to clipboard'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _forwardMessage(BuildContext context, SfChatHistoryModel item) {
+    // Navigate to contact selection screen to forward the message
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ForwardMessageScreen(
+          message: item.message ?? tempBody,
+          attachmentUrl: item.attachmentUrl ?? '',
+          contentType: item.contentType ?? '',
+        ),
+      ),
+    );
   }
 }

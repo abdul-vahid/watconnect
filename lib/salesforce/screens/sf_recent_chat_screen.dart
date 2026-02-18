@@ -147,6 +147,18 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                 dashBoardController.sfPinnedRecentChatList.isEmpty
                     ? const SizedBox()
                     : Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12.0, vertical: 8),
+                        child: Text(
+                          "Pinned Leads",
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                dashBoardController.sfPinnedRecentChatList.isEmpty
+                    ? const SizedBox()
+                    : Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: SizedBox(
                           height: 90,

@@ -700,9 +700,10 @@ class ChatMessageController extends ChangeNotifier {
           await prefs.setString(
               SharedPrefsConstants.sfRefreshToken, refreshToken);
 
-          await prefs.setString(SharedPrefsConstants.sfBaseUrl, instaceUrl);
+          await prefs.setString(SharedPrefsConstants.sfInstanceurl, instaceUrl);
 
           log("Access token stored successfully.");
+          log("Instance URL stored: $instaceUrl");
           return true;
         }
       } else {
@@ -735,6 +736,35 @@ class ChatMessageController extends ChangeNotifier {
       EasyLoading.showToast("Chat History Deleted Successfully");
       await messageHistoryApiCall(userNumber: wpNum, isFirstTime: false);
       notify();
+    }
+  }
+
+  Future<void> pinChatApiCall(String parentId, bool pin) async {
+    final prefs = await SharedPreferences.getInstance();
+    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+
+    String url = await AppUtils.getSFUrl(AppConstants.sfPinChat);
+
+    final body = {
+      "action": pin ? "pin" : "unpin",
+      "parentId": parentId,
+    };
+
+    debug("Pin chat API call: $url");
+    debug("Pin chat body: $body");
+
+    final response = await NetworkService.makeRequest(
+      url: url,
+      method: 'POST',
+      body: body,
+    );
+
+    if (response != null && response.statusCode == 200) {
+      EasyLoading.showToast(pin ? "Chat pinned successfully" : "Chat unpinned successfully");
+      notify();
+    } else {
+      EasyLoading.showToast("Failed to ${pin ? 'pin' : 'unpin'} chat");
+      debug("Pin chat API failed: ${response?.statusCode} - ${response?.body}");
     }
   }
 

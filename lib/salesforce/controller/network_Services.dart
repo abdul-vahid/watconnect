@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/utils/app_constants.dart';
+import 'package:whatsapp/utils/function_lib.dart';
 
 class NetworkService {
   static Future<http.Response?> makeRequest({
@@ -68,22 +69,28 @@ class NetworkService {
           // EasyLoading.showToast("Something went wrong: ${response.body}");
           break;
 
-        // case 401:
-        //   log("🔐 Unauthorized. Attempting token refresh...");
-        //   bool refreshed = await getSfRefreshTokenApiApiCall();
-        //   if (refreshed) {
-        //     return await makeRequest(
-        //       url: url,
-        //       method: method,
-        //       headers: headers,
-        //       body: body,
-        //       useAuth: useAuth,
-        //     );
-        //   } else {
-        //     print("error is coming from network service");
-        //     EasyLoading.showToast("Session expired. Please log in again.");
-        //   }
-        //   break;
+        case 401:
+          log("🔐 Unauthorized. Attempting token refresh...");
+          bool refreshed = await getSfRefreshTokenApiApiCall();
+          if (refreshed) {
+            // Retry the original request with new token
+            return await makeRequest(
+              url: url,
+              method: method,
+              headers: headers,
+              body: body,
+              useAuth: useAuth,
+            );
+          } else {
+            log("❌ Token refresh failed. Logging out...");
+            EasyLoading.showToast("Session expired. Please log in again.");
+            // Clear tokens and logout
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.remove(SharedPrefsConstants.sfAccessToken);
+            await prefs.remove(SharedPrefsConstants.sfRefreshToken);
+            // You might want to navigate to login screen here
+          }
+          break;
 
         // case 500:
         //   log("\x1B[95m   =====================================================================================================================================================================================================================");
@@ -100,7 +107,6 @@ class NetworkService {
           log("🔐 Unauthorized. Attempting token refresh...");
           bool refreshed = await getSfRefreshTokenApiApiCall();
           if (refreshed) {
-            // ✅ Dobara token uthao after refresh
             final prefs = await SharedPreferences.getInstance();
             final newToken =
                 prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
@@ -195,51 +201,79 @@ class NetworkService {
 // }
 
   static Future<bool> getSfRefreshTokenApiApiCall() async {
+    debug("working refresh api function");
     final prefs = await SharedPreferences.getInstance();
     final env = prefs.getString(SharedPrefsConstants.sfEnv) ?? "Prod";
     final refreshToken =
         prefs.getString(SharedPrefsConstants.sfRefreshToken) ?? "";
+    final loginType = prefs.getString(SharedPrefsConstants.sfLoginType) ?? "WatConnect";
 
     if (refreshToken.isEmpty) {
-      log("❌ Refresh token is empty");
+      log(" Refresh token is empty");
       return false;
     }
 
+    // Use the same client IDs as in login
+    final clientId = loginType == "WatConnect"
+        ? "3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ"
+        : "3MVG9dAEux2v1sLu9_ht_e8ED9vCM5br3PAMdEIJiJ4BmAN5eKQ7aSvd0wZGn3gq3KQy1Z3aDIf8xQUGDTXcc";
+    
+    final clientSecret = loginType == "WatConnect"
+        ? "195E44ED6BAFD4F6F5CB20343F7FFC169616D9C417B3C51089B00F6487E0F459"
+        : "F105FEAA63B821AE7F6C6E7004E7BFA5206212864DD18B3C65F5610626BFFB06";
+
     Map<String, String> body = {
       "grant_type": "refresh_token",
-      "client_id": AppConstants.clientId,
-      "client_secret": AppConstants.clientSecret,
+      "client_id": clientId,
+      "client_secret": clientSecret,
       "refresh_token": refreshToken,
     };
 
     try {
-      log("🔄 Attempting token refresh for env: $env");
+      log(" Attempting token refresh for env: $env");
+      log(" Refresh token being used: ${refreshToken.substring(0, 10)}...");
+      log(" Login type: $loginType");
+
       final response = await http.post(
-        Uri.parse(env == 'Test' ? AppConstants.getTestToken : AppConstants.getToken),
+        Uri.parse(
+            env == 'Test' ? AppConstants.getTestToken : AppConstants.getToken),
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: Uri(queryParameters: body).query,
       );
 
       log("Token refresh response status: ${response.statusCode}");
+      log("Token refresh response body: ${response.body}");
 
       if (response.statusCode == 200) {
         final parsedJson = jsonDecode(response.body);
+        log("Parsed refresh response: $parsedJson");
+
         final accessToken = parsedJson["access_token"] ?? "";
-        final newRefreshToken = parsedJson["refresh_token"] ?? refreshToken;
+        // Note: refresh_token is not returned in refresh response, so keep the existing one
+        final instanceUrl = parsedJson["instance_url"] ?? "";
 
         if (accessToken.isNotEmpty) {
-          await prefs.setString(SharedPrefsConstants.sfAccessToken, accessToken);
-          await prefs.setString(SharedPrefsConstants.sfRefreshToken, newRefreshToken);
-          log("✅ Access token refreshed successfully");
+          await prefs.setString(
+              SharedPrefsConstants.sfAccessToken, accessToken);
+          // Keep the existing refresh token as Salesforce doesn't return a new one
+          if (instanceUrl.isNotEmpty) {
+            await prefs.setString(
+                SharedPrefsConstants.sfInstanceurl, instanceUrl);
+          }
+          log(" Access token refreshed successfully");
+          log(" New access token length: ${accessToken.length}");
+          log(" Instance URL: $instanceUrl");
           return true;
         } else {
-          log("❌ Access token not found in response");
+          log(" Access token not found in response");
         }
       } else {
-        log("❌ Refresh token failed: ${response.statusCode} ${response.body}");
+        log(" Refresh token failed: ${response.statusCode} ${response.body}");
+        final errorResponse = jsonDecode(response.body);
+        log(" Error details: ${errorResponse['error_description'] ?? errorResponse['error']}");
       }
     } catch (e) {
-      log("❌ Error in token refresh: $e");
+      log(" Error in token refresh: $e");
     }
 
     return false;

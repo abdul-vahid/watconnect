@@ -16,6 +16,7 @@ import '../utils/app_constants.dart';
 import '../views/view/login_view.dart';
 import 'function_lib.dart';
 import 'notification_utils.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AppUtils {
   late UserModel userModelObjj;
@@ -384,7 +385,7 @@ class AppUtils {
 
   static Future<String> getSFUrl(String path) async {
     final prefs = await SharedPreferences.getInstance();
-    final storedUrl = prefs.getString(SharedPrefsConstants.sfBaseUrl) ?? "";
+    final storedUrl = prefs.getString(SharedPrefsConstants.sfInstanceurl) ?? "";
     debug("storedUrlstoredUrlstoredUrl$storedUrl");
     // final prefs = await SharedPreferences.getInstance();
     String val = prefs.getString(SharedPrefsConstants.sfLoginType) ?? "";
@@ -423,6 +424,7 @@ class AppUtils {
   }
 
   static void logout(context) async {
+    clearAppCache();
     onLoading(context, "Logging out...");
 
     try {
@@ -468,6 +470,13 @@ class AppUtils {
         MaterialPageRoute(builder: (context) => const LoginView()),
         (route) => false,
       );
+    }
+  }
+
+  static Future<void> clearAppCache() async {
+    final tempDir = await getTemporaryDirectory();
+    if (tempDir.existsSync()) {
+      tempDir.deleteSync(recursive: true);
     }
   }
 
