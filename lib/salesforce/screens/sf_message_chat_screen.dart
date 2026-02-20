@@ -26,6 +26,7 @@ import 'package:whatsapp/salesforce/controller/template_controller.dart';
 import 'package:whatsapp/salesforce/model/chat_history_model.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/widget/chat_bubble.dart';
+import 'package:whatsapp/salesforce/widget/multi_select_bottom_sheet.dart';
 import 'package:whatsapp/salesforce/widget/chat_buttons.dart';
 import 'package:whatsapp/salesforce/widget/chat_date_lable.dart';
 import 'package:whatsapp/salesforce/widget/custom_bottom_sheet.dart';
@@ -181,13 +182,44 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
               appBar: SfChatAppBar(
                 hasCalls: hasCalls,
               ),
-              body: Stack(
-                children: [
-                  RefreshIndicator(
-                    onRefresh: _pullRefresh,
-                    child: _pageBody(),
+              body: Container(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/wp.png'),
+                    fit: BoxFit.cover,
                   ),
-                ],
+                ),
+                child: Stack(
+                  children: [
+                    RefreshIndicator(
+                      onRefresh: _pullRefresh,
+                      child: _pageBody(),
+                    ),
+                    // Multi-select bottom sheet overlay
+                    Consumer<ChatMessageController>(
+                      builder: (context, ref, child) {
+                        if (ref.isMultiSelectMode &&
+                            ref.selectedMessages.isNotEmpty) {
+                          final selectedMessages = ref.chatHistoryList
+                              .where((msg) =>
+                                  ref.selectedMessages.contains(msg.id))
+                              .toList();
+
+                          return Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: MultiSelectBottomSheet(
+                              selectedMessages: selectedMessages,
+                              allMessages: ref.chatHistoryList,
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -227,7 +259,8 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
           Expanded(
             child: Column(
               children: [
-                if (widget.pinnedLeadsList!.isNotEmpty)
+                if (widget.pinnedLeadsList != null &&
+                    widget.pinnedLeadsList!.isNotEmpty)
                   Padding(
                     padding:
                         const EdgeInsets.only(top: 15.0, left: 15, right: 15),
@@ -260,7 +293,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                                     .then((onValue) {});
                               } else {
                                 String phNum =
-                                    "${widget.pinnedLeadsList![index].countryCode ?? ""}${widget.pinnedLeadsList![index].whatsappNumber ?? ""}";
+                                    "${widget.pinnedLeadsList?[index].countryCode ?? ""}${widget.pinnedLeadsList?[index].whatsappNumber ?? ""}";
 
                                 ChatMessageController cmProvider =
                                     Provider.of(context, listen: false);
@@ -268,7 +301,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                                     Provider.of(context, listen: false);
                                 dbProvider.setSelectedPinnedInfo(null);
                                 dbProvider.setSelectedContaactInfo(
-                                    widget.pinnedLeadsList![index]);
+                                    widget.pinnedLeadsList?[index]);
 
                                 await cmProvider
                                     .messageHistoryApiCall(
@@ -290,11 +323,13 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                                     radius: 20,
                                     backgroundColor: AppColor.navBarIconColor,
                                     child: Text(
-                                      widget.pinnedLeadsList![index].name!
-                                              .isNotEmpty
-                                          ? widget
-                                              .pinnedLeadsList![index].name![0]
-                                              .toUpperCase()
+                                      widget.pinnedLeadsList?[index].name
+                                                  ?.isNotEmpty ==
+                                              true
+                                          ? (widget.pinnedLeadsList?[index]
+                                                  .name?[0]
+                                                  ?.toUpperCase() ??
+                                              '?')
                                           : '?',
                                       style: const TextStyle(
                                         fontSize: 20,
@@ -305,7 +340,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                                   ),
                                   const SizedBox(height: 5),
                                   Text(
-                                    widget.pinnedLeadsList![index].name ?? "",
+                                    widget.pinnedLeadsList?[index].name ?? "",
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),

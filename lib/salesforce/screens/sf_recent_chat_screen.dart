@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
@@ -327,167 +328,241 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
   }
 
   renctChatListItem(SfDrawerItemModel drawerListItem) {
-    String phNum =
-        "${drawerListItem.countryCode ?? ""}${drawerListItem.whatsappNumber ?? ""}";
-    Color statusColor;
-    statusColor = Colors.lightBlue.withOpacity(0.7);
+    return GestureDetector(
+      onLongPress: () {
+        DashBoardController dbProvider =
+            Provider.of(context, listen: false);
+        dbProvider.setSelectedPinnedInfo(drawerListItem);
+      },
+      onTap: () async {
+        String phNum =
+            "${drawerListItem.countryCode ?? ""}${drawerListItem.whatsappNumber ?? ""}";
+        showBlurOnlyLoaderDialog(context);
+        ChatMessageController cmProvider =
+            Provider.of(context, listen: false);
+        DashBoardController dbProvider =
+            Provider.of(context, listen: false);
+        dbProvider.setSelectedPinnedInfo(null);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border(
-          left: BorderSide(
-            color: statusColor,
-            width: 5,
-          ),
+        dbProvider.setSelectedContaactInfo(drawerListItem);
+        await cmProvider
+            .messageHistoryApiCall(
+          userNumber: phNum,
+        )
+            .then((onValue) {
+          Navigator.pop(context);
+        });
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => SfMessageChatScreen(
+                      isFromRecentChat: true,
+                    )));
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: drawerListItem.isPinned == true
+              ? Colors.yellow.withOpacity(0.1)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(12),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 5,
-            spreadRadius: 3,
-            offset: const Offset(2, 4),
-          ),
-        ],
-      ),
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 12),
-        child: GestureDetector(
-          onLongPress: () {
-            DashBoardController dbProvider =
-                Provider.of(context, listen: false);
-            dbProvider.setSelectedPinnedInfo(null);
-            print("this is pressisng longgggg");
-
-            dbProvider.setSelectedPinnedInfo(drawerListItem);
-          },
-          onTap: () async {
-            DashBoardController dbProvider =
-                Provider.of(context, listen: false);
-            dbProvider.setSelectedPinnedInfo(null);
-            showBlurOnlyLoaderDialog(context);
-            ChatMessageController cmProvider =
-                Provider.of(context, listen: false);
-
-            dbProvider.setSelectedContaactInfo(drawerListItem);
-            await cmProvider
-                .messageHistoryApiCall(
-              userNumber: phNum,
-            )
-                .then((onValue) {
-              Navigator.pop(context);
-              dbProvider.resentUnreadCountApiCall(phNum);
-            });
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SfMessageChatScreen(
-                          pinnedLeadsList: dbProvider.sfPinnedRecentChatList,
-                          isFromRecentChat: true,
-                        )));
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Avatar
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: AppColor.navBarIconColor,
-                  child: Text(
-                    drawerListItem.name?.isNotEmpty == true
-                        ? drawerListItem.name![0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+        child: Row(
+          children: [
+            // Avatar
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: AppColor.navBarIconColor,
+              child: Text(
+                drawerListItem.name?.isNotEmpty == true
+                    ? drawerListItem.name![0].toUpperCase()
+                    : '?',
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(width: 12),
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+            ),
+            const SizedBox(width: 12),
+            
+            // Chat info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              drawerListItem.name ?? "Unknown",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                      Expanded(
+                        child: Text(
+                          drawerListItem.name ??
+                              'Unknown Contact',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
-                          if (drawerListItem.unreadCount != null &&
-                              drawerListItem.unreadCount! > 0)
-                            Container(
-                              margin: const EdgeInsets.only(left: 8),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                drawerListItem.unreadCount.toString(),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          (drawerListItem.isPinned ?? false)
-                              ? const Icon(Icons.push_pin)
-                              : const SizedBox()
-                        ],
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              parser.emojify(unescape
-                                  .convert(drawerListItem.lastMsg ?? "")),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                          if (drawerListItem.lastMsgTime != 0)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Text(
-                                formatDateTime(drawerListItem.lastMsgTime ?? 0),
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
+                      if (drawerListItem.isPinned == true)
+                        const Icon(
+                          Icons.push_pin,
+                          color: Colors.orange,
+                          size: 16,
+                        ),
                     ],
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    drawerListItem
+                            .lastMsg ??
+                        'No messages yet',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(width: 12),
+            
+            // Time and unread indicator
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      formatDateTime(drawerListItem.lastMsgTime ?? 0),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        // Prevent tap from propagating to parent GestureDetector
+                      },
+                      onTapDown: (details) {
+                        // Also prevent tap down
+                      },
+                      child: PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert, size: 20, color: Colors.grey),
+                        onSelected: (String value) {
+                          if (value == 'pin' || value == 'unpin') {
+                            _togglePinChat(drawerListItem);
+                          }
+                        },
+                        itemBuilder: (BuildContext context) => [
+                          PopupMenuItem<String>(
+                            value: drawerListItem.isPinned == true ? 'unpin' : 'pin',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  drawerListItem.isPinned == true 
+                                    ? Icons.push_pin_outlined 
+                                    : Icons.push_pin,
+                                  size: 18,
+                                  color: drawerListItem.isPinned == true 
+                                    ? Colors.orange 
+                                    : Colors.grey,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  drawerListItem.isPinned == true ? 'Unpin Chat' : 'Pin Chat',
+                                  style: TextStyle(
+                                    color: drawerListItem.isPinned == true 
+                                      ? Colors.orange 
+                                      : Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
+                if (drawerListItem
+                            .unreadCount !=
+                        null &&
+                    drawerListItem
+                            .unreadCount! >
+                        0)
+                  Container(
+                    margin:
+                        const EdgeInsets.only(
+                            top: 4),
+                    padding:
+                        const EdgeInsets.all(
+                            6),
+                    decoration:
+                        const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      drawerListItem
+                          .unreadCount
+                          .toString(),
+                      style:
+                          const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );
+  }
+
+  void _togglePinChat(SfDrawerItemModel item) async {
+    try {
+      final chatController = Provider.of<ChatMessageController>(context, listen: false);
+      final dbController = Provider.of<DashBoardController>(context, listen: false);
+      
+      // Toggle the pin status
+      final newPinStatus = !(item.isPinned ?? false);
+      
+      // Show loading
+      EasyLoading.show(status: '${newPinStatus ? 'Pinning' : 'Unpinning'} chat...');
+      
+      // Call the API to pin/unpin
+      await chatController.pinChatApiCall(item.id ?? '', newPinStatus);
+      
+      // Update local state immediately for better UX
+      item.isPinned = newPinStatus;
+      
+      // Refresh the chat list to get updated data from server
+      await dbController.getDasBoardReportApiCall();
+      
+      // Dismiss loading and show success
+      EasyLoading.dismiss();
+      EasyLoading.showToast(
+        newPinStatus ? 'Chat pinned successfully' : 'Chat unpinned successfully'
+      );
+      
+      // Trigger UI refresh
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      EasyLoading.dismiss();
+      EasyLoading.showToast('Failed to ${item.isPinned == true ? 'unpin' : 'pin'} chat');
+      debugPrint('Pin/Unpin error: $e');
+    }
   }
 }
 

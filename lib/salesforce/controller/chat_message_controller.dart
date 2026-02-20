@@ -760,7 +760,8 @@ class ChatMessageController extends ChangeNotifier {
     );
 
     if (response != null && response.statusCode == 200) {
-      EasyLoading.showToast(pin ? "Chat pinned successfully" : "Chat unpinned successfully");
+      EasyLoading.showToast(
+          pin ? "Chat pinned successfully" : "Chat unpinned successfully");
       notify();
     } else {
       EasyLoading.showToast("Failed to ${pin ? 'pin' : 'unpin'} chat");
@@ -868,6 +869,11 @@ class ChatMessageController extends ChangeNotifier {
   // }
 
   List<String> msgDeleteList = [];
+  bool _isMultiSelectMode = false;
+  List<String> _selectedMessages = [];
+
+  bool get isMultiSelectMode => _isMultiSelectMode;
+  List<String> get selectedMessages => _selectedMessages;
 
   setMsgDeleteList(String id) {
     if (msgDeleteList.contains(id)) {
@@ -883,6 +889,46 @@ class ChatMessageController extends ChangeNotifier {
   resetMsgDeleteList() {
     msgDeleteList.clear();
     notify();
+  }
+
+  // Multi-select functionality
+  void toggleMultiSelectMode() {
+    _isMultiSelectMode = !_isMultiSelectMode;
+    if (!_isMultiSelectMode) {
+      _selectedMessages.clear();
+    }
+    notify();
+  }
+
+  void toggleMessageSelection(String messageId) {
+    if (_selectedMessages.contains(messageId)) {
+      _selectedMessages.remove(messageId);
+    } else {
+      _selectedMessages.add(messageId);
+    }
+    notify();
+  }
+
+  void selectMessage(String messageId) {
+    if (!_selectedMessages.contains(messageId)) {
+      _selectedMessages.add(messageId);
+    }
+    notify();
+  }
+
+  void deselectMessage(String messageId) {
+    _selectedMessages.remove(messageId);
+    notify();
+  }
+
+  void clearSelection() {
+    _selectedMessages.clear();
+    _isMultiSelectMode = false;
+    notify();
+  }
+
+  bool isMessageSelected(String messageId) {
+    return _selectedMessages.contains(messageId);
   }
 
   bool createFileLoader = false;

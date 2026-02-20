@@ -7938,7 +7938,6 @@ class _MyAppState extends State<MyApp> {
               if (rawObject.endsWith('__c')) {
                 return rawObject;
               }
-              // String objectType = _normalizeObject(segments[i + 1]);
 
               if (objectType == "lead") return "lead";
               if (objectType == "contact") return "contact";
@@ -7946,7 +7945,6 @@ class _MyAppState extends State<MyApp> {
             }
           }
         }
-
         if (segments.isNotEmpty) {
           String firstRaw = segments[0];
 

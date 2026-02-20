@@ -3,11 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:whatsapp/views/view/show_audio.dart';
-import 'package:whatsapp/views/view/show_pdf.dart';
 import 'package:whatsapp/views/view/show_video.dart';
 import 'package:whatsapp/views/view/view_fullscreen_img.dart';
 import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/build_attachment_widget.dart';
 import 'package:whatsapp/salesforce/screens/forward_message_screen.dart';
+import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
+// import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class AttachmentPreviewWidget extends StatelessWidget {
   final String? contentType;
@@ -49,6 +52,9 @@ class AttachmentPreviewWidget extends StatelessWidget {
   }
 
   Widget _buildImagePreview(BuildContext context) {
+    // Auto-save image to gallery when displayed
+    // _autoSaveImageToGallery();
+    
     return GestureDetector(
       onLongPress: () {
         _showImageContextMenu(context);
@@ -83,6 +89,50 @@ class AttachmentPreviewWidget extends StatelessWidget {
       ),
     );
   }
+
+  // Future<void> _autoSaveImageToGallery() async {
+  //   // Only auto-save for incoming images (not outgoing)
+  //   if (contentType?.contains('image') != true || attachmentUrl?.isEmpty != false) {
+  //     return;
+  //   }
+
+  //   try {
+  //     // Check if we have storage permission
+  //     var status = await Permission.storage.status;
+  //     if (!status.isGranted) {
+  //       // Request permission silently
+  //       await Permission.storage.request();
+  //       status = await Permission.storage.status;
+  //       if (!status.isGranted) {
+  //         return; // Don't show error for auto-save
+  //       }
+  //     }
+
+  //     // Download the image
+  //     final response = await http.get(Uri.parse(attachmentUrl!));
+  //     if (response.statusCode == 200) {
+  //       // Save to gallery with a unique name
+  //       final timestamp = DateTime.now().millisecondsSinceEpoch;
+  //       final result = await ImageGallerySaver.saveImage(
+  //         response.bodyBytes,
+  //         quality: 100,
+  //         name: "watconnect_auto_${timestamp}",
+  //       );
+
+  //       if (result['isSuccess'] == true) {
+  //         // Show subtle toast notification
+  //         EasyLoading.showToast(
+  //           'Image saved to gallery',
+  //           toastPosition: EasyLoadingToastPosition.bottom,
+  //           duration: const Duration(seconds: 2),
+  //         );
+  //       }
+  //     }
+  //   } catch (e) {
+  //     // Silently fail for auto-save to avoid annoying users
+  //     debugPrint('Auto-save failed: $e');
+  //   }
+  // }
 
   Widget _buildVideoPreview(BuildContext context) {
     return InkWell(
@@ -269,40 +319,45 @@ class AttachmentPreviewWidget extends StatelessWidget {
   }
 
   Widget _buildAudioPreview(BuildContext context) {
-    return InkWell(
-      onTap: () async {
-        showDialog(
-          context: context,
-          builder: (context) => AudioDialog(audioUrl: attachmentUrl ?? ""),
-        );
+    return GestureDetector(
+      onLongPress: () {
+        _showAudioContextMenu(context);
       },
-      child: Container(
-        height: 60,
-        width: MediaQuery.of(context).size.width * 0.5,
-        decoration: BoxDecoration(
-          color: Colors.deepOrangeAccent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 12.0),
-              child: Container(
-                height: 30,
-                width: 30,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                ),
-                child: const Icon(
-                  Icons.headphones,
-                  size: 20,
-                  color: Colors.black,
+      child: InkWell(
+        onTap: () async {
+          showDialog(
+            context: context,
+            builder: (context) => AudioDialog(audioUrl: attachmentUrl ?? ""),
+          );
+        },
+        child: Container(
+          height: 60,
+          width: MediaQuery.of(context).size.width * 0.5,
+          decoration: BoxDecoration(
+            color: Colors.deepOrangeAccent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: Container(
+                  height: 30,
+                  width: 30,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                  child: const Icon(
+                    Icons.headphones,
+                    size: 20,
+                    color: Colors.black,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -390,8 +445,71 @@ class AttachmentPreviewWidget extends StatelessWidget {
     );
   }
 
+  void _showAudioContextMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              const Text(
+                'Audio Options',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Forward Audio Option
+              ListTile(
+                leading: const Icon(Icons.forward, color: Colors.green),
+                title: const Text('Forward Audio'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _forwardAudio(context);
+                },
+              ),
+              
+              // Cancel Button
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[300],
+                  foregroundColor: Colors.black,
+                ),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _forwardImage(BuildContext context) {
     // Navigate to contact selection screen to forward the image
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ForwardMessageScreen(
+          message: null,
+          attachmentUrl: attachmentUrl ?? '',
+          contentType: contentType ?? '',
+        ),
+      ),
+    );
+  }
+
+  void _forwardAudio(BuildContext context) {
+    // Navigate to contact selection screen to forward the audio
     Navigator.push(
       context,
       MaterialPageRoute(

@@ -424,10 +424,13 @@ class AppUtils {
   }
 
   static void logout(context) async {
-    clearAppCache();
+    // Show loading first
     onLoading(context, "Logging out...");
-
+    
     try {
+      // Clear all cache and temporary data first
+      await clearAppCache();
+      
       final prefs = await SharedPreferences.getInstance();
 
       // Delete FCM token first
@@ -447,36 +450,63 @@ class AppUtils {
       await prefs.remove(SharedPrefsConstants.sfNodeRefreshToken);
       await prefs.remove(SharedPrefsConstants.sfLoginType);
       await prefs.remove(SharedPrefsConstants.sfEnv);
+      await prefs.remove(SharedPrefsConstants.userDecodedTokenKey);
 
-      // Clear all SharedPreferences cache completely
-      await prefs.clear();
+      // Verify that tokens are actually gone
+      final sfTokenAfter =
+          prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+      final userTokenAfter =
+          prefs.getString(SharedPrefsConstants.userKey) ?? "";
+      final sfNodeTokenAfter =
+          prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
+
+      log("✅ Cache clearing verification:");
+      log("   SF Access Token empty: ${sfTokenAfter.isEmpty}");
+      log("   User Token empty: ${userTokenAfter.isEmpty}");
+      log("   SF Node Token empty: ${sfNodeTokenAfter.isEmpty}");
 
       log("✅ All cache and tokens cleared successfully on logout");
 
-      // Small delay to ensure clear() completes
-      await Future.delayed(const Duration(milliseconds: 100));
+      // Small delay to ensure all operations complete
+      await Future.delayed(const Duration(milliseconds: 300));
 
       // Navigate to login screen
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginView()),
-        (route) => false,
-      );
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginView()),
+          (route) => false,
+        );
+      }
     } catch (e) {
       log("❌ Error during logout: $e");
       // Still navigate to login even if there's an error
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginView()),
-        (route) => false,
-      );
+      if (context.mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginView()),
+          (route) => false,
+        );
+      }
     }
   }
 
   static Future<void> clearAppCache() async {
-    final tempDir = await getTemporaryDirectory();
-    if (tempDir.existsSync()) {
-      tempDir.deleteSync(recursive: true);
+    try {
+      // Clear temporary directory
+      final tempDir = await getTemporaryDirectory();
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+      
+      // Clear shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      
+      // Log the cache clearing for verification
+      print("✅ App cache cleared successfully");
+    } catch (e) {
+      print("❌ Error clearing app cache: $e");
     }
   }
 

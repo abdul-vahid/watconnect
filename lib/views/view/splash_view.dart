@@ -49,15 +49,18 @@ class _SplashViewState extends State<SplashView> {
     String sfAccessToken =
         prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
     String user = prefs.getString(SharedPrefsConstants.userKey) ?? "";
-    // String jstokn =
-    // await prefs.getString(SharedPrefsConstants.accessTokenKey) ?? "";
+    String sfNodeToken = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
+    
+    log("🔍 Splash screen token check:");
+    log("   SF Access Token: '${sfAccessToken}' (length: ${sfAccessToken.length})");
+    log("   User Token: '${user}' (length: ${user.length})");
+    log("   SF Node Token: '${sfNodeToken}' (length: ${sfNodeToken.length})");
 
-    log("access sf::   ${sfAccessToken}");
-    // log("token js:: ${jstokn}  ");
-    // log("user:: ${user}  ");
-
-    // FIXED: Check if values are NOT EMPTY, not just if keys exist
-    if (sfAccessToken.isNotEmpty || user.isNotEmpty) {
+    // FIXED: Check if values are NOT EMPTY and have meaningful length
+    if ((sfAccessToken.isNotEmpty && sfAccessToken.length > 10) || 
+        (user.isNotEmpty && user.length > 10) || 
+        (sfNodeToken.isNotEmpty && sfNodeToken.length > 10)) {
+      log("✅ Valid tokens found, proceeding to main app");
       if (user.isEmpty) {
         DashBoardController dashBoardController =
             Provider.of(context, listen: false);
@@ -70,6 +73,7 @@ class _SplashViewState extends State<SplashView> {
         (Route<dynamic> route) => false,
       );
     } else {
+      log("❌ No valid tokens found, redirecting to login");
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginView()),

@@ -233,6 +233,14 @@ class DashBoardController extends ChangeNotifier {
         ..clear()
         ..addAll((data
               ..sort((a, b) {
+                final bool aPinned = a['isPinned'] ?? false;
+                final bool bPinned = b['isPinned'] ?? false;
+                
+                // Pinned items always come first
+                if (aPinned && !bPinned) return -1;
+                if (!aPinned && bPinned) return 1;
+                
+                // For items with same pinned status, sort by lastMessageTime
                 final at = a['lastMessageTime'];
                 final bt = b['lastMessageTime'];
 
@@ -241,7 +249,7 @@ class DashBoardController extends ChangeNotifier {
                 if (at == null) return 1;
                 if (bt == null) return -1;
 
-                // Descending order
+                // Descending order (newest first)
                 return bt.compareTo(at);
               }))
             .map((e) => SfDrawerItemModel.fromJson(e)));
@@ -439,52 +447,68 @@ class DashBoardController extends ChangeNotifier {
   }
 
   Future<void> pinUnPinApiCall({bool isFromRecentChat = false}) async {
-    final prefs = await SharedPreferences.getInstance();
-    final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
-
-    // var url = isFromRecentChat
-    //     ? "${AppConstants.sfRecentChat}?businessnumber=$busNum&recordlimit=5000&objectname=$selectedTitle"
-    //     : AppConstants.getDrawerItemsApi;
-
-    String url = await AppUtils.getSFUrl(isFromRecentChat
-        ? "${AppConstants.sfRecentChat}?businessnumber=$busNum&recordlimit=5000&objectname=$selectedTitle"
-        : AppConstants.getDrawerItemsApi);
-
-    print("selectedPinnedInfo name :::    ${selectedPinnedInfo?.name}");
-    Map<String, dynamic> body = {};
-    if (isFromRecentChat) {
-      body = {
-        "action": selectedPinnedInfo!.isPinned! ? "unpin" : "pin",
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
+      
+      // Use the correct Salesforce pin chat API
+      String url = await AppUtils.getSFUrl(AppConstants.sfPinChat);
+      
+      print("selectedPinnedInfo name :::    ${selectedPinnedInfo?.name}");
+      print("selectedPinnedInfo id :::    ${selectedPinnedInfo?.id}");
+      print("selectedPinnedInfo isPinned :::    ${selectedPinnedInfo?.isPinned}");
+      
+      // Determine the action (pin or unpin)
+      final currentPinStatus = selectedPinnedInfo?.isPinned ?? false;
+      final newPinStatus = !currentPinStatus;
+      final action = newPinStatus ? "pin" : "unpin";
+      
+      Map<String, dynamic> body = {
+        "action": action,
         "parentId": selectedPinnedInfo?.id,
       };
-    } else {
-      body = {
-        "type": "pin_action",
-        "parentId": selectedPinnedInfo?.id,
-        //  selectedDawerModel?.configId,
-        "userId": sfUserData?.userId,
-        // "pinnedBy": selectedPinnedInfo?.id,
-        "pin": selectedPinnedInfo!.isPinned! ? false : true
-      };
-    }
-    final response = await NetworkService.makeRequest(
-      url: url,
-      method: 'POST',
-      body: body,
-    );
-    if (response != null && response.statusCode == 200) {
-      setSelectedPinnedInfo(null);
-      if (isFromRecentChat) {
-        recentChatListApiCall(showLoading: false);
+      
+      print("Pin/Unpin API call: $url");
+      print("Pin/Unpin body: $body");
+      
+      final response = await NetworkService.makeRequest(
+        url: url,
+        method: 'POST',
+        body: body,
+      );
+      
+      if (response != null && response.statusCode == 200) {
+        // Update local state
+        if (selectedPinnedInfo != null) {
+          selectedPinnedInfo!.isPinned = newPinStatus;
+        }
+        
+        // Clear the selected info
+        setSelectedPinnedInfo(null);
+        
+        // Refresh the appropriate list
+        if (isFromRecentChat) {
+          print("Auto-refreshing recent chat list after pin/unpin");
+          await recentChatListApiCall(showLoading: false);
+        } else {
+          print("Auto-refreshing drawer list after pin/unpin");
+          await drawerListApiCall(
+              showLoading: false,
+              type: selectedDawerModel?.sObjectName ?? "Lead");
+        }
+        
+        // Show success message
+        EasyLoading.showToast(
+          newPinStatus ? "Chat pinned successfully" : "Chat unpinned successfully"
+        );
       } else {
-        drawerListApiCall(
-            showLoading: false,
-            type: selectedDawerModel?.sObjectName ?? "Lead");
+        setSelectedPinnedInfo(null);
+        EasyLoading.showToast("Failed to ${newPinStatus ? 'pin' : 'unpin'} chat");
+        print("Pin/Unpin API failed: ${response?.statusCode} - ${response?.body}");
       }
-    } else {
-      setSelectedPinnedInfo(null);
-      EasyLoading.showToast("Something went wrong.......");
-      // drawerItems = [];
+    } catch (e) {
+      EasyLoading.showToast("Error occurred while ${selectedPinnedInfo?.isPinned == true ? 'unpinning' : 'pinning'} chat");
+      print("Pin/Unpin error: $e");
     }
     notify();
   }
