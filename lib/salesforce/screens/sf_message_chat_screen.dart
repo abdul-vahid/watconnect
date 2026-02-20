@@ -211,7 +211,7 @@ class _SfMessageChatScreenState extends State<SfMessageChatScreen> {
                             right: 0,
                             child: MultiSelectBottomSheet(
                               selectedMessages: selectedMessages,
-                              allMessages: ref.chatHistoryList,
+                              allMessages: ref.chatHistoryList, chatId: '',
                             ),
                           );
                         }

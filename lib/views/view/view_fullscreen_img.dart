@@ -5,7 +5,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:path_provider/path_provider.dart';
-// import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:whatsapp/utils/app_color.dart';
 
 class PreviewImage extends StatefulWidget {

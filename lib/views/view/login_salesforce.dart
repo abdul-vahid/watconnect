@@ -91,11 +91,14 @@ class _WebViewPageState extends State<WebViewPage> {
                 WidgetsBinding.instance.addPostFrameCallback((_) async {
                   ChatMessageController chatMessageController =
                       Provider.of(context, listen: false);
-                  
+
                   // Store login type and environment before making API call
                   final prefs = await SharedPreferences.getInstance();
-                  await prefs.setString(SharedPrefsConstants.sfLoginType, 
-                      widget.loginType == sfLoginType.WatConnect ? "WatConnect" : "SFWatConnect");
+                  await prefs.setString(
+                      SharedPrefsConstants.sfLoginType,
+                      widget.loginType == sfLoginType.WatConnect
+                          ? "WatConnect"
+                          : "SFWatConnect");
                   await prefs.setString(SharedPrefsConstants.sfEnv, widget.env);
 
                   bool success =

@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -426,11 +427,11 @@ class AppUtils {
   static void logout(context) async {
     // Show loading first
     onLoading(context, "Logging out...");
-    
+
     try {
       // Clear all cache and temporary data first
       await clearAppCache();
-      
+
       final prefs = await SharedPreferences.getInstance();
 
       // Delete FCM token first
@@ -452,7 +453,6 @@ class AppUtils {
       await prefs.remove(SharedPrefsConstants.sfEnv);
       await prefs.remove(SharedPrefsConstants.userDecodedTokenKey);
 
-      // Verify that tokens are actually gone
       final sfTokenAfter =
           prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
       final userTokenAfter =
@@ -467,10 +467,9 @@ class AppUtils {
 
       log("✅ All cache and tokens cleared successfully on logout");
 
-      // Small delay to ensure all operations complete
+   
       await Future.delayed(const Duration(milliseconds: 300));
 
-      // Navigate to login screen
       if (context.mounted) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -480,7 +479,6 @@ class AppUtils {
       }
     } catch (e) {
       log("❌ Error during logout: $e");
-      // Still navigate to login even if there's an error
       if (context.mounted) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -498,11 +496,39 @@ class AppUtils {
       if (tempDir.existsSync()) {
         tempDir.deleteSync(recursive: true);
       }
-      
+
+      // Clear application documents directory
+      final appDocDir = await getApplicationDocumentsDirectory();
+      if (appDocDir.existsSync()) {
+        // Only clear specific cache folders, not the entire documents directory
+        final cacheDir = Directory('${appDocDir.path}/cache');
+        if (cacheDir.existsSync()) {
+          cacheDir.deleteSync(recursive: true);
+        }
+      }
+
       // Clear shared preferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
-      
+
+      // Clear cached network images if the package is available
+      try {
+        // This would require importing cached_network_image
+        // CachedNetworkImage.evictFromCache(); // Clear all cached images
+      } catch (e) {
+        // Ignore if cached_network_image is not available
+      }
+
+      // Clear any other app-specific cache directories
+      try {
+        final appSupportDir = await getApplicationSupportDirectory();
+        if (appSupportDir.existsSync()) {
+          appSupportDir.deleteSync(recursive: true);
+        }
+      } catch (e) {
+        // Ignore errors in clearing support directory
+      }
+
       // Log the cache clearing for verification
       print("✅ App cache cleared successfully");
     } catch (e) {

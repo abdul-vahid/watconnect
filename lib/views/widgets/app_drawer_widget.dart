@@ -470,7 +470,7 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
               ),
               const SizedBox(height: 16),
               Text(
-                "Logout",
+                "Logoutsdfghjgfdsfghj",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

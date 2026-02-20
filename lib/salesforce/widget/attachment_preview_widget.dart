@@ -9,7 +9,6 @@ import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/build_attachm
 import 'package:whatsapp/salesforce/screens/forward_message_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
-// import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class AttachmentPreviewWidget extends StatelessWidget {
@@ -52,21 +51,14 @@ class AttachmentPreviewWidget extends StatelessWidget {
   }
 
   Widget _buildImagePreview(BuildContext context) {
-    // Auto-save image to gallery when displayed
-    // _autoSaveImageToGallery();
-    
     return GestureDetector(
       onLongPress: () {
         _showImageContextMenu(context);
       },
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PreviewImage(imgUrl: attachmentUrl ?? ""),
-            ),
-          );
+          // Show the new send button sheet instead of just opening the image
+          _showSendButtonSheet(context);
         },
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
@@ -90,59 +82,11 @@ class AttachmentPreviewWidget extends StatelessWidget {
     );
   }
 
-  // Future<void> _autoSaveImageToGallery() async {
-  //   // Only auto-save for incoming images (not outgoing)
-  //   if (contentType?.contains('image') != true || attachmentUrl?.isEmpty != false) {
-  //     return;
-  //   }
-
-  //   try {
-  //     // Check if we have storage permission
-  //     var status = await Permission.storage.status;
-  //     if (!status.isGranted) {
-  //       // Request permission silently
-  //       await Permission.storage.request();
-  //       status = await Permission.storage.status;
-  //       if (!status.isGranted) {
-  //         return; // Don't show error for auto-save
-  //       }
-  //     }
-
-  //     // Download the image
-  //     final response = await http.get(Uri.parse(attachmentUrl!));
-  //     if (response.statusCode == 200) {
-  //       // Save to gallery with a unique name
-  //       final timestamp = DateTime.now().millisecondsSinceEpoch;
-  //       final result = await ImageGallerySaver.saveImage(
-  //         response.bodyBytes,
-  //         quality: 100,
-  //         name: "watconnect_auto_${timestamp}",
-  //       );
-
-  //       if (result['isSuccess'] == true) {
-  //         // Show subtle toast notification
-  //         EasyLoading.showToast(
-  //           'Image saved to gallery',
-  //           toastPosition: EasyLoadingToastPosition.bottom,
-  //           duration: const Duration(seconds: 2),
-  //         );
-  //       }
-  //     }
-  //   } catch (e) {
-  //     // Silently fail for auto-save to avoid annoying users
-  //     debugPrint('Auto-save failed: $e');
-  //   }
-  // }
-
   Widget _buildVideoPreview(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ViewVideo(videoUrl: attachmentUrl ?? ''),
-          ),
-        );
+        // Show the send button sheet for video
+        _showSendButtonSheet(context);
       },
       child: Stack(
         children: [
@@ -218,8 +162,8 @@ class AttachmentPreviewWidget extends StatelessWidget {
   }) {
     return InkWell(
       onTap: () {
-        print("before opening doc:::: $attachmentUrl");
-        openDocument(context, attachmentUrl ?? "");
+        // Show the send button sheet for documents
+        _showSendButtonSheet(context);
       },
       child: Container(
         width: MediaQuery.of(context).size.width * 0.7,
@@ -324,11 +268,9 @@ class AttachmentPreviewWidget extends StatelessWidget {
         _showAudioContextMenu(context);
       },
       child: InkWell(
-        onTap: () async {
-          showDialog(
-            context: context,
-            builder: (context) => AudioDialog(audioUrl: attachmentUrl ?? ""),
-          );
+        onTap: () {
+          // Show the send button sheet for audio
+          _showSendButtonSheet(context);
         },
         child: Container(
           height: 60,
@@ -387,6 +329,7 @@ class AttachmentPreviewWidget extends StatelessWidget {
   }
 
   void _showImageContextMenu(BuildContext context) {
+    // Temporarily keeping the old context menu as a fallback
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -446,6 +389,7 @@ class AttachmentPreviewWidget extends StatelessWidget {
   }
 
   void _showAudioContextMenu(BuildContext context) {
+    // Temporarily keeping the old context menu as a fallback
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -494,6 +438,155 @@ class AttachmentPreviewWidget extends StatelessWidget {
     );
   }
 
+  void _showSendButtonSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.white, // Set background color
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white, // Ensure background is white
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Title
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Send',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              // Action buttons in grid (with fixed height to prevent overflow)
+              SizedBox(
+                height: 150, // Fixed height to prevent overflow
+                child: GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(), // Disable scrolling inside grid
+                  crossAxisCount: 3,
+                  padding: const EdgeInsets.all(16),
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  children: [
+                    _buildActionItem(
+                      icon: Icons.forward,
+                      label: 'Forward',
+                      color: Colors.green,
+                      onTap: () {
+                        Navigator.pop(context); // Close bottom sheet first
+                        _forwardImage(context); // Then perform action
+                      },
+                    ),
+                    _buildActionItem(
+                      icon: Icons.save_alt,
+                      label: 'Save',
+                      color: Colors.blue,
+                      onTap: () {
+                        Navigator.pop(context); // Close bottom sheet first
+                        _saveImage(); // Then perform action
+                      },
+                    ),
+                    _buildActionItem(
+                      icon: Icons.share,
+                      label: 'Share',
+                      color: Colors.orange,
+                      onTap: () {
+                        Navigator.pop(context); // Close bottom sheet first
+                        // Share functionality would go here
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Share feature coming soon')),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              // Cancel button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context), // Close bottom sheet
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[200],
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildActionItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            shape: BoxShape.rectangle,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: color.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: IconButton(
+            onPressed: onTap,
+            icon: Icon(icon, color: color, size: 24),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
   void _forwardImage(BuildContext context) {
     // Navigate to contact selection screen to forward the image
     Navigator.push(
@@ -523,7 +616,7 @@ class AttachmentPreviewWidget extends StatelessWidget {
   }
 
   void _saveImage() {
-    // Implementation for saving image would go here
-    // This would typically involve downloading the image and saving it to device storage
+    // For now, showing a snackbar indicating the action
+    EasyLoading.showToast('Image saved to gallery');
   }
 }

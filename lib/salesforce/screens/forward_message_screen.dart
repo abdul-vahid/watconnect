@@ -11,7 +11,6 @@ import 'package:whatsapp/salesforce/controller/template_controller.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
-// import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 class ForwardMessageScreen extends StatefulWidget {
   final String? message;

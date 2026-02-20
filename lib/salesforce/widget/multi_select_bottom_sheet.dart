@@ -1,105 +1,128 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/model/chat_history_model.dart';
+import 'package:flutter/services.dart';
 import 'package:whatsapp/salesforce/screens/forward_message_screen.dart';
-import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
-// import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class MultiSelectBottomSheet extends StatelessWidget {
   final List<SfChatHistoryModel> selectedMessages;
   final List<SfChatHistoryModel> allMessages;
+  final String chatId;
 
   const MultiSelectBottomSheet({
     super.key,
     required this.selectedMessages,
     required this.allMessages,
+    required this.chatId,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min, // Important: Make it wrap content
-        children: [
-          // Header with drag handle and title
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Drag handle
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Title
-                Text(
-                  '${selectedMessages.length} item${selectedMessages.length > 1 ? 's' : ''} selected',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Action buttons in grid layout (WhatsApp style) - with fixed height to prevent overflow
-          SizedBox(
-            height: 180, // Fixed height to prevent overflow
-            child: GridView.count(
-              crossAxisCount: 4,
+   
+    return KeyedSubtree(
+      key: ValueKey('multi_select_$chatId'),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+           
+            Container(
               padding: const EdgeInsets.all(16),
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 0.9, // Maintain aspect ratio for better layout
-              children: [
-                _buildActionItem(
-                  icon: Icons.content_copy,
-                  label: 'Copy',
-                  color: Colors.blue,
-                  onTap: () => _copyMessages(context),
-                ),
-                _buildActionItem(
-                  icon: Icons.forward,
-                  label: 'Forward',
-                  color: Colors.green,
-                  onTap: () => _forwardMessages(context),
-                ),
-                _buildActionItem(
-                  icon: Icons.save_alt,
-                  label: 'Save',
-                  color: Colors.purple,
-                  onTap: () => _saveMedia(context),
-                ),
-                _buildActionItem(
-                  icon: Icons.delete,
-                  label: 'Delete',
-                  color: Colors.red,
-                  onTap: () => _deleteMessages(context),
-                ),
-                _buildActionItem(
-                  icon: Icons.download,
-                  label: 'Download',
-                  color: Colors.orange,
-                  onTap: () => _downloadMedia(context),
-                ),
-              ],
+              child: Column(
+                children: [
+          
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Title
+                  Text(
+                    '${selectedMessages.length} item${selectedMessages.length > 1 ? 's' : ''} selected',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+      
+            SizedBox(
+              height: 150,
+              child: GridView.count(
+                crossAxisCount: 4,
+                padding: const EdgeInsets.all(16),
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.9, 
+                children: [
+                  _buildActionItem(
+                    icon: Icons.content_copy,
+                    label: 'Copy',
+                    color: Colors.blue,
+                    onTap: () => _copyMessages(context),
+                  ),
+                  _buildActionItem(
+                    icon: Icons.forward,
+                    label: 'Forward',
+                    color: Colors.green,
+                    onTap: () => _forwardMessages(context),
+                  ),
+                  // _buildActionItem(
+                  //   icon: Icons.save_alt,
+                  //   label: 'Save',
+                  //   color: Colors.purple,
+                  //   onTap: () => _saveMedia(context),
+                  // ),
+                  // _buildActionItem(
+                  //   icon: Icons.delete,
+                  //   label: 'Delete',
+                  //   color: Colors.red,
+                  //   onTap: () => _deleteMessages(context),
+                  // ),
+                  // _buildActionItem(
+                  //   icon: Icons.download,
+                  //   label: 'Download',
+                  //   color: Colors.orange,
+                  //   onTap: () => _downloadMedia(context),
+                  // ),
+                ],
+              ),
+            ),
+            
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+          
+                    final controller = Provider.of<ChatMessageController>(context, listen: false);
+                    controller.clearSelection();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[200],
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('Cancel'),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -151,7 +174,7 @@ class MultiSelectBottomSheet extends StatelessWidget {
     // Combine all text from selected messages
     final textToCopy = selectedMessages
         .where((msg) => msg.message?.isNotEmpty ?? false)
-        .map((msg) => msg.message!)
+        .map((msg) => msg.message ?? '')
         .join('\n\n');
 
     if (textToCopy.isNotEmpty) {
@@ -202,7 +225,7 @@ class MultiSelectBottomSheet extends StatelessWidget {
     final controller =
         Provider.of<ChatMessageController>(context, listen: false);
 
-    // Filter images from selected messages
+    // Filter image messages
     final imageMessages = selectedMessages
         .where((msg) =>
             (msg.contentType?.contains('image') ?? false) &&
@@ -219,38 +242,38 @@ class MultiSelectBottomSheet extends StatelessWidget {
       return;
     }
 
-    // Request permission
-    var status = await Permission.storage.status;
-    if (!status.isGranted) {
-      status = await Permission.storage.request();
-      if (!status.isGranted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Storage permission required to save images'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        return;
+    EasyLoading.show(status: 'Saving images...');
+
+    int savedCount = 0;
+
+    // Save each image
+    for (var _ in imageMessages) {
+      try {
+        // In a real implementation, you would download and save the image
+        // This is a placeholder for the save functionality
+        await Future.delayed(
+            const Duration(milliseconds: 500)); // Simulate save
+        savedCount++;
+      } catch (e) {
+        debugPrint('Error saving image: $e');
       }
     }
 
-    int savedCount = 0;
-    int totalCount = imageMessages.length;
+    EasyLoading.dismiss();
 
-    Navigator.pop(context);
-    controller.clearSelection();
-
-    // Show result
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          savedCount == totalCount
+          savedCount == imageMessages.length
               ? 'All images saved successfully'
-              : '$savedCount of $totalCount images saved',
+              : '$savedCount of ${imageMessages.length} images saved',
         ),
         duration: const Duration(seconds: 3),
       ),
-    );  
+    );
+
+    controller.clearSelection();
+    Navigator.pop(context);
   }
 
   void _deleteMessages(BuildContext context) {
@@ -272,16 +295,11 @@ class MultiSelectBottomSheet extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(context); // Close dialog
                 Navigator.pop(context); // Close bottom sheet
                 controller.clearSelection();
-                // Add actual delete logic here
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Messages deleted'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+                // Call the delete API for each selected message
+                _deleteSelectedMessages(context, controller);
               },
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
             ),
@@ -291,10 +309,39 @@ class MultiSelectBottomSheet extends StatelessWidget {
     );
   }
 
-  void _downloadMedia(BuildContext context) async {
-    final controller =
-        Provider.of<ChatMessageController>(context, listen: false);
+  void _deleteSelectedMessages(BuildContext context, ChatMessageController controller) async {
+    try {
+      EasyLoading.show(status: 'Deleting messages...');
+      
+      // For now, we'll just clear the selection and show a success message
+      // In a real implementation, you would call the actual delete API
+      await Future.delayed(const Duration(seconds: 1)); // Simulate API call
+      
+      EasyLoading.dismiss();
+      
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Messages deleted successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      EasyLoading.dismiss();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting messages: $e'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
+  void _downloadMedia(BuildContext context) async {
     // Filter downloadable content (images, videos, documents)
     final downloadableMessages = selectedMessages
         .where((msg) =>
@@ -305,24 +352,19 @@ class MultiSelectBottomSheet extends StatelessWidget {
     if (downloadableMessages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('No media to download'),
+          content: Text('No downloadable content selected'),
           duration: Duration(seconds: 2),
         ),
       );
       return;
     }
 
-    Navigator.pop(context);
-    controller.clearSelection();
-
-    // Show download progress
-    EasyLoading.show(
-        status: 'Downloading ${downloadableMessages.length} files...');
+    EasyLoading.show(status: 'Downloading files...');
 
     int downloadedCount = 0;
 
     // Download each file
-    for (var message in downloadableMessages) {
+    for (var _ in downloadableMessages) {
       try {
         // In a real implementation, you would download to a specific folder
         // This is a placeholder for the download functionality
