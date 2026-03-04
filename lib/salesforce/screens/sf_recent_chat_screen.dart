@@ -386,7 +386,7 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            
+
             // Chat info
             Expanded(
               child: Column(
@@ -427,9 +427,9 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                 ],
               ),
             ),
-            
+
             const SizedBox(width: 12),
-            
+
             // Time and unread indicator
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -464,20 +464,20 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                             child: Row(
                               children: [
                                 Icon(
-                                  drawerListItem.isPinned == true 
-                                    ? Icons.push_pin_outlined 
+                                  drawerListItem.isPinned == true
+                                    ? Icons.push_pin_outlined
                                     : Icons.push_pin,
                                   size: 18,
-                                  color: drawerListItem.isPinned == true 
-                                    ? Colors.orange 
+                                  color: drawerListItem.isPinned == true
+                                    ? Colors.orange
                                     : Colors.grey,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   drawerListItem.isPinned == true ? 'Unpin Chat' : 'Pin Chat',
                                   style: TextStyle(
-                                    color: drawerListItem.isPinned == true 
-                                      ? Colors.orange 
+                                    color: drawerListItem.isPinned == true
+                                      ? Colors.orange
                                       : Colors.grey[700],
                                   ),
                                 ),
@@ -504,7 +504,7 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
                             6),
                     decoration:
                         const BoxDecoration(
-                      color: Colors.red,
+                      color: Colors.green,
                       shape: BoxShape.circle,
                     ),
                     child: Text(
@@ -528,33 +528,75 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
     );
   }
 
+//   void _togglePinChat(SfDrawerItemModel item) async {
+//     try {
+//       final chatController = Provider.of<ChatMessageController>(context, listen: false);
+//       final dbController = Provider.of<DashBoardController>(context, listen: false);
+//
+//       // Toggle the pin status
+//       final newPinStatus = !(item.isPinned ?? false);
+//
+//       // Show loading
+//       EasyLoading.show(status: '${newPinStatus ? 'Pinning' : 'Unpinning'} chat...');
+//
+//       // Call the API to pin/unpin
+//       await chatController.pinChatApiCall(item.id ?? '', newPinStatus);
+//
+//       // Update local state immediately for better UX
+//       item.isPinned = newPinStatus;
+//
+//       // Refresh the chat list to get updated data from server
+//       await dbController.getDasBoardReportApiCall();
+//
+//       // Dismiss loading and show success
+//       EasyLoading.dismiss();
+//       EasyLoading.showToast(
+//         newPinStatus ? 'Chat pinned successfully' : 'Chat unpinned successfully'
+//       );
+//
+//       // Trigger UI refresh
+//       if (mounted) {
+//         setState(() {});
+//       }
+//     } catch (e) {
+//       EasyLoading.dismiss();
+//       EasyLoading.showToast('Failed to ${item.isPinned == true ? 'unpin' : 'pin'} chat');
+//       debugPrint('Pin/Unpin error: $e');
+//     }
+//   }
+// }
+
   void _togglePinChat(SfDrawerItemModel item) async {
     try {
       final chatController = Provider.of<ChatMessageController>(context, listen: false);
       final dbController = Provider.of<DashBoardController>(context, listen: false);
-      
-      // Toggle the pin status
-      final newPinStatus = !(item.isPinned ?? false);
-      
-      // Show loading
+
+
+      final wasPinned = item.isPinned ?? false;
+      final newPinStatus = !wasPinned;
+
+
       EasyLoading.show(status: '${newPinStatus ? 'Pinning' : 'Unpinning'} chat...');
-      
-      // Call the API to pin/unpin
+
+
       await chatController.pinChatApiCall(item.id ?? '', newPinStatus);
-      
-      // Update local state immediately for better UX
+
+
       item.isPinned = newPinStatus;
-      
-      // Refresh the chat list to get updated data from server
+
+      await dbController.recentChatListApiCall();
+
+
       await dbController.getDasBoardReportApiCall();
-      
-      // Dismiss loading and show success
+
+
+      dbController.setSelectedPinnedInfo(null);
+
       EasyLoading.dismiss();
       EasyLoading.showToast(
-        newPinStatus ? 'Chat pinned successfully' : 'Chat unpinned successfully'
+          newPinStatus ? 'Chat pinned successfully' : 'Chat unpinned successfully'
       );
-      
-      // Trigger UI refresh
+
       if (mounted) {
         setState(() {});
       }
@@ -562,12 +604,15 @@ class _SfRecentChatScreenState extends State<SfRecentChatScreen> {
       EasyLoading.dismiss();
       EasyLoading.showToast('Failed to ${item.isPinned == true ? 'unpin' : 'pin'} chat');
       debugPrint('Pin/Unpin error: $e');
+
+      item.isPinned = !(item.isPinned ?? false);
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
-}
-
 String formatDateTime(int timestamp) {
-  // Use the timestamp directly (milliseconds)
+
   final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp).toLocal();
   final now = DateTime.now();
 

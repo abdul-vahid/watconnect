@@ -467,7 +467,6 @@ class AppUtils {
 
       log("✅ All cache and tokens cleared successfully on logout");
 
-   
       await Future.delayed(const Duration(milliseconds: 300));
 
       if (context.mounted) {
