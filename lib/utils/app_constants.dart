@@ -187,8 +187,8 @@ abstract class AppConstants {
   static const String recentArchieveChat =
       '/api/whatsapp/chat/filter?textName=&recordType=archived';
 
-  static const String allCampLeads =
-      '/api/whatsapp/chat/filter?textName=&cityName=&recordType=lead';
+  // static const String allCampLeads =
+  //     '/api/whatsapp/chat/filter?textName=&cityName=&recordType=lead';
 
   static const String imagesend =
       "/api/webhook_template/documentId?whatsapp_setting_number=";

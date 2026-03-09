@@ -35,9 +35,7 @@ class LeadListViewModel extends BaseListViewModel {
     await get(url: url, baseModel: RecentChatModel());
   }
 
-
-
-   Future<void> fetchRecentArchieveChat() async {
+  Future<void> fetchRecentArchieveChat() async {
     String url = AppUtils.getUrl(AppConstants.recentArchieveChat);
     await get(url: url, baseModel: RecentChatModel());
   }
@@ -60,10 +58,11 @@ class LeadListViewModel extends BaseListViewModel {
     await get(url: apiUrl, baseModel: TagsModel());
   }
 
-  Future<void> fetchCampLeads() async {
-    String url = AppUtils.getUrl(AppConstants.allCampLeads);
-    await get(url: url, baseModel: RecentChatModel());
-  }
+  // Future<void> fetchCampLeads() async {
+  //   String url = AppUtils.getUrl(AppConstants.allCampLeads);
+  //   debug("urlurlurlurlurl$url");
+  //   await get(url: url, baseModel: RecentChatModel());
+  // }
 
   Future<dynamic> addlead(Map addLeadBody) async {
     print("working.....");

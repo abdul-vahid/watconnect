@@ -535,7 +535,6 @@ class _RecentChatViewState extends State<RecentChatView> {
                                   const SizedBox(height: 4),
                                   SizedBox(
                                     width: 60,
-                                    child: Text("jh"),
                                   ),
                                 ],
                               ),

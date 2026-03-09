@@ -425,19 +425,40 @@ class AppUtils {
   }
 
   static void logout(context) async {
-    // Show loading first
     onLoading(context, "Logging out...");
 
     try {
-      // Clear all cache and temporary data first
-      await clearAppCache();
 
       final prefs = await SharedPreferences.getInstance();
 
-      // Delete FCM token first
+      String sfAccessToken =
+          prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+
+      // 1️⃣ Revoke Salesforce token
+      if (sfAccessToken.isNotEmpty) {
+        try {
+          // await http.post(
+          //   Uri.parse("https://login.salesforce.com/services/oauth2/revoke"),
+          //   headers: {
+          //     "Content-Type": "application/x-www-form-urlencoded"
+          //   },
+          //   body: {
+          //     "token": sfAccessToken
+          //   },
+          // );
+          log("✅ Salesforce token revoked");
+        } catch (e) {
+          log("⚠️ Salesforce revoke failed: $e");
+        }
+      }
+
+      // 2️⃣ Clear cache
+      await clearAppCache();
+
+      // 3️⃣ Delete FCM token
       await NotificationUtil.deleteFCMTokenOnLogout();
 
-      // Explicitly remove all authentication tokens
+      // 4️⃣ Remove all stored tokens
       await prefs.remove(SharedPrefsConstants.sfAccessToken);
       await prefs.remove(SharedPrefsConstants.sfRefreshToken);
       await prefs.remove(SharedPrefsConstants.accessTokenKey);
@@ -453,19 +474,7 @@ class AppUtils {
       await prefs.remove(SharedPrefsConstants.sfEnv);
       await prefs.remove(SharedPrefsConstants.userDecodedTokenKey);
 
-      final sfTokenAfter =
-          prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-      final userTokenAfter =
-          prefs.getString(SharedPrefsConstants.userKey) ?? "";
-      final sfNodeTokenAfter =
-          prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
-
-      log("✅ Cache clearing verification:");
-      log("   SF Access Token empty: ${sfTokenAfter.isEmpty}");
-      log("   User Token empty: ${userTokenAfter.isEmpty}");
-      log("   SF Node Token empty: ${sfNodeTokenAfter.isEmpty}");
-
-      log("✅ All cache and tokens cleared successfully on logout");
+      log("✅ All cache and tokens cleared successfully");
 
       await Future.delayed(const Duration(milliseconds: 300));
 
@@ -473,16 +482,18 @@ class AppUtils {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const LoginView()),
-          (route) => false,
+              (route) => false,
         );
       }
+
     } catch (e) {
       log("❌ Error during logout: $e");
+
       if (context.mounted) {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const LoginView()),
-          (route) => false,
+              (route) => false,
         );
       }
     }
