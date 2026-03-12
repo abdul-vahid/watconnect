@@ -49,18 +49,17 @@ class _SplashViewState extends State<SplashView> {
     String sfAccessToken =
         prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
     String user = prefs.getString(SharedPrefsConstants.userKey) ?? "";
-    String sfNodeToken = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
-    
+    String sfNodeToken =
+        prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
+
     log("🔍 Splash screen token check:");
     log("   SF Access Token: '${sfAccessToken}' (length: ${sfAccessToken.length})");
     log("   User Token: '${user}' (length: ${user.length})");
     log("   SF Node Token: '${sfNodeToken}' (length: ${sfNodeToken.length})");
 
-    // FIXED: Check if values are NOT EMPTY and have meaningful length
-    if ((sfAccessToken.isNotEmpty && sfAccessToken.length > 10) || 
-        (user.isNotEmpty && user.length > 10) || 
+    if ((sfAccessToken.isNotEmpty && sfAccessToken.length > 10) ||
+        (user.isNotEmpty && user.length > 10) ||
         (sfNodeToken.isNotEmpty && sfNodeToken.length > 10)) {
-      log("✅ Valid tokens found, proceeding to main app");
       if (user.isEmpty) {
         DashBoardController dashBoardController =
             Provider.of(context, listen: false);

@@ -424,76 +424,35 @@ class AppUtils {
     return string[0].toUpperCase() + string.substring(1);
   }
 
-  static void logout(context) async {
-    onLoading(context, "Logging out...");
+  static Future<void> logout(BuildContext? context) async {
+    if (context != null) {
+      onLoading(context, "Logging out...");
+    }
 
     try {
-
       final prefs = await SharedPreferences.getInstance();
 
-      String sfAccessToken =
-          prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
-
-      // 1️⃣ Revoke Salesforce token
-      if (sfAccessToken.isNotEmpty) {
-        try {
-          // await http.post(
-          //   Uri.parse("https://login.salesforce.com/services/oauth2/revoke"),
-          //   headers: {
-          //     "Content-Type": "application/x-www-form-urlencoded"
-          //   },
-          //   body: {
-          //     "token": sfAccessToken
-          //   },
-          // );
-          log("✅ Salesforce token revoked");
-        } catch (e) {
-          log("⚠️ Salesforce revoke failed: $e");
-        }
-      }
-
-      // 2️⃣ Clear cache
       await clearAppCache();
-
-      // 3️⃣ Delete FCM token
       await NotificationUtil.deleteFCMTokenOnLogout();
-
-      // 4️⃣ Remove all stored tokens
-      await prefs.remove(SharedPrefsConstants.sfAccessToken);
-      await prefs.remove(SharedPrefsConstants.sfRefreshToken);
-      await prefs.remove(SharedPrefsConstants.accessTokenKey);
-      await prefs.remove(SharedPrefsConstants.refreshTokenKey);
-      await prefs.remove(SharedPrefsConstants.userKey);
-      await prefs.remove(SharedPrefsConstants.idTokenKey);
-      await prefs.remove(SharedPrefsConstants.sfInstanceurl);
-      await prefs.remove(SharedPrefsConstants.sfBaseUrl);
-      await prefs.remove(SharedPrefsConstants.sfBusinessNumber);
-      await prefs.remove(SharedPrefsConstants.sfNodeToken);
-      await prefs.remove(SharedPrefsConstants.sfNodeRefreshToken);
-      await prefs.remove(SharedPrefsConstants.sfLoginType);
-      await prefs.remove(SharedPrefsConstants.sfEnv);
-      await prefs.remove(SharedPrefsConstants.userDecodedTokenKey);
+      await prefs.clear();
 
       log("✅ All cache and tokens cleared successfully");
 
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      if (context.mounted) {
+      if (context != null && context.mounted) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const LoginView()),
-              (route) => false,
+          MaterialPageRoute(builder: (_) => const LoginView()),
+          (route) => false,
         );
       }
-
     } catch (e) {
       log("❌ Error during logout: $e");
 
-      if (context.mounted) {
+      if (context != null && context.mounted) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const LoginView()),
-              (route) => false,
+          MaterialPageRoute(builder: (_) => const LoginView()),
+          (route) => false,
         );
       }
     }
