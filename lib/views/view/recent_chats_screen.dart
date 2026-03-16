@@ -79,16 +79,25 @@ class _RecentChatViewState extends State<RecentChatView> {
 
   final int maxTagsToShow = 3;
 
+  final ScrollController _scrollController = ScrollController();
+  int _offset = 0;
+  final int _limit = 20;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+
   @override
   void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+
     shouldHide();
     _getUnreadCount();
     getLeadList();
-    super.initState();
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     newTagController.dispose();
     super.dispose();
   }
@@ -233,7 +242,7 @@ class _RecentChatViewState extends State<RecentChatView> {
 
     return FocusDetector(
       onFocusGained: () {
-        getLeadList(showLoading: false);
+        getLeadList(showLoading: false, reset: true);
       },
       child: Scaffold(
         backgroundColor: AppColor.pageBgGrey,
@@ -373,13 +382,9 @@ class _RecentChatViewState extends State<RecentChatView> {
   }
 
   Future<void> _pullRefresh() async {
-    leads?.viewModels.clear();
-
-    await Provider.of<LeadListViewModel>(context, listen: false)
-        .fetchRecentChat();
+    await getLeadList(showLoading: false, reset: true);
     await Provider.of<UnreadCountVm>(context, listen: false)
         .fetchunreadcount(number: number);
-    getLeadList();
     isRefresh = true;
     return Future<void>.delayed(const Duration(seconds: 1));
   }
@@ -736,10 +741,24 @@ class _RecentChatViewState extends State<RecentChatView> {
                                       )
                                     : Expanded(
                                         child: ListView.builder(
-                                          itemCount: allRecentChats.length,
+                                          controller: _scrollController,
+                                          itemCount: allRecentChats.length +
+                                              (_isLoadingMore ? 1 : 0),
                                           physics:
                                               const BouncingScrollPhysics(),
                                           itemBuilder: (context, index) {
+                                            if (index >=
+                                                allRecentChats.length) {
+                                              return const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 16),
+                                                child: Center(
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                ),
+                                              );
+                                            }
+
                                             final lead = allRecentChats[index];
                                             String unreadCount = "0";
 
@@ -769,48 +788,89 @@ class _RecentChatViewState extends State<RecentChatView> {
   }
 
   bool chatLoader = false;
-  Future<void> getLeadList({bool showLoading = true}) async {
-    if (mounted) {
-      if (showLoading == true) {
-        setState(() {
-          chatLoader = true;
-        });
-      }
-    }
-
-    await Provider.of<LeadListViewModel>(navigatorKey.currentContext!,
-            listen: false)
-        .fetchRecentChat()
-        .then((onValue) {
+  Future<void> getLeadList(
+      {bool showLoading = true, bool reset = false}) async {
+    if (reset) {
+      _offset = 0;
+      _hasMore = true;
       allRecentChats = [];
       tempLeadModelList = [];
       pinnedLeads = [];
+    }
 
-      try {
-        for (var viewModel in leadlistvm.viewModels) {
-          var recentMsgmodel = viewModel.model;
-          if (recentMsgmodel?.records != null) {
-            for (var record in recentMsgmodel!.records!) {
-              allRecentChats.add(record);
-              tempLeadModelList.add(record);
-              if (record.pinned) {
-                debug("pinne");
-                pinnedLeads.add(record);
-              }
-            }
-          }
-        }
-        // Extract unique tags from all leads
-        _extractUniqueTags();
-      } catch (e) {
-        allRecentChats = [];
-      }
-    });
+    if (!_hasMore && !reset) return;
 
-    if (mounted) {
+    if (mounted && showLoading) {
       setState(() {
-        chatLoader = false;
+        chatLoader = true;
       });
+    }
+
+    if (_isLoadingMore) return;
+    _isLoadingMore = true;
+
+    try {
+      String baseUrl = AppUtils.getUrl(AppConstants.recentChat);
+      baseUrl = baseUrl.replaceAll(RegExp(r'&limit=\d+&offset=\d+'), '');
+      String url = '$baseUrl&limit=$_limit&offset=$_offset';
+      print("Fetching chats from URL: $url");
+      String? token = await AppUtils.getToken();
+      token ??= "";
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        List<dynamic> recordsJson = [];
+
+        if (jsonData is Map<String, dynamic> && jsonData['records'] is List) {
+          recordsJson = jsonData['records'] as List<dynamic>;
+        } else if (jsonData is List) {
+          recordsJson = jsonData;
+        }
+
+        final fetchedRecords = recordsJson
+            .map((e) => Records.fromMap(e as Map<String, dynamic>))
+            .toList();
+
+        if (_offset == 0) {
+          allRecentChats = fetchedRecords;
+          tempLeadModelList = fetchedRecords;
+        } else {
+          allRecentChats.addAll(fetchedRecords);
+          tempLeadModelList.addAll(fetchedRecords);
+        }
+
+        pinnedLeads.addAll(fetchedRecords.where((r) => r.pinned == true));
+
+        _hasMore = fetchedRecords.length == _limit;
+        if (_hasMore) _offset += _limit;
+
+        _extractUniqueTags();
+      }
+    } catch (e) {
+      debug("Error fetching chats: $e");
+    } finally {
+      _isLoadingMore = false;
+      if (mounted) {
+        setState(() {
+          chatLoader = false;
+        });
+      }
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        _hasMore) {
+      getLeadList(showLoading: false);
     }
   }
 

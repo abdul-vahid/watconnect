@@ -181,8 +181,11 @@ abstract class AppConstants {
   static const String unreadcountpath =
       '/api/whatsapp/chat/unread_count?whatsapp_setting_number=';
 
+  // static const String recentChat =
+  //     '/api/whatsapp/chat/filter?textName=&cityName=&recordType=recentlyMessage';
+      
   static const String recentChat =
-      '/api/whatsapp/chat/filter?textName=&cityName=&recordType=recentlyMessage';
+      '/api/whatsapp/chat/lazyfilter?textName=&recordType=recentlyMessage&limit=20&offset=0';
 
   static const String recentArchieveChat =
       '/api/whatsapp/chat/filter?textName=&recordType=archived';

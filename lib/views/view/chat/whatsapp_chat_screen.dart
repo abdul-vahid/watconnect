@@ -315,7 +315,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                                     ? null
                                                     : model,
                                                 isArch:
-                                                    model.is_archived ?? false,
+                                                    model.isArchived ?? false,
                                               ),
                                             ),
                                           ).then((onValue) {
@@ -329,6 +329,9 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                           }
 
                                           _getUnreadCount();
+
+                                          if (!mounted) return;
+
                                           final prefs = await SharedPreferences
                                               .getInstance();
                                           var number =
@@ -337,6 +340,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                                   listen: false)
                                               .fetchunreadcount(
                                                   number: number ?? "");
+                                          if (!mounted) return;
                                           setState(() {});
                                         } else {
                                           ScaffoldMessenger.of(context)
