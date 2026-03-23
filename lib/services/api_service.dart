@@ -27,7 +27,7 @@ class APIService {
       });
 
       print(
-          "**************** before return response****************  ${url}  ");
+          "**************** before return response****************  ${url}");
 
       final data = returnResponse(response, url);
       return ApiResponse(data: data, statusCode: response.statusCode);

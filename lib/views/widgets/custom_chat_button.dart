@@ -4,14 +4,46 @@ import 'package:whatsapp/utils/app_color.dart';
 
 class CustomButtonList extends StatelessWidget {
   final List<dynamic> buttons;
+  final Map<String, dynamic>? buttonVariables;
 
-  const CustomButtonList({super.key, required this.buttons});
+  const CustomButtonList({
+    super.key,
+    required this.buttons,
+    this.buttonVariables,
+  });
+
+  String _getLabel(int index, String original) {
+    final key = "${index + 1}";
+    if (buttonVariables != null && buttonVariables!.containsKey(key)) {
+      final value = buttonVariables![key];
+      if (value is String && value.isNotEmpty) return value;
+    }
+    return original;
+  }
+
+  String _resolveDynamicUrl(int index, dynamic originalUrl) {
+    final url = originalUrl?.toString() ?? "";
+    if (url.isEmpty) return url;
+
+    final key = "${index + 1}";
+    final value = buttonVariables?[key];
+    if (value is String && value.isNotEmpty) {
+      return url.replaceAll(RegExp(r'\{\{\d+\}\}'), value);
+    }
+
+    return url;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Wrap(
       spacing: 10,
-      children: buttons.map((button) {
+      children: buttons.asMap().entries.map((entry) {
+        final index = entry.key;
+        final button = entry.value;
+        final label = _getLabel(index, button['text'] ?? "");
+        final resolvedUrl = _resolveDynamicUrl(index, button['url']);
+
         return Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Row(
@@ -26,14 +58,14 @@ class CustomButtonList extends StatelessWidget {
                       await launchUrl(phoneUri);
                     }
                   } else if (button['type'] == "URL") {
-                    final Uri url = Uri.parse(button['url']);
+                    final Uri url = Uri.parse(resolvedUrl);
                     if (!await launchUrl(url,
                         mode: LaunchMode.externalApplication)) {
                       throw Exception('Could not launch $url');
                     }
                   }
 
-                  debugPrint("Button clicked: ${button['text']}");
+                  debugPrint("Button clicked: $label");
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey[200],
@@ -46,7 +78,7 @@ class CustomButtonList extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  button['text'] ?? "",
+                  label,
                   style: const TextStyle(
                     color: AppColor.navBarIconColor,
                     fontWeight: FontWeight.w700,

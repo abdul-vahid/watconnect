@@ -81,7 +81,7 @@ class _RecentChatViewState extends State<RecentChatView> {
 
   final ScrollController _scrollController = ScrollController();
   int _offset = 0;
-  final int _limit = 20;
+  final int _limit = 200;
   bool _hasMore = true;
   bool _isLoadingMore = false;
 

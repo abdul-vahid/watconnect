@@ -41,6 +41,9 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
   bool isOtherFileSelected = false;
   String imgToShow = "";
   bool isSendingTemplate = false;
+  int selectedButtonIndex = 0;
+  List<int> dynamicButtonIndices = [];
+  List<TextEditingController> buttonControllers = [];
   List<TextEditingController> carousalController = [];
   File? mainContentFile;
 
@@ -57,6 +60,28 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     widget.controllers.addAll(
       List.generate(placeholderCount, (index) => TextEditingController()),
     );
+
+    dynamicButtonIndices.clear();
+    buttonControllers.clear();
+
+    final buttons = msgViewModel.selectedButtons?.buttons;
+    if (buttons != null) {
+      for (var i = 0; i < buttons.length; i++) {
+        final buttonUrl = buttons[i].url ?? "";
+        final isDynamicUrlButton = (buttons[i].type ?? "").toUpperCase() == "URL" &&
+            RegExp(r'\{\{\d+\}\}').hasMatch(buttonUrl);
+        if (isDynamicUrlButton) {
+          dynamicButtonIndices.add(i);
+          buttonControllers.add(TextEditingController());
+        }
+      }
+    }
+
+    if (dynamicButtonIndices.isNotEmpty) {
+      selectedButtonIndex = dynamicButtonIndices.first;
+    } else {
+      selectedButtonIndex = 0;
+    }
   }
 
   String _extractImageToShow(MessageViewModel msgViewModel) {
@@ -253,6 +278,9 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
             _buildPlaceholderInputs(widget.controllers),
             const SizedBox(height: 16),
 
+            // Button Inputs (dynamic only)
+            _buildButtonInputs(),
+
             // Buttons
             if (msgViewModel.selectedButtons != null) ...[
               Wrap(
@@ -262,6 +290,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
                   msgViewModel.selectedButtons!.buttons!.length,
                   (index) => _buildButtonChip(
                     msgViewModel.selectedButtons?.buttons?[index].text ?? "",
+                    index,
                   ),
                 ),
               ),
@@ -364,29 +393,79 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     );
   }
 
-  Widget _buildButtonChip(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColor.navBarIconColor, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppColor.navBarIconColor.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+  Widget _buildButtonChip(String text, int index) {
+    final isSelected = selectedButtonIndex == index;
+    return GestureDetector(
+      onTap: () {
+        if (dynamicButtonIndices.contains(index)) {
+          setState(() {
+            selectedButtonIndex = index;
+          });
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColor.navBarIconColor : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected
+                ? AppColor.navBarIconColor
+                : AppColor.navBarIconColor,
+            width: 1.5,
           ),
-        ],
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: AppColor.navBarIconColor,
-          fontWeight: FontWeight.w600,
-          fontSize: 13,
+          boxShadow: [
+            BoxShadow(
+              color: AppColor.navBarIconColor.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: isSelected ? Colors.white : AppColor.navBarIconColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildButtonInputs() {
+    if (dynamicButtonIndices.isEmpty) return const SizedBox.shrink();
+
+    final selectedDynamicIndex =
+        dynamicButtonIndices.indexOf(selectedButtonIndex);
+    if (selectedDynamicIndex < 0) {
+      selectedButtonIndex = dynamicButtonIndices.first;
+    }
+
+    final controller = buttonControllers[selectedDynamicIndex];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Dynamic Button Values',
+          style: TextStyle(
+              fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: 'Button ${selectedButtonIndex + 1} value',
+            hintText: 'Enter value for dynamic URL placeholder in button',
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 
@@ -581,6 +660,11 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     final phoneNumber = prefs.getString('phoneNumber');
     final hasWallet = prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
 
+    print(
+        "DEBUG _sendTemplate START: controllers=${widget.controllers.length}, dynamicButtonIndices=$dynamicButtonIndices");
+    print(
+        "DEBUG _sendTemplate: controller values=${widget.controllers.map((c) => c.text).toList()}");
+
     if (_requiresFile(msgViewModel) && mainContentFile == null) {
       EasyLoading.showToast("Please pick a file to send this template");
       setState(() {
@@ -639,7 +723,16 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
   }
 
   bool _allFilled(List<TextEditingController> controllers) {
-    return controllers.every((c) => c.text.trim().isNotEmpty);
+    final placeholderFilled =
+        controllers.every((c) => c.text.trim().isNotEmpty);
+    final buttonFilled = dynamicButtonIndices.isEmpty
+        ? true
+        : buttonControllers.every((c) => c.text.trim().isNotEmpty);
+
+    print(
+        "DEBUG _allFilled: controllers=${controllers.length}, placeholderFilled=$placeholderFilled, dynamicButtonIndices=${dynamicButtonIndices.length}, buttonFilled=$buttonFilled");
+
+    return placeholderFilled && buttonFilled;
   }
 
   Future<Map<String, dynamic>> _buildBody({
@@ -674,16 +767,26 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
         print("file id and title after uploading ::: $fileId   $fileTitle");
       }
 
+      final parameters = <String, dynamic>{
+        ..._mapControllers(widget.controllers),
+        "sendToAdmin": isChecked,
+      };
+
+      final buttonVariables = _buildButtonVariables();
+      if (buttonVariables.isNotEmpty) {
+        parameters["button_variables"] = buttonVariables;
+      }
+
+      print(
+          "DEBUG _buildBody: controllers=${widget.controllers.length}, placeholders=${_mapControllers(widget.controllers)}, dynamicButtons=${dynamicButtonIndices.length}, buttonVars=$buttonVariables");
+
       body = {
         "id": msgViewModel.selectedTempId,
         "name": msgViewModel.selectedTempName,
         "contact_name": widget.leadName,
         "whatsapp_number": widget.leadNum,
         "amount": hasWallet ? walletController.finalAmount : 0,
-        "parameters": <String, dynamic>{
-          ..._mapControllers(widget.controllers),
-          "sendToAdmin": isChecked,
-        },
+        "parameters": parameters,
       };
     } else {
       if (msgViewModel.mainBodyParams["parameters"] == null) {
@@ -704,6 +807,11 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
       final mainInputs = _mapControllers(widget.controllers);
       if (mainInputs.isNotEmpty) {
         finalParams["main"] = mainInputs;
+      }
+
+      final buttonVariables = _buildButtonVariables();
+      if (buttonVariables.isNotEmpty) {
+        finalParams["button_variables"] = buttonVariables;
       }
 
       body = {
@@ -733,6 +841,21 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
             (entry) => MapEntry("${entry.key + 1}", entry.value.text.trim()),
           ),
     );
+  }
+
+  Map<String, dynamic> _buildButtonVariables() {
+    final buttonVariables = <String, dynamic>{};
+    print(
+        "DEBUG _buildButtonVariables: dynamicButtonIndices=$dynamicButtonIndices, buttonControllers=${buttonControllers.length}");
+    for (int i = 0; i < dynamicButtonIndices.length; i++) {
+      final buttonIndex = dynamicButtonIndices[i];
+      final value = buttonControllers[i].text.trim();
+      print("DEBUG button[$i] index=$buttonIndex, value='$value'");
+      if (value.isNotEmpty) {
+        buttonVariables['${buttonIndex + 1}'] = value;
+      }
+    }
+    return buttonVariables;
   }
 
   bool _isImageFile(String path) {

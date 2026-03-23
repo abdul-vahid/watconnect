@@ -201,81 +201,124 @@ class NetworkService {
 // }
 
   static Future<bool> getSfRefreshTokenApiApiCall() async {
-    debug("working refresh api function");
+    debug("Working refresh api function");
+
     final prefs = await SharedPreferences.getInstance();
+
+    print("All Keys ::: ${prefs.getKeys()}");
+
     final env = prefs.getString(SharedPrefsConstants.sfEnv) ?? "Prod";
     final refreshToken =
         prefs.getString(SharedPrefsConstants.sfRefreshToken) ?? "";
-    final loginType = prefs.getString(SharedPrefsConstants.sfLoginType) ?? "WatConnect";
 
-    if (refreshToken.isEmpty) {
-      log(" Refresh token is empty");
-      return false;
-    }
+    print("Env ::: $env");
+    print("RefreshToken ::: $refreshToken");
 
-    // Use the same client IDs as in login
+    final loginType =
+        prefs.getString(SharedPrefsConstants.sfLoginType) ?? "WatConnect";
+
     final clientId = loginType == "WatConnect"
         ? "3MVG9dAEux2v1sLvMShd1QqukhBR6uzZfjJuCm2Jind0stiCXF_X4sJrrVuyO9mz6e2efAESPs532ydpDE_nZ"
         : "3MVG9dAEux2v1sLu9_ht_e8ED9vCM5br3PAMdEIJiJ4BmAN5eKQ7aSvd0wZGn3gq3KQy1Z3aDIf8xQUGDTXcc";
-    
+
     final clientSecret = loginType == "WatConnect"
         ? "195E44ED6BAFD4F6F5CB20343F7FFC169616D9C417B3C51089B00F6487E0F459"
         : "F105FEAA63B821AE7F6C6E7004E7BFA5206212864DD18B3C65F5610626BFFB06";
 
-    Map<String, String> body = {
-      "grant_type": "refresh_token",
-      "client_id": clientId,
-      "client_secret": clientSecret,
-      "refresh_token": refreshToken,
-    };
-
     try {
-      log(" Attempting token refresh for env: $env");
-      log(" Refresh token being used: ${refreshToken.substring(0, 10)}...");
-      log(" Login type: $loginType");
+      log("Refreshing access token...");
 
       final response = await http.post(
         Uri.parse(
             env == 'Test' ? AppConstants.getTestToken : AppConstants.getToken),
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
-        body: Uri(queryParameters: body).query,
+        body: {
+          "grant_type": "refresh_token",
+          "client_id": clientId,
+          "client_secret": clientSecret,
+          "refresh_token": refreshToken,
+        },
       );
 
-      log("Token refresh response status: ${response.statusCode}");
-      log("Token refresh response body: ${response.body}");
+      log("Refresh response status: ${response.statusCode}");
+      log("Refresh response body: ${response.body}");
 
       if (response.statusCode == 200) {
-        final parsedJson = jsonDecode(response.body);
-        log("Parsed refresh response: $parsedJson");
+        final data = jsonDecode(response.body);
 
-        final accessToken = parsedJson["access_token"] ?? "";
-        // Note: refresh_token is not returned in refresh response, so keep the existing one
-        final instanceUrl = parsedJson["instance_url"] ?? "";
+        final accessToken = data["access_token"] ?? "";
+        final instanceUrl = data["instance_url"] ?? "";
 
         if (accessToken.isNotEmpty) {
           await prefs.setString(
               SharedPrefsConstants.sfAccessToken, accessToken);
-          // Keep the existing refresh token as Salesforce doesn't return a new one
+
           if (instanceUrl.isNotEmpty) {
             await prefs.setString(
                 SharedPrefsConstants.sfInstanceurl, instanceUrl);
           }
-          log(" Access token refreshed successfully");
-          log(" New access token length: ${accessToken.length}");
-          log(" Instance URL: $instanceUrl");
+
+          log("Access token refreshed successfully");
+
           return true;
-        } else {
-          log(" Access token not found in response");
         }
       } else {
-        log(" Refresh token failed: ${response.statusCode} ${response.body}");
-        final errorResponse = jsonDecode(response.body);
-        log(" Error details: ${errorResponse['error_description'] ?? errorResponse['error']}");
+        log("Refresh failed: ${response.body}");
       }
     } catch (e) {
-      log(" Error in token refresh: $e");
+      log("Refresh token error: $e");
     }
 
     return false;
+  }
+
+  /// Logout function - revokes all tokens and clears cache
+  static Future<void> logout() async {
+    print("logoutttttttttttttttt");
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      final accessToken =
+          prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+      final env = prefs.getString(SharedPrefsConstants.sfEnv) ?? "Prod";
+      final instanceUrl =
+          prefs.getString(SharedPrefsConstants.sfInstanceurl) ?? "";
+
+      log("🚀 Starting logout process...");
+
+      // Revoke access token via Salesforce API
+      if (accessToken.isNotEmpty && instanceUrl.isNotEmpty) {
+        try {
+          final revokeUrl = '$instanceUrl/services/oauth2/revoke';
+
+          log("Revoking token at: $revokeUrl");
+
+          final response = await http.post(
+            Uri.parse(revokeUrl),
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: {"token": accessToken},
+          );
+
+          log("Revoke response status: ${response.statusCode}");
+          log("Revoke response body: ${response.body}");
+        } catch (e) {
+          log("Error revoking token: $e");
+        }
+      }
+
+      // Clear all cached data and tokens
+      log("🧹 Clearing all cache and tokens...");
+
+      await prefs.remove(SharedPrefsConstants.sfAccessToken);
+      await prefs.remove(SharedPrefsConstants.sfRefreshToken);
+      await prefs.remove(SharedPrefsConstants.sfInstanceurl);
+      await prefs.remove(SharedPrefsConstants.sfEnv);
+      await prefs.remove(SharedPrefsConstants.sfLoginType);
+      // await prefs.remove(SharedPrefsConstants.userId);
+
+      log("✅ Logout successful. All tokens and cache cleared.");
+    } catch (e) {
+      log("❌ Logout error: $e");
+    }
   }
 }

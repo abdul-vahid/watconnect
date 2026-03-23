@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:collection';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,6 +26,7 @@ import 'package:whatsapp/salesforce/controller/sf_file_upload_controller.dart';
 import 'package:whatsapp/salesforce/controller/template_controller.dart';
 import 'package:whatsapp/salesforce/model/chat_history_model.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
+import 'package:whatsapp/salesforce/model/template_model.dart';
 import 'package:whatsapp/salesforce/widget/chat_bubble.dart';
 import 'package:whatsapp/salesforce/widget/multi_select_bottom_sheet.dart';
 import 'package:whatsapp/salesforce/widget/chat_buttons.dart';
@@ -1526,9 +1528,9 @@ void reviewBottomSheetShow(BuildContext context, {bool fromCamp = false}) {
       Provider.of<ChatMessageController>(context, listen: false);
 
   final templateData = tempc.selectedTemplate;
-  final fieldCount = templateData?.storedParameterValues?.length ?? 0;
+  final placeholderNames = _getTemplatePlaceholderNames(templateData);
 
-  tempc.setupControllers(fieldCount);
+  tempc.setupControllersForPlaceholders(placeholderNames);
   chatMsgController.setSelectedFile(null);
 
   showModalBottomSheet(
@@ -1632,7 +1634,8 @@ void reviewBottomSheetShow(BuildContext context, {bool fromCamp = false}) {
                                     keyboardType: TextInputType.text,
                                     textInputAction: TextInputAction.next,
                                     decoration: InputDecoration(
-                                      labelText: 'Placeholder ${index + 1}',
+                                      labelText: tempc.activePlaceholderNames
+                                              .elementAt(index),
                                       border: const OutlineInputBorder(),
                                     ),
                                     validator: (value) {
@@ -1894,6 +1897,39 @@ Future<void> sendChatTemp(
     debugPrint("Error sending template: $e");
     EasyLoading.showToast("Failed to send template");
   }
+}
+
+List<String> _getTemplatePlaceholderNames(TemplateModel? templateData) {
+  if (templateData == null) return [];
+
+  final placeholderRegex = RegExp(r'\{\{(\d+)\}\}');
+  final placeholderIndexes = SplayTreeSet<int>();
+
+  void collectPlaceholders(String? value) {
+    if (value == null || value.isEmpty) return;
+    for (final match in placeholderRegex.allMatches(value)) {
+      final index = int.tryParse(match.group(1) ?? '');
+      if (index != null) {
+        placeholderIndexes.add(index);
+      }
+    }
+  }
+
+  collectPlaceholders(templateData.headerText);
+  collectPlaceholders(templateData.body);
+  collectPlaceholders(templateData.messageBody);
+  collectPlaceholders(templateData.footer);
+
+  for (final button in templateData.getParsedButtons()) {
+    collectPlaceholders(button.label);
+    collectPlaceholders(button.value);
+    collectPlaceholders(button.textInput);
+    collectPlaceholders(button.url);
+    collectPlaceholders(button.template);
+    collectPlaceholders(button.action);
+  }
+
+  return placeholderIndexes.map((index) => "{{${index}}}").toList();
 }
 
 // void sendCampTemp(context, List<TextEditingController> controllers) {

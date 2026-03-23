@@ -145,7 +145,10 @@ class TemplateController extends ChangeNotifier {
     // final token = prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
     final busNum = prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
     Map<String, dynamic> body = {};
-    var paramToSend = buildParamsJson(params);
+    var paramToSend = buildParamsJson(
+      params,
+      placeholderNames: activePlaceholderNames,
+    );
     debug("paramToSendparamToSendparamToSendparamToSend$paramToSend");
     if (params.isEmpty) {
       body = {
@@ -219,12 +222,20 @@ class TemplateController extends ChangeNotifier {
   //   print("temp param as encoded strigify format::::::::::::   ${jsonString}");
   //   return jsonString;
   // }
-  List<Map<String, String>> buildParamsJson(List<String> values) {
+  List<Map<String, String>> buildParamsJson(
+    List<String> values, {
+    List<String>? placeholderNames,
+  }) {
     final List<Map<String, String>> paramList = [];
 
     for (int i = 0; i < values.length; i++) {
+      final placeholderName = (placeholderNames != null &&
+              i < placeholderNames.length &&
+              placeholderNames[i].isNotEmpty)
+          ? placeholderNames[i]
+          : "{{${i + 1}}}";
       paramList.add({
-        "name": "{{${i + 1}}}",
+        "name": placeholderName,
         "value": values[i],
       });
     }
@@ -235,9 +246,20 @@ class TemplateController extends ChangeNotifier {
   }
 
   List<TextEditingController> textControllers = [];
+  List<String> activePlaceholderNames = [];
 
   void setupControllers(int count) {
+    disposeControllers();
     textControllers = List.generate(count, (_) => TextEditingController());
+    activePlaceholderNames =
+        List.generate(count, (index) => "{{${index + 1}}}");
+  }
+
+  void setupControllersForPlaceholders(List<String> placeholderNames) {
+    disposeControllers();
+    activePlaceholderNames = List<String>.from(placeholderNames);
+    textControllers =
+        List.generate(activePlaceholderNames.length, (_) => TextEditingController());
   }
 
   void disposeControllers() {
@@ -245,5 +267,6 @@ class TemplateController extends ChangeNotifier {
       controller.dispose();
     }
     textControllers.clear();
+    activePlaceholderNames.clear();
   }
 }

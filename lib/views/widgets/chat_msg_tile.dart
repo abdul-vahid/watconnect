@@ -23,7 +23,7 @@ class ChatMessageTile extends StatefulWidget {
   final String tenetCode;
   final Function(String messageId) onTap;
   final List selectedMessages;
-  final VoidCallback? onCopyMessage; 
+  final VoidCallback? onCopyMessage;
 
   const ChatMessageTile({
     Key? key,
@@ -61,7 +61,7 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
   // Method to copy message to clipboard
   Future<void> _copyMessageToClipboard() async {
     String textToCopy = "";
-    
+
     // Get the main message text
     if (widget.message.message?.isNotEmpty ?? false) {
       textToCopy = widget.message.message!;
@@ -71,12 +71,13 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
       // Handle templated messages
       textToCopy = widget.message.messageBody!;
     } else if (widget.message.adHeadline?.isNotEmpty ?? false) {
-      textToCopy = "${widget.message.adHeadline}\n${widget.message.adBody ?? ''}";
+      textToCopy =
+          "${widget.message.adHeadline}\n${widget.message.adBody ?? ''}";
     }
-    
+
     if (textToCopy.isNotEmpty) {
       await Clipboard.setData(ClipboardData(text: textToCopy));
-      
+
       // Show a snackbar or toast to indicate success
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -280,7 +281,7 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                             ),
                           ),
                         ),
-                      
+
                       if (isAdMessage) ...[
                         if (adMediaUrl.isNotEmpty)
                           Padding(
@@ -292,17 +293,20 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
 
                                       final Uri url = Uri.parse(adMediaUrl);
                                       if (await launchUrl(url,
-                                          mode: LaunchMode.externalApplication)) {
-                                        throw Exception('Could not launch $url');
+                                          mode:
+                                              LaunchMode.externalApplication)) {
+                                        throw Exception(
+                                            'Could not launch $url');
                                       }
                                       print("Ad URL tapped: $adUrl");
                                     },
                                     child: Container(
                                       height: 120,
-                                      width:
-                                          MediaQuery.of(context).size.width * 0.65,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.65,
                                       color: Colors.black12,
-                                      child: const Icon(Icons.play_circle_filled,
+                                      child: const Icon(
+                                          Icons.play_circle_filled,
                                           size: 48),
                                     ))
                                 : InkWell(
@@ -310,15 +314,15 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (_) =>
-                                                PreviewImage(imgUrl: adMediaUrl)),
+                                            builder: (_) => PreviewImage(
+                                                imgUrl: adMediaUrl)),
                                       );
                                     },
                                     child: CachedNetworkImage(
                                       imageUrl: adMediaUrl,
                                       height: 120,
-                                      width:
-                                          MediaQuery.of(context).size.width * 0.65,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.65,
                                       fit: BoxFit.cover,
                                       placeholder: (_, __) => const Center(
                                           child: CircularProgressIndicator()),
@@ -439,7 +443,17 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                             buttons: widget.message.interactiveButtons!),
                       if (widget.message.buttons != null &&
                           widget.message.buttons?.isNotEmpty == true)
-                        CustomButtonList(buttons: widget.message.buttons!),
+                        CustomButtonList(
+                          buttons: widget.message.buttons!,
+                          buttonVariables:
+                              widget.message.bodyTextParams != null &&
+                                      widget.message.bodyTextParams is Map &&
+                                      widget.message.bodyTextParams
+                                          .containsKey('button_variables')
+                                  ? Map<String, dynamic>.from(widget.message
+                                      .bodyTextParams['button_variables'])
+                                  : null,
+                        ),
                       if (widget.message.templateType == 'carousel') ...[
                         CarouselSlider(
                           items: widget.message.templateCards
@@ -462,23 +476,27 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                               result = card['body']['text'] ?? "";
                             }
 
-                            var carousalPams =
-                                jsonEncode(widget.message.bodyTextParams['$index']);
+                            var carousalPams = jsonEncode(
+                                widget.message.bodyTextParams['$index']);
                             if (regex.hasMatch(result)) {
-                              result = replacePlaceholders(result, carousalPams);
+                              result =
+                                  replacePlaceholders(result, carousalPams);
                             }
 
                             Map<String, dynamic>? bodyParams;
                             if (widget.message.bodyTextParams != null &&
                                 widget.message.bodyTextParams
                                     .containsKey('$index')) {
-                              bodyParams = widget.message.bodyTextParams['$index'];
+                              bodyParams =
+                                  widget.message.bodyTextParams['$index'];
                             }
 
                             String carImageUrl = "";
                             if (bodyParams != null &&
                                 bodyParams['file_title'] != null &&
-                                bodyParams['file_title'].toString().isNotEmpty) {
+                                bodyParams['file_title']
+                                    .toString()
+                                    .isNotEmpty) {
                               carImageUrl =
                                   "${AppConstants.baseImgUrl}public/${widget.tenetCode}/attachment/${bodyParams['file_title']}";
                             }
@@ -500,7 +518,8 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                                     ],
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       if (card['body']?['text'] != null)
                                         Padding(
@@ -519,7 +538,8 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 6.0, vertical: 10),
                                           child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                             child: InkWell(
                                               onTap: () {
                                                 print(
@@ -536,7 +556,20 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                                         Padding(
                                           padding: const EdgeInsets.all(6.0),
                                           child: CustomButtonList(
-                                              buttons: card['buttons']),
+                                            buttons: card['buttons'],
+                                            buttonVariables: card[
+                                                            'bodyTextParams'] !=
+                                                        null &&
+                                                    card['bodyTextParams']
+                                                        is Map &&
+                                                    card['bodyTextParams']
+                                                        .containsKey(
+                                                            'button_variables')
+                                                ? Map<String, dynamic>.from(
+                                                    card['bodyTextParams']
+                                                        ['button_variables'])
+                                                : null,
+                                          ),
                                         ),
                                     ],
                                   ),
@@ -566,7 +599,8 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
                               .map<Widget>((entry) {
                             int index = entry.key;
                             return GestureDetector(
-                              onTap: () => _carouselController.animateToPage(index),
+                              onTap: () =>
+                                  _carouselController.animateToPage(index),
                               child: Container(
                                 width: 8.0,
                                 height: 8.0,
@@ -694,9 +728,4 @@ class _ChatMessageTileState extends State<ChatMessageTile> {
       },
     );
   }
-
 }
-
-
-
-

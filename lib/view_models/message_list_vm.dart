@@ -134,7 +134,7 @@ class MessageViewModel extends BaseListViewModel {
     try {
       var url = ("${AppConstants.baseUrl}${AppConstants.sendTemplate}$number");
       print("urll= send Template Api  >>>> $url");
-
+print("tempBody send Template Api  >>>> $tempBody");
       var response = await post(url: url, body: jsonEncode(tempBody));
       print("respone= POST send Template Api  >>>> $response");
 

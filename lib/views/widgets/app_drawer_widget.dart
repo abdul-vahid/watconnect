@@ -372,6 +372,7 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
   }
 
   Future<void> logoutUser() async {
+    print("LOGGING OUT....");
     AppUtils.logout(context);
   }
 
