@@ -25,6 +25,7 @@ import 'package:whatsapp/views/view/chat/whatsapp_chat_screen.dart';
 import '../../../models/lead_model.dart';
 import '../../../utils/app_color.dart';
 import '../../../utils/app_utils.dart';
+import '../../../utils/text_sanitizer.dart';
 import '../../../view_models/lead_list_vm.dart';
 import '../../../view_models/user_data_list_vm.dart';
 import '../lead_add_update_view.dart';
@@ -76,6 +77,8 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
   List<String> tags = [];
 
   bool? shouldHideLeadNumber;
+  String _safeText(String? value) => TextSanitizer.sanitize(value);
+
   @override
   void initState() {
     selectleadList = [];
@@ -755,7 +758,16 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                     radius: 20,
                                     backgroundColor: AppColor.navBarIconColor,
                                     child: Text(
-                                      "${pinnedLeads[index].contactname?.isNotEmpty == true ? pinnedLeads[index].contactname![0].toUpperCase() : '?'}",
+                                      _safeText(
+                                        pinnedLeads[index]
+                                                    .contactname
+                                                    ?.isNotEmpty ==
+                                                true
+                                            ? pinnedLeads[index]
+                                                .contactname![0]
+                                                .toUpperCase()
+                                            : '?',
+                                      ),
                                       style: const TextStyle(
                                         fontSize: 20,
                                         color: Colors.white,
@@ -764,7 +776,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                     ),
                                   ),
                                   Text(
-                                    pinnedLeads[index].contactname,
+                                    _safeText(pinnedLeads[index].contactname),
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                         fontFamily: AppFonts.semiBold),
@@ -995,7 +1007,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                                                       child:
                                                                           Chip(
                                                                         label: Text(
-                                                                            tag),
+                                                                            _safeText(tag)),
                                                                         backgroundColor: Colors
                                                                             .blue
                                                                             .withOpacity(0.2),
@@ -1361,9 +1373,9 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                       radius: 20,
                       backgroundColor: AppColor.navBarIconColor,
                       child: Text(
-                        model.firstname?.isNotEmpty == true
+                        _safeText(model.firstname?.isNotEmpty == true
                             ? model.firstname![0].toUpperCase()
-                            : '?',
+                            : '?'),
                         style: const TextStyle(
                           fontSize: 20,
                           color: Colors.white,
@@ -1379,7 +1391,9 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
+                          _safeText(
+                            "${model.firstname?.isNotEmpty == true ? model.firstname : 'No Phone Number'} ${model.lastname?.isNotEmpty == true ? model.lastname : ''}",
+                          ),
                           style: const TextStyle(
                               fontSize: 15, fontFamily: AppFonts.semiBold),
                         ),
@@ -1387,14 +1401,16 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                           height: 5,
                         ),
                         Text(
-                          formatPhoneNumber(
-                              model.whatsappNumber, model.countryCode),
+                          _safeText(formatPhoneNumber(
+                              model.whatsappNumber, model.countryCode)),
                           style: const TextStyle(fontSize: 12),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 6.0),
                           child: Text(
-                            "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
+                            _safeText(
+                              "${model.leadstatus?.isNotEmpty == true ? model.leadstatus : ''}",
+                            ),
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
@@ -1419,7 +1435,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                                 badgeColor: Colors.green,
                               ),
                               badgeContent: Text(
-                                unreadMsgCount,
+                                _safeText(unreadMsgCount),
                                 style: const TextStyle(
                                   color: Colors.white,
                                 ),

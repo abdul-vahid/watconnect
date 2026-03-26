@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:whatsapp/core/models/base_model.dart';
+import 'package:whatsapp/utils/text_sanitizer.dart';
 
 class LeadResponseModel extends BaseModel {
   bool? success;
@@ -38,6 +39,8 @@ class LeadResponseModel extends BaseModel {
 }
 
 class LeadModel {
+  static String _safe(dynamic value) => TextSanitizer.sanitize(value?.toString());
+
   String? id;
   String? full_number;
   String? lead_id;
@@ -99,37 +102,35 @@ class LeadModel {
 
   factory LeadModel.fromJson(Map<String, dynamic> json) {
     return LeadModel(
-        id: json['id'] ?? '',
-        firstname: json['firstname'] ?? '',
-        lead_id: json['lead_id'] ?? "",
-        lastname: json['lastname'] ?? '',
-        leadsource: json['leadsource'] ?? '',
-        leadstatus: json['leadstatus'] ?? '',
-        description: json['description'] ?? "",
-        createdbyid: json['createdbyid'] ?? '',
-        contactname: json['contactname'] ?? "",
-        lastmodifiedbyid: json['lastmodifiedbyid'] ?? '',
-        createddate: json['createddate'] ?? '',
-        lastmodifieddate: json['lastmodifieddate'] ?? '',
-        email: json['email'] ?? '',
-        ownerid: json['ownerid'] ?? '',
-        full_number: json['full_number'] ?? "",
-        whatsappNumber: json['whatsapp_number'] ?? '',
+        id: _safe(json['id']),
+        firstname: _safe(json['firstname']),
+        lead_id: _safe(json['lead_id']),
+        lastname: _safe(json['lastname']),
+        leadsource: _safe(json['leadsource']),
+        leadstatus: _safe(json['leadstatus']),
+        description: _safe(json['description']),
+        createdbyid: _safe(json['createdbyid']),
+        contactname: _safe(json['contactname']),
+        lastmodifiedbyid: _safe(json['lastmodifiedbyid']),
+        createddate: _safe(json['createddate']),
+        lastmodifieddate: _safe(json['lastmodifieddate']),
+        email: _safe(json['email']),
+        ownerid: _safe(json['ownerid']),
+        full_number: _safe(json['full_number']),
+        whatsappNumber: _safe(json['whatsapp_number']),
         blocked: json['blocked'] ?? false,
-        countryCode: json['country_code'] ?? '',
-        dob: json['dob'] ?? '',
-        address: json['address'] ?? '',
+        countryCode: _safe(json['country_code']),
+        dob: _safe(json['dob']),
+        address: _safe(json['address']),
         tagNames: (json['tag_names'] as List<dynamic>? ?? [])
             .map((v) => TagName.fromJson(v))
             .toList(),
-        leadname: json['leadname'] ?? '',
-        ownername: json['ownername'] ?? '',
-        createdbyname: json['createdbyname'] ?? '',
-        lastmodifiedbyname: json['lastmodifiedbyname'] ?? '',
+        leadname: _safe(json['leadname']),
+        ownername: _safe(json['ownername']),
+        createdbyname: _safe(json['createdbyname']),
+        lastmodifiedbyname: _safe(json['lastmodifiedbyname']),
         pinned: json['pinned'] ?? false,
-        isArchived: json['is_archived']??false
-        
-        );
+        isArchived: json['is_archived'] ?? false);
   }
 
   Map<String, dynamic> toJson() {
@@ -173,8 +174,8 @@ class TagName {
 
   factory TagName.fromJson(Map<String, dynamic> json) {
     return TagName(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
+      id: TextSanitizer.sanitize(json['id']?.toString()),
+      name: TextSanitizer.sanitize(json['name']?.toString()),
     );
   }
 

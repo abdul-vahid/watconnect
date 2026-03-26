@@ -13,6 +13,7 @@ import 'package:whatsapp/salesforce/widget/send_button_sheet.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:whatsapp/salesforce/screens/forward_message_screen.dart';
 import 'package:flutter_emoji/flutter_emoji.dart';
+import 'package:whatsapp/utils/text_sanitizer.dart';
 
 // ignore: must_be_immutable
 class ChatBubble extends StatelessWidget {
@@ -31,6 +32,8 @@ class ChatBubble extends StatelessWidget {
     required this.buttons,
     required this.currentTime,
   });
+
+  String _safeText(String? value) => TextSanitizer.sanitize(value);
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +155,7 @@ class ChatBubble extends StatelessWidget {
                                       .copyWith(fontSize: 16, height: 1.4),
                                   children: [
                                     TextSpan(
-                                      text: tempBody,
+                                      text: _safeText(tempBody),
                                       style: const TextStyle(
                                         color: Colors.black,
                                       ),
@@ -168,8 +171,10 @@ class ChatBubble extends StatelessWidget {
                                       .copyWith(fontSize: 16, height: 1.4),
                                   children: [
                                     TextSpan(
-                                      text: parser.emojify(
-                                        unescape.convert(item.message ?? ""),
+                                      text: _safeText(
+                                        parser.emojify(
+                                          unescape.convert(item.message ?? ""),
+                                        ),
                                       ),
                                       style: const TextStyle(
                                         color: Colors.black,
@@ -208,7 +213,7 @@ class ChatBubble extends StatelessWidget {
                               ConstrainedBox(
                                 constraints: const BoxConstraints(maxWidth: 200),
                                 child: Text(
-                                  item.Error_Msg ?? "",
+                                  _safeText(item.Error_Msg),
                                   style: const TextStyle(
                                     fontSize: 11,
                                     color: Colors.red,

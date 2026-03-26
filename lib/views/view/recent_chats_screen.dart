@@ -35,7 +35,8 @@ class _RecentChatViewState extends State<RecentChatView> {
   final List<Color> tagColors = [
     Colors.blue,
   ];
-
+  int _currentPage = 0; // Track current page number
+  int? _totalRecordsCount; // Optional: store total count from API
   String finalResult = "";
   IO.Socket? socket;
   String token = "";
@@ -80,8 +81,9 @@ class _RecentChatViewState extends State<RecentChatView> {
   final int maxTagsToShow = 3;
 
   final ScrollController _scrollController = ScrollController();
-  int _offset = 0;
-  final int _limit = 200;
+  int _pageSize = 200;
+  int _totalLimit = 200;
+  int _currentLoaded = 0;
   bool _hasMore = true;
   bool _isLoadingMore = false;
 
@@ -788,48 +790,67 @@ class _RecentChatViewState extends State<RecentChatView> {
   }
 
   bool chatLoader = false;
-  Future<void> getLeadList(
-      {bool showLoading = true, bool reset = false}) async {
+  Future<void> getLeadList({
+    bool showLoading = true,
+    bool reset = false,
+  }) async {
     if (reset) {
-      _offset = 0;
+      _totalLimit = 10; // items per page
+      _currentLoaded = 0;
       _hasMore = true;
-      allRecentChats = [];
-      tempLeadModelList = [];
-      pinnedLeads = [];
+      allRecentChats.clear();
+      tempLeadModelList.clear();
+      pinnedLeads.clear();
+      _currentPage = 0; // Add this variable
     }
 
     if (!_hasMore && !reset) return;
+    if (_isLoadingMore) return;
 
-    if (mounted && showLoading) {
+    if (mounted && showLoading && allRecentChats.isEmpty) {
       setState(() {
         chatLoader = true;
       });
     }
 
-    if (_isLoadingMore) return;
     _isLoadingMore = true;
 
     try {
-      String baseUrl = AppUtils.getUrl(AppConstants.recentChat);
-      baseUrl = baseUrl.replaceAll(RegExp(r'&limit=\d+&offset=\d+'), '');
-      String url = '$baseUrl&limit=$_limit&offset=$_offset';
+      // ✅ FIX: Proper URL with offset and limit
+      String url = AppUtils.getUrl(
+        AppConstants.recentChat
+            .replaceAll('{textName}', '')
+            .replaceAll('{recordType}', 'recentlyMessage')
+            .replaceAll('{limit}', _totalLimit.toString())
+            .replaceAll('{offset}', _currentLoaded.toString()), // ← Add offset
+      );
+
       print("Fetching chats from URL: $url");
-      String? token = await AppUtils.getToken();
-      token ??= "";
+      print("Current offset: $_currentLoaded, Limit: $_totalLimit");
+
+      String token = await AppUtils.getToken() ?? "";
+
       final response = await http.get(
         Uri.parse(url),
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer $token"
+          "Authorization": "Bearer $token",
         },
       );
+
+      print("API Response Status: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         List<dynamic> recordsJson = [];
 
         if (jsonData is Map<String, dynamic> && jsonData['records'] is List) {
-          recordsJson = jsonData['records'] as List<dynamic>;
+          recordsJson = jsonData['records'];
+
+          // Optional: Check total count from API if available
+          if (jsonData['totalCount'] != null) {
+            _totalRecordsCount = jsonData['totalCount'];
+          }
         } else if (jsonData is List) {
           recordsJson = jsonData;
         }
@@ -838,25 +859,65 @@ class _RecentChatViewState extends State<RecentChatView> {
             .map((e) => Records.fromMap(e as Map<String, dynamic>))
             .toList();
 
-        if (_offset == 0) {
+        print("Fetched ${fetchedRecords.length} records");
+
+        if (reset) {
+          // Clear and set new data
           allRecentChats = fetchedRecords;
           tempLeadModelList = fetchedRecords;
         } else {
-          allRecentChats.addAll(fetchedRecords);
-          tempLeadModelList.addAll(fetchedRecords);
+          // ✅ FIX: Add new records without duplication
+          // Check for duplicates before adding
+          final existingIds = Set<String>.from(allRecentChats
+              .map((lead) => lead.lead_id)
+              .where((id) => id != null));
+
+          final newRecords = fetchedRecords
+              .where((record) =>
+                  record.lead_id != null &&
+                  !existingIds.contains(record.lead_id))
+              .toList();
+
+          allRecentChats.addAll(newRecords);
+          tempLeadModelList.addAll(newRecords);
         }
 
-        pinnedLeads.addAll(fetchedRecords.where((r) => r.pinned == true));
+        // ✅ FIX: Handle pinned leads without duplication
+        for (var record in fetchedRecords) {
+          if (record.pinned == true &&
+              !pinnedLeads.any((e) => e.lead_id == record.lead_id)) {
+            pinnedLeads.add(record);
+          }
+        }
 
-        _hasMore = fetchedRecords.length == _limit;
-        if (_hasMore) _offset += _limit;
+        // ✅ FIX: Update offset correctly
+        _currentLoaded += fetchedRecords.length;
+
+        // ✅ FIX: Check if more data available
+        if (fetchedRecords.isEmpty || fetchedRecords.length < _totalLimit) {
+          _hasMore = false;
+        } else {
+          _hasMore = true;
+        }
+
+        // Optional: If API provides total count, use that
+        // if (_totalRecordsCount != null && _currentLoaded >= _totalRecordsCount) {
+        //   _hasMore = false;
+        // }
+
+        print("Total Loaded: $_currentLoaded");
+        print("Has More: $_hasMore");
 
         _extractUniqueTags();
+      } else {
+        print("Failed to fetch chats: ${response.statusCode}");
+        print("Response body: ${response.body}");
       }
     } catch (e) {
-      debug("Error fetching chats: $e");
+      print("Error fetching chats: $e");
     } finally {
       _isLoadingMore = false;
+
       if (mounted) {
         setState(() {
           chatLoader = false;

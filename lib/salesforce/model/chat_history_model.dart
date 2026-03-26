@@ -1,8 +1,11 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'package:whatsapp/utils/text_sanitizer.dart';
 
 class SfChatHistoryModel {
+  static String _safe(dynamic value) => TextSanitizer.sanitize(value?.toString());
+
   String? name;
   String? button;
   String? templateParams;
@@ -41,22 +44,22 @@ class SfChatHistoryModel {
 
   factory SfChatHistoryModel.fromJson(Map<String, dynamic> json) {
     return SfChatHistoryModel(
-      name: json['Name'] ?? "",
-      button: json['button'] ?? "",
-      templateBody: json['Tempalate_Body'] ?? "",
-      templateParams: json["Template_Params__r.Params_value__c"] ?? "",
-      templateName: json['Tempalate_Name'] ?? "",
-      messageId: json['Meta_Message_Id__c'] ?? "",
-      createdDate: json['CreatedDate'] ?? "",
-      contentType: json['content_type'] ?? "",
-      attachmentUrl: json['Attachment_URL__c'] ?? "",
-      messageType: json['Message_Type__c'] ?? "",
-      message: json['Message'] ?? "",
-      templateId: json['templateId'] ?? "",
-      id: json['Id'] ?? "",
-      publicUrl: json['Public_Url__c'] ?? "",
-      Delivery_Status: json['Delivery_Status'] ?? "",
-      Error_Msg: json['Error_Msg'] ?? "",
+      name: _safe(json['Name']),
+      button: _safe(json['button']),
+      templateBody: _safe(json['Tempalate_Body']),
+      templateParams: _safe(json["Template_Params__r.Params_value__c"]),
+      templateName: _safe(json['Tempalate_Name']),
+      messageId: _safe(json['Meta_Message_Id__c']),
+      createdDate: _safe(json['CreatedDate']),
+      contentType: _safe(json['content_type']),
+      attachmentUrl: _safe(json['Attachment_URL__c']),
+      messageType: _safe(json['Message_Type__c']),
+      message: _safe(json['Message']),
+      templateId: _safe(json['templateId']),
+      id: _safe(json['Id']),
+      publicUrl: _safe(json['Public_Url__c']),
+      Delivery_Status: _safe(json['Delivery_Status']),
+      Error_Msg: _safe(json['Error_Msg']),
     );
   }
 
@@ -93,12 +96,13 @@ class ButtonItem {
 
   factory ButtonItem.fromJson(Map<String, dynamic> json) {
     return ButtonItem(
-      url: json['Url__c'] ?? "",
-      value: json['Value__c'] ?? "",
-      action: json['Action_c'] ?? "",
-      textInput: json['Text_Input__c'] ?? "",
-      template: json['WhatsApp_Template__c'] ?? "",
-      label: json['Label__c'] ?? "",
+      url: TextSanitizer.sanitize(json['Url__c']?.toString()),
+      value: TextSanitizer.sanitize(json['Value__c']?.toString()),
+      action: TextSanitizer.sanitize(json['Action_c']?.toString()),
+      textInput: TextSanitizer.sanitize(json['Text_Input__c']?.toString()),
+      template:
+          TextSanitizer.sanitize(json['WhatsApp_Template__c']?.toString()),
+      label: TextSanitizer.sanitize(json['Label__c']?.toString()),
     );
   }
 }

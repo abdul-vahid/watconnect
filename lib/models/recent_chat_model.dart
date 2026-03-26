@@ -149,6 +149,12 @@ class RecentChatModel extends BaseModel {
 }
 
 class Records {
+  static String sanitizeString(String? input) {
+    if (input == null) return '';
+    // Remove invalid UTF-16 code units
+    return input.replaceAll(RegExp(r'[\u0000-\u0008\u000B\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF]'), '');
+  }
+
   String? id;
   String? lead_id;
   String? parent_id;
@@ -194,19 +200,27 @@ class Records {
       lead_id: data['lead_id']?.toString(),
       country_code: data['country_code']?.toString(),
       countrycode: data['countrycode']?.toString(),
-      message: data['message']?.toString() ?? "",
+      message: sanitizeString(data['message']?.toString()) ?? "",
       pinned: data['pinned'] ?? false,
       isArchived: data['is_archived']??false,
-      contactname: data['contactname']?.toString(),
-      full_number: data['full_number']?.toString(),
-      whatsapp_number: data['whatsapp_number']?.toString(),
+      contactname: sanitizeString(data['contactname']?.toString()),
+      full_number: sanitizeString(data['full_number']?.toString()),
+      whatsapp_number: sanitizeString(data['whatsapp_number']?.toString()),
       createddate: data['createddate'] != null
           ? DateTime.tryParse(data['createddate'].toString())
           : null,
       last_message_time: data['last_message_time'] != null
           ? DateTime.tryParse(data['last_message_time'].toString())
           : null,
-      tag_names: tagNamesList,
+      tag_names: tagNamesList?.map((tag) {
+        if (tag is Map<String, dynamic>) {
+          return {
+            'id': tag['id']?.toString(),
+            'name': sanitizeString(tag['name']?.toString()),
+          };
+        }
+        return tag;
+      }).toList(),
     );
   }
 

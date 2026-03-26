@@ -183,9 +183,9 @@ abstract class AppConstants {
 
   // static const String recentChat =
   //     '/api/whatsapp/chat/filter?textName=&cityName=&recordType=recentlyMessage';
-      
+
   static const String recentChat =
-      '/api/whatsapp/chat/lazyfilter?textName=&recordType=recentlyMessage&limit=200&offset=0';
+      '/api/whatsapp/chat/lazyfilter?textName={textName}&recordType={recordType}&limit={limit}&offset={offset}';
 
   static const String recentArchieveChat =
       '/api/whatsapp/chat/filter?textName=&recordType=archived';
