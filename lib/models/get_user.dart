@@ -17,6 +17,7 @@ class GetUser extends BaseModel {
   String? whatsapp_number;
   String? whatsapp_settings;
   String? countrycode;
+  String? password_changed_at;
 
   GetUser(
       {this.id,
@@ -30,6 +31,7 @@ class GetUser extends BaseModel {
       this.managername,
       this.whatsapp_number,
       this.whatsapp_settings,
+      this.password_changed_at,
       this.countrycode});
 
   factory GetUser.fromMap(Map<String, dynamic> data) => GetUser(
@@ -45,6 +47,7 @@ class GetUser extends BaseModel {
         managername: data['managername']?.toString(),
         whatsapp_settings: data['whatsapp_settings']?.toString(),
         countrycode: data['country_code']?.toString(),
+        password_changed_at:data['password_changed_at']?.toString(),
       );
   @override
   GetUser fromMap(Map<String, dynamic> data) {

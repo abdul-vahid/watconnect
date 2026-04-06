@@ -15,6 +15,8 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:whatsapp/models/get_user.dart';
+import 'package:whatsapp/models/user_data_model/user_data_model.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 
 import 'package:whatsapp/utils/app_constants.dart';
@@ -22,9 +24,11 @@ import 'package:whatsapp/utils/app_fonts.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/campaign_chart_vm.dart';
+import 'package:whatsapp/view_models/get_user_vm.dart';
 import 'package:whatsapp/view_models/lead_controller.dart';
 
 import 'package:whatsapp/view_models/unread_count_vm.dart';
+import 'package:whatsapp/view_models/user_data_list_vm.dart';
 import 'package:whatsapp/views/view/NotificationPage.dart';
 import 'package:whatsapp/views/view/campaign_list_view.dart';
 import 'package:whatsapp/views/view/lead/lead_list_view.dart';
@@ -178,6 +182,7 @@ class _HomeViewState extends State<HomeView> {
     } catch (e) {
       print('Error in _fetchInitialData: $e');
     } finally {
+      checkPasswordChange();
       EasyLoading.dismiss();
     }
   }
@@ -376,7 +381,8 @@ class _HomeViewState extends State<HomeView> {
                   child: Text(
                     "${number.name} ${number.phone} ",
                     style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                       color: isSelected ? Colors.blue : Colors.black,
                     ),
                   ),
@@ -392,7 +398,7 @@ class _HomeViewState extends State<HomeView> {
           _isLoading = true;
           selectedNumber = value; // Update selectedNumber immediately
         });
-        
+
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('phoneNumber', value);
         await _refreshDataWithNewNumber(value);
@@ -766,6 +772,27 @@ class _HomeViewState extends State<HomeView> {
       socket!.disconnect();
       print(" WebSocket Disconnected on home");
     }
+  }
+
+  Future<void> checkPasswordChange() async {
+    String tkn = await AppUtils.getToken() ?? "";
+    Map<String, dynamic> decodedToken = Map<String, dynamic>.from(
+      JwtDecoder.decode(tkn),
+    );
+
+    GetUserViewModel userCtrl = Provider.of(context, listen: false);
+    await userCtrl.fetchUser();
+    for (var viewModel in userCtrl!.viewModels) {
+      GetUser model = viewModel.model;
+      print(
+          "model  password_changed_at ${model.password_changed_at}. decocded token>>> ${decodedToken['password_changed_at']}");
+
+      if (model.password_changed_at != decodedToken['password_changed_at']) {
+        AppUtils.logout(context);
+      }
+    }
+
+    //
   }
 }
 
