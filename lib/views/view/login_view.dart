@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use, avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -35,6 +36,14 @@ class _LoginViewState extends State<LoginView> {
     // _passwordController.text = 'Admin@123';
     // _tcodeController.text = 'demo';
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _tcodeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -86,146 +95,154 @@ class _LoginViewState extends State<LoginView> {
                       child: Form(
                         key: _loginFormKey,
                         child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              TextFormField(
-                                controller: _tcodeController,
-                                validator: (value) => value!.isEmpty
-                                    ? 'Please provide Code'
-                                    : null,
-                                decoration: InputDecoration(
-                                  hintText: "Enter Company Code",
-                                  prefixIcon: const Icon(Icons.code,
-                                      color: Color(0xFF233A73)),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              TextFormField(
-                                controller: _emailController,
-                                validator: (value) => value!.isEmpty
-                                    ? 'Please provide Email'
-                                    : null,
-                                keyboardType: TextInputType.emailAddress,
-                                decoration: InputDecoration(
-                                  hintText: "Enter your email",
-                                  prefixIcon: const Icon(Icons.email,
-                                      color: Color(0xFF233A73)),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: _obscurePassword,
-                                validator: (value) => value!.isEmpty
-                                    ? 'Please provide Password'
-                                    : null,
-                                decoration: InputDecoration(
-                                  hintText: "Enter your password",
-                                  prefixIcon: const Icon(Icons.lock,
-                                      color: Color(0xFF233A73)),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                      color: const Color(0xFF233A73),
+                          child: AutofillGroup(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                TextFormField(
+                                  controller: _tcodeController,
+                                  autofillHints: const [AutofillHints.organizationName],
+                                  textInputAction: TextInputAction.next,
+                                  validator: (value) => value!.isEmpty
+                                      ? 'Please provide Code'
+                                      : null,
+                                  decoration: InputDecoration(
+                                    hintText: "Enter Company Code",
+                                    prefixIcon: const Icon(Icons.code,
+                                        color: Color(0xFF233A73)),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
                                     ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _obscurePassword = !_obscurePassword;
-                                      });
-                                    },
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(15),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 30),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: onButtonPressed,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xFF233A73),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 14),
+                                const SizedBox(height: 15),
+                                TextFormField(
+                                  controller: _emailController,
+                                  autofillHints: const [AutofillHints.email],
+                                  textInputAction: TextInputAction.next,
+                                  validator: (value) => value!.isEmpty
+                                      ? 'Please provide Email'
+                                      : null,
+                                  keyboardType: TextInputType.emailAddress,
+                                  decoration: InputDecoration(
+                                    hintText: "Enter your email",
+                                    prefixIcon: const Icon(Icons.email,
+                                        color: Color(0xFF233A73)),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 15),
+                                TextFormField(
+                                  controller: _passwordController,
+                                  autofillHints: const [AutofillHints.password],
+                                  textInputAction: TextInputAction.done,
+                                  obscureText: _obscurePassword,
+                                  validator: (value) => value!.isEmpty
+                                      ? 'Please provide Password'
+                                      : null,
+                                  decoration: InputDecoration(
+                                    hintText: "Enter your password",
+                                    prefixIcon: const Icon(Icons.lock,
+                                        color: Color(0xFF233A73)),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscurePassword
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
+                                        color: const Color(0xFF233A73),
                                       ),
-                                      child: const Text("Login",
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.white)),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      icon: const Icon(Icons.cloud,
-                                          color: Colors.white),
                                       onPressed: () {
-                                        _showSalesforceLoginBottomSheet(
-                                            context);
+                                        setState(() {
+                                          _obscurePassword = !_obscurePassword;
+                                        });
                                       },
-                                      label: const Text(
-                                        "Salesforce",
-                                        style: TextStyle(
-                                            fontSize: 16, color: Colors.white),
-                                      ),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xFF233A73),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 30),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: onButtonPressed,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              const Color(0xFF233A73),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 14),
                                         ),
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 14),
+                                        child: const Text("Login",
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.white)),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 30),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  InkWell(
-                                    onTap: () => launchUrl(Uri.parse(
-                                        "https://www.facebook.com/profile.php?id=61573568597186")),
-                                    child: _buildCircleIcon(
-                                      "assets/images/fb_icon.png",
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        icon: const Icon(Icons.cloud,
+                                            color: Colors.white),
+                                        onPressed: () {
+                                          _showSalesforceLoginBottomSheet(
+                                              context);
+                                        },
+                                        label: const Text(
+                                          "Salesforce",
+                                          style: TextStyle(
+                                              fontSize: 16, color: Colors.white),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              const Color(0xFF233A73),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 14),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 15),
-                                  InkWell(
-                                    onTap: () => launchUrl(Uri.parse(
-                                        "https://www.instagram.com/watconnect/")),
-                                    child: _buildCircleIcon(
-                                      "assets/images/insta_icon.png",
+                                  ],
+                                ),
+                                const SizedBox(height: 30),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    InkWell(
+                                      onTap: () => launchUrl(Uri.parse(
+                                          "https://www.facebook.com/profile.php?id=61573568597186")),
+                                      child: _buildCircleIcon(
+                                        "assets/images/fb_icon.png",
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                    const SizedBox(width: 15),
+                                    InkWell(
+                                      onTap: () => launchUrl(Uri.parse(
+                                          "https://www.instagram.com/watconnect/")),
+                                      child: _buildCircleIcon(
+                                        "assets/images/insta_icon.png",
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

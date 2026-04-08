@@ -204,6 +204,10 @@ class UserListViewModel extends BaseListViewModel {
               await JwtDecoder.decode(authToken);
 
           final prefs = await SharedPreferences.getInstance();
+
+
+      prefs.setString(SharedPrefsConstants.tokenExpireTime, decodedToken['exp'].toString());
+
           print(
               "['is_whatsapp_number_hidden']    ${decodedToken['is_whatsapp_number_hidden']}   ['userrole']  ${decodedToken['userrole']}");
           if (decodedToken['is_whatsapp_number_hidden'] == true &&

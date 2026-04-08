@@ -32,6 +32,7 @@ class BaseListViewModel extends ChangeNotifier {
     log("get api url>>> $url   ");
 
     try {
+      await checkJwtExpiry();
       final jsonObject = await BaseService().get(url: url);
 
       log("Response Data get == $jsonObject $url   ${(jsonObject.runtimeType)}  ");
@@ -67,7 +68,7 @@ class BaseListViewModel extends ChangeNotifier {
       }
       status = "Completed";
     } on UnauthorisedException {
-      await _refreshToken(url);
+      await _refreshToken();
 
       final jsonObjectRequest = await BaseService().get(url: url);
       var records = jsonObjectRequest.data;
@@ -96,7 +97,7 @@ class BaseListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _refreshToken(String url) async {
+  Future<void> _refreshToken() async {
     String refreshTokenUrl = AppUtils.getUrl(AppConstants.refreshTokenAPIPath);
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -105,25 +106,26 @@ class BaseListViewModel extends ChangeNotifier {
       if (prefs.containsKey(SharedPrefsConstants.refreshTokenKey)) {
         refreshToken = prefs.getString(SharedPrefsConstants.refreshTokenKey)!;
       }
-      
+
       if (refreshToken.isEmpty) {
         log("❌ Refresh token is empty in _refreshToken");
         AppUtils.logout(AppUtils.currentContext);
         return;
       }
-      
+
       Map<String, String> body = {"refreshToken": refreshToken};
       log("🔄 Refresh token request to: $refreshTokenUrl");
       log("🔄 Refresh token body: $body");
-      
+
       final jsonObject = await postForRefreshToken(
           url: refreshTokenUrl, body: jsonEncode(body));
-          
+      print("refersh token >>> json object >>> ${jsonObject}");
       if (jsonObject != null && jsonObject["authToken"] != null) {
         accessToken = jsonObject["authToken"];
         refreshToken = jsonObject["refreshToken"];
         await prefs.setString(SharedPrefsConstants.accessTokenKey, accessToken);
-        await prefs.setString(SharedPrefsConstants.refreshTokenKey, refreshToken);
+        await prefs.setString(
+            SharedPrefsConstants.refreshTokenKey, refreshToken);
         await prefs.setString(
             SharedPrefsConstants.sessionTimeKey, DateTime.now().toString());
         log("✅ Token refreshed successfully in _refreshToken");
@@ -162,6 +164,7 @@ class BaseListViewModel extends ChangeNotifier {
     required String body,
   }) async {
     try {
+      // await checkJwtExpiry();
       return await BaseService().post(url: url, body: body);
     } on UnauthorisedException {
       AppUtils.getAlert(AppUtils.currentContext!, [
@@ -181,6 +184,7 @@ class BaseListViewModel extends ChangeNotifier {
     log("req body>> $url >>>>>> $body");
 
     try {
+      await checkJwtExpiry();
       var r = await BaseService().post(url: url, body: body);
       log("response=>$r    api>>> $url");
 
@@ -194,7 +198,7 @@ class BaseListViewModel extends ChangeNotifier {
       print("r  is to return:::::::::::  $r");
       return r.data;
     } on UnauthorisedException {
-      await _refreshToken(url);
+      await _refreshToken();
       return await BaseService().post(url: url, body: body);
     }
   }
@@ -204,6 +208,7 @@ class BaseListViewModel extends ChangeNotifier {
       required String body,
       String jsonKey = "records"}) async {
     try {
+      await checkJwtExpiry();
       print("bodyyy user update=>$body");
       var res = await BaseService().put(url: url, body: body);
       if (res.statusCode == 402) {
@@ -213,70 +218,38 @@ class BaseListViewModel extends ChangeNotifier {
       }
       return res.data;
     } on UnauthorisedException {
-      await _refreshToken(url);
+      await _refreshToken();
       return await BaseService().put(url: url, body: body);
     }
   }
 
   Future<dynamic> delete({required String url, String? body}) async {
     try {
+      await checkJwtExpiry();
       print("bdoodododododoy=>$body");
       var res = await BaseService().delete(url: url, body: body);
       return res.data;
     } on UnauthorisedException {
-      await _refreshToken(url);
+      await _refreshToken();
       return await BaseService().delete(url: url, body: body);
     }
   }
 
-  // Future<String> postData(
-  //     {required BaseModel baseModel,
-  //     required String url,
-  //     required String body,
-  //     String jsonKey = "records"}) async {
-  //   try {
-  //     debug("postData");
-  //     final jsonObject = await BaseService().post(url: url, body: body);
-  //     print(
-  //         "responseJsonData:  ${jsonObject['errors']}  ${jsonObject['authToken']}");
+Future<void> checkJwtExpiry() async {
+  final prefs = await SharedPreferences.getInstance();
 
-  //     if (jsonObject['success'] == false) {
-  //       return jsonObject['errors'].toString();
-  //     }
+  String tokenExpiry =
+      prefs.getString(SharedPrefsConstants.tokenExpireTime) ?? "";
 
-  //     var records = jsonObject is List ? jsonObject : [jsonObject];
+  if (tokenExpiry.isNotEmpty) {
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    int expiryTime = int.parse(tokenExpiry) * 1000;
 
-  //     var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
-  //     viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
-  //     status = "Completed";
-  //   } on UnauthorisedException {
-  //     await _refreshToken(url);
-  //     final jsonObject = await BaseService().post(url: url, body: body);
-  //     print("jsonObject['errors'] error::::::${jsonObject['errors']}");
-  //     if (jsonObject['errors'] != null) {
-  //       print("jsonObject['errors']::::::${jsonObject['errors'].toString()}");
-  //       return jsonObject['errors'].toString();
-  //     }
+    print("currentTime >>> $currentTime  expiryTime >>> $expiryTime");
 
-  //     final records = jsonObject[jsonKey];
-  //     var modelMap = records.map((item) => baseModel.fromMap(item)).toList();
-  //     viewModels = modelMap.map((item) => BaseViewModel(model: item)).toList();
-  //     status = "Completed";
-  //   } on AppException catch (error) {
-  //     status = "Error";
-  //     exception = error;
-  //     viewModels.add(BaseViewModel(model: BaseModel()));
-  //   } on Exception catch (e) {
-  //     exception = e;
-  //     status = "Error";
-  //     viewModels.add(BaseViewModel(model: BaseModel()));
-  //   } catch (e) {
-  //     print("error:::here  ${e}");
-  //     exception = Exception(e.toString());
-  //     status = "Error";
-  //   }
-
-  //   notifyListeners();
-  //   return "";
-  // }
+    if (currentTime >= expiryTime) {
+      await _refreshToken();
+    }
+  }
+}
 }

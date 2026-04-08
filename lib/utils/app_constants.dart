@@ -22,6 +22,10 @@ abstract class SharedPrefsConstants {
   static const String userAvailableMoulesKey = "modules";
   static const String userrolekey = "userrole";
 
+
+    static const String tokenExpireTime = "tokenExpireTime";
+
+
   static const String idTokenKey = 'id_token';
   // static const String accessTokenKey = 'access_token';
   // static const String refreshTokenKey = 'refresh_token';
@@ -122,8 +126,8 @@ abstract class AppConstants {
   // =========================Campaign Api==============================
   static const String campdeleteById = "/api/whatsapp/campaign";
   static const String getcampaignbyid = "/api/whatsapp/campaign/";
-  static const String campaignCountAPIPath =
-      '/api/whatsapp/common/campaignstatus';
+  // static const String campaignCountAPIPath =
+  //     '/api/whatsapp/common/campaignstatus';
   static const String campaignAPIPath =
       '/api/whatsapp/campaign?whatsapp_setting_number';
   static const String updateCampaignAPIPath = '/api/whatsapp/campaign';

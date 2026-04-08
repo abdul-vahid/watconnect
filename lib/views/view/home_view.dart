@@ -144,6 +144,7 @@ class _HomeViewState extends State<HomeView> {
 
   Future<void> _fetchInitialData() async {
     try {
+         checkPasswordChange();
       final prefs = await SharedPreferences.getInstance();
       String? selectedWhatsAppNumber = prefs.getString('phoneNumber');
 
@@ -179,10 +180,10 @@ class _HomeViewState extends State<HomeView> {
             .autoResponseFetch(),
         _getUnreadCount(),
       ] as Iterable<Future>);
-    } catch (e) {
-      print('Error in _fetchInitialData: $e');
+    } catch (e, stackTrace) {
+      print('Error in _fetchInitialData: $e. $stackTrace');
     } finally {
-      checkPasswordChange();
+   
       EasyLoading.dismiss();
     }
   }
@@ -630,10 +631,10 @@ class _HomeViewState extends State<HomeView> {
       var comp = campmodel.result?.completed;
       var abort = campmodel.result?.aborted;
       var prog = campmodel.result?.inProgress;
-      var allCamp = int.parse(pend??"0") +
-          int.parse(comp??"0") +
-          int.parse(abort??"0") +
-          int.parse(prog??"0");
+      var allCamp = int.parse(pend ?? "0") +
+          int.parse(comp ?? "0") +
+          int.parse(abort ?? "0") +
+          int.parse(prog ?? "0");
       campaignCount = allCamp.toString();
     }
 
@@ -708,10 +709,14 @@ class _HomeViewState extends State<HomeView> {
     String? number = prefs.getString('phoneNumber');
     LeadController leadCtrl = Provider.of(context, listen: false);
     String tkn = await AppUtils.getToken() ?? "";
-    Map<String, dynamic> decodedToken = Map<String, dynamic>.from(
-      JwtDecoder.decode(tkn),
-    );
-
+    Map<String, dynamic> decodedToken = {};
+    try {
+      decodedToken = Map<String, dynamic>.from(
+        JwtDecoder.decode(tkn),
+      );
+    } catch (e, stackTrace) {
+      print("error in decode token >>>. $e. >>>> $stackTrace");
+    }
     token = tkn;
     phNum = number ?? "";
     userId = decodedToken;
