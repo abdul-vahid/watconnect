@@ -207,7 +207,7 @@ class UserListViewModel extends BaseListViewModel {
           print(
               "['is_whatsapp_number_hidden']    ${decodedToken['is_whatsapp_number_hidden']}   ['userrole']  ${decodedToken['userrole']}");
           if (decodedToken['is_whatsapp_number_hidden'] == true &&
-              decodedToken['userrole'] == "USER") {
+              (decodedToken['userrole'] == "USER" || decodedToken['userrole']=='MANAGER') ) {
             prefs.setBool(SharedPrefsConstants.shouldHideNumber, true);
           } else {
             prefs.setBool(SharedPrefsConstants.shouldHideNumber, false);

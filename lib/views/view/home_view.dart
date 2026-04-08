@@ -630,10 +630,10 @@ class _HomeViewState extends State<HomeView> {
       var comp = campmodel.result?.completed;
       var abort = campmodel.result?.aborted;
       var prog = campmodel.result?.inProgress;
-      var allCamp = int.parse(pend!) +
-          int.parse(comp!) +
-          int.parse(abort!) +
-          int.parse(prog!);
+      var allCamp = int.parse(pend??"0") +
+          int.parse(comp??"0") +
+          int.parse(abort??"0") +
+          int.parse(prog??"0");
       campaignCount = allCamp.toString();
     }
 
