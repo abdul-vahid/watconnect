@@ -14,7 +14,7 @@ import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/views/view/home_view.dart';
 import 'package:whatsapp/views/view/profile_view.dart';
-import 'package:whatsapp/views/view/recent_chats_screen.dart';
+import 'package:whatsapp/views/view/recent_chat/recent_chat_view.dart';
 import 'package:whatsapp/views/view/user_list_view.dart';
 
 import '../../utils/app_color.dart';

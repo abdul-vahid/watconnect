@@ -11,6 +11,13 @@ class GetUserViewModel extends BaseListViewModel {
   BuildContext context;
   GetUserViewModel(this.context);
 
+
+    void clearUserData() {
+    viewModels.clear();
+  
+  }
+  
+
   fetchUser() async {
     String url = AppUtils.getUrl(AppConstants.getUserAPIPath);
     debug('fetchUser() called $url');

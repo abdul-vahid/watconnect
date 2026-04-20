@@ -376,165 +376,93 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
     AppUtils.logout(context);
   }
 
-  // Future<void> showAlertDialog() async {
-  //   // Setup the "No" button
-  //   Widget noButton = TextButton(
-  //     style: TextButton.styleFrom(
-  //       foregroundColor: Colors.grey,
-  //       backgroundColor: Colors.grey[200],
-  //       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-  //       shape: RoundedRectangleBorder(
-  //         borderRadius: BorderRadius.circular(8),
-  //       ),
-  //     ),
-  //     onPressed: () {
-  //       Navigator.pop(context);
-  //     },
-  //     child: Text(
-  //       "No",
-  //       // style: TextStyle(color: AppColor.navBarIconColor),
-  //     ),
-  //   );
-
-  //   Widget yesButton = TextButton(
-  //     style: TextButton.styleFrom(
-  //       foregroundColor: Colors.white,
-  //       backgroundColor: AppColor.navBarIconColor,
-  //       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-  //       shape: RoundedRectangleBorder(
-  //         borderRadius: BorderRadius.circular(8),
-  //       ),
-  //     ),
-  //     child: Text(
-  //       'Yes',
-  //       style: TextStyle(fontSize: 14),
-  //     ),
-  //     onPressed: () {
-  //       Navigator.pop(context);
-  //       AppUtils.logout(context);
-  //     },
-  //   );
-
-  //   await showDialog<void>(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         backgroundColor: Colors.white,
-  //         shape: RoundedRectangleBorder(
-  //           borderRadius: BorderRadius.circular(15),
-  //         ),
-  //         content: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           children: [
-  //             const Text(
-  //               'Are you sure you want to logout?',
-  //               style: TextStyle(
-  //                 fontSize: 16,
-  //                 color: Colors.black,
-  //               ),
-  //             ),
-  //             const SizedBox(height: 15),
-  //             const Divider(),
-  //             const SizedBox(height: 15),
-  //             Row(
-  //               mainAxisAlignment: MainAxisAlignment.center,
-  //               children: [
-  //                 noButton,
-  //                 const SizedBox(width: 20),
-  //                 yesButton,
-  //               ],
-  //             ),
-  //           ],
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
   void showAlertDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColor.navBarIconColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.exit_to_app,
-                    color: AppColor.navBarIconColor, size: 40),
+  showDialog(
+  context: context,
+  builder: (BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.95, 
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColor.navBarIconColor.withOpacity(0.1),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 16),
-              Text(
-                "Logout",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: const Icon(
+                Icons.exit_to_app,
+                color: AppColor.navBarIconColor,
+                size: 40,
               ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Are you sure you want to logout?",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              "Logout",
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.grey.shade400),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              "Are you sure you want to logout?",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 25),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.grey.shade400),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text("Cancel",
-                          style: TextStyle(color: Colors.black87)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text(
+                      "Cancel",
+                      style: TextStyle(color: Colors.black87),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.navBarIconColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor.navBarIconColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Logout"),
-                        ),
-                      ),
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        await logoutUser();
-                      },
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await logoutUser();
+                    },
+                    child: const Text("Logout"),
                   ),
-                ],
-              ),
-              const SizedBox(height: 15),
-            ],
-          ),
-        );
-      },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
+  },
+);
   }
 
   // showAlertDialog() {

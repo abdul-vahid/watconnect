@@ -57,7 +57,13 @@ class _SplashViewState extends State<SplashView> {
     log("   User Token: '${user}' (length: ${user.length})");
     log("   SF Node Token: '${sfNodeToken}' (length: ${sfNodeToken.length})");
 
-    if ((sfAccessToken.isNotEmpty && sfAccessToken.length > 10) ||
+
+        print("🔍 Splash screen token check:");
+    print("   SF Access Token: '${sfAccessToken}' (length: ${sfAccessToken.length})");
+    print("   User Token: '${user}' (length: ${user.length})");
+    print("   SF Node Token: '${sfNodeToken}' (length: ${sfNodeToken.length})");
+
+     if ((sfAccessToken.isNotEmpty && sfAccessToken.length > 10) ||
         (user.isNotEmpty && user.length > 10) ||
         (sfNodeToken.isNotEmpty && sfNodeToken.length > 10)) {
       if (user.isEmpty) {

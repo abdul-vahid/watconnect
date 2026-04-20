@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print, deprecated_member_use, prefer_typing_uninitialized_variables, non_constant_identifier_names
 
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:focus_detector/focus_detector.dart';
@@ -15,8 +14,6 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:whatsapp/models/get_user.dart';
-import 'package:whatsapp/models/user_data_model/user_data_model.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 
 import 'package:whatsapp/utils/app_constants.dart';
@@ -28,7 +25,6 @@ import 'package:whatsapp/view_models/get_user_vm.dart';
 import 'package:whatsapp/view_models/lead_controller.dart';
 
 import 'package:whatsapp/view_models/unread_count_vm.dart';
-import 'package:whatsapp/view_models/user_data_list_vm.dart';
 import 'package:whatsapp/views/view/NotificationPage.dart';
 import 'package:whatsapp/views/view/campaign_list_view.dart';
 import 'package:whatsapp/views/view/lead/lead_list_view.dart';
@@ -53,57 +49,54 @@ import '../widgets/app_drawer_widget.dart';
 
 // ignore: must_be_immutable
 class HomeView extends StatefulWidget {
-  LeadCountAgentModel? agentModel;
-  Leadsmonthmodel? monthmodel;
-  HomeView({Key? key, this.agentModel, this.monthmodel}) : super(key: key);
+  final LeadCountAgentModel? agentModel;
+  final Leadsmonthmodel? monthmodel;
+
+  const HomeView({Key? key, this.agentModel, this.monthmodel}) : super(key: key);
 
   @override
   State<HomeView> createState() => _HomeViewState();
 }
 
 class _HomeViewState extends State<HomeView> {
-  String? lastAddedId;
-  Map<String, String> itemsMap = {};
-  List allNums = [];
-  IO.Socket? socket;
-  String phNum = "+919876543210";
-  String token = "your_token_here";
-  Map<String, dynamic> userId = {};
-  List allWhNums = [];
-  List unreadList = [];
-  String? selectedWhatsAppNumber;
+ 
+  IO.Socket? _socket;
+  
 
-  List<String?> addData = [];
-  late TooltipBehavior _tooltipBehavior;
-  List<_SalesData> businessData = [];
-  List<Templatedata> templatedata = [];
-  List<Color> areaColor = [
-    AppColor.navBarIconColor,
-    const Color.fromARGB(255, 205, 244, 247),
-    Colors.blue,
-    Colors.green
-  ];
+  final Map<String, String> _itemsMap = {};
+  final List<dynamic> _allNums = [];
+  final List<dynamic> _allWhNums = [];
+  final List<ChartData> _businessData = [];
+  final List<TemplateChartData> _templateData = [];
+  
 
-  String? countNewLeads = '';
-  String? autoResponseCount = '';
-  String? campaignCount = '0';
-  int? templateCount;
-  int? unreaddatacount;
-  num totalCountofIncome = 0;
-  num totalCountofExpence = 0;
-  String? globalUnreadCount = "";
+  String _phNum = "+919876543210";
+  String _token = "your_token_here";
+  String? _selectedWhatsAppNumber;
+  String _selectedNumber = "";
+  
+
+  String? _countNewLeads;
+  String? _autoResponseCount;
+  String? _campaignCount = '0';
+  int? _templateCount;
+  int? _unreadDataCount;
+  String? _globalUnreadCount;
+  
 
   bool _isInitialized = false;
   bool _isLoading = false;
+  
 
-  Future<String?> getPhoneNumber() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final phoneNumber = prefs.getString('selectedWhatsAppNumber');
-    debug('Retrieved phone number: $phoneNumber');
-    return phoneNumber;
-  }
-
-  String selectedNumber = "";
+  final List<Color> _areaColor = [
+    AppColor.navBarIconColor,
+    const Color.fromARGB(255, 205, 244, 247),
+    Colors.blue,
+    Colors.green,
+  ];
+  
+  late final TooltipBehavior _tooltipBehavior;
+  List<String> _modules = [];
 
   @override
   void initState() {
@@ -113,169 +106,114 @@ class _HomeViewState extends State<HomeView> {
     _initializeData();
   }
 
-  Future<void> _initializeData() async {
-    if (_isInitialized) return;
-
-    _isLoading = true;
-    await getAvailableModules();
-    await getPhoneNumber();
-    await _fetchInitialData();
-    _isInitialized = true;
-    _isLoading = false;
-
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
   @override
   void dispose() {
-    disconnectSocket();
+    _disconnectSocket();
     super.dispose();
   }
 
-  List<String> modules = [];
-  Future<void> getAvailableModules() async {
+
+  
+  Future<void> _initializeData() async {
+    if (_isInitialized) return;
+
+    setState(() => _isLoading = true);
+    
+    await _getAvailableModules();
+    await _getPhoneNumber();
+    await _fetchInitialData();
+    
+    setState(() {
+      _isInitialized = true;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _getAvailableModules() async {
     final prefs = await SharedPreferences.getInstance();
-    modules =
-        prefs.getStringList(SharedPrefsConstants.userAvailableMoulesKey) ?? [];
-    print("modules:::: $modules");
+    _modules = prefs.getStringList(SharedPrefsConstants.userAvailableMoulesKey) ?? [];
+    print("modules:::: $_modules");
+  }
+
+  Future<String?> _getPhoneNumber() async {
+    final prefs = await SharedPreferences.getInstance();
+    final phoneNumber = prefs.getString('selectedWhatsAppNumber');
+    debug('Retrieved phone number: $phoneNumber');
+    return phoneNumber;
   }
 
   Future<void> _fetchInitialData() async {
     try {
-         checkPasswordChange();
+      await _checkPasswordChange();
+      
       final prefs = await SharedPreferences.getInstance();
       String? selectedWhatsAppNumber = prefs.getString('phoneNumber');
 
-      await Provider.of<WhatsappSettingViewModel>(context, listen: false)
-          .fetch();
+      await Provider.of<WhatsappSettingViewModel>(context, listen: false).fetch();
 
-      final whatsAppVM =
-          Provider.of<WhatsappSettingViewModel>(context, listen: false);
+      final whatsAppVM = Provider.of<WhatsappSettingViewModel>(context, listen: false);
+      
       if (selectedWhatsAppNumber == null || selectedWhatsAppNumber.isEmpty) {
         if (whatsAppVM.viewModels.isNotEmpty) {
-          selectedWhatsAppNumber =
-              whatsAppVM.viewModels[0].model.record[0].phone;
-          selectedNumber = selectedWhatsAppNumber ?? "";
+          selectedWhatsAppNumber = whatsAppVM.viewModels[0].model.record[0].phone;
+          _selectedNumber = selectedWhatsAppNumber ?? "";
           await prefs.setString('phoneNumber', selectedWhatsAppNumber ?? "");
         }
       } else {
-        selectedNumber = selectedWhatsAppNumber;
+        _selectedNumber = selectedWhatsAppNumber;
       }
 
       debugPrint('Selected WhatsApp Number: $selectedWhatsAppNumber');
 
-      await Future.wait([
-        Provider.of<CampaignChartViewModel>(context, listen: false)
-            .fetchCampaignChart(number: selectedWhatsAppNumber),
-        Provider.of<TempleteListViewModel>(context, listen: false)
-            .templeteCountfetch(number: selectedWhatsAppNumber),
-        Provider.of<TempleteListViewModel>(context, listen: false)
-            .templetefetch(number: selectedWhatsAppNumber),
-        Provider.of<CampaignCountViewModel>(context, listen: false)
-            .fetchCampaignCount(number: selectedWhatsAppNumber),
-        Provider.of<LeadCountViewModel>(context, listen: false).countNewLead(),
-        Provider.of<AutoResponseViewModel>(context, listen: false)
-            .autoResponseFetch(),
-        _getUnreadCount(),
-      ] as Iterable<Future>);
+    
+      await _fetchAllDataConcurrently(selectedWhatsAppNumber);
+      
     } catch (e, stackTrace) {
       print('Error in _fetchInitialData: $e. $stackTrace');
     } finally {
-   
       EasyLoading.dismiss();
     }
   }
 
-  void _updateItemsMap(WhatsappSettingViewModel whatsAppSettingVM) {
-    LeadController leadController = Provider.of(context, listen: false);
-    itemsMap.clear();
-    leadController.clearAllBusNums();
-    allNums = [];
-
-    for (var viewModel in whatsAppSettingVM.viewModels) {
-      var nmodel = viewModel.model;
-      if (nmodel != null) {
-        for (var record in nmodel.record ?? []) {
-          allNums.add(record);
-          leadController.setAllBusNums(record.phone);
-          allWhNums.add("${record.name} ${record.phone}");
-          itemsMap[record.phone] = "${record.name} ${record.phone}";
-        }
-      }
-    }
-
-    print("all business numbers::::  ${leadController.allBusinessNumbers}");
+  Future<void> _fetchAllDataConcurrently(String? whatsappNumber) async {
+    final List<Future<void>> futures = [];
+    
+    futures.add(Provider.of<CampaignChartViewModel>(context, listen: false)
+        .fetchCampaignChart(number: whatsappNumber));
+    futures.add(Provider.of<TempleteListViewModel>(context, listen: false)
+        .templeteCountfetch(number: whatsappNumber));
+    futures.add(Provider.of<TempleteListViewModel>(context, listen: false)
+        .templetefetch(number: whatsappNumber));
+    futures.add(Provider.of<CampaignCountViewModel>(context, listen: false)
+        .fetchCampaignCount(number: whatsappNumber));
+    futures.add(Provider.of<LeadCountViewModel>(context, listen: false).countNewLead());
+    futures.add(Provider.of<AutoResponseViewModel>(context, listen: false).autoResponseFetch());
+    futures.add(_getUnreadCount()); 
+    
+    await Future.wait(futures);
   }
 
-  void whatsappSettingNumber(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Select Options'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: itemsMap.length,
-                  itemBuilder: (context, index) {
-                    String key = itemsMap.keys.elementAt(index);
-                    String value = itemsMap[key]!;
-
-                    return Column(
-                      children: [
-                        ListTile(
-                          title: Text(value),
-                          onTap: () async {
-                            setState(() {
-                              selectedWhatsAppNumber = key;
-                              _isLoading = true;
-                            });
-
-                            await _refreshDataWithNewNumber(key);
-
-                            setState(() {
-                              _isLoading = false;
-                            });
-
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                        const Divider(),
-                      ],
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
+  
   Future<void> _refreshDataWithNewNumber(String number) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('phoneNumber', number);
 
-    await Future.wait([
+    final List<Future<void>> futures = [
       Provider.of<CampaignCountViewModel>(context, listen: false)
           .fetchCampaignCount(number: number),
       Provider.of<TempleteListViewModel>(context, listen: false)
           .templeteCountfetch(number: number),
       Provider.of<CampaignChartViewModel>(context, listen: false)
           .fetchCampaignChart(number: number),
-    ]);
+    ];
+    
+    await Future.wait(futures);
 
-    if (mounted) {
-      setState(() {});
-    }
+    if (mounted) setState(() {});
   }
 
+ 
+  
   @override
   Widget build(BuildContext context) {
     return Consumer<WhatsappSettingViewModel>(
@@ -289,28 +227,15 @@ class _HomeViewState extends State<HomeView> {
                 : FocusDetector(
                     onFocusGained: () {
                       log('Home Screen focused again');
-                      connectSocket();
+                      _connectSocket();
                     },
                     onFocusLost: () {
-                      disconnectSocket();
+                      _disconnectSocket();
                     },
                     child: Scaffold(
                       backgroundColor: Colors.white,
                       drawer: const AppDrawerWidget(),
-                      appBar: AppBar(
-                        iconTheme: const IconThemeData(color: Colors.white),
-                        centerTitle: true,
-                        elevation: 2,
-                        backgroundColor: AppColor.navBarIconColor,
-                        title: const Text(
-                          "Home",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        actions: [
-                          _buildNotificationIcon(),
-                          _buildPhoneMenu(whatsAppSettingVM),
-                        ],
-                      ),
+                      appBar: _buildAppBar(whatsAppSettingVM),
                       body: _buildBody(),
                     ),
                   );
@@ -320,19 +245,31 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  PreferredSizeWidget _buildAppBar(WhatsappSettingViewModel whatsAppSettingVM) {
+    return AppBar(
+      iconTheme: const IconThemeData(color: Colors.white),
+      centerTitle: true,
+      elevation: 2,
+      backgroundColor: AppColor.navBarIconColor,
+      title: const Text("Home", style: TextStyle(color: Colors.white)),
+      actions: [
+        _buildNotificationIcon(),
+        _buildPhoneMenu(whatsAppSettingVM),
+      ],
+    );
+  }
+
   Widget _buildNotificationIcon() {
     return Consumer<UnreadCountVm>(
       builder: (context, unreadCountVm, child) {
-        int totalUnreadCount = _calculateUnreadCount(unreadCountVm);
+        final totalUnreadCount = _calculateUnreadCount(unreadCountVm);
 
         return IconButton(
           tooltip: "Messages",
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const NotificationPage(),
-              ),
+              MaterialPageRoute(builder: (context) => const NotificationPage()),
             );
           },
           icon: Stack(
@@ -352,8 +289,7 @@ class _HomeViewState extends State<HomeView> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    backgroundColor:
-                        Theme.of(context).colorScheme.onTertiaryContainer,
+                    backgroundColor: Theme.of(context).colorScheme.onTertiaryContainer,
                     padding: const EdgeInsets.all(2),
                   ),
                 ),
@@ -369,8 +305,8 @@ class _HomeViewState extends State<HomeView> {
       position: PopupMenuPosition.under,
       icon: const Icon(Icons.phone, size: 23, color: Colors.white),
       itemBuilder: (BuildContext context) {
-        return allNums.map((number) {
-          final isSelected = number.phone == selectedNumber;
+        return _allNums.map((number) {
+          final isSelected = number.phone == _selectedNumber;
           return PopupMenuItem<String>(
             value: number.phone,
             child: Row(
@@ -382,8 +318,7 @@ class _HomeViewState extends State<HomeView> {
                   child: Text(
                     "${number.name} ${number.phone} ",
                     style: TextStyle(
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                       color: isSelected ? Colors.blue : Colors.black,
                     ),
                   ),
@@ -395,18 +330,14 @@ class _HomeViewState extends State<HomeView> {
       },
       onSelected: (value) async {
         print('Selected: $value');
-        setState(() {
-          _isLoading = true;
-          selectedNumber = value; // Update selectedNumber immediately
-        });
+        setState(() => _isLoading = true);
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('phoneNumber', value);
+        _selectedNumber = value;
         await _refreshDataWithNewNumber(value);
 
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
 
         EasyLoading.showToast("$value marked as selected",
             toastPosition: EasyLoadingToastPosition.bottom);
@@ -425,10 +356,9 @@ class _HomeViewState extends State<HomeView> {
                   builder: (context, templateVM, child) {
                     return Consumer<CampaignChartViewModel>(
                       builder: (context, chartListVM, child) {
-                        _calculateValues(leadCountVM, autoResponseVM,
-                            campaignVM, templateVM);
-                        _getBusinessWidgets(chartListVM);
-                        _getTemplateData(templateVM);
+                        _updateCounts(leadCountVM, autoResponseVM, campaignVM, templateVM);
+                        _updateBusinessData(chartListVM);
+                        _updateTemplateData(templateVM);
 
                         return SingleChildScrollView(
                           child: Column(
@@ -436,7 +366,7 @@ class _HomeViewState extends State<HomeView> {
                               const SizedBox(height: 12),
                               _buildTopCards(),
                               const SizedBox(height: 20),
-                              _buildCharts(chartListVM, templateVM),
+                              _buildCharts(),
                             ],
                           ),
                         );
@@ -459,7 +389,7 @@ class _HomeViewState extends State<HomeView> {
         children: [
           HomePageCard(
             title: "All Leads",
-            subtitle: "${(countNewLeads ?? 0).toString()} / Total",
+            subtitle: "${(_countNewLeads ?? 0).toString()} / Total",
             icon: Icons.leaderboard_rounded,
             polygonAsset: "assets/images/home_polygon.png",
             tap: () {
@@ -472,20 +402,17 @@ class _HomeViewState extends State<HomeView> {
           const SizedBox(width: 10),
           HomePageCard(
             title: "All Campaigns",
-            subtitle: "${(campaignCount ?? 0).toString()} / Total",
+            subtitle: "${(_campaignCount ?? 0).toString()} / Total",
             icon: Icons.leaderboard_rounded,
             polygonAsset: "assets/images/home_polygon.png",
             tap: () {
-              if (modules.contains("Campaign") ||
-                  modules.contains('Campaigns')) {
+              if (_modules.contains("Campaign") || _modules.contains('Campaigns')) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const CampaignListView()),
+                  MaterialPageRoute(builder: (context) => const CampaignListView()),
                 );
               } else {
-                EasyLoading.showToast(
-                    "Access to Campaign is not included in this Plan");
+                EasyLoading.showToast("Access to Campaign is not included in this Plan");
               }
             },
           ),
@@ -494,36 +421,24 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildCharts(
-      CampaignChartViewModel chartListVM, TempleteListViewModel templateVM) {
+  Widget _buildCharts() {
     return Padding(
       padding: const EdgeInsets.all(15),
       child: Column(
         children: [
-          if (modules.contains("Campaign") && campaignCount != "0")
-            _buildCampaignChart(chartListVM),
-          if (modules.contains("Campaign") && campaignCount != "0")
+          if (_modules.contains("Campaign") && _campaignCount != "0")
+            _buildCampaignChart(),
+          if (_modules.contains("Campaign") && _campaignCount != "0")
             const SizedBox(height: 20),
-          if (templatedata.isNotEmpty) _buildTemplateChart(templateVM),
+          if (_templateData.isNotEmpty) _buildTemplateChart(),
         ],
       ),
     );
   }
 
-  Widget _buildCampaignChart(CampaignChartViewModel chartListVM) {
+  Widget _buildCampaignChart() {
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 6,
-            spreadRadius: 2,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: _buildChartDecoration(),
       child: Column(
         children: [
           const SizedBox(height: 10),
@@ -542,16 +457,16 @@ class _HomeViewState extends State<HomeView> {
               position: LegendPosition.top,
               overflowMode: LegendItemOverflowMode.wrap,
             ),
-            series: <PieSeries<_SalesData, String>>[
-              PieSeries<_SalesData, String>(
+            series: <PieSeries<ChartData, String>>[
+              PieSeries<ChartData, String>(
                 legendIconType: LegendIconType.circle,
                 radius: '100',
-                dataSource: businessData,
+                dataSource: _businessData,
                 enableTooltip: true,
-                pointColorMapper: (_SalesData sales, int index) =>
-                    areaColor[index % areaColor.length],
-                xValueMapper: (_SalesData sales, _) => sales.status,
-                yValueMapper: (_SalesData sales, _) => sales.count,
+                pointColorMapper: (ChartData sales, int index) =>
+                    _areaColor[index % _areaColor.length],
+                xValueMapper: (ChartData sales, _) => sales.status,
+                yValueMapper: (ChartData sales, _) => sales.count,
               )
             ],
           ),
@@ -560,20 +475,9 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildTemplateChart(TempleteListViewModel templateVM) {
+  Widget _buildTemplateChart() {
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 6,
-            spreadRadius: 2,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: _buildChartDecoration(),
       child: Column(
         children: [
           const SizedBox(height: 10),
@@ -592,15 +496,15 @@ class _HomeViewState extends State<HomeView> {
               position: LegendPosition.top,
               overflowMode: LegendItemOverflowMode.wrap,
             ),
-            series: <DoughnutSeries<Templatedata, String>>[
-              DoughnutSeries<Templatedata, String>(
+            series: <DoughnutSeries<TemplateChartData, String>>[
+              DoughnutSeries<TemplateChartData, String>(
                 radius: '100',
-                dataSource: templatedata,
+                dataSource: _templateData,
                 enableTooltip: true,
-                pointColorMapper: (Templatedata sales, int index) =>
-                    areaColor[index % areaColor.length],
-                xValueMapper: (Templatedata sales, _) => sales.status,
-                yValueMapper: (Templatedata sales, _) => sales.count,
+                pointColorMapper: (TemplateChartData sales, int index) =>
+                    _areaColor[index % _areaColor.length],
+                xValueMapper: (TemplateChartData sales, _) => sales.status,
+                yValueMapper: (TemplateChartData sales, _) => sales.count,
               )
             ],
           ),
@@ -609,68 +513,97 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  void _calculateValues(
+  BoxDecoration _buildChartDecoration() {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.12),
+          blurRadius: 6,
+          spreadRadius: 2,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    );
+  }
+
+
+  
+  void _updateItemsMap(WhatsappSettingViewModel whatsAppSettingVM) {
+    final leadController = Provider.of<LeadController>(context, listen: false);
+    _itemsMap.clear();
+    leadController.clearAllBusNums();
+    _allNums.clear();
+
+    for (var viewModel in whatsAppSettingVM.viewModels) {
+      final nmodel = viewModel.model;
+      if (nmodel != null) {
+        for (var record in nmodel.record ?? []) {
+          _allNums.add(record);
+          leadController.setAllBusNums(record.phone);
+          _allWhNums.add("${record.name} ${record.phone}");
+          _itemsMap[record.phone] = "${record.name} ${record.phone}";
+        }
+      }
+    }
+
+    print("all business numbers::::  ${leadController.allBusinessNumbers}");
+  }
+
+  void _updateCounts(
     LeadCountViewModel leadCountVM,
     AutoResponseViewModel autoResponseVM,
     CampaignCountViewModel campaignVM,
     TempleteListViewModel templateVM,
   ) {
     for (var viewModel in leadCountVM.viewModels) {
-      NewLeadCountModel nmodel = viewModel.model;
-      countNewLeads = nmodel.total;
+      if (viewModel.model is NewLeadCountModel) {
+        final nmodel = viewModel.model as NewLeadCountModel;
+        _countNewLeads = nmodel.total;
+      }
     }
 
     for (var viewModel in autoResponseVM.viewModels) {
-      AutoResponseModel automodel = viewModel.model;
-      autoResponseCount = automodel.total;
+      if (viewModel.model is AutoResponseModel) {
+        final automodel = viewModel.model as AutoResponseModel;
+        _autoResponseCount = automodel.total;
+      }
     }
 
     for (var viewModel in campaignVM.viewModels) {
-      CampaignCountModel campmodel = viewModel.model;
-      var pend = campmodel.result?.pending;
-      var comp = campmodel.result?.completed;
-      var abort = campmodel.result?.aborted;
-      var prog = campmodel.result?.inProgress;
-      var allCamp = int.parse(pend ?? "0") +
-          int.parse(comp ?? "0") +
-          int.parse(abort ?? "0") +
-          int.parse(prog ?? "0");
-      campaignCount = allCamp.toString();
-    }
-
-    for (var viewModel in templateVM.viewModels) {
-      TemplateModel tempmodel = viewModel.model;
-      templateCount = tempmodel.data?.length;
-    }
-  }
-
-  int _calculateUnreadCount(UnreadCountVm unreadCountVm) {
-    int totalUnreadCount = 0;
-    for (var viewModel in unreadCountVm.viewModels) {
-      if (viewModel.model is UnreadMsgModel) {
-        UnreadMsgModel unreadvm = viewModel.model as UnreadMsgModel;
-        var records = unreadvm.records ?? [];
-        totalUnreadCount = records.length;
+      if (viewModel.model is CampaignCountModel) {
+        final campmodel = viewModel.model as CampaignCountModel;
+        final pend = campmodel.result?.pending ?? "0";
+        final comp = campmodel.result?.completed ?? "0";
+        final abort = campmodel.result?.aborted ?? "0";
+        final prog = campmodel.result?.inProgress ?? "0";
+        final allCamp = int.parse(pend) + int.parse(comp) + int.parse(abort) + int.parse(prog);
+        _campaignCount = allCamp.toString();
       }
     }
-    return totalUnreadCount;
+
+  
+    for (var viewModel in templateVM.viewModels) {
+      if (viewModel.model is TemplateModel) {
+        final tempmodel = viewModel.model as TemplateModel;
+        _templateCount = tempmodel.data?.length;
+      }
+    }
   }
 
-  void _getTemplateData(TempleteListViewModel templateVM) {
-    Map<String, int> categoryCount = {};
-    templatedata.clear();
+  void _updateTemplateData(TempleteListViewModel templateVM) {
+    final Map<String, int> categoryCount = {};
+    _templateData.clear();
 
     for (var viewModel in templateVM.viewModels) {
       if (viewModel.model is TemplateModel) {
-        TemplateModel templateModel = viewModel.model as TemplateModel;
+        final templateModel = viewModel.model as TemplateModel;
         if (templateModel.data != null) {
           for (var entry in templateModel.data!) {
-            String? templateCategory = entry.category;
-            if (categoryCount.containsKey(templateCategory)) {
-              categoryCount[templateCategory!] =
-                  categoryCount[templateCategory]! + 1;
-            } else {
-              categoryCount[templateCategory!] = 1;
+            final templateCategory = entry.category;
+            if (templateCategory != null) {
+              categoryCount[templateCategory] = (categoryCount[templateCategory] ?? 0) + 1;
             }
           }
         }
@@ -678,78 +611,106 @@ class _HomeViewState extends State<HomeView> {
     }
 
     categoryCount.forEach((category, count) {
-      templatedata.add(Templatedata(category, count));
+      _templateData.add(TemplateChartData(category, count));
     });
   }
 
-  void _getBusinessWidgets(CampaignChartViewModel chartListVM) {
-    businessData.clear();
+  void _updateBusinessData(CampaignChartViewModel chartListVM) {
+    _businessData.clear();
 
     for (var viewModel in chartListVM.viewModels) {
       if (viewModel.model is CampaignChartModel) {
-        CampaignChartModel countagent = viewModel.model as CampaignChartModel;
+        final countagent = viewModel.model as CampaignChartModel;
         if (countagent.result != null) {
-          int completed = int.parse(countagent.result?.completed ?? "0");
-          int pending = int.parse(countagent.result?.pending ?? "0");
-          int inProgress = int.parse(countagent.result?.inProgress ?? "0");
-          int aborted = int.parse(countagent.result?.aborted ?? "0");
+          final completed = int.parse(countagent.result?.completed ?? "0");
+          final pending = int.parse(countagent.result?.pending ?? "0");
+          final inProgress = int.parse(countagent.result?.inProgress ?? "0");
+          final aborted = int.parse(countagent.result?.aborted ?? "0");
 
-          businessData.add(_SalesData("Pending", pending));
-          businessData.add(_SalesData("In Progress", inProgress));
-          businessData.add(_SalesData("Completed", completed));
-          businessData.add(_SalesData("Aborted", aborted));
+          _businessData.addAll([
+            ChartData("Pending", pending),
+            ChartData("In Progress", inProgress),
+            ChartData("Completed", completed),
+            ChartData("Aborted", aborted),
+          ]);
         }
       }
     }
   }
 
-  Future<void> connectSocket() async {
-    log("connecting to socket::::::::::::::::::::::::::::::::: ");
+  int _calculateUnreadCount(UnreadCountVm unreadCountVm) {
+    int totalUnreadCount = 0;
+    for (var viewModel in unreadCountVm.viewModels) {
+      if (viewModel.model is UnreadMsgModel) {
+        final unreadvm = viewModel.model as UnreadMsgModel;
+        totalUnreadCount = unreadvm.records?.length ?? 0;
+      }
+    }
+    return totalUnreadCount;
+  }
+
+  Future<void> _getUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
-    String? number = prefs.getString('phoneNumber');
-    LeadController leadCtrl = Provider.of(context, listen: false);
-    String tkn = await AppUtils.getToken() ?? "";
+    final number = prefs.getString('phoneNumber');
+
+    if (!mounted) return;
+
+    await Provider.of<UnreadCountVm>(context, listen: false)
+        .fetchunreadcount(number: number ?? "");
+
+    if (mounted) setState(() {});
+  }
+
+  
+  Future<void> _connectSocket() async {
+    log("connecting to socket::::::::::::::::::::::::::::::::: ");
+    
+    final prefs = await SharedPreferences.getInstance();
+    final number = prefs.getString('phoneNumber');
+    final leadCtrl = Provider.of<LeadController>(context, listen: false);
+    final tkn = await AppUtils.getToken() ?? "";
+    
     Map<String, dynamic> decodedToken = {};
     try {
-      decodedToken = Map<String, dynamic>.from(
-        JwtDecoder.decode(tkn),
-      );
+      decodedToken = Map<String, dynamic>.from(JwtDecoder.decode(tkn));
     } catch (e, stackTrace) {
       print("error in decode token >>>. $e. >>>> $stackTrace");
     }
-    token = tkn;
-    phNum = number ?? "";
-    userId = decodedToken;
-
-    userId.addAll({
+    
+    _token = tkn;
+    _phNum = number ?? "";
+    
+    final userId = {
+      ...decodedToken,
       "business_numbers": leadCtrl.allBusinessNumbers,
       "business_number": number
-    });
+    };
 
     log("user id sending in socket setup::::   $userId");
 
     try {
-      socket = IO.io(
+      _socket = IO.io(
         'https://admin.watconnect.com',
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .setPath('/ibs/socket.io')
-            .setExtraHeaders({'Authorization': 'Bearer $token'})
+            .setExtraHeaders({'Authorization': 'Bearer $_token'})
             .build(),
       );
-      socket!.connect();
-      socket!.onConnect((_) {
+      
+      _socket!.connect();
+      _socket!.onConnect((_) {
         print('Connected to WebSocket on home');
-        socket!.emit("setup", userId);
+        _socket!.emit("setup", userId);
       });
-      socket!.on("connected", (_) {});
-      socket!.on("receivedwhatsappmessage", (data) {
+      _socket!.on("connected", (_) {});
+      _socket!.on("receivedwhatsappmessage", (data) {
         _getUnreadCount();
       });
-      socket!.onDisconnect((_) {
+      _socket!.onDisconnect((_) {
         print(" WebSocket Disconnected home");
       });
-      socket!.onError((error) {
+      _socket!.onError((error) {
         print(" WebSocket Error home: $error");
       });
     } catch (error) {
@@ -757,58 +718,50 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
-  var res = "";
-  Future<void> _getUnreadCount() async {
-    final prefs = await SharedPreferences.getInstance();
-    var number = prefs.getString('phoneNumber');
-
-    if (!mounted) return;
-
-    await Provider.of<UnreadCountVm>(context, listen: false)
-        .fetchunreadcount(number: number ?? "");
-
-    if (mounted) {
-      setState(() {});
-    }
+  void _disconnectSocket() {
+    _socket?.disconnect();
+    print(" WebSocket Disconnected on home");
   }
 
-  void disconnectSocket() {
-    if (socket != null) {
-      socket!.disconnect();
-      print(" WebSocket Disconnected on home");
+ 
+  
+  Future<void> _checkPasswordChange() async {
+    final tkn = await AppUtils.getToken() ?? "";
+    Map<String, dynamic> decodedToken;
+    
+    try {
+      decodedToken = Map<String, dynamic>.from(JwtDecoder.decode(tkn));
+    } catch (e) {
+      print("Error decoding token: $e");
+      return;
     }
-  }
 
-  Future<void> checkPasswordChange() async {
-    String tkn = await AppUtils.getToken() ?? "";
-    Map<String, dynamic> decodedToken = Map<String, dynamic>.from(
-      JwtDecoder.decode(tkn),
-    );
-
-    GetUserViewModel userCtrl = Provider.of(context, listen: false);
+    final userCtrl = Provider.of<GetUserViewModel>(context, listen: false);
+    userCtrl.clearUserData();
     await userCtrl.fetchUser();
-    for (var viewModel in userCtrl!.viewModels) {
-      GetUser model = viewModel.model;
-      print(
-          "model  password_changed_at ${model.password_changed_at}. decocded token>>> ${decodedToken['password_changed_at']}");
+    
+    for (var viewModel in userCtrl.viewModels) {
+      final model = viewModel.model;
+      print("model password_changed_at ${model.password_changed_at}. decoded token>>> ${decodedToken['password_changed_at']}");
 
       if (model.password_changed_at != decodedToken['password_changed_at']) {
         AppUtils.logout(context);
       }
     }
-
-    //
   }
 }
 
-class _SalesData {
-  _SalesData(this.status, this.count);
+
+class ChartData {
   final String status;
   final int count;
+  
+  ChartData(this.status, this.count);
 }
 
-class Templatedata {
-  Templatedata(this.status, this.count);
+class TemplateChartData {
   final String status;
   final int count;
+  
+  TemplateChartData(this.status, this.count);
 }

@@ -1551,6 +1551,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
     });
   }
 
+
   bool updateLoader = false;
   Future<void> getLeadList({bool showLoading = true}) async {
     if (showLoading) {

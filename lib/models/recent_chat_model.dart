@@ -111,28 +111,29 @@
 // }
 
 import 'dart:convert';
-
 import '../core/models/base_model.dart';
 
 class RecentChatModel extends BaseModel {
-  bool? success;
-  List<Records>? records;
+  final bool? success;
+  final List<Records>? records;
 
-  RecentChatModel({this.success, this.records});
+  RecentChatModel({
+    this.success,
+     this.records,
+  });
 
   factory RecentChatModel.fromMap(Map<String, dynamic> data) {
     return RecentChatModel(
       success: data['success'] as bool?,
-      records: (data['records'] as List<dynamic>?)
-          ?.map((e) => Records.fromMap(e as Map<String, dynamic>))
+      records: (data['records'] as List<dynamic>? ?? [])
+          .map((e) => Records.fromMap(e as Map<String, dynamic>))
           .toList(),
     );
   }
 
   @override
-  RecentChatModel fromMap(Map<String, dynamic> data) {
-    return RecentChatModel.fromMap(data);
-  }
+  RecentChatModel fromMap(Map<String, dynamic> data) =>
+      RecentChatModel.fromMap(data);
 
   @override
   Map<String, dynamic> toMap() => {
@@ -140,10 +141,8 @@ class RecentChatModel extends BaseModel {
         'records': records?.map((e) => e.toMap()).toList(),
       };
 
-  @override
-  factory RecentChatModel.fromJson(String data) {
-    return RecentChatModel.fromMap(json.decode(data) as Map<String, dynamic>);
-  }
+  factory RecentChatModel.fromJson(String data) =>
+      RecentChatModel.fromMap(json.decode(data));
 
   String toJson() => json.encode(toMap());
 }
@@ -151,97 +150,105 @@ class RecentChatModel extends BaseModel {
 class Records {
   static String sanitizeString(String? input) {
     if (input == null) return '';
-    // Remove invalid UTF-16 code units
-    return input.replaceAll(RegExp(r'[\u0000-\u0008\u000B\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF]'), '');
+    return input.replaceAll(
+      RegExp(r'[\u0000-\u0008\u000B\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF]'),
+      '',
+    );
   }
 
-  String? id;
-  String? lead_id;
-  String? parent_id;
-  String? contactname;
-  String? country_code;
-  String? message;
-  String? countrycode;
-  String? whatsapp_number;
-  String? full_number;
-  DateTime? createddate;
-  DateTime? last_message_time;
-  bool? pinned;
-  bool? isArchived;
-  List<dynamic>? tag_names;
+  final String? id;
+  final String? leadId;
+  final String? parentId;
+  final String? contactName;
+  final String? countryCode;
+  final String? whatsappNumber;
+  final String? fullNumber;
+  final String? message;
+  final DateTime? createdDate;
+  final DateTime? lastMessageTime;
+   bool pinned;
+  final bool isArchived;
+   List<Tag> tags;
+  // String? tag_names;
 
   Records({
     this.id,
-    this.parent_id,
-    this.lead_id,
-    this.contactname,
-    this.country_code,
-    this.full_number,
-    this.countrycode,
-    this.whatsapp_number,
-    this.createddate,
-    this.last_message_time,
-    this.pinned,
+    this.leadId,
+    this.parentId,
+    this.contactName,
+    this.countryCode,
+    this.whatsappNumber,
+    this.fullNumber,
     this.message,
-    this.tag_names,
-  
-      this.isArchived
-      });
+    this.createdDate,
+    this.lastMessageTime,
+    required this.pinned,
+    required this.isArchived,
+    required this.tags,
+    // this.tag_names
+  });
 
   factory Records.fromMap(Map<String, dynamic> data) {
-    List<dynamic>? tagNamesList;
-    if (data['tag_names'] != null && data['tag_names'] is List) {
-      tagNamesList = data['tag_names'] as List<dynamic>;
-    }
+    final rawTags = data['tag_names'] as List<dynamic>? ?? [];
 
     return Records(
       id: data['id']?.toString(),
-      parent_id: data['parent_id']?.toString(),
-      lead_id: data['lead_id']?.toString(),
-      country_code: data['country_code']?.toString(),
-      countrycode: data['countrycode']?.toString(),
-      message: sanitizeString(data['message']?.toString()) ?? "",
+      parentId: data['parent_id']?.toString(),
+      leadId: data['lead_id']?.toString(),
+      countryCode: data['country_code']?.toString(),
+      message: sanitizeString(data['message']?.toString()),
       pinned: data['pinned'] ?? false,
-      isArchived: data['is_archived']??false,
-      contactname: sanitizeString(data['contactname']?.toString()),
-      full_number: sanitizeString(data['full_number']?.toString()),
-      whatsapp_number: sanitizeString(data['whatsapp_number']?.toString()),
-      createddate: data['createddate'] != null
-          ? DateTime.tryParse(data['createddate'].toString())
-          : null,
-      last_message_time: data['last_message_time'] != null
-          ? DateTime.tryParse(data['last_message_time'].toString())
-          : null,
-      tag_names: tagNamesList?.map((tag) {
-        if (tag is Map<String, dynamic>) {
-          return {
-            'id': tag['id']?.toString(),
-            'name': sanitizeString(tag['name']?.toString()),
-          };
-        }
-        return tag;
-      }).toList(),
+      isArchived: data['is_archived'] ?? false,
+      contactName: sanitizeString(data['contactname']?.toString()),
+      // tag_names: data['tag_names']?.toString(),
+      fullNumber: sanitizeString(data['full_number']?.toString()),
+      whatsappNumber: sanitizeString(data['whatsapp_number']?.toString()),
+      createdDate: DateTime.tryParse(data['createddate']?.toString() ?? ''),
+      lastMessageTime:
+          DateTime.tryParse(data['last_message_time']?.toString() ?? ''),
+      tags: rawTags
+          .whereType<Map<String, dynamic>>()
+          .map((tag) => Tag.fromMap(tag))
+          .toList(),
     );
   }
 
   Map<String, dynamic> toMap() => {
         'id': id,
-        'parent_id': parent_id,
-        'lead_id': lead_id,
+        'parent_id': parentId,
+        'lead_id': leadId,
         'pinned': pinned,
-        "is_archived":isArchived,
-        'contactname': contactname,
-        'full_number': full_number,
-        'countrycode': countrycode,
-        'whatsapp_number': whatsapp_number,
-        'createddate': createddate?.toIso8601String(),
-        'last_message_time': last_message_time?.toIso8601String(),
-        'tag_names': tag_names,
+        'is_archived': isArchived,
+        'contactname': contactName,
+        'full_number': fullNumber,
+        'country_code': countryCode,
+        'whatsapp_number': whatsappNumber,
+        'createddate': createdDate?.toIso8601String(),
+        'last_message_time': lastMessageTime?.toIso8601String(),
+        'tag_names': tags.map((e) => e.toMap()).toList(),
       };
 
-  factory Records.fromJson(String data) {
-    return Records.fromMap(json.decode(data) as Map<String, dynamic>);
-  }
+  factory Records.fromJson(String data) =>
+      Records.fromMap(json.decode(data));
 
   String toJson() => json.encode(toMap());
+}
+
+class Tag {
+  final String? id;
+  final String? name;
+
+  Tag({this.id, this.name});
+
+  factory Tag.fromMap(Map<String, dynamic> data) {
+    return Tag(
+      id: data['id']?.toString(),
+      name: Records.sanitizeString(data['name']?.toString()),
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'name': name,
+      };
 }

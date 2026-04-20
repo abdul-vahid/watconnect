@@ -271,13 +271,12 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart'
-    show InternetConnectionChecker;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/call_socket.dart';
 import 'package:whatsapp/models/user_model/user_model.dart';
+import 'package:whatsapp/react_side/lead/page/lead_list_page.dart';
 import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/screens/sf_home_screen.dart';
@@ -286,13 +285,15 @@ import 'package:whatsapp/salesforce/screens/sf_recent_chat_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/view_models/lead_controller.dart';
-import 'package:whatsapp/views/view/recent_chats_screen.dart';
+import 'package:whatsapp/views/view/recent_chat/recent_chat_view.dart';
+// import 'package:whatsapp/views/view/recent_chat/recent_chats_screen.dart';
 
 import '../../utils/app_color.dart';
 import '../../utils/notification_utils.dart';
 import '../view/home_view.dart';
 import '../view/profile_view.dart' show ProfileView;
 import '../view/user_list_view.dart';
+
 
 class FooterNavbarPage extends StatefulWidget {
   const FooterNavbarPage({super.key});
@@ -304,22 +305,20 @@ class FooterNavbarPage extends StatefulWidget {
 class _FooterNavbarPageState extends State<FooterNavbarPage> {
   final PageController _pageController = PageController();
   UserModel? userModelData;
-  int selectedPage = 0;
-  bool isDeviceConnected = false;
-  bool isAlertSet = false;
   int selected = 0;
 
   @override
   void initState() {
+    super.initState();
     NotificationUtil(context).initialize();
 
     SharedPreferences.getInstance().then((prefs) {
       userModelData = AppUtils.getSessionUser(prefs);
-      print("userModelData initrole ${userModelData?.userrole}");
+      setState(() {});
     });
+
     getBusNumApiCall();
     getuserrole();
-    super.initState();
   }
 
   getBusNumApiCall() async {
@@ -330,24 +329,13 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     }
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  // Modified: Exit dialog only shows when on home page (index 0)
   Future<bool> _onWillPop() async {
-    // Check if current page is home page
     if (selected != 0) {
-      // If not on home page, navigate to home page
-      setState(() {
-        selected = 0;
-      });
+      setState(() => selected = 0);
       _pageController.jumpToPage(0);
       return false;
     }
 
-    
     return (await showCupertinoDialog(
           context: context,
           builder: (BuildContext context) => CupertinoAlertDialog(
@@ -375,37 +363,28 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
 
     if (drProvider.fromSalesForce) {
       String tkn = prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
-      print("node token ::::  ${tkn}");
-      // Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
-      // var userId = decodedToken;
-
       Map<String, dynamic> decodedToken = Map<String, dynamic>.from(
         JwtDecoder.decode(tkn),
       );
-
-      // token = tkn;
-      // phNum = number ?? "";
-      Map<String, dynamic> userId = decodedToken;
 
       String deviId = prefs.getString(SharedPrefsConstants.deviceId) ?? "";
       final busNum =
           prefs.getString(SharedPrefsConstants.sfBusinessNumber) ?? "";
       LeadController leadCtrl = Provider.of(context, listen: false);
-      userId.addAll({
+      decodedToken.addAll({
         "business_numbers": leadCtrl.allBusinessNumbers,
         "business_number": busNum
       });
-      CallSocketService().connect(tkn, userId, deviId, busNum);
+      CallSocketService().connect(tkn, decodedToken, deviId, busNum);
     }
 
     bool hasCalls = prefs.getBool(SharedPrefsConstants.hasCallsKey) ?? false;
     if (hasCalls) {
       String tkn = await AppUtils.getToken() ?? "";
       Map<String, dynamic> decodedToken = JwtDecoder.decode(tkn);
-      var userId = decodedToken;
       String deviId = prefs.getString(SharedPrefsConstants.deviceId) ?? "";
       String busPhNum = prefs.getString('phoneNumber') ?? "";
-      CallSocketService().connect(tkn, userId, deviId, busPhNum);
+      CallSocketService().connect(tkn, decodedToken, deviId, busPhNum);
     }
 
     setState(() {
@@ -413,56 +392,36 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
     });
   }
 
-  showDialogBox() => showCupertinoDialog<String>(
-        context: context,
-        builder: (BuildContext context) => CupertinoAlertDialog(
-          title: const Text('No Connection'),
-          content: const Text('Please check your internet connectivity'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(context, 'Cancel');
-                setState(() => isAlertSet = false);
-                isDeviceConnected =
-                    await InternetConnectionChecker().hasConnection;
-                if (!isDeviceConnected && !isAlertSet) {
-                  showDialogBox();
-                  setState(() => isAlertSet = true);
-                }
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-
   @override
   Widget build(BuildContext context) {
     DashBoardController drProvider = Provider.of(context, listen: false);
 
-    final List<Map<String, dynamic>> items = [
-      {'icon': Icons.home, 'label': 'Home', 'visible': true},
-      {'icon': Icons.person, 'label': 'Profile', 'visible': true},
+    // Unified nav list: each entry has both page + metadata
+    final List<Map<String, dynamic>> navItems = [
       {
-        'icon': Icons.people,
-        'label': 'Users',
-        'visible': userModelData?.userrole == "ADMIN"
+        'page': drProvider.fromSalesForce ? const SfHomeScreen() : HomeView(),
+        'icon': Icons.home,
+        'label': 'Home',
       },
-      {'icon': Icons.chat, 'label': 'Chats', 'visible': true},
+      {
+        'page': drProvider.fromSalesForce ? const SfProfileScreen() : ProfileView(),
+        'icon': Icons.person,
+        'label': 'Profile',
+      },
+      if (userModelData?.userrole == "ADMIN")
+        {
+          'page': const UserListView(),
+          'icon': Icons.people,
+          'label': 'Users',
+        },
+      {
+        'page': drProvider.fromSalesForce
+            ? const SfRecentChatScreen()
+            : const LeadListPage(),
+        'icon': Icons.chat,
+        'label': 'Chats',
+      },
     ];
-
-    final visibleItems =
-        items.where((item) => item['visible'] == true).toList();
-
-    final pageOptions = [
-      drProvider.fromSalesForce ? const SfHomeScreen() : HomeView(),
-      drProvider.fromSalesForce ? const SfProfileScreen() : ProfileView(),
-      if (userModelData?.userrole == "ADMIN") const UserListView(),
-      drProvider.fromSalesForce
-          ? const SfRecentChatScreen()
-          : const RecentChatView(),
-      // ignore: unnecessary_null_comparison
-    ].where((page) => page != null).toList();
 
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -473,12 +432,14 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
           body: PageView(
             controller: _pageController,
             physics: const NeverScrollableScrollPhysics(),
-            onPageChanged: (index) => setState(() => selected = index),
-            children: pageOptions,
+            onPageChanged: (index) {
+              setState(() => selected = index);
+            },
+            children: navItems.map((item) => item['page'] as Widget).toList(),
           ),
           bottomNavigationBar: _buildSimpleBottomNavigationBar(
             selected: selected,
-            items: visibleItems,
+            items: navItems,
             onItemTap: (index) {
               setState(() => selected = index);
               _pageController.jumpToPage(index);
@@ -507,18 +468,13 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(items.length, (index) {
           final isSelected = selected == index;
-         
-          int originalIndex = _getOriginalIndex(index, items);
 
-          return GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => onItemTap(originalIndex), 
-            child: SizedBox(
-              width: 80,
-              height: double.infinity,
+          return Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => onItemTap(index),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -544,29 +500,5 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
         }),
       ),
     );
-  }
-
-// Helper method to get original index
-  int _getOriginalIndex(
-      int visibleIndex, List<Map<String, dynamic>> visibleItems) {
-    final originalItems = [
-      {'icon': Icons.home, 'label': 'Home', 'visible': true},
-      {'icon': Icons.person, 'label': 'Profile', 'visible': true},
-      {
-        'icon': Icons.people,
-        'label': 'Users',
-        'visible': userModelData?.userrole == "ADMIN"
-      },
-      {'icon': Icons.chat, 'label': 'Chats', 'visible': true},
-    ];
-
-    String visibleLabel = visibleItems[visibleIndex]['label'] as String;
-
-    for (int i = 0; i < originalItems.length; i++) {
-      if (originalItems[i]['label'] == visibleLabel) {
-        return i;
-      }
-    }
-    return visibleIndex;
   }
 }

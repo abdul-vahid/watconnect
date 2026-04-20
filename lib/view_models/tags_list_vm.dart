@@ -18,7 +18,7 @@ class TagsListViewModel extends BaseListViewModel {
   Future<void> fetchAllTags() async {
     String url = AppUtils.getUrl(AppConstants.getAllTagsApi);
     String apiUrl = url;
-    await get(url: apiUrl, baseModel: TagsModel());
+    // await get(url: apiUrl, baseModel: TagsModel());
   }
 
   Future<dynamic> addTag(Map addTagBody) async {

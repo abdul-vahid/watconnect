@@ -6,7 +6,7 @@ import 'record.dart';
 
 class UnreadMsgModel extends BaseModel {
   bool? success;
-  List<Record>? records;
+  List<UnreadRecord>? records;
 
   UnreadMsgModel({this.success, this.records});
 
@@ -14,7 +14,7 @@ class UnreadMsgModel extends BaseModel {
     return UnreadMsgModel(
       success: data['success'] as bool?,
       records: (data['records'] as List<dynamic>?)
-          ?.map((e) => Record.fromMap(e as Map<String, dynamic>))
+          ?.map((e) => UnreadRecord.fromMap(e as Map<String, dynamic>))
           .toList(),
     );
   }

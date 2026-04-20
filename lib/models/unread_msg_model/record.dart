@@ -1,14 +1,14 @@
 import 'dart:convert';
 
-class Record {
+class UnreadRecord {
   String? whatsappNumber;
   String? unreadMsgCount;
   String? name;
   String? parentId;
 
-  Record({this.whatsappNumber, this.unreadMsgCount, this.name, this.parentId});
+  UnreadRecord({this.whatsappNumber, this.unreadMsgCount, this.name, this.parentId});
 
-  factory Record.fromMap(Map<String, dynamic> data) => Record(
+  factory UnreadRecord.fromMap(Map<String, dynamic> data) => UnreadRecord(
         whatsappNumber: data['whatsapp_number'] as String?,
         unreadMsgCount: data['unread_msg_count'] as String?,
         name: data['name'] as String?,
@@ -24,13 +24,13 @@ class Record {
 
   /// `dart:convert`
   ///
-  /// Parses the string and returns the resulting Json object as [Record].
-  factory Record.fromJson(String data) {
-    return Record.fromMap(json.decode(data) as Map<String, dynamic>);
+  /// Parses the string and returns the resulting Json object as [UnreadRecord].
+  factory UnreadRecord.fromJson(String data) {
+    return UnreadRecord.fromMap(json.decode(data) as Map<String, dynamic>);
   }
 
   /// `dart:convert`
   ///
-  /// Converts [Record] to a JSON string.
+  /// Converts [UnreadRecord] to a JSON string.
   String toJson() => json.encode(toMap());
 }

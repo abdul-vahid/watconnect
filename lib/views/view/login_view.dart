@@ -95,13 +95,13 @@ class _LoginViewState extends State<LoginView> {
                       child: Form(
                         key: _loginFormKey,
                         child: SingleChildScrollView(
-                          child: AutofillGroup(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                TextFormField(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Company Code Field - Separate AutofillGroup without autofill hints
+                              AutofillGroup(
+                                child: TextFormField(
                                   controller: _tcodeController,
-                                  autofillHints: const [AutofillHints.organizationName],
                                   textInputAction: TextInputAction.next,
                                   validator: (value) => value!.isEmpty
                                       ? 'Please provide Code'
@@ -117,132 +117,139 @@ class _LoginViewState extends State<LoginView> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 15),
-                                TextFormField(
-                                  controller: _emailController,
-                                  autofillHints: const [AutofillHints.email],
-                                  textInputAction: TextInputAction.next,
-                                  validator: (value) => value!.isEmpty
-                                      ? 'Please provide Email'
-                                      : null,
-                                  keyboardType: TextInputType.emailAddress,
-                                  decoration: InputDecoration(
-                                    hintText: "Enter your email",
-                                    prefixIcon: const Icon(Icons.email,
-                                        color: Color(0xFF233A73)),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 15),
-                                TextFormField(
-                                  controller: _passwordController,
-                                  autofillHints: const [AutofillHints.password],
-                                  textInputAction: TextInputAction.done,
-                                  obscureText: _obscurePassword,
-                                  validator: (value) => value!.isEmpty
-                                      ? 'Please provide Password'
-                                      : null,
-                                  decoration: InputDecoration(
-                                    hintText: "Enter your password",
-                                    prefixIcon: const Icon(Icons.lock,
-                                        color: Color(0xFF233A73)),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _obscurePassword
-                                            ? Icons.visibility
-                                            : Icons.visibility_off,
-                                        color: const Color(0xFF233A73),
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscurePassword = !_obscurePassword;
-                                        });
-                                      },
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 30),
-                                Row(
+                              ),
+                              const SizedBox(height: 15),
+                              // Email and Password Fields - Separate AutofillGroup for login credentials
+                              AutofillGroup(
+                                child: Column(
                                   children: [
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: onButtonPressed,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              const Color(0xFF233A73),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 14),
+                                    TextFormField(
+                                      controller: _emailController,
+                                      autofillHints: const [AutofillHints.email],
+                                      textInputAction: TextInputAction.next,
+                                      validator: (value) => value!.isEmpty
+                                          ? 'Please provide Email'
+                                          : null,
+                                      keyboardType: TextInputType.emailAddress,
+                                      decoration: InputDecoration(
+                                        hintText: "Enter your email",
+                                        prefixIcon: const Icon(Icons.email,
+                                            color: Color(0xFF233A73)),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(15),
                                         ),
-                                        child: const Text("Login",
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.white)),
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: ElevatedButton.icon(
-                                        icon: const Icon(Icons.cloud,
-                                            color: Colors.white),
-                                        onPressed: () {
-                                          _showSalesforceLoginBottomSheet(
-                                              context);
-                                        },
-                                        label: const Text(
-                                          "Salesforce",
+                                    const SizedBox(height: 15),
+                                    TextFormField(
+                                      controller: _passwordController,
+                                      autofillHints: const [AutofillHints.password],
+                                      textInputAction: TextInputAction.done,
+                                      obscureText: _obscurePassword,
+                                      validator: (value) => value!.isEmpty
+                                          ? 'Please provide Password'
+                                          : null,
+                                      decoration: InputDecoration(
+                                        hintText: "Enter your password",
+                                        prefixIcon: const Icon(Icons.lock,
+                                            color: Color(0xFF233A73)),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            _obscurePassword
+                                                ? Icons.visibility
+                                                : Icons.visibility_off,
+                                            color: const Color(0xFF233A73),
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _obscurePassword = !_obscurePassword;
+                                            });
+                                          },
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(15),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 30),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: onButtonPressed,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFF233A73),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(30),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 14),
+                                      ),
+                                      child: const Text("Login",
                                           style: TextStyle(
-                                              fontSize: 16, color: Colors.white),
+                                              fontSize: 16,
+                                              color: Colors.white)),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      icon: const Icon(Icons.cloud,
+                                          color: Colors.white),
+                                      onPressed: () {
+                                        _showSalesforceLoginBottomSheet(
+                                            context);
+                                      },
+                                      label: const Text(
+                                        "Salesforce",
+                                        style: TextStyle(
+                                            fontSize: 16, color: Colors.white),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            const Color(0xFF233A73),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(30),
                                         ),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              const Color(0xFF233A73),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 14),
-                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 14),
                                       ),
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 30),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    InkWell(
-                                      onTap: () => launchUrl(Uri.parse(
-                                          "https://www.facebook.com/profile.php?id=61573568597186")),
-                                      child: _buildCircleIcon(
-                                        "assets/images/fb_icon.png",
-                                      ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 30),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  InkWell(
+                                    onTap: () => launchUrl(Uri.parse(
+                                        "https://www.facebook.com/profile.php?id=61573568597186")),
+                                    child: _buildCircleIcon(
+                                      "assets/images/fb_icon.png",
                                     ),
-                                    const SizedBox(width: 15),
-                                    InkWell(
-                                      onTap: () => launchUrl(Uri.parse(
-                                          "https://www.instagram.com/watconnect/")),
-                                      child: _buildCircleIcon(
-                                        "assets/images/insta_icon.png",
-                                      ),
+                                  ),
+                                  const SizedBox(width: 15),
+                                  InkWell(
+                                    onTap: () => launchUrl(Uri.parse(
+                                        "https://www.instagram.com/watconnect/")),
+                                    child: _buildCircleIcon(
+                                      "assets/images/insta_icon.png",
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ),

@@ -779,14 +779,14 @@ class _Forms extends State<LeadAddView> {
                                       return MultiSelectItem<TagRecord>(
                                           tag, tag.name ?? "Unnamed");
                                     }).toList(),
-                                    initialValue: selectedTagList.map((tagMap) {
-                                      return tagsNameSet.firstWhere(
-                                        (tag) => tag.id == tagMap['id'],
-                                        orElse: () => TagRecord(
-                                            id: tagMap['id'],
-                                            name: tagMap['name']),
-                                      );
-                                    }).toList(),
+                                    // initialValue: selectedTagList.map((tagMap) {
+                                    //   return tagsNameSet.firstWhere(
+                                    //     (tag) => tag.id == tagMap['id'],
+                                    //     orElse: () => TagRecord(
+                                    //         id: tagMap['id'],
+                                    //         name: tagMap['name']),
+                                    //   );
+                                    // }).toList(),
                                     title: const Text("Select Tags"),
                                     selectedColor: Colors.blue,
                                     decoration: BoxDecoration(

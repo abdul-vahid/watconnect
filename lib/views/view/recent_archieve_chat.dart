@@ -843,16 +843,16 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
     }
 
     List<dynamic> visibleTags =
-        model.tag_names != null && model.tag_names!.isNotEmpty
-            ? model.tag_names!.length > maxTagsToShow
-                ? model.tag_names!.sublist(0, maxTagsToShow)
-                : model.tag_names!
+        model.tags != null && model.tags!.isNotEmpty
+            ? model.tags!.length > maxTagsToShow
+                ? model.tags!.sublist(0, maxTagsToShow)
+                : model.tags!
             : [];
 
     bool hasMoreTags =
-        model.tag_names != null && model.tag_names!.length > maxTagsToShow;
+        model.tags != null && model.tags!.length > maxTagsToShow;
     int remainingTagsCount =
-        model.tag_names != null ? model.tag_names!.length - maxTagsToShow : 0;
+        model.tags != null ? model.tags!.length - maxTagsToShow : 0;
 
     Color tagIconColor = Colors.grey[600]!;
     if (visibleTags.isNotEmpty) {
@@ -873,14 +873,14 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
       onLongPress: () {
         setState(() {
           showPin = true;
-          pinnedLeadId = model.lead_id ?? "";
+          pinnedLeadId = model.leadId ?? "";
           isPinned = model.pinned ?? false;
           currentLeadForTagEditing = model;
         });
       },
       child: Container(
         decoration: BoxDecoration(
-          color: showPin && pinnedLeadId == model.lead_id
+          color: showPin && pinnedLeadId == model.leadId
               ? AppColor.pageBgGrey
               : Colors.white,
           borderRadius: BorderRadius.circular(10),
@@ -913,8 +913,8 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                       radius: 22,
                       backgroundColor: AppColor.navBarIconColor,
                       child: Text(
-                        model.contactname?.isNotEmpty == true
-                            ? model.contactname![0].toUpperCase()
+                        model.contactName?.isNotEmpty == true
+                            ? model.contactName![0].toUpperCase()
                             : '?',
                         style: const TextStyle(
                           fontSize: 22,
@@ -952,19 +952,19 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                       showPin = false;
                       isPinned = false;
                     });
-                    if (model.full_number != null) {
-                      _marksread(model.full_number ?? "");
+                    if (model.fullNumber != null) {
+                      _marksread(model.fullNumber ?? "");
 
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => WhatsappChatScreen(
                             pinnedLeads: pinnedLeads,
-                            leadName: model.contactname ?? "",
-                            wpnumber: model.full_number,
+                            leadName: model.contactName ?? "",
+                            wpnumber: model.fullNumber,
                             id: model.id,
                             isArch: model.isArchived,
-                            contryCode: model.countrycode,
+                            contryCode: model.countryCode,
                           ),
                         ),
                       ).then((_) {
@@ -997,7 +997,7 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                                 // Contact name with ellipsis
                                 Flexible(
                                   child: Text(
-                                    "${model.contactname}",
+                                    "${model.contactName}",
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
@@ -1035,7 +1035,7 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                                                   left: 4),
                                               child: Text(
                                                 // Total tags count दिखाएं
-                                                '+${model.tag_names?.length ?? 0}',
+                                                '+${model.tags?.length ?? 0}',
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   color: tagIconColor,
@@ -1057,7 +1057,7 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
 
                       // Phone number
                       Text(
-                        formatPhoneNumber(model.full_number),
+                        formatPhoneNumber(model.fullNumber),
                         style: const TextStyle(
                           fontSize: 13,
                           color: Colors.grey,
@@ -1169,7 +1169,7 @@ class _RecentArchieveChatViewState extends State<RecentArchieveChatView> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        _formatMessageTime(model.createddate.toString()),
+                        _formatMessageTime(model.createdDate.toString()),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -1216,7 +1216,7 @@ String _formatMessageTime(String isoString) {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Remove Tag'),
-        content: Text('Remove this tag from ${lead.contactname ?? "contact"}?'),
+        content: Text('Remove this tag from ${lead.contactName ?? "contact"}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -1224,30 +1224,30 @@ String _formatMessageTime(String isoString) {
           ),
           TextButton(
             onPressed: () async {
-              List<dynamic> currentTags = List.from(lead.tag_names ?? []);
+              List<dynamic> currentTags = List.from(lead.tags ?? []);
               currentTags.removeWhere((tag) => tag['id'] == tagId);
 
               final index = tempLeadModelList
-                  .indexWhere((item) => item.lead_id == lead.lead_id);
+                  .indexWhere((item) => item.lead_id == lead.leadId);
               if (index != -1) {
                 setState(() {
                   tempLeadModelList[index].tag_names = currentTags;
 
                   final leadIndex = allRecentChats
-                      .indexWhere((item) => item.lead_id == lead.lead_id);
+                      .indexWhere((item) => item.lead_id == lead.leadId);
                   if (leadIndex != -1) {
                     allRecentChats[leadIndex].tag_names = currentTags;
                   }
 
                   final pinnedIndex = pinnedLeads
-                      .indexWhere((item) => item.lead_id == lead.lead_id);
+                      .indexWhere((item) => item.lead_id == lead.leadId);
                   if (pinnedIndex != -1) {
                     pinnedLeads[pinnedIndex].tag_names = currentTags;
                   }
                 });
               }
 
-              await _updateLeadTags(lead.lead_id ?? "", currentTags);
+              await _updateLeadTags(lead.leadId ?? "", currentTags);
 
               Navigator.pop(context);
 
@@ -1331,13 +1331,13 @@ String _formatMessageTime(String isoString) {
   void _handlePinAction(Records model) {
     if (model.pinned ?? false) {
       Provider.of<LeadListViewModel>(context, listen: false)
-          .unpinChat(model.lead_id ?? "")
+          .unpinChat(model.leadId ?? "")
           .then((onValue) {
         getLeadList(showLoading: false);
       });
     } else {
       Provider.of<LeadListViewModel>(context, listen: false)
-          .pinChat(model.lead_id ?? "")
+          .pinChat(model.leadId ?? "")
           .then((onValue) {
         getLeadList(showLoading: false);
       });
@@ -1686,7 +1686,7 @@ String _formatMessageTime(String isoString) {
 
   void _showTagsBottomSheet(BuildContext context, Records lead) {
     selectedTagIdsForCurrentLead =
-        lead.tag_names?.map((tag) => tag['id'] as String).toList() ?? [];
+        lead.tags?.map((tag) => tag.id as String).toList() ?? [];
     newTagController.clear();
 
     List<Map<String, dynamic>> sortedTags = List.from(allUniqueTags);
@@ -1711,7 +1711,7 @@ String _formatMessageTime(String isoString) {
             bool hasChanges = false;
 
             final List<String> originalTags =
-                lead.tag_names?.map((tag) => tag['id'] as String).toList() ??
+                lead.tags?.map((tag) => tag.id as String).toList() ??
                     [];
             hasChanges =
                 !_areListsEqual(originalTags, selectedTagIdsForCurrentLead);
@@ -1737,7 +1737,7 @@ String _formatMessageTime(String isoString) {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            lead.contactname ?? 'Unknown Contact',
+                            lead.contactName ?? 'Unknown Contact',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.grey,
@@ -2173,26 +2173,26 @@ String _formatMessageTime(String isoString) {
         .toList();
 
     final index =
-        tempLeadModelList.indexWhere((item) => item.lead_id == lead.lead_id);
+        tempLeadModelList.indexWhere((item) => item.lead_id == lead.leadId);
     if (index != -1) {
       setState(() {
         tempLeadModelList[index].tag_names = selectedTags;
 
         final leadIndex =
-            allRecentChats.indexWhere((item) => item.lead_id == lead.lead_id);
+            allRecentChats.indexWhere((item) => item.lead_id == lead.leadId);
         if (leadIndex != -1) {
           allRecentChats[leadIndex].tag_names = selectedTags;
         }
 
         final pinnedIndex =
-            pinnedLeads.indexWhere((item) => item.lead_id == lead.lead_id);
+            pinnedLeads.indexWhere((item) => item.lead_id == lead.leadId);
         if (pinnedIndex != -1) {
           pinnedLeads[pinnedIndex].tag_names = selectedTags;
         }
       });
     }
 
-    await _updateLeadTags(lead.lead_id ?? "", selectedTags);
+    await _updateLeadTags(lead.leadId ?? "", selectedTags);
 
     setState(() {
       _extractUniqueTags();
@@ -2202,7 +2202,7 @@ String _formatMessageTime(String isoString) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${selectedTagIds.length} label${selectedTagIds.length == 1 ? '' : 's'} applied to ${lead.contactname ?? 'contact'}',
+            '${selectedTagIds.length} label${selectedTagIds.length == 1 ? '' : 's'} applied to ${lead.contactName ?? 'contact'}',
           ),
           duration: const Duration(seconds: 2),
           backgroundColor: Colors.green,

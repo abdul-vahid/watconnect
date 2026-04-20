@@ -19,7 +19,7 @@ class NotificationPage extends StatefulWidget {
 
 class _NotificationPageState extends State<NotificationPage> {
   UnreadCountVm? unreadcountvm;
-  List<Record> data = [];
+  List<UnreadRecord> data = [];
 
   bool isLoading = false;
 

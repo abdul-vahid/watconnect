@@ -363,7 +363,7 @@ class _WhatsappChatScreenState extends State<WhatsappChatScreen> {
                                               backgroundColor:
                                                   AppColor.navBarIconColor,
                                               child: Text(
-                                                "${widget.pinnedLeads![index].contactname?.isNotEmpty == true ? widget.pinnedLeads![index].contactname![0].toUpperCase() : '?'}",
+                                                "${widget.pinnedLeads![index].contact?.isNotEmpty == true ? widget.pinnedLeads![index].contactname![0].toUpperCase() : '?'}",
                                                 style: const TextStyle(
                                                   fontSize: 20,
                                                   color: Colors.white,

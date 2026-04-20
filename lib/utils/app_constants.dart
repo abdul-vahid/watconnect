@@ -123,6 +123,7 @@ abstract class AppConstants {
       '/api/reports/byname/month_wise_lead_report';
   static const String leadCountAPIPath = '/api/whatsapp/common/leadcount';
   static const String leadAPIPath = '/api/leads';
+  static const String pinnedLeads="/api/leads/pinned";
   // =========================Campaign Api==============================
   static const String campdeleteById = "/api/whatsapp/campaign";
   static const String getcampaignbyid = "/api/whatsapp/campaign/";
@@ -199,6 +200,10 @@ abstract class AppConstants {
 
   static const String imagesend =
       "/api/webhook_template/documentId?whatsapp_setting_number=";
+
+
+
+      static const String leadList='/api/whatsapp/chat/conversations?textName=&recordType=';
 
   static const String imagesendhistoy = "/api/whatsapp/files?id";
   static const String notificationfcm = "/api/user_device/submitToken";

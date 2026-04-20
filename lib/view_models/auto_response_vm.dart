@@ -11,7 +11,7 @@ class AutoResponseViewModel extends BaseListViewModel {
   BuildContext context;
   AutoResponseViewModel(this.context);
 
-  void autoResponseFetch() async {
+   Future<void> autoResponseFetch() async {
     String url = AppUtils.getUrl(AppConstants.autoResponseAPIPath);
     await get(url: url, baseModel: AutoResponseModel());
   }

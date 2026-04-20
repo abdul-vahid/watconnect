@@ -55,7 +55,7 @@ class LeadListViewModel extends BaseListViewModel {
   Future<void> fetchLeadTags() async {
     String url = AppUtils.getUrl(AppConstants.getAllTagsApi);
     String apiUrl = "$url?status=true";
-    await get(url: apiUrl, baseModel: TagsModel());
+    // await get(url: apiUrl, baseModel: AllTagsModel());
   }
 
   // Future<void> fetchCampLeads() async {

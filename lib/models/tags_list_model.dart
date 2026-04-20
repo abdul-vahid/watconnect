@@ -1,121 +1,167 @@
 import 'dart:convert';
-
+import 'package:flutter/foundation.dart';
 import 'package:whatsapp/core/models/base_model.dart';
 
-class TagsModel extends BaseModel {
-  final bool? success;
-  final List<TagRecord>? records;
+class AllTagsModel extends BaseModel {
+  final bool success;
+  final List<TagRecord> records;
 
-  TagsModel({this.success, this.records});
+  AllTagsModel({
+    required this.success,
+    required this.records,
+  });
 
-  factory TagsModel.fromMap(Map<String, dynamic> data) {
-    return TagsModel(
-      success: data['success'] as bool?,
-      records: (data['records'] as List<dynamic>?)
-          ?.map((e) => TagRecord.fromMap(e as Map<String, dynamic>))
-          .toList(),
-    );
+  /// ✅ FROM MAP (USE THIS)
+  factory AllTagsModel.fromMap(Map<String, dynamic> data) {
+    try {
+      return AllTagsModel(
+        success: data['success'] == true,
+        records: (data['records'] as List<dynamic>?)
+                ?.map((e) => TagRecord.fromMap(e as Map<String, dynamic>))
+                .toList() ??
+            [],
+      );
+    } catch (e) {
+      debugPrint("AllTagsModel error: $e");
+      return AllTagsModel(success: false, records: []);
+    }
   }
 
   @override
-  TagsModel fromMap(Map<String, dynamic> data) => TagsModel.fromMap(data);
+  AllTagsModel fromMap(Map<String, dynamic> data) =>
+      AllTagsModel.fromMap(data);
+
+  /// ❌ REMOVE String-only fromJson
+  /// ✅ Replace with dynamic-safe version
+  factory AllTagsModel.fromJson(dynamic data) {
+    try {
+      if (data is String) {
+        return AllTagsModel.fromMap(json.decode(data));
+      } else if (data is Map<String, dynamic>) {
+        return AllTagsModel.fromMap(data);
+      } else {
+        throw Exception("Invalid data type");
+      }
+    } catch (e) {
+      debugPrint("AllTagsModel fromJson error: $e");
+      return AllTagsModel(success: false, records: []);
+    }
+  }
 
   @override
   Map<String, dynamic> toMap() => {
         'success': success,
-        'records': records?.map((e) => e.toMap()).toList(),
+        'records': records.map((e) => e.toMap()).toList(),
       };
-
-  @override
-  factory TagsModel.fromJson(String data) =>
-      TagsModel.fromMap(json.decode(data) as Map<String, dynamic>);
 
   String toJson() => json.encode(toMap());
 }
 
+
 class TagRecord {
-  final String? id;
-  final String? name;
-  final bool? status;
-  final String? createddate;
-  final String? lastmodifieddate;
-  final String? createdbyid;
-  final String? lastmodifiedbyid;
-  final String? firstMessage;
-  final List<AutoTagRule>? autoTagRules;
+  final String id;
+  final String name;
+  final bool status;
+  final String createddate;
+  final String lastmodifieddate;
+  final String createdbyid;
+  final String lastmodifiedbyid;
+  final String firstMessage;
+  final List<AutoTagRule> autoTagRules;
 
   TagRecord({
-    this.id,
-    this.name,
-    this.status,
-    this.createddate,
-    this.lastmodifieddate,
-    this.createdbyid,
-    this.lastmodifiedbyid,
-    this.firstMessage,
-    this.autoTagRules,
+    required this.id,
+    required this.name,
+    required this.status,
+    required this.createddate,
+    required this.lastmodifieddate,
+    required this.createdbyid,
+    required this.lastmodifiedbyid,
+    required this.firstMessage,
+    required this.autoTagRules,
   });
 
   factory TagRecord.fromMap(Map<String, dynamic> json) {
-    return TagRecord(
-      id: json['id'],
-      name: json['name'],
-      status: json['status'],
-      createddate: json['createddate'],
-      lastmodifieddate: json['lastmodifieddate'],
-      createdbyid: json['createdbyid'],
-      lastmodifiedbyid: json['lastmodifiedbyid'],
-      firstMessage: json['first_message'],
-      autoTagRules: (json['auto_tag_rules'] as List<dynamic>?)
-              ?.map((v) => AutoTagRule.fromJson(v))
-              .toList() ??
-          [],
-    );
+    try {
+      return TagRecord(
+        id: json['id']?.toString() ?? '',
+        name: json['name']?.toString() ?? '',
+        status: json['status'] == true,
+        createddate: json['createddate']?.toString() ?? '',
+        lastmodifieddate: json['lastmodifieddate']?.toString() ?? '',
+        createdbyid: json['createdbyid']?.toString() ?? '',
+        lastmodifiedbyid: json['lastmodifiedbyid']?.toString() ?? '',
+        firstMessage: json['first_message']?.toString() ?? '',
+        autoTagRules: (json['auto_tag_rules'] as List<dynamic>?)
+                ?.map((e) =>
+                    AutoTagRule.fromMap(e as Map<String, dynamic>))
+                .toList() ??
+            [],
+      );
+    } catch (e) {
+      debugPrint("TagRecord error: $e");
+      return TagRecord(
+        id: '',
+        name: '',
+        status: false,
+        createddate: '',
+        lastmodifieddate: '',
+        createdbyid: '',
+        lastmodifiedbyid: '',
+        firstMessage: '',
+        autoTagRules: [],
+      );
+    }
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'status': status,
-      'createddate': createddate,
-      'lastmodifieddate': lastmodifieddate,
-      'createdbyid': createdbyid,
-      'lastmodifiedbyid': lastmodifiedbyid,
-      'first_message': firstMessage,
-      'auto_tag_rules': autoTagRules?.map((v) => v.toJson()).toList(),
-    };
-  }
-
-  factory TagRecord.fromJson(String data) =>
-      TagRecord.fromMap(json.decode(data) as Map<String, dynamic>);
-
-  String toJson() => json.encode(toMap());
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'name': name,
+        'status': status,
+        'createddate': createddate,
+        'lastmodifieddate': lastmodifieddate,
+        'createdbyid': createdbyid,
+        'lastmodifiedbyid': lastmodifiedbyid,
+        'first_message': firstMessage,
+        'auto_tag_rules': autoTagRules.map((e) => e.toMap()).toList(),
+      };
 }
 
+
+
 class AutoTagRule {
-  final String? id;
-  final String? tagId;
-  final String? keyword;
-  final String? matchType;
+  final String id;
+  final String tagId;
+  final String keyword;
+  final String matchType;
 
   const AutoTagRule({
-    this.id,
-    this.tagId,
-    this.keyword,
-    this.matchType,
+    required this.id,
+    required this.tagId,
+    required this.keyword,
+    required this.matchType,
   });
 
-  factory AutoTagRule.fromJson(Map<String, dynamic> json) {
-    return AutoTagRule(
-      id: json['id'],
-      tagId: json['tag_id'],
-      keyword: json['keyword'],
-      matchType: json['match_type'],
-    );
+  factory AutoTagRule.fromMap(Map<String, dynamic> json) {
+    try {
+      return AutoTagRule(
+        id: json['id']?.toString() ?? '',
+        tagId: json['tag_id']?.toString() ?? '',
+        keyword: json['keyword']?.toString() ?? '',
+        matchType: json['match_type']?.toString() ?? '',
+      );
+    } catch (e) {
+      debugPrint("AutoTagRule error: $e");
+      return const AutoTagRule(
+        id: '',
+        tagId: '',
+        keyword: '',
+        matchType: '',
+      );
+    }
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toMap() => {
         'id': id,
         'tag_id': tagId,
         'keyword': keyword,

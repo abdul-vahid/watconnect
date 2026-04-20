@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -13,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:whatsapp/models/lead_model.dart';
+import 'package:whatsapp/react_side/lead/controller/lead_list_controller.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
@@ -50,6 +50,7 @@ import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/view_models/user_data_list_vm.dart';
 import 'package:whatsapp/view_models/wallet_controller.dart';
 import 'package:whatsapp/view_models/whatsapp_setting_vm.dart';
+import 'package:whatsapp/views/view/recent_chat/recent_chat_provider.dart';
 import 'package:whatsapp/views/view/splash_view.dart';
 
 import 'firebase_options.dart';
@@ -808,6 +809,14 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => WalletController()),
         ChangeNotifierProvider(create: (_) => LeadController()),
         ChangeNotifierProvider(create: (_) => SfFileUploadController()),
+        ChangeNotifierProvider(
+          create: (context) => RecentChatProvider(context),
+        ),
+
+
+        ////////
+      ChangeNotifierProvider(create: (_) => LeadListController()),
+       
       ],
       child: Builder(
         builder: (context) {
