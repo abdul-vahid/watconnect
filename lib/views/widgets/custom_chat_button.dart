@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:whatsapp/react_side/chat/model/chat_history_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
 
 class CustomButtonList extends StatelessWidget {
-  final List<dynamic> buttons;
+  final List<ChatButton> buttons;
   final Map<String, dynamic>? buttonVariables;
 
   const CustomButtonList({
@@ -41,8 +42,8 @@ class CustomButtonList extends StatelessWidget {
       children: buttons.asMap().entries.map((entry) {
         final index = entry.key;
         final button = entry.value;
-        final label = _getLabel(index, button['text'] ?? "");
-        final resolvedUrl = _resolveDynamicUrl(index, button['url']);
+        final label = _getLabel(index, button.text ?? "");
+        final resolvedUrl = _resolveDynamicUrl(index, button.url);
 
         return Padding(
           padding: const EdgeInsets.only(top: 8.0),
@@ -51,13 +52,13 @@ class CustomButtonList extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  if (button['type'] == "PHONE_NUMBER") {
+                  if (button.type == "PHONE_NUMBER") {
                     final Uri phoneUri =
-                        Uri.parse("tel:${button['phone_number']}");
+                        Uri.parse("tel:${button.phoneNumber}");
                     if (await canLaunchUrl(phoneUri)) {
                       await launchUrl(phoneUri);
                     }
-                  } else if (button['type'] == "URL") {
+                  } else if (button.type == "URL") {
                     final Uri url = Uri.parse(resolvedUrl);
                     if (!await launchUrl(url,
                         mode: LaunchMode.externalApplication)) {

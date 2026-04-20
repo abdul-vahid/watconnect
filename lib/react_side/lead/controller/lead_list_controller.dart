@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:whatsapp/models/tags_list_model.dart' show TagRecord, AllTagsModel;
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:whatsapp/models/tags_list_model.dart'
+    show TagRecord, AllTagsModel;
 import 'package:whatsapp/network/api_call.dart';
 import 'package:whatsapp/react_side/lead/model/lead_list_model.dart';
 import 'package:whatsapp/react_side/lead/model/pinned_leads_model.dart';
@@ -7,19 +9,18 @@ import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 
 enum LeadTabType { recentlyMessage, lead, archived, unread }
+
 enum FilterMode { or, and }
+
 class LeadListController extends ChangeNotifier {
-  /// ================= DATA =================
   List<LeadRecord> leadList = [];
   List<PinnedLeadRecord> pinnedLeadList = [];
-  List<TagRecord> allTagList=[];
-  //TagModel
-  /// ================= PAGINATION =================
+  List<TagRecord> allTagList = [];
   final int limit = 50;
   int offset = 0;
 
   bool isPinnedLoading = false;
-    bool isTagLoading = false;
+  bool isTagLoading = false;
   bool isLoading = false;
   bool isPaginationLoading = false;
   bool hasMoreData = true;
@@ -58,52 +59,76 @@ class LeadListController extends ChangeNotifier {
     await fetchLeads();
   }
 
-  fetchPinnedLeads() async {
-    if (isPinnedLoading) {
-      return;
-    }
+  int pageNo = 1;
+  bool hasMorePinned = true;
+
+  resetPinnedLead() {
+    pageNo = 1;
+    hasMorePinned = true;
+    notifyListeners();
+  }
+
+  Future<void> fetchPinnedLeads(
+      {bool isLoadMore = false, showLoader = true}) async {
+    if (isPinnedLoading) return;
+
     try {
-      isPinnedLoading = true;
+      if (showLoader) {
+        isPinnedLoading = true;
+      }
+
+      if (!isLoadMore) {
+        pageNo = 1;
+        hasMorePinned = true;
+        pinnedLeadList.clear();
+      }
+
       notifyListeners();
+
       var url = AppUtils.getUrl(AppConstants.pinnedLeads);
+      var apiUrl = "$url?page=$pageNo&pageSize=25";
+
+      final response = await ApiHelper.get(url: apiUrl);
+
+      PinnedLeadModel data = PinnedLeadModel.fromJson(response);
+
+      if (data.records != null && data.records!.isNotEmpty) {
+        pinnedLeadList.addAll(data.records!);
+        pageNo++;
+      }
+
+      hasMorePinned = data.hasMore ?? false;
+    } catch (e) {
+      debugPrint("Pinned Leads Error: $e");
+    } finally {
+      isPinnedLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchAllTags() async {
+    if (isTagLoading) return;
+
+    try {
+      isTagLoading = true;
+      notifyListeners();
+
+      var url = AppUtils.getUrl(AppConstants.getAllTagsApi);
       final response = await ApiHelper.get(url: url);
 
-      PinnedLeadsModel data = PinnedLeadsModel.fromJson(response);
-      pinnedLeadList = data.records.toList();
-    } catch (e) {
-       isPinnedLoading = false;
+      AllTagsModel data = AllTagsModel.fromJson(response);
+
+      allTagList = data.records?.toList() ?? [];
+
+      print("allTagList >>>> $allTagList");
+    } catch (e, StackTrace) {
+      print("fetchAllTags error: $e StackTrace>>>> $StackTrace");
     } finally {
-        isPinnedLoading = false;
+      isTagLoading = false;
       notifyListeners();
     }
   }
 
-
-
-Future<void> fetchAllTags() async {
-  if (isTagLoading) return;
-
-  try {
-    isTagLoading = true;
-    notifyListeners();
-
-    var url = AppUtils.getUrl(AppConstants.getAllTagsApi);
-    final response = await ApiHelper.get(url: url);
-
-    AllTagsModel data = AllTagsModel.fromJson(response);
-
-    allTagList = data.records?.toList() ?? [];
-
-    print("allTagList >>>> $allTagList");
-  } catch (e,StackTrace) {
-    print("fetchAllTags error: $e StackTrace>>>> $StackTrace");
-  } finally {
-    isTagLoading = false;
-    notifyListeners();
-  }
-}
-
-  /// ================= FETCH =================
   Future<void> fetchLeads({bool isLoadMore = false}) async {
     if (isLoading || isPaginationLoading || !hasMoreData) return;
 
@@ -142,7 +167,6 @@ Future<void> fetchAllTags() async {
     }
   }
 
-  /// ================= REFRESH =================
   Future<void> refresh() async {
     resetPagination();
     await fetchLeads();
@@ -150,33 +174,45 @@ Future<void> fetchAllTags() async {
 
   unPinLead(String leadId) async {
     try {
+      EasyLoading.show();
       String url = AppUtils.getUrl(
           AppConstants.unpinLead.replaceAll("{leadId}", leadId));
 
       final response = await ApiHelper.post(url: url, body: {});
+      EasyLoading.showToast("Un Pinned Successfully");
     } catch (e) {
+         EasyLoading.dismiss();
     } finally {
+         EasyLoading.dismiss();
+      resetPinnedLead();
+      fetchPinnedLeads(showLoader: false);
       refetchSamePage();
     }
   }
 
   pinLead(String leadId) async {
+    EasyLoading.show();
     try {
       String url =
           AppUtils.getUrl(AppConstants.pinLead.replaceAll("{leadId}", leadId));
 
       final response = await ApiHelper.post(url: url, body: {});
+      EasyLoading.dismiss();
+      EasyLoading.showToast("Pinned Successfully");
     } catch (e) {
+      EasyLoading.dismiss();
     } finally {
+      EasyLoading.dismiss();
+      resetPinnedLead();
+      fetchPinnedLeads(showLoader: false);
       refetchSamePage();
     }
   }
 
   archieveUnarchieveLead(String leadId, bool isArc) async {
     try {
+      EasyLoading.show();
       Map<String, dynamic> body = {"id": leadId, "is_archived": isArc};
-
-      // await leadData.updatelead(body, id ?? "");
 
       String url = AppUtils.getUrl(AppConstants.leadAPIPath);
       String apiUrl = "$url/$leadId";
@@ -184,18 +220,16 @@ Future<void> fetchAllTags() async {
       final response = await ApiHelper.put(url: apiUrl, body: body);
     } catch (e) {
     } finally {
-      refetchSamePage();
+      refetchSamePage().then((onValue) {
+        EasyLoading.dismiss();
+      });
     }
   }
-
-
 
   updateTag(String leadId, List tags) async {
     try {
       Map<String, dynamic> body = {"id": leadId, "tag_names": tags};
 
-      // await leadData.updatelead(body, id ?? "");
-
       String url = AppUtils.getUrl(AppConstants.leadAPIPath);
       String apiUrl = "$url/$leadId";
 
@@ -205,8 +239,6 @@ Future<void> fetchAllTags() async {
       refetchSamePage();
     }
   }
-
-
 
   Future<void> refetchSamePage() async {
     try {
@@ -232,64 +264,59 @@ Future<void> fetchAllTags() async {
     }
   }
 
+  List<String> selectedFilterTagIds = [];
+  FilterMode filterMode = FilterMode.or;
 
+  List<LeadRecord> get filteredLeadList {
+    if (selectedFilterTagIds.isEmpty) return leadList;
 
+    return leadList.where((lead) {
+      final leadTagIds = lead.tagNames?.map((e) => e.id ?? "").toList() ?? [];
 
-List<String> selectedFilterTagIds = [];
-FilterMode filterMode = FilterMode.or;
+      final leadTagNames =
+          lead.tagNames?.map((e) => (e.name ?? "").toLowerCase()).toList() ??
+              [];
 
-List<LeadRecord> get filteredLeadList {
-  if (selectedFilterTagIds.isEmpty) return leadList;
+      bool matches(String selectedId) {
+        final selectedTag = allTagList.firstWhere(
+          (tag) => tag.id == selectedId,
+          orElse: () => TagRecord(
+            id: selectedId,
+            name: selectedId,
+            status: false,
+            createddate: '',
+            lastmodifieddate: '',
+            createdbyid: '',
+            lastmodifiedbyid: '',
+            firstMessage: '',
+            autoTagRules: [],
+          ),
+        );
 
-  return leadList.where((lead) {
-    final leadTagIds =
-        lead.tagNames?.map((e) => e.id ?? "").toList() ?? [];
+        return leadTagIds.contains(selectedId) ||
+            leadTagNames.contains(selectedTag.name.toLowerCase());
+      }
 
-    final leadTagNames =
-        lead.tagNames?.map((e) => (e.name ?? "").toLowerCase()).toList() ?? [];
+      if (filterMode == FilterMode.or) {
+        return selectedFilterTagIds.any(matches);
+      } else {
+        return selectedFilterTagIds.every(matches);
+      }
+    }).toList();
+  }
 
-    bool matches(String selectedId) {
-      final selectedTag = allTagList.firstWhere(
-        (tag) => tag.id == selectedId,
-        orElse: () => TagRecord(
-          id: selectedId,
-          name: selectedId,
-          status: false,
-          createddate: '',
-          lastmodifieddate: '',
-          createdbyid: '',
-          lastmodifiedbyid: '',
-          firstMessage: '',
-          autoTagRules: [],
-        ),
-      );
+  void updateFilter({
+    required List<String> tagIds,
+    required FilterMode mode,
+  }) {
+    selectedFilterTagIds = tagIds;
+    filterMode = mode;
+    notifyListeners();
+  }
 
-      return leadTagIds.contains(selectedId) ||
-          leadTagNames.contains(selectedTag.name.toLowerCase());
-    }
-
-    if (filterMode == FilterMode.or) {
-      return selectedFilterTagIds.any(matches);
-    } else {
-      return selectedFilterTagIds.every(matches);
-    }
-  }).toList();
-}
-
-/// UPDATE FILTER
-void updateFilter({
-  required List<String> tagIds,
-  required FilterMode mode,
-}) {
-  selectedFilterTagIds = tagIds;
-  filterMode = mode;
-  notifyListeners();
-}
-
-/// CLEAR FILTER
-void clearFilter() {
-  selectedFilterTagIds.clear();
-  filterMode = FilterMode.or;
-  notifyListeners();
-}
+  void clearFilter() {
+    selectedFilterTagIds.clear();
+    filterMode = FilterMode.or;
+    notifyListeners();
+  }
 }

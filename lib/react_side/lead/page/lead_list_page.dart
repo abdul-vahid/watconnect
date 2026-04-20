@@ -1,6 +1,10 @@
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whatsapp/models/tags_list_model.dart';
+import 'package:whatsapp/react_side/chat/controller/chat_controller.dart';
+import 'package:whatsapp/react_side/chat/page/whatsapp_chat_page.dart';
 import 'package:whatsapp/react_side/lead/controller/lead_list_controller.dart';
 import 'package:whatsapp/react_side/lead/model/lead_list_model.dart';
 import 'package:whatsapp/react_side/lead/widget/lead_item.dart';
@@ -38,6 +42,7 @@ class _LeadListPageState extends State<LeadListPage>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ctrl.fetchLeads();
+      ctrl.fetchPinnedLeads();
     });
 
     _allController = ScrollController();
@@ -151,7 +156,7 @@ class _LeadListPageState extends State<LeadListPage>
   ) {
     final filteredLeads = _getFilteredLeads(ctrl.filteredLeadList);
 
-    Future<void> _onRefresh() async {
+    Future<void> onRefresh() async {
       await ctrl.refresh();
     }
 
@@ -183,7 +188,7 @@ class _LeadListPageState extends State<LeadListPage>
       }
 
       return RefreshIndicator(
-        onRefresh: _onRefresh,
+        onRefresh: onRefresh,
         child: ListView(
           controller: controller,
           children: [
@@ -197,13 +202,21 @@ class _LeadListPageState extends State<LeadListPage>
     }
 
     return RefreshIndicator(
-      onRefresh: _onRefresh,
+      onRefresh: onRefresh,
       child: ListView.builder(
         controller: controller,
         itemCount: filteredLeads.length + 1,
         itemBuilder: (context, index) {
           if (index < filteredLeads.length) {
-            return LeadItem(data: filteredLeads[index]);
+            return LeadItem(data: filteredLeads[index],onTap: (){
+              ChatController chatCtrl=Provider.of(context,listen: false);
+              chatCtrl.setSelectedLeadNumber(filteredLeads[index].fullNumber??"");
+              Navigator.push(context, MaterialPageRoute(builder: (context)=>WhatsappChatPage(
+                leadId: filteredLeads[index].parentId??"",
+                name: filteredLeads[index].contactName??"",
+                number: filteredLeads[index].fullNumber??"",
+              )));
+            },);
           }
 
           if (ctrl.isPaginationLoading) {
@@ -367,7 +380,7 @@ class _LeadListPageState extends State<LeadListPage>
                         horizontal: 10, vertical: 6),
                     child: Text(
                       tag.name,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: AppColor.navBarIconColor,
@@ -413,9 +426,10 @@ class _LeadListPageState extends State<LeadListPage>
     ),
   ),
 
-              if (filteredPinnedLeads.isNotEmpty)
-                PinnedLeadsWidget(
-                    pinnedLeads: filteredPinnedLeads),
+              if (ctrl.pinnedLeadList.isNotEmpty)
+               const PinnedLeadsWidget(
+                   
+                    ),
 
               const SizedBox(height: 10),
 
@@ -429,8 +443,8 @@ class _LeadListPageState extends State<LeadListPage>
                     Tab(text: "Unread"),
                     Tab(text: "Archived"),
                   ],
-                  unselectedLabelStyle: TextStyle(color: Colors.white30),
-                  labelStyle: TextStyle(color: Colors.white),
+                  unselectedLabelStyle: const TextStyle(color: Colors.white30),
+                  labelStyle: const TextStyle(color: Colors.white),
                   indicatorColor: Colors.white,
                 ),
               ),
@@ -452,4 +466,8 @@ class _LeadListPageState extends State<LeadListPage>
       },
     );
   }
+
+
+
+  
 }

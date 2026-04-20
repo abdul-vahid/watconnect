@@ -24,7 +24,6 @@ class ChatHistoryModel {
     };
   }
 }
-
 class ChatRecord {
   final String? messageHistoryId;
   final String? id;
@@ -71,7 +70,7 @@ class ChatRecord {
   final String? messageBody;
   final String? exampleBodyText;
   final String? footer;
-  final dynamic buttons;
+  final List<ChatButton>? buttons;// Changed from dynamic to List<dynamic>?
   final dynamic templateCards;
   final String? templateType;
   final String? title;
@@ -96,7 +95,7 @@ class ChatRecord {
   final String? contextMessageId;
   final String? paramsFileId;
   final dynamic paramsFileIds;
-  final dynamic bodyTextParams;
+  final Map<String, dynamic>? bodyTextParams;  // Changed from dynamic to Map?
   final List<dynamic>? paramFileDetails;
   final String? campaignParamsFileId;
   final dynamic campaignFileIds;
@@ -177,74 +176,78 @@ class ChatRecord {
 
   factory ChatRecord.fromJson(Map<String, dynamic> json) {
     return ChatRecord(
-      messageHistoryId: json['message_history_id'],
-      id: json['id'],
-      parentId: json['parent_id'],
-      name: json['name'],
-      messageTemplateId: json['message_template_id'],
-      whatsappNumber: json['whatsapp_number'],
-      message: json['message'],
-      status: json['status'],
-      recordTypeName: json['recordtypename'],
-      fileId: json['file_id'],
-      createdById: json['createdbyid'],
-      lastModifiedById: json['lastmodifiedbyid'],
-      createdDate: json['createddate'],
-      lastModifiedDate: json['lastmodifieddate'],
-      isRead: json['is_read'],
-      businessNumber: json['business_number'],
-      messageId: json['message_id'],
-      deliveryStatus: json['delivery_status'],
-      errMessage: json['err_message'],
-      receivedTime: json['received_time'],
-      interactiveId: json['interactive_id'],
-      clicked: json['clicked'],
-      adId: json['ad_id'],
-      contextId: json['context_id'],
-      chatMsg: json['chatmsg'],
-      adPlatform: json['ad_platform'],
-      adUrl: json['ad_url'],
-      adHeadline: json['ad_headline'],
-      adBody: json['ad_body'],
-      adMediaUrl: json['ad_media_url'],
-      adMediaType: json['ad_media_type'],
-      adFileUrl: json['ad_file_url'],
-      templateName: json['template_name'],
-      templateId: json['template_id'],
-      language: json['language'],
-      category: json['category'],
-      header: json['header'],
-      headerBody: json['header_body'],
-      messageBody: json['message_body'],
-      exampleBodyText: json['example_body_text'],
-      footer: json['footer'],
-      buttons: json['buttons'],
+      messageHistoryId: json['message_history_id'] as String?,
+      id: json['id'] as String?,
+      parentId: json['parent_id'] as String?,
+      name: json['name'] as String?,
+      messageTemplateId: json['message_template_id'] as String?,
+      whatsappNumber: json['whatsapp_number'] as String?,
+      message: json['message'] as String?,
+      status: json['status'] as String?,
+      recordTypeName: json['recordtypename'] as String?,
+      fileId: json['file_id'] as String?,
+      createdById: json['createdbyid'] as String?,
+      lastModifiedById: json['lastmodifiedbyid'] as String?,
+      createdDate: json['createddate'] as String?,
+      lastModifiedDate: json['lastmodifieddate'] as String?,
+      isRead: json['is_read'] as bool?,
+      businessNumber: json['business_number'] as String?,
+      messageId: json['message_id'] as String?,
+      deliveryStatus: json['delivery_status'] as String?,
+      errMessage: json['err_message'] as String?,
+      receivedTime: json['received_time'] as String?,
+      interactiveId: json['interactive_id'] as String?,
+      clicked: json['clicked'] as bool?,
+      adId: json['ad_id'] as String?,
+      contextId: json['context_id'] as String?,
+      chatMsg: json['chatmsg'] as String?,
+      adPlatform: json['ad_platform'] as String?,
+      adUrl: json['ad_url'] as String?,
+      adHeadline: json['ad_headline'] as String?,
+      adBody: json['ad_body'] as String?,
+      adMediaUrl: json['ad_media_url'] as String?,
+      adMediaType: json['ad_media_type'] as String?,
+      adFileUrl: json['ad_file_url'] as String?,
+      templateName: json['template_name'] as String?,
+      templateId: json['template_id'] as String?,
+      language: json['language'] as String?,
+      category: json['category'] as String?,
+      header: json['header'] as String?,
+      headerBody: json['header_body'] as String?,
+      messageBody: json['message_body'] as String?,
+      exampleBodyText: json['example_body_text'] as String?,
+      footer: json['footer'] as String?,
+      buttons: json['buttons'] != null
+    ? List<ChatButton>.from(
+        json['buttons'].map((x) => ChatButton.fromJson(x)),
+      )
+    : null,
       templateCards: json['template_cards'],
-      templateType: json['template_type'],
-      title: json['title'],
-      fileType: json['filetype'],
-      description: json['description'],
-      headerType: json['header_type'],
-      headerContent: json['header_content'],
-      bodyText: json['body_text'],
-      footerText: json['footer_text'],
+      templateType: json['template_type'] as String?,
+      title: json['title'] as String?,
+      fileType: json['filetype'] as String?,
+      description: json['description'] as String?,
+      headerType: json['header_type'] as String?,
+      headerContent: json['header_content'] as String?,
+      bodyText: json['body_text'] as String?,
+      footerText: json['footer_text'] as String?,
       interactiveButtons: json['interactive_buttons'],
       sections: json['sections'],
-      interactiveName: json['interactive_name'],
-      interactiveType: json['interactive_type'],
-      interactiveFileId: json['interactive_file_id'],
-      interactiveFileTitle: json['interactive_file_title'],
-      interactiveFileType: json['interactive_file_type'],
-      contextMessage: json['context_message'],
-      contextMessageId: json['context_message_id'],
-      paramsFileId: json['params_file_id'],
+      interactiveName: json['interactive_name'] as String?,
+      interactiveType: json['interactive_type'] as String?,
+      interactiveFileId: json['interactive_file_id'] as String?,
+      interactiveFileTitle: json['interactive_file_title'] as String?,
+      interactiveFileType: json['interactive_file_type'] as String?,
+      contextMessage: json['context_message'] as String?,
+      contextMessageId: json['context_message_id'] as String?,
+      paramsFileId: json['params_file_id'] as String?,
       paramsFileIds: json['params_file_ids'],
-      bodyTextParams: json['body_text_params'],
-      paramFileDetails: json['param_file_details'] ?? [],
-      campaignParamsFileId: json['campaign_params_file_id'],
+      bodyTextParams: json['body_text_params'] as Map<String, dynamic>?,
+      paramFileDetails: json['param_file_details'] as List<dynamic>? ?? [],
+      campaignParamsFileId: json['campaign_params_file_id'] as String?,
       campaignFileIds: json['campaign_file_ids'],
-      firstName: json['firstname'],
-      lastName: json['lastname'],
+      firstName: json['firstname'] as String?,
+      lastName: json['lastname'] as String?,
     );
   }
 
@@ -318,6 +321,39 @@ class ChatRecord {
       'campaign_file_ids': campaignFileIds,
       'firstname': firstName,
       'lastname': lastName,
+    };
+  }
+}
+
+
+class ChatButton {
+  final String? text;
+  final String? type;
+  final String? url;
+  final String? phoneNumber;
+
+  ChatButton({
+    this.text,
+    this.type,
+    this.url,
+    this.phoneNumber,
+  });
+
+  factory ChatButton.fromJson(Map<String, dynamic> json) {
+    return ChatButton(
+      text: json['text'],
+      type: json['type'],
+      url: json['url'],
+      phoneNumber: json['phone_number'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'text': text,
+      'type': type,
+      'url': url,
+      'phone_number': phoneNumber,
     };
   }
 }
