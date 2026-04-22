@@ -29,13 +29,14 @@ class ApiHelper {
   /// ================= RESPONSE HANDLER =================
   static Future<dynamic> _handleResponse(
     http.Response response,
+    String? url,
     Future<http.Response> Function() retryRequest,
   ) async {
     final status = response.statusCode;
 
     log("STATUS → $status");
     
-    log("RESPONSE → ${response.body}");
+    log("RESPONSE →$url  ${response.body}");
 
   
     if (status == 200 || status == 201) {
@@ -157,7 +158,7 @@ class ApiHelper {
 
       final response = await request();
 
-      return await _handleResponse(response, request);
+      return await _handleResponse(response, url,request,);
     } catch (e) {
       log("GET ERROR → $e");
       rethrow;
@@ -188,9 +189,41 @@ class ApiHelper {
 
       final response = await request();
 
-      return await _handleResponse(response, request);
+      return await _handleResponse(response, url,request);
     } catch (e) {
       log("POST ERROR → $e");
+      rethrow;
+    }
+  }
+
+
+    /// ================= POST =================
+  static Future<dynamic> delete({
+    required String url,
+    required Map<String, dynamic> body,
+    bool requireAuth = true,
+  }) async {
+    try {
+      log("DELETE → $url");
+      log("BODY → $body");
+
+      Future<http.Response> request() async {
+        final headers = await _getHeaders(requireAuth: requireAuth);
+
+        return http
+            .delete(
+              Uri.parse(url),
+              headers: headers,
+              body: jsonEncode(body),
+            )
+            .timeout(const Duration(seconds: 30));
+      }
+
+      final response = await request();
+
+      return await _handleResponse(response, url,request);
+    } catch (e) {
+      log("DELETE ERROR → $e");
       rethrow;
     }
   }
@@ -219,7 +252,7 @@ class ApiHelper {
 
       final response = await request();
 
-      return await _handleResponse(response, request);
+      return await _handleResponse(response,url, request);
     } catch (e) {
       log("PUT ERROR → $e");
       rethrow;

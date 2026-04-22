@@ -261,6 +261,8 @@ abstract class AppConstants {
       "/api/webhook_template/send?whatsapp_setting_number=";
 
   static const String deleteBulkLeads = "/api/leads/bulk-delete";
+static const String dashboardApi='/api/whatsapp/common/dashboard?business_number=';
+
 
   // /whatsapp/
 

@@ -3,6 +3,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:whatsapp/models/tags_list_model.dart'
     show TagRecord, AllTagsModel;
 import 'package:whatsapp/network/api_call.dart';
+import 'package:whatsapp/react_side/lead/model/lead_detail_model.dart';
 import 'package:whatsapp/react_side/lead/model/lead_list_model.dart';
 import 'package:whatsapp/react_side/lead/model/pinned_leads_model.dart';
 import 'package:whatsapp/utils/app_constants.dart';
@@ -319,4 +320,29 @@ class LeadListController extends ChangeNotifier {
     filterMode = FilterMode.or;
     notifyListeners();
   }
+
+
+
+
+LeadDetail? leadDetail;
+
+
+  getLeadDetail(String leadId,) async {
+    try {
+    
+
+      String url = AppUtils.getUrl(AppConstants.leadAPIPath);
+      String apiUrl = "$url/$leadId";
+
+      final response = await ApiHelper.get(url: apiUrl,);
+          LeadDetailModel data = LeadDetailModel.fromJson(response);
+          leadDetail=data.records;
+    } catch (e) {
+    } finally {
+      notifyListeners();
+    }
+  }
+
+
+  //LeadRecord
 }

@@ -3,251 +3,212 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/react_side/home/controller/home_summary_controller.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
-import 'package:whatsapp/view_models/unread_count_vm.dart';
 import 'package:whatsapp/views/view/chat/whatsapp_chat_screen.dart';
-import '../../models/unread_msg_model/record.dart';
-import '../../models/unread_msg_model/unread_msg_model.dart'
-    show UnreadMsgModel;
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
+
   @override
   State<NotificationPage> createState() => _NotificationPageState();
 }
 
 class _NotificationPageState extends State<NotificationPage> {
-  UnreadCountVm? unreadcountvm;
-  List<UnreadRecord> data = [];
+  final ScrollController _scrollController = ScrollController();
 
-  bool isLoading = false;
-
-  void fetchcount() async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      unreadcountvm = Provider.of<UnreadCountVm>(context, listen: false);
-      final prefs = await SharedPreferences.getInstance();
-      String? number = prefs.getString('phoneNumber');
-      await unreadcountvm!.fetchunreadcount(number: number).then((_) {
-        unreadcountvm!.viewModels.length;
-        print("djjdjdjdjdjj${unreadcountvm!.viewModels.length}");
-
-        for (var i in unreadcountvm!.viewModels) {
-          UnreadMsgModel datanread = i.model;
-
-          if (datanread.records != null) {
-            for (var record in datanread.records!) {
-              if (!data.any((r) => r.whatsappNumber == record.whatsappNumber)) {
-                data.add(record);
-              }
-            }
-          }
-        }
-        print("dattaaa=>$data");
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
+  bool shouldHideLeadNumber = false;
 
   @override
   void initState() {
     super.initState();
-    shouldHide();
-    fetchcount();
+
+    _init();
+    _scrollListener();
   }
 
-  bool shouldHideLeadNumber = false;
-  Future<void> shouldHide() async {
+  Future<void> _init() async {
+    final ctrl = context.read<HomeSummaryController>();
+
+    ctrl.resetPagination();
+    await ctrl.fetchUnreadList();
+
     final prefs = await SharedPreferences.getInstance();
     shouldHideLeadNumber =
         prefs.getBool(SharedPrefsConstants.shouldHideNumber) ?? false;
-    setState(() {});
+
+    if (mounted) setState(() {});
+  }
+
+  void _scrollListener() {
+    _scrollController.addListener(() {
+      final ctrl = context.read<HomeSummaryController>();
+
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        ctrl.fetchUnreadList(isLoadMore: true);
+      }
+    });
+  }
+
+  Future<void> _refresh() async {
+    final ctrl = context.read<HomeSummaryController>();
+    ctrl.resetPagination();
+    await ctrl.fetchUnreadList();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    unreadcountvm = Provider.of<UnreadCountVm>(context);
+    return Consumer<HomeSummaryController>(
+      builder: (context, ctrl, child) {
+        return Scaffold(
+          backgroundColor: AppColor.pageBgGrey,
+          appBar: AppBar(
+            title: const Text(
+              'Notifications',
+              style: TextStyle(color: Colors.white),
+            ),
+            centerTitle: true,
+            backgroundColor: AppColor.navBarIconColor,
+          ),
 
-    return Scaffold(
-      backgroundColor: AppColor.pageBgGrey,
-      appBar: AppBar(
-        title: const Text(
-          'Notifications',
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
-        backgroundColor: AppColor.navBarIconColor,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-              color: AppColor.navBarIconColor,
-            ))
-          : data.isEmpty
+          body: ctrl.isLoading
               ? const Center(
-                  child: Text(
-                    "No Data Found",
-                    style: TextStyle(fontSize: 18),
+                  child: CircularProgressIndicator(
+                    color: AppColor.navBarIconColor,
                   ),
                 )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 12.0, horizontal: 12),
+              : ctrl.notificationList.isEmpty
+                  ? const Center(
                       child: Text(
-                        " ${data.length} Notifications Available",
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                        "No Data Found",
+                        style: TextStyle(fontSize: 18),
                       ),
-                    ),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.5),
-                              blurRadius: 5,
-                              spreadRadius: 3,
-                              offset: const Offset(2, 4),
+                    )
+                  : Column(
+                      children: [
+                        /// 🔢 Count
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Text(
+                            "${ctrl.unReadData?.total ?? 0} Notifications Available",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
                             ),
-                          ],
-                          color: Colors.white,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(30),
-                            topRight: Radius.circular(30),
                           ),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                              left: 12.0, right: 12, top: 20),
-                          child: ListView.builder(
-                            itemCount: data.length,
-                            itemBuilder: (context, index) {
-                              final record = data[index];
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 10.0),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 2,
-                                      spreadRadius: 2,
-                                      offset: const Offset(2, 4),
-                                    ),
-                                  ],
-                                  border: const Border(
-                                    left: BorderSide(
-                                      color: AppColor.navBarIconColor,
-                                      width: 5,
-                                    ),
-                                  ),
-                                ),
-                                child: ListTile(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            WhatsappChatScreen(
-                                          pinnedLeads: [],
-                                          leadName: record.name ?? "",
-                                          wpnumber: record.whatsappNumber ?? "",
-                                          id: record.parentId ?? "",
-                                          contryCode: "+91",
-                                        ),
+
+                        /// 📜 List
+                        Expanded(
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(30),
+                                topRight: Radius.circular(30),
+                              ),
+                            ),
+                            child: RefreshIndicator(
+                              onRefresh: _refresh,
+                              child: ListView.builder(
+                                controller: _scrollController,
+                                itemCount: ctrl.notificationList.length +
+                                    (ctrl.isPaginationLoading ? 1 : 0),
+
+                                itemBuilder: (context, index) {
+                                  /// 🔄 Pagination Loader
+                                  if (index == ctrl.notificationList.length) {
+                                    return const Padding(
+                                      padding: EdgeInsets.all(12),
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
                                       ),
-                                    ).then((_) {
-                                      fetchcount();
-                                      setState(() {});
-                                    });
-                                  },
-                                  leading: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(100),
-                                      border: Border.all(
-                                        color: AppColor.navBarIconColor,
-                                        width: 3,
-                                      ),
-                                    ),
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.notifications,
-                                        color: Color.fromARGB(255, 0, 0, 0),
-                                        size: 20,
-                                      ),
-                                    ),
-                                  ),
-                                  title: Text(
-                                    record.name ?? "",
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    shouldHideLeadNumber
-                                        ? "*******${record.whatsappNumber?.substring(record.whatsappNumber!.length - 5)}"
-                                        : record.whatsappNumber ?? "",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.black.withOpacity(0.5),
-                                    ),
-                                  ),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const SizedBox(width: 10),
-                                      Container(
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: const BoxDecoration(
-                                          color: Colors.green,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Text(
-                                          record.unreadMsgCount ?? "0",
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
+                                    );
+                                  }
+
+                                  final record =
+                                      ctrl.notificationList[index];
+
+                                  return _notificationItem(record, ctrl);
+                                },
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+        );
+      },
+    );
+  }
+
+  /// 📦 Notification Item Widget
+  Widget _notificationItem(record, HomeSummaryController ctrl) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.white,
+        border: const Border(
+          left: BorderSide(
+            color: AppColor.navBarIconColor,
+            width: 5,
+          ),
+        ),
+      ),
+      child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => WhatsappChatScreen(
+                pinnedLeads: [],
+                leadName: record.contactName ?? "",
+                wpnumber: record.whatsappNumber ?? "",
+                id: record.parentId ?? "",
+                contryCode: "+91",
+              ),
+            ),
+          ).then((_) {
+            context.read<HomeSummaryController>().fetchUnreadList();
+          });
+        },
+
+        leading: const CircleAvatar(
+          // borderOnForeground: true,
+          child: Icon(Icons.notifications),
+        ),
+
+        title: Text(
+          record.contactName ?? "",
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+
+        subtitle: Text(
+          shouldHideLeadNumber
+              ? "*******${record.whatsappNumber?.substring(record.whatsappNumber!.length - 5)}"
+              : record.whatsappNumber ?? "",
+        ),
+
+        trailing: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: const BoxDecoration(
+            color: Colors.green,
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            record.unreadCount ?? "0",
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      ),
     );
   }
 }

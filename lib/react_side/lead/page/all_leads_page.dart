@@ -12,14 +12,14 @@ import 'package:whatsapp/react_side/lead/widget/pinned_lead_item.dart';
 import 'package:whatsapp/react_side/lead/widget/tag_filter_bottom_sheet.dart';
 import 'package:whatsapp/utils/app_color.dart';
 
-class LeadListPage extends StatefulWidget {
-  const LeadListPage({super.key});
+class AllLeadsPage extends StatefulWidget {
+  const AllLeadsPage({super.key});
 
   @override
-  State<LeadListPage> createState() => _LeadListPageState();
+  State<AllLeadsPage> createState() => _AllLeadsPageState();
 }
 
-class _LeadListPageState extends State<LeadListPage>
+class _AllLeadsPageState extends State<AllLeadsPage>
     with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
 
@@ -38,7 +38,7 @@ class _LeadListPageState extends State<LeadListPage>
 
     final ctrl = Provider.of<LeadListController>(context, listen: false);
 
-    ctrl.changeTab(LeadTabType.recentlyMessage);
+    ctrl.changeTab(LeadTabType.lead);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ctrl.fetchLeads();
@@ -49,7 +49,7 @@ class _LeadListPageState extends State<LeadListPage>
     _unreadController = ScrollController();
     _archivedController = ScrollController();
 
-    _allController.addListener(() => _onScroll(LeadTabType.recentlyMessage));
+    _allController.addListener(() => _onScroll(LeadTabType.lead));
     _unreadController.addListener(() => _onScroll(LeadTabType.unread));
     _archivedController.addListener(() => _onScroll(LeadTabType.archived));
 
@@ -58,7 +58,7 @@ class _LeadListPageState extends State<LeadListPage>
 
       switch (_tabController.index) {
         case 0:
-          ctrl.changeTab(LeadTabType.recentlyMessage);
+          ctrl.changeTab(LeadTabType.lead);
           break;
         case 1:
           ctrl.changeTab(LeadTabType.unread);
@@ -210,6 +210,9 @@ class _LeadListPageState extends State<LeadListPage>
           if (index < filteredLeads.length) {
             return LeadItem(data: filteredLeads[index],onTap: (){
               ChatController chatCtrl=Provider.of(context,listen: false);
+              if(int.parse(filteredLeads[index].unreadCount??"0")>0){
+                chatCtrl.markChatAsRead(filteredLeads[index].fullNumber??"");
+              }
               ctrl.getLeadDetail(filteredLeads[index].parentId??"");
               chatCtrl.setSelectedLeadNumber(filteredLeads[index].fullNumber??"");
               Navigator.push(context, MaterialPageRoute(builder: (context)=>WhatsappChatPage(
@@ -245,8 +248,9 @@ class _LeadListPageState extends State<LeadListPage>
           backgroundColor: Colors.white,
           appBar: AppBar(
             backgroundColor: AppColor.navBarIconColor,
+            iconTheme: IconThemeData(color: Colors.white),
             centerTitle: true,
-            title: const Text("Recent Chat",
+            title: const Text("Leads",
                 style: TextStyle(color: Colors.white)),
             actions: [
              

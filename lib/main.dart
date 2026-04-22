@@ -13,7 +13,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:whatsapp/models/lead_model.dart';
 import 'package:whatsapp/react_side/chat/controller/chat_controller.dart';
+import 'package:whatsapp/react_side/home/controller/home_summary_controller.dart';
 import 'package:whatsapp/react_side/lead/controller/lead_list_controller.dart';
+import 'package:whatsapp/react_side/template/controller/whatsapp_template_controller.dart';
 import 'package:whatsapp/salesforce/model/drawer_list_item_model.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
 import 'package:whatsapp/utils/app_constants.dart';
@@ -817,7 +819,10 @@ class _MyAppState extends State<MyApp> {
 
         ////////
       ChangeNotifierProvider(create: (_) => LeadListController()),
-      ChangeNotifierProvider(create: (_)=>ChatController())
+      ChangeNotifierProvider(create: (_)=>ChatController()),
+      ChangeNotifierProvider(create: (_)=>WhatsappTemplateController()),
+      ChangeNotifierProvider(create: (_)=>HomeSummaryController())
+
        
       ],
       child: Builder(

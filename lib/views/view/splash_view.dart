@@ -8,6 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sms_autofill/sms_autofill.dart';
+import 'package:whatsapp/react_side/dashboard/dashboard.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 
 import 'package:whatsapp/utils/app_color.dart';
@@ -74,7 +75,9 @@ class _SplashViewState extends State<SplashView> {
 
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const FooterNavbarPage()),
+        MaterialPageRoute(builder: (context) => DashBoard()
+        // const FooterNavbarPage()
+        ),
         (Route<dynamic> route) => false,
       );
     } else {

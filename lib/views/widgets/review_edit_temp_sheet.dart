@@ -10,7 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
+// import 'package:whatsapp/models/approved_template_model/aprovedtempltemodel/component.dart';
+import 'package:whatsapp/react_side/chat/controller/chat_controller.dart';
+import 'package:whatsapp/react_side/template/model/template_model.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/view_models/message_list_vm.dart';
@@ -36,7 +38,7 @@ class TemplateSheetHelper extends StatefulWidget {
 }
 
 class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
-  late MessageViewModel msgViewModel;
+  late ChatController msgViewModel;
   bool isChecked = false;
   bool isOtherFileSelected = false;
   String imgToShow = "";
@@ -50,7 +52,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
   @override
   void initState() {
     super.initState();
-    msgViewModel = Provider.of<MessageViewModel>(context, listen: false);
+    msgViewModel = Provider.of<ChatController>(context, listen: false);
 
     final text = msgViewModel.selectedBody?.text ?? "";
     imgToShow = _extractImageToShow(msgViewModel);
@@ -84,7 +86,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     }
   }
 
-  String _extractImageToShow(MessageViewModel msgViewModel) {
+  String _extractImageToShow(ChatController msgViewModel) {
     final headerExample = msgViewModel.selectedHeader?.example;
     if (headerExample?.headerHandle != null &&
         headerExample!.headerHandle!.isNotEmpty) {
@@ -885,7 +887,7 @@ Widget buildChatButtonTag(String text) {
 }
 
 class CarousalCard extends StatefulWidget {
-  final MessageViewModel msgViewModel;
+  final ChatController msgViewModel;
   final String wpleadNum;
   final String leadId;
 
@@ -1292,8 +1294,8 @@ class _CarousalCardState extends State<CarousalCard> {
         },
       };
       await widget.msgViewModel.uploadimagewithdoucmentid(
-        bodyy: body,
-        number: phoneNumber,
+        body,
+       phoneNumber,
       );
 
       // Upload to internal DB

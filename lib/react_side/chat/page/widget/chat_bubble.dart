@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_controller.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -10,17 +14,23 @@ import 'package:whatsapp/views/view/view_fullscreen_img.dart';
 import 'package:whatsapp/views/widgets/attachment_widget.dart';
 import 'package:whatsapp/views/widgets/custom_chat_button.dart';
 import 'package:whatsapp/views/widgets/custom_intractive_button.dart';
+import 'package:whatsapp/views/widgets/header_widget.dart';
+import 'package:whatsapp/views/widgets/whatsapp_chats_widgets.dart/whatsapp_chat_func.dart';
 
 class ChatBubble extends StatefulWidget {
-  final ChatRecord chat;
+  final ChatRecord message;
+    ChatRecord? previousMessage;
   final bool isMe;
   final bool isSelected;
+  String tenetCode;
   final Function(String id)? onSelect;
 
-  const ChatBubble({
+   ChatBubble({
     super.key,
-    required this.chat,
+    required this.message,
+       this.previousMessage,
     required this.isMe,
+   required this.tenetCode,
     this.isSelected = false,
     this.onSelect,
   });
@@ -30,153 +40,235 @@ class ChatBubble extends StatefulWidget {
 }
 
 class _ChatBubbleState extends State<ChatBubble> {
-  bool showCopy = false;
 
-
-
-  /// ✅ TEXT RESOLVER
-  String get messageText {
-    final c = widget.chat;
-
-    if (c.message?.isNotEmpty == true) return c.message!;
-    if (c.bodyText?.isNotEmpty == true) return c.bodyText!;
-    if (c.messageBody?.isNotEmpty == true) return c.messageBody!;
-    if (c.chatMsg?.isNotEmpty == true) return c.chatMsg!;
-    if (c.adHeadline?.isNotEmpty == true) {
-      return "${c.adHeadline}\n${c.adBody ?? ""}";
-    }
-
-    return "";
-  }
-
-  /// ✅ TIME FORMAT
-  String get formattedTime {
-    if (widget.chat.createdDate == null) return "";
-
-    try {
-      final dt = DateTime.parse(widget.chat.createdDate!);
-      return DateFormat('hh:mm a').format(dt);
-    } catch (e) {
-      return "";
-    }
-  }
-
-  /// ✅ OPEN URL
-  Future<void> openUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      throw Exception("Could not launch $url");
-    }
-  }
-
- String TenetCode="";
-@override
-  void initState() {
-  getCode();
-    super.initState();
-  }
-
-  getCode() async {
- final prefs = await SharedPreferences.getInstance();
   
+final CarouselSliderController _carouselController =
+      CarouselSliderController();
+  int _currentCarouselIndex = 0;
+  bool _showCopyButton = false;
 
-    TenetCode = prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
+  bool _isSameDay(DateTime? a, DateTime? b) {
+    return a?.year == b?.year && a?.month == b?.month && a?.day == b?.day;
+  }
+
+  String _getDayLabel(DateTime istTime, DateTime now) {
+    if (_isSameDay(istTime, now)) return 'Today';
+    if (_isSameDay(istTime, now.subtract(const Duration(days: 1)))) {
+      return 'Yesterday';
+    }
+    return DateFormat('d MMMM yyyy').format(istTime);
+  }
+
+  // Method to copy message to clipboard
+  Future<void> _copyMessageToClipboard() async {
+    String textToCopy = "";
+
+    // Get the main message text
+    if (widget.message.message?.isNotEmpty ?? false) {
+      textToCopy = widget.message.message!;
+    } else if (widget.message.bodyText?.isNotEmpty ?? false) {
+      textToCopy = widget.message.bodyText!;
+    } else if (widget.message.messageBody != null) {
+      // Handle templated messages
+      textToCopy = widget.message.messageBody!;
+    } else if (widget.message.adHeadline?.isNotEmpty ?? false) {
+      textToCopy =
+          "${widget.message.adHeadline}\n${widget.message.adBody ?? ''}";
+    }
+
+    if (textToCopy.isNotEmpty) {
+      await Clipboard.setData(ClipboardData(text: textToCopy));
+
+      // Show a snackbar or toast to indicate success
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Message copied to clipboard'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  // Get message text content
+  String _getMessageText() {
+    if (widget.message.message?.isNotEmpty ?? false) {
+      return widget.message.message!;
+    } else if (widget.message.bodyText?.isNotEmpty ?? false) {
+      return widget.message.bodyText!;
+    } else if (widget.message.messageBody != null) {
+      return widget.message.messageBody!;
+    } else if (widget.message.adHeadline?.isNotEmpty ?? false) {
+      return "${widget.message.adHeadline}\n${widget.message.adBody ?? ''}";
+    } else if (widget.message.templateType == 'carousel') {
+      return widget.message.templateCards
+          .map<String>((card) => card['body']?['text'] ?? "")
+          .where((text) => text.isNotEmpty)
+          .join("\n\n");
+    }
+    return "";
   }
 
   @override
   Widget build(BuildContext context) {
-    final c = widget.chat;
-   
-        final imageUrl = ((c.bodyTextParams != null &&
-                c.bodyTextParams!.containsKey('file_title') &&
-                (c.bodyTextParams!['file_title']?.isNotEmpty ??
+    print(" widget.message.bodyText!::::::::::: ${widget.message.bodyText}");
+    final now = DateTime.now();
+ final DateTime istTime = DateTime.parse(widget.message.createdDate ?? "");
+  print("widget tenet code>>>> ${widget.tenetCode}");
+final formattedTime =
+    DateFormat('hh:mm a').format(istTime.toLocal());
+  final showDateLabel = widget.previousMessage == null ||
+    !_isSameDay(
+      DateTime.parse(widget.message.createdDate ?? ""),
+      DateTime.parse(widget.previousMessage!.createdDate ?? ""),
+    );
+
+    final imageUrl = ((widget.message.bodyTextParams != null &&
+                widget.message.bodyTextParams!.containsKey('file_title') &&
+                (widget.message.bodyTextParams!['file_title']?.isNotEmpty ??
                     false)) ||
-           c.fileType != null)
-        ? "${AppConstants.baseImgUrl}public/${TenetCode}/attachment/"
-            "${c.fileType != null ? c.title : c.bodyTextParams!['file_title']}"
+            widget.message.fileType != null)
+        ? "${AppConstants.baseImgUrl}public/${widget.tenetCode}/attachment/"
+            "${widget.message.fileType != null ? widget.message.title : widget.message.bodyTextParams!['file_title']}"
         : "";
 
-    final isAd = (c.adHeadline?.isNotEmpty == true ||
-        c.adBody?.isNotEmpty == true ||
-        c.adMediaUrl?.isNotEmpty == true);
+    final isEmptyMessage = widget.message.header == null &&
+        widget.message.messageBody == null &&
+        imageUrl.isEmpty &&
+        widget.message.bodyText == null &&
+        widget.message.fileType == null &&
+        (widget.message.message?.isEmpty ?? true) &&
+        (widget.message.adHeadline?.isEmpty ?? true) &&
+        (widget.message.adBody?.isEmpty ?? true) &&
+        (widget.message.adMediaUrl?.isEmpty ?? true);
 
-    final hasAttachment = c.fileId?.isNotEmpty == true;
+    if (isEmptyMessage) return const SizedBox();
 
-    if (messageText.isEmpty && !isAd && !hasAttachment) {
-      return const SizedBox();
+    final regex = RegExp(r'\{\{\d+\}\}');
+    String result = "";
 
-      
-    }
+    String headline = widget.message.adHeadline ?? "";
+    String adbody = widget.message.adBody ?? "";
+    String adMediaUrl = widget.message.adMediaUrl ?? "";
+    String adMediaType = widget.message.adMediaType ?? "";
+    String adUrl = widget.message.adUrl ?? "";
+    String adPlatform = widget.message.adPlatform ?? "";
 
-
-    String headline = c.adHeadline ?? "";
-    String adbody = c.adBody ?? "";
-    String adMediaUrl = c.adMediaUrl ?? "";
-    String adMediaType = c.adMediaType ?? "";
-    String adUrl = c.adUrl ?? "";
-    String adPlatform = c.adPlatform ?? "";
-       final bool isAdMessage =
+    final bool isAdMessage =
         headline.isNotEmpty || adbody.isNotEmpty || adMediaUrl.isNotEmpty;
 
-    return GestureDetector(
-      onTap: () {
-        if (widget.isSelected) {
-          widget.onSelect?.call(c.id ?? "");
-        }
-      },
-      onLongPress: () {
-        setState(() => showCopy = true);
+    if (widget.message.templateType == 'carousel') {
+      var carousalPams =
+          jsonEncode(widget.message.bodyTextParams!['main'] ?? "");
+      result = widget.message.messageBody ?? "";
+      if (regex.hasMatch(result)) {
+        result = replacePlaceholders(result, carousalPams);
+      }
+    } else {
+      result = widget.message.messageBody ?? "";
+      if (regex.hasMatch(result)) {
+        result = replacePlaceholders(
+            result,
+            jsonEncode(widget.message.bodyTextParams ??
+                widget.message.exampleBodyText ??
+                ""));
+      }
+    }
 
-        if (messageText.isNotEmpty) {
-          Clipboard.setData(ClipboardData(text: messageText));
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Message copied")),
-          );
-        }
-      },
-      child: Align(
-        alignment:
-            widget.isMe ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 5),
-          padding: const EdgeInsets.all(10),
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.7,
-          ),
-          decoration: BoxDecoration(
-            color: widget.isMe
-                ? const Color(0xffE3FFC9)
-                : const Color(0xffF1F1F1),
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(12),
-              topRight: const Radius.circular(12),
-              bottomLeft:
-                  widget.isMe ? const Radius.circular(12) : Radius.zero,
-              bottomRight:
-                  widget.isMe ? Radius.zero : const Radius.circular(12),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showDateLabel)
+          Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.all(6.0),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 169, 215, 236),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                _getDayLabel(istTime, now),
+                style:
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
-          child: Stack(
-            children: [
-              Column(
-                
-                crossAxisAlignment: CrossAxisAlignment.start,
+        GestureDetector(
+          onTap: () {
+          
+          },
+          onLongPress: () {
+          
+          },
+          child: Align(
+            alignment: widget.message.status == "Incoming"
+                ? Alignment.centerLeft
+                : Alignment.centerRight,
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 5),
+              padding: const EdgeInsets.all(10),
+              constraints: BoxConstraints(
+                minWidth: MediaQuery.of(context).size.width * 0.25,
+                maxWidth: MediaQuery.of(context).size.width * 0.65,
+              ),
+              decoration: BoxDecoration(
+                color: widget.message.status == "Outgoing"
+                    ? const Color(0xffE3FFC9)
+                    : const Color.fromARGB(255, 179, 238, 243),
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(12),
+                  topRight: const Radius.circular(12),
+                  bottomLeft: widget.message.status == "Outgoing"
+                      ? const Radius.circular(12)
+                      : Radius.zero,
+                  bottomRight: widget.message.status == "Outgoing"
+                      ? Radius.zero
+                      : const Radius.circular(12),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 4,
+                    offset: const Offset(2, 2),
+                  ),
+                ],
+              ),
+              child: Stack(
                 children: [
-                  /// ✅ HEADER (BOLD TITLE)
-                  if (c.headerBody?.isNotEmpty == true)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text(
-                        c.headerBody!,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Copy button (small, top-right corner)
+                      if (_showCopyButton )
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: Icon(Icons.content_copy, size: 18),
+                              padding: EdgeInsets.all(4),
+                              onPressed: () {
+                                _copyMessageToClipboard();
+                                setState(() {
+                                  _showCopyButton = false;
+                                });
+                              },
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
 
-
-                            if (isAdMessage) ...[
+                      if (isAdMessage) ...[
                         if (adMediaUrl.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),
@@ -287,140 +379,314 @@ class _ChatBubbleState extends State<ChatBubble> {
                           ),
                         const Divider(color: Colors.grey),
                       ],
-
-                  /// ✅ AD MEDIA
-                  if (isAd && c.adMediaUrl?.isNotEmpty == true)
-                    GestureDetector(
-                      onTap: () => openUrl(c.adMediaUrl!),
-                      child: Container(
-                        height: 120,
-                        width: double.infinity,
-                        color: Colors.black12,
-                        child: const Icon(Icons.play_circle_fill),
-                      ),
-                    ),
-
-                  /// ✅ AD TEXT
-                  if (isAd) ...[
-                    if (c.adHeadline?.isNotEmpty == true)
-                      Text(
-                        c.adHeadline!,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold),
-                      ),
-                    if (c.adBody?.isNotEmpty == true)
-                      Text(c.adBody!),
-                    if (c.adUrl?.isNotEmpty == true)
-                      GestureDetector(
-                        onTap: () => openUrl(c.adUrl!),
-                        child: Text(
-                          c.adUrl!,
+                      if (imageUrl.isNotEmpty && !isAdMessage)
+                        AttachmentWidget(url: imageUrl),
+                      if (widget.message.header != null && imageUrl.isEmpty)
+                        HeaderMediaWidget(
+                          header: widget.message.header!,
+                          headerBody: widget.message?.headerBody ?? "",
+                        ),
+                      if (widget.message.message?.isNotEmpty ?? false)
+                        Text(
+                          widget.message.message!,
+                          style: const TextStyle(fontSize: 14, height: 1.5),
+                        ),
+                      if (widget.message.bodyText?.isNotEmpty ?? false)
+                        Text(
+                          widget.message.bodyText!,
+                          style: const TextStyle(fontSize: 14, height: 1.5),
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      if (widget.message.messageBody != null) Text(result),
+                      if (widget.message.description != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5),
+                          child: Text(widget.message.description!),
+                        ),
+                      if (widget.message.footer != null)
+                        Text(
+                          widget.message.footer!,
                           style: const TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
+                            fontSize: 12,
+                            color: Colors.grey,
                           ),
                         ),
-                      ),
-                    const Divider(),
-                  ],
-
-                  /// ✅ MESSAGE TEXT
-                  if (messageText.isNotEmpty)
-                    Text(
-                      messageText,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-
-
-       if (c.errMessage != null)
+                      if (widget.message.errMessage != null)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4.0),
                           child: Text(
-                            "Error: ${c.errMessage??"s"}",
+                            "Error: ${widget.message.errMessage}",
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.red.shade400,
                             ),
                           ),
                         ),
-                      if (c.interactiveButtons != null &&
-                          c.interactiveButtons?.isNotEmpty == true)
+                      if (widget.message.interactiveButtons != null &&
+                          widget.message.interactiveButtons?.isNotEmpty == true)
                         CustomInteractiveButtonList(
-                            buttons: c.interactiveButtons!),
-                      if (c.buttons != null &&
-                          c.buttons?.isNotEmpty == true)
+                            buttons: widget.message.interactiveButtons!),
+                      if (widget.message.buttons != null &&
+                          widget.message.buttons?.isNotEmpty == true)
                         CustomButtonList(
-                          buttons: c.buttons!,
-                          // buttonVariables:
-                          //     c.bodyTextParams != null &&
-                          //             c.bodyTextParams is Map &&
-                          //             c
-                          //                 .!containsKey('button_variables')
-                          //         ? Map<String, dynamic>.from(widget.message
-                          //             .bodyTextParams['button_variables'])
-                          //         : null,
+                          buttons: widget.message.buttons!,
+                          buttonVariables:
+                              widget.message.bodyTextParams != null &&
+                                      widget.message.bodyTextParams is Map &&
+                                      widget.message.bodyTextParams
+                                          !.containsKey('button_variables')
+                                  ? Map<String, dynamic>.from(widget.message
+                                      .bodyTextParams!['button_variables'])
+                                  : null,
                         ),
+                      if (widget.message.templateType == 'carousel') ...[
+                        CarouselSlider(
+                          items: widget.message.templateCards
+                              .asMap()
+                              .entries
+                              .map<Widget>((entry) {
+                            final index = entry.key;
+                            final card = entry.value;
 
-             
-               if (imageUrl.isNotEmpty && !isAdMessage)
-                                           AttachmentWidget(url: imageUrl),
+                            final regex = RegExp(r'\{\{\d+\}\}');
+                            // log("card::::  $card");
+                            // log("card body::::  ${card['body']}");
 
+                            String result = "";
 
-                  /// ✅ FOOTER (SMALL TEXT)
-                  if (c.footer?.isNotEmpty == true)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        c.footer!,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
+                            if (card['body'] == null ||
+                                card['body']['text'] == null) {
+                              result = "";
+                            } else {
+                              result = card['body']['text'] ?? "";
+                            }
+
+                            var carousalPams = jsonEncode(
+                                widget.message.bodyTextParams!['$index']);
+                            if (regex.hasMatch(result)) {
+                              result =
+                                  replacePlaceholders(result, carousalPams);
+                            }
+
+                            Map<String, dynamic>? bodyParams;
+                            if (widget.message.bodyTextParams != null &&
+                                widget.message.bodyTextParams
+                                    !.containsKey('$index')) {
+                              bodyParams =
+                                  widget.message.bodyTextParams!['$index'];
+                            }
+
+                            String carImageUrl = "";
+                            if (bodyParams != null &&
+                                bodyParams['file_title'] != null &&
+                                bodyParams['file_title']
+                                    .toString()
+                                    .isNotEmpty) {
+                              carImageUrl =
+                                  "${AppConstants.baseImgUrl}public/${widget.tenetCode}/attachment/${bodyParams['file_title']}";
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 0, vertical: 8),
+                              child: SingleChildScrollView(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (card['body']?['text'] != null)
+                                        Padding(
+                                          padding: const EdgeInsets.all(6.0),
+                                          child: Text(
+                                            result,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                        ),
+                                      if (carImageUrl.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 6.0, vertical: 10),
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            child: InkWell(
+                                              onTap: () {
+                                                print(
+                                                    "printing the url of attachment:::  $carImageUrl");
+                                              },
+                                              child: AttachmentWidget(
+                                                url: carImageUrl,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      if (card['buttons'] != null &&
+                                          card['buttons'].isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.all(6.0),
+                                          child: CustomButtonList(
+                                            buttons: card['buttons'],
+                                            buttonVariables: card[
+                                                            'bodyTextParams'] !=
+                                                        null &&
+                                                    card['bodyTextParams']
+                                                        is Map &&
+                                                    card['bodyTextParams']
+                                                        .containsKey(
+                                                            'button_variables')
+                                                ? Map<String, dynamic>.from(
+                                                    card['bodyTextParams']
+                                                        ['button_variables'])
+                                                : null,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                          carouselController: _carouselController,
+                          options: CarouselOptions(
+                            autoPlay: false,
+                            enableInfiniteScroll: false,
+                            viewportFraction: 0.98,
+                            enlargeCenterPage: true,
+                            height: 300,
+                            onPageChanged: (index, reason) {
+                              setState(() {
+                                _currentCarouselIndex = index;
+                              });
+                            },
+                          ),
                         ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: widget.message.templateCards
+                              .asMap()
+                              .entries
+                              .map<Widget>((entry) {
+                            int index = entry.key;
+                            return GestureDetector(
+                              onTap: () =>
+                                  _carouselController.animateToPage(index),
+                              child: Container(
+                                width: 8.0,
+                                height: 8.0,
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 10.0, horizontal: 4.0),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _currentCarouselIndex == index
+                                      ? Colors.blue
+                                      : Colors.grey,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            formattedTime,
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.black45),
+                          ),
+                          if (widget.message.status == "Outgoing")
+                            Icon(
+                              Icons.done_all,
+                              color: widget.message.deliveryStatus == "read"
+                                  ? Colors.green
+                                  : Colors.grey,
+                              size: 18,
+                            ),
+                        ],
                       ),
-                    ),
-
-               const SizedBox(height: 15,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        formattedTime,
-                        style: const TextStyle(
-                            fontSize: 11, color: Colors.grey),
-                      ),
-                      if (widget.isMe)
-                        Icon(
-                          Icons.done_all,
-                          size: 16,
-                          color: c.deliveryStatus == "read"
-                              ? Colors.blue
-                              : Colors.grey,
-                        ),
                     ],
                   ),
+                 
                 ],
               ),
-
-              /// ✅ SELECTION OVERLAY
-              if (widget.isSelected)
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: EdgeInsets.all(6),
-                      child: Icon(Icons.check_circle,
-                          color: Colors.blue),
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
+
+  // Show context menu on long press
+  void _showContextMenu(BuildContext context) {
+    final messageText = _getMessageText();
+    if (messageText.isEmpty) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return SafeArea(
+          child: Container(
+            margin: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: Icon(Icons.content_copy, color: Colors.blue),
+                  title: Text('Copy message'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _copyMessageToClipboard();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.select_all, color: Colors.blue),
+                  title: Text('Select message'),
+                  onTap: () {
+                    // Navigator.pop(context);
+                    // widget.onTap(widget.message.id ?? "");
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.cancel, color: Colors.grey),
+                  title: Text('Cancel'),
+                  onTap: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
 }
