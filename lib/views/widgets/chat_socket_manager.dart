@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:whatsapp/react_side/chat/controller/chat_controller.dart';
+import 'package:whatsapp/react_side/chat/page/widget/contact_header.dart';
+import 'package:whatsapp/react_side/home/controller/home_summary_controller.dart';
 import 'package:whatsapp/view_models/lead_controller.dart';
 import 'package:whatsapp/view_models/message_list_vm.dart';
 import '../../../utils/app_utils.dart';
@@ -19,7 +22,7 @@ class SocketManager {
     final prefs = await SharedPreferences.getInstance();
     String? number = prefs.getString('phoneNumber');
     String token = await AppUtils.getToken() ?? "";
-    LeadController leadCtrl = Provider.of(context, listen: false);
+    HomeSummaryController leadCtrl = Provider.of(context, listen: false);
     Map<String, dynamic> decodedToken = Map<String, dynamic>.from(
       JwtDecoder.decode(token),
     );
@@ -27,11 +30,13 @@ class SocketManager {
     token = token;
     number = number ?? "";
     userId = decodedToken;
-
+   print("activeBusinessNumbers>>>>>>activeBusinessNumbers>>>>>. ${leadCtrl.activeBusinessNumbers}");
     userId.addAll({
-      "business_numbers": leadCtrl.allBusinessNumbers,
+      "business_numbers": leadCtrl.activeBusinessNumbers,
       "business_number": number
     });
+
+    log("socket user if>>>>>>>> ${userId}");
 
     try {
       _socket = IO.io(
@@ -58,9 +63,9 @@ class SocketManager {
         log("New WhatsApp message received: $data");
         if (wpNumber != null) {
           final messageVM =
-              Provider.of<MessageViewModel>(context, listen: false);
+              Provider.of<ChatController>(context, listen: false);
           messageVM.setFileToSend(null);
-          messageVM.Fetchmsghistorydata(leadnumber: wpNumber, number: number);
+          messageVM.fetchInitialChat();
 
           Map<String, String> bodydata = {"whatsapp_number": wpNumber};
           await Provider.of<UnreadCountVm>(navigatorKey.currentContext!,

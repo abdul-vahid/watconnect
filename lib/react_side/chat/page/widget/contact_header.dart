@@ -44,7 +44,6 @@ class ChatContactHeader extends StatelessWidget {
 
               const SizedBox(width: 10),
 
-              /// 📛 NAME + NUMBER
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,6 +72,7 @@ class ChatContactHeader extends StatelessWidget {
                 return PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert, color: Colors.black),
                   onSelected: (value) async {
+                    print("value>>>>>$value");
                     final phoneNumber = number;
 
                     if (value == 'Clear Chat') {
@@ -93,7 +93,7 @@ class ChatContactHeader extends StatelessWidget {
                         );
                       }
                     } else if (value == 'Call') {
-                      if (phoneNumber != null && phoneNumber.isNotEmpty) {
+                      if (phoneNumber.isNotEmpty) {
                         _makePhoneCall(phoneNumber);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -110,10 +110,10 @@ class ChatContactHeader extends StatelessWidget {
 
                     return [
                       PopupMenuItem<String>(
-                        value: leadCtrl.leadDetail!.isArchived ?? false
+                        value: leadCtrl.leadDetail?.isArchived ?? false
                             ? 'Unarchive Chat'
                             : 'Archive Chat',
-                        child: Text(leadCtrl.leadDetail!.isArchived ?? false
+                        child: Text(leadCtrl.leadDetail?.isArchived ?? false
                             ? 'Unarchive Chat'
                             : 'Archive Chat'),
                       ),
@@ -195,7 +195,7 @@ class ChatContactHeader extends StatelessWidget {
   }
 
   Future<void> _showDeleteDialog(context) async {
-    final msgViewModel = context.read<ChatController>();
+    final msgViewModel = Provider.of<ChatController>(context, listen: false);
     await showDialog(
       context: context,
       builder: (context) => DeleteConfirmationDialog(

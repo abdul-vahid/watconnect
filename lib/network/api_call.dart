@@ -159,8 +159,8 @@ class ApiHelper {
       final response = await request();
 
       return await _handleResponse(response, url,request,);
-    } catch (e) {
-      log("GET ERROR → $e");
+    } catch (e,stackTrace) {
+      log("GET ERROR → $e $url. $stackTrace");
       rethrow;
     }
   }
@@ -190,8 +190,8 @@ class ApiHelper {
       final response = await request();
 
       return await _handleResponse(response, url,request);
-    } catch (e) {
-      log("POST ERROR → $e");
+    } catch (e,stackTrace) {
+      log("POST ERROR → $e.  $stackTrace     $url");
       rethrow;
     }
   }

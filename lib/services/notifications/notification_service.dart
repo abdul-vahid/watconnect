@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/main.dart';
 import 'package:whatsapp/models/lead_model.dart';
+import 'package:whatsapp/react_side/chat/page/whatsapp_chat_page.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/salesforce/screens/sf_message_chat_screen.dart';
@@ -282,60 +283,40 @@ class NotificationService {
 
       // navigate to customer screen
     } else {
-      final leadlistvm = Provider.of<LeadListViewModel>(ctx!, listen: false);
-      await leadlistvm.fetch();
-      LeadModel? matchedModel;
+      // final leadlistvm = Provider.of<LeadListViewModel>(ctx!, listen: false);
+    
+      // LeadModel? matchedModel;
       final List<LeadModel> pinnedLeads = [];
 
-      // Find pinned leads and matching lead
-      for (var viewModel in leadlistvm.viewModels) {
-        final leadmodel = viewModel.model;
 
-        if (leadmodel?.records != null) {
-          for (var record in leadmodel!.records!) {
-            print("record.id::::::::  ${record.id}");
-            if (record.pinned == true) {
-              pinnedLeads.add(record);
-            }
-            if (record.id.toString() == finJson['lead_id']) {
-              matchedModel = record;
-            }
-          }
-        }
-      }
-
-      final wpNumber = matchedModel?.whatsappNumber ?? "";
-      final formattedWpNumber = wpNumber.contains("+")
-          ? wpNumber
-          : "${matchedModel?.countryCode}$wpNumber";
-
+  
       if (shouldwait) {
         Future.delayed(const Duration(milliseconds: 3500), () {
           Navigator.push(
-            ctx,
+            ctx!,
             MaterialPageRoute(
-              builder: (_) => WhatsappChatScreen(
-                pinnedLeads: pinnedLeads,
-                leadName:
-                    "${matchedModel?.firstname ?? ""} ${matchedModel?.lastname ?? ""}",
-                wpnumber: formattedWpNumber,
-                id: matchedModel?.id,
-                model: matchedModel,
+              builder: (_) => WhatsappChatPage(
+                // pinnedLeads: pinnedLeads,
+                name:
+                   finJson['full_number'],
+                number: finJson['full_number'],
+                leadId:finJson['lead_id'],
+              
+                // model: matchedModel,
               ),
             ),
           );
         });
       } else {
         Navigator.push(
-          ctx,
+          ctx!,
           MaterialPageRoute(
-            builder: (_) => WhatsappChatScreen(
-              pinnedLeads: pinnedLeads,
-              leadName:
-                  "${matchedModel?.firstname ?? ""} ${matchedModel?.lastname ?? ""}",
-              wpnumber: formattedWpNumber,
-              id: matchedModel?.id,
-              model: matchedModel,
+            builder: (_) => WhatsappChatPage(
+            
+              name:
+                   finJson['full_number'],
+                number: finJson['full_number'],
+                leadId:finJson['lead_id'],
             ),
           ),
         );

@@ -655,7 +655,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
       isSendingTemplate = true;
     });
 
-    final msgViewModel = Provider.of<MessageViewModel>(context, listen: false);
+    // final msgViewModel = Provider.of<MessageViewModel>(context, listen: false);
     final walletController =
         Provider.of<WalletController>(context, listen: false);
     final prefs = await SharedPreferences.getInstance();
@@ -702,8 +702,8 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     }
 
     final response = await msgViewModel.sendTemplateApiCall(
-      tempBody: body,
-      number: phoneNumber,
+       body,
+     
     );
 
     debugPrint("onValue of send template::: $response");
@@ -713,13 +713,11 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
     });
 
     if (response['success'] == true) {
-      await msgViewModel.Fetchmsghistorydata(
-          leadnumber: widget.leadNum, number: phoneNumber);
-      Navigator.pop(context);
+   Navigator.pop(context);
     }
   }
 
-  bool _requiresFile(MessageViewModel msgViewModel) {
+  bool _requiresFile(ChatController msgViewModel) {
     final format = msgViewModel.selectedHeader?.format;
     return format == 'IMAGE' || format == 'VIDEO' || format == 'DOCUMENT';
   }
@@ -738,7 +736,7 @@ class _TemplateSheetHelperState extends State<TemplateSheetHelper> {
   }
 
   Future<Map<String, dynamic>> _buildBody({
-    required MessageViewModel msgViewModel,
+    required  ChatController msgViewModel,
     required String? phoneNumber,
     required bool hasWallet,
     required WalletController walletController,

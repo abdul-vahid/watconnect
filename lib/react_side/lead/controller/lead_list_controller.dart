@@ -28,7 +28,7 @@ class LeadListController extends ChangeNotifier {
 
   LeadTabType currentTab = LeadTabType.recentlyMessage;
 
-  /// ================= GET PARAM =================
+
   String _getTypeParam() {
     switch (currentTab) {
       case LeadTabType.recentlyMessage:
@@ -42,14 +42,14 @@ class LeadListController extends ChangeNotifier {
     }
   }
 
-  /// ================= RESET =================
+
   void resetPagination() {
     leadList.clear();
     offset = 0;
     hasMoreData = true;
   }
 
-  /// ================= CHANGE TAB =================
+  
   Future<void> changeTab(LeadTabType tab) async {
     if (currentTab == tab) return;
 
@@ -344,5 +344,5 @@ LeadDetail? leadDetail;
   }
 
 
-  //LeadRecord
+
 }

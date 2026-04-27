@@ -110,10 +110,8 @@ final CarouselSliderController _carouselController =
 
   @override
   Widget build(BuildContext context) {
-    print(" widget.message.bodyText!::::::::::: ${widget.message.bodyText}");
     final now = DateTime.now();
  final DateTime istTime = DateTime.parse(widget.message.createdDate ?? "");
-  print("widget tenet code>>>> ${widget.tenetCode}");
 final formattedTime =
     DateFormat('hh:mm a').format(istTime.toLocal());
   final showDateLabel = widget.previousMessage == null ||

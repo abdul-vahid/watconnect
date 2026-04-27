@@ -213,10 +213,10 @@ class _AllLeadsPageState extends State<AllLeadsPage>
               if(int.parse(filteredLeads[index].unreadCount??"0")>0){
                 chatCtrl.markChatAsRead(filteredLeads[index].fullNumber??"");
               }
-              ctrl.getLeadDetail(filteredLeads[index].parentId??"");
+              ctrl.getLeadDetail(filteredLeads[index].leadId??"");
               chatCtrl.setSelectedLeadNumber(filteredLeads[index].fullNumber??"");
               Navigator.push(context, MaterialPageRoute(builder: (context)=>WhatsappChatPage(
-                leadId: filteredLeads[index].parentId??"",
+                leadId: filteredLeads[index].leadId??"",
                 name: filteredLeads[index].contactName??"",
                 number: filteredLeads[index].fullNumber??"",
                 countryCode: filteredLeads[index].countryCode??"",
@@ -433,7 +433,7 @@ class _AllLeadsPageState extends State<AllLeadsPage>
   ),
 
               if (ctrl.pinnedLeadList.isNotEmpty)
-               const PinnedLeadsWidget(
+                PinnedLeadsWidget(
                    
                     ),
 

@@ -331,12 +331,13 @@ class ChatButton {
   final String? type;
   final String? url;
   final String? phoneNumber;
-
+final String?  example;
   ChatButton({
     this.text,
     this.type,
     this.url,
     this.phoneNumber,
+    this.example
   });
 
   factory ChatButton.fromJson(Map<String, dynamic> json) {
@@ -345,6 +346,7 @@ class ChatButton {
       type: json['type'],
       url: json['url'],
       phoneNumber: json['phone_number'],
+       example: json['example'],
     );
   }
 

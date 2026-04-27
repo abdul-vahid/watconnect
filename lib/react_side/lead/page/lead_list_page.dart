@@ -210,10 +210,10 @@ class _LeadListPageState extends State<LeadListPage>
           if (index < filteredLeads.length) {
             return LeadItem(data: filteredLeads[index],onTap: (){
               ChatController chatCtrl=Provider.of(context,listen: false);
-              ctrl.getLeadDetail(filteredLeads[index].parentId??"");
+              ctrl.getLeadDetail(filteredLeads[index].leadId??"");
               chatCtrl.setSelectedLeadNumber(filteredLeads[index].fullNumber??"");
               Navigator.push(context, MaterialPageRoute(builder: (context)=>WhatsappChatPage(
-                leadId: filteredLeads[index].parentId??"",
+                leadId: filteredLeads[index].leadId??"",
                 name: filteredLeads[index].contactName??"",
                 number: filteredLeads[index].fullNumber??"",
                 countryCode: filteredLeads[index].countryCode??"",
@@ -429,7 +429,7 @@ class _LeadListPageState extends State<LeadListPage>
   ),
 
               if (ctrl.pinnedLeadList.isNotEmpty)
-               const PinnedLeadsWidget(
+                PinnedLeadsWidget(
                    
                     ),
 

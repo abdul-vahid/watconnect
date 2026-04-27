@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/react_side/chat/controller/chat_controller.dart';
 // import 'package:whatsapp/call_socket.dart';
 // import 'package:whatsapp/main.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
@@ -362,7 +363,7 @@ class _CallScreenState extends State<CallScreen> {
           chatMessageController.createCallHistoryApi(body: body);
         } else {
           final messageVM =
-              Provider.of<MessageViewModel>(context, listen: false);
+              Provider.of<ChatController>(context, listen: false);
 
           final dbResponse =
               await messageVM.uploadFiledb(audioFile, null, null);
@@ -842,7 +843,7 @@ class _CallScreenState extends State<CallScreen> {
   Future<void> _sendPermissionRequest() async {
     try {
       final messageViewModel =
-          Provider.of<MessageViewModel>(context, listen: false);
+          Provider.of<ChatController>(context, listen: false);
       final prefs = await SharedPreferences.getInstance();
 
       String businessNumber = "";
@@ -868,7 +869,7 @@ class _CallScreenState extends State<CallScreen> {
       };
 
       final response = await messageViewModel.sendMessage(
-          number: businessNumber, addmsModel: body);
+           addmsModel: body);
 
       if (widget.parentId != null) {
         String msgId = response['messages'][0]['id'];

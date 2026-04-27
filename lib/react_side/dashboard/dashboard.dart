@@ -19,7 +19,6 @@ import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/lead_controller.dart';
-import 'package:whatsapp/views/view/home_view.dart';
 import 'package:whatsapp/views/view/profile_view.dart';
 import 'package:whatsapp/views/view/user_list_view.dart'; 
 
@@ -76,7 +75,6 @@ class _DashBoardState extends State<DashBoard>
     setState(() {});
   }
 
-  /// ✅ Build Screens (dynamic)
   void _buildScreens() {
     screens = [
       isSalesforce ? const SfHomeScreen() : HomePageScreen(),
@@ -91,7 +89,7 @@ class _DashBoardState extends State<DashBoard>
     ];
   }
 
-  /// ✅ Bottom Nav Items (must match screens)
+ 
   List<BottomNavigationBarItem> _navItems() {
     return [
       const BottomNavigationBarItem(
@@ -109,7 +107,7 @@ class _DashBoardState extends State<DashBoard>
     ];
   }
 
-  /// ✅ Socket Setup (no duplicate connection)
+
   Future<void> _setupSocket(SharedPreferences prefs) async {
     final drProvider =
         Provider.of<DashBoardController>(context, listen: false);
@@ -160,7 +158,7 @@ class _DashBoardState extends State<DashBoard>
     }
   }
 
-  /// ✅ Business Number API
+
   Future<void> _getBusinessNumbers() async {
     final drProvider =
         Provider.of<DashBoardController>(context, listen: false);
@@ -216,7 +214,6 @@ class _DashBoardState extends State<DashBoard>
     );
   }
 
-  /// ✅ Exit Dialog (safe)
   Future<bool> _onWillPop() async {
     final result = await showCupertinoDialog<bool>(
       context: context,

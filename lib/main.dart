@@ -500,103 +500,8 @@ class _MyAppState extends State<MyApp> {
       }
     });
   }
-//   Future<void> _findAndNavigateToLead(
-//       String leadPhone, String objectType) async {
-//     WidgetsBinding.instance.addPostFrameCallback((_) async {
-//       try {
-//         final BuildContext? context = navigatorKey.currentContext;
 
-//         if (context == null) {
-//           debug("  Context null, retrying...");
-//           Future.delayed(const Duration(milliseconds: 500), () {
-//             _findAndNavigateToLead(leadPhone, objectType);
-//           });
-//           return;
-//         }
 
-//         debug("  Searching lead: $leadPhone");
-
-//         final DashBoardController dbController =
-//             Provider.of<DashBoardController>(context, listen: false);
-
-//         await _callDashboardApi(context);
-// debug("objectTypeobjectType$objectType");
-//         String type = objectType;
-//         // String type = "Lead";
-
-//         debug("Drawer type->$type");
-//         await dbController.drawerListApiCall(type: type);
-
-//         SfDrawerItemModel? matchedLead;
-//         final List<SfDrawerItemModel> pinnedLeads = [];
-// final normalizedLeadPhone = normalizePhone(leadPhone);
-
-// debug("🔍 Searching for: $leadPhone");
-// debug("🔍 Normalized Lead Phone: $normalizedLeadPhone");
-
-// // Print all numbers from list
-// for (var item in dbController.drawerListItems) {
-//   debug("📞 List Number Raw: ${item.whatsappNumber}");
-//   debug("📞 List Number Normalized: ${normalizePhone(item.whatsappNumber)}");
-// }
-
-// matchedLead = dbController.drawerListItems.firstWhere(
-//   (item) {
-//     final normalizedItemPhone = normalizePhone(item.whatsappNumber);
-
-//     debug("➡️ Comparing:");
-//     debug("   Lead: $normalizedLeadPhone");
-//     debug("   Item: $normalizedItemPhone");
-
-//     return normalizedItemPhone == normalizedLeadPhone;
-//   },
-//   orElse: () {
-//     debug("❌ No matching lead found");
-//     return SfDrawerItemModel();
-//   },
-// );
-
-// if (matchedLead.whatsappNumber != null &&
-//     matchedLead.whatsappNumber!.isNotEmpty) {
-//   debug("✅ MATCH FOUND!");
-//   debug("👤 Name: ${matchedLead.name}");
-//   debug("📱 Phone: ${matchedLead.whatsappNumber}");
-// }
-
-//         if (matchedLead.whatsappNumber != null &&
-//             matchedLead.whatsappNumber!.isNotEmpty) {
-//           debug(" Found lead: ${matchedLead.name}");
-//         } else {
-//           debug(" No match found, creating dummy");
-
-//           matchedLead = SfDrawerItemModel(
-//             id: leadPhone,
-//             name: leadPhone,
-//             whatsappNumber: leadPhone,
-//             countryCode: "91",
-//           );
-//         }
-
-//         debug(" Selected: ${matchedLead.name}");
-
-//         dbController.setSelectedContaactInfo(matchedLead);
-//         dbController.setSelectedPinnedInfo(null);
-
-//         debug("🚀 Opening chat");
-
-//         await _navigateToChatScreen(
-//           context,
-//           matchedLead,
-//           pinnedLeads,
-//           objectType,
-//         );
-//       } catch (e, stackTrace) {
-//         debug("  Error: $e");
-//         debug("Stack: $stackTrace");
-//         _handleNavigationError(leadPhone, e);
-//       }
-//     });
-//   }
 
   Future<void> _navigateToChatScreen(
     BuildContext context,
@@ -786,9 +691,8 @@ class _MyAppState extends State<MyApp> {
         ),
         ChangeNotifierProvider(create: (_) => UnreadCountVm(context)),
         ChangeNotifierProvider(create: (_) => GroupsViewModel(context)),
-        ChangeNotifierProvider(create: (_) => MessageViewModel(context)),
+        // ChangeNotifierProvider(create: (_) => MessageViewModel(context)),
         ChangeNotifierProvider(create: (_) => CampaignChartViewModel(context)),
-        ChangeNotifierProvider(create: (_) => LeadListViewModel(context)),
         ChangeNotifierProvider(create: (_) => TagsListViewModel(context)),
         ChangeNotifierProvider(create: (_) => CampaignViewModel(context)),
         ChangeNotifierProvider(create: (_) => MeesageHistoryViewModel(context)),
@@ -812,9 +716,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => WalletController()),
         ChangeNotifierProvider(create: (_) => LeadController()),
         ChangeNotifierProvider(create: (_) => SfFileUploadController()),
-        ChangeNotifierProvider(
-          create: (context) => RecentChatProvider(context),
-        ),
+      
 
 
         ////////

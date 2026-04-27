@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/react_side/chat/page/whatsapp_chat_page.dart';
 import 'package:whatsapp/react_side/home/controller/home_summary_controller.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
@@ -70,7 +71,8 @@ class _NotificationPageState extends State<NotificationPage> {
       builder: (context, ctrl, child) {
         return Scaffold(
           backgroundColor: AppColor.pageBgGrey,
-          appBar: AppBar(
+          appBar: AppBar(iconTheme:const IconThemeData(color: Colors.white),
+
             title: const Text(
               'Notifications',
               style: TextStyle(color: Colors.white),
@@ -149,7 +151,6 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
-  /// 📦 Notification Item Widget
   Widget _notificationItem(record, HomeSummaryController ctrl) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -168,12 +169,13 @@ class _NotificationPageState extends State<NotificationPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => WhatsappChatScreen(
-                pinnedLeads: [],
-                leadName: record.contactName ?? "",
-                wpnumber: record.whatsappNumber ?? "",
-                id: record.parentId ?? "",
-                contryCode: "+91",
+              builder: (_) => 
+              WhatsappChatPage(
+
+                name: record.contactName ?? "",
+                number: record.whatsappNumber ?? "",
+                leadId: record.parentId ?? "",
+                // countryCode: "+91",
               ),
             ),
           ).then((_) {

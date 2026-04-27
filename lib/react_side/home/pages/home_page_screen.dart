@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as badges;
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:focus_detector/focus_detector.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,6 +16,7 @@ import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/view_models/get_user_vm.dart';
+import 'package:whatsapp/view_models/lead_controller.dart';
 import 'package:whatsapp/views/view/NotificationPage.dart';
 
 import 'package:whatsapp/views/widgets/app_drawer_widget.dart';
@@ -48,8 +50,10 @@ class _HomePageScreenState extends State<HomePageScreen> {
         prefs.getStringList(SharedPrefsConstants.userAvailableMoulesKey) ?? [];
 
     final ctrl = context.read<HomeSummaryController>();
-    ctrl.fetchBusinessNumbers();
+   await ctrl.fetchBusinessNumbers();
     ctrl.fetchUnreadList();
+
+
 
     await ctrl.fetchHomeSummary();
     _templateData.add(TemplateChartData("Marketing",
@@ -67,6 +71,9 @@ class _HomePageScreenState extends State<HomePageScreen> {
       ChartData(
           "Aborted", ctrl.homeSummary?.data?.campaignStatus?.aborted ?? 0),
     ]);
+    setState(() {
+      
+    });
   }
 
   final List<Color> _areaColor = [
@@ -79,20 +86,29 @@ class _HomePageScreenState extends State<HomePageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.white,
-        drawer: const AppDrawerWidget(),
-        appBar: _buildAppBar(),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 12),
-              TopCardsSection(modules: _modules),
-              const SizedBox(height: 20),
-              ChartsSection(modules: _modules,),
-            ],
-          ),
-        ));
+    return FocusDetector(
+         onFocusGained: () {
+                      log('Home Screen focused again');
+                      _connectSocket();
+                    },
+                    onFocusLost: () {
+                      _disconnectSocket();
+                    },
+      child: Scaffold(
+          backgroundColor: Colors.white,
+          drawer: const AppDrawerWidget(),
+          appBar: _buildAppBar(),
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                TopCardsSection(modules: _modules),
+                const SizedBox(height: 20),
+                ChartsSection(modules: _modules,),
+              ],
+            ),
+          )),
+    );
   }
 
   PreferredSizeWidget _buildAppBar() {

@@ -37,11 +37,11 @@ class HomeSummaryController extends ChangeNotifier {
   BusinessRecord? selectedBusinessNum;
   setSelectedBusinessNum(BusinessRecord value) {
     selectedBusinessNum = value;
+    fetchHomeSummary();
     notify();
   }
 
-
-  List<String> activeBusinessNumbers=[];
+  List<String> activeBusinessNumbers = [];
 
   Future<void> fetchBusinessNumbers() async {
     try {
@@ -52,43 +52,48 @@ class HomeSummaryController extends ChangeNotifier {
       BusinessNumberModels body = BusinessNumberModels.fromJson(response);
       businessNumbers = body.record ?? [];
 
+      final prefs = await SharedPreferences.getInstance();
 
-        final prefs = await SharedPreferences.getInstance();
-
-     var selectedNum= await prefs.getString('phoneNumber', )??"";
-     if(selectedNum.isNotEmpty){
-         for(int i=0;i<businessNumbers.length;i++){
-          activeBusinessNumbers.add(businessNumbers[i].phone??"");
-          if(selectedNum==businessNumbers[i].phone){
+      var selectedNum = await prefs.getString(
+            'phoneNumber',
+          ) ??
+          "";
+      print("selectedNum selected business num>>>>>>>>>>>>>>>>> $selectedNum");
+      if (selectedNum.isNotEmpty) {
+        for (int i = 0; i < businessNumbers.length; i++) {
+          activeBusinessNumbers.add(businessNumbers[i].phone ?? "");
+          if (selectedNum == businessNumbers[i].phone) {
             setSelectedBusinessNum(businessNumbers[i]);
           }
-         }
-     }
+        }
+      } else {
+        setSelectedBusinessNum(businessNumbers.first);
+      }
       print(response);
     } catch (e) {
       print("Error: $e");
     } finally {
+      print("activeBusinessNumbers>>>>>>> $activeBusinessNumbers");
       notify();
     }
   }
 
-
   final int limit = 50;
   int offset = 0;
-  List<LeadRecord>  notificationList= [];
+  List<LeadRecord> notificationList = [];
   bool isLoading = false;
   bool isPaginationLoading = false;
   bool hasMoreData = true;
-   LeadListModel? unReadData ;
-   /// ================= RESET =================
+  LeadListModel? unReadData;
+
+  /// ================= RESET =================
   void resetPagination() {
     notificationList.clear();
     offset = 0;
     hasMoreData = true;
   }
 
-
-    Future<void> fetchUnreadList({bool isLoadMore = false}) async {
+  Future<void> fetchUnreadList({bool isLoadMore = false}) async {
     if (isLoading || isPaginationLoading || !hasMoreData) return;
 
     try {
@@ -106,17 +111,17 @@ class HomeSummaryController extends ChangeNotifier {
 
       final response = await ApiHelper.get(url: apiUrl);
 
-     unReadData = LeadListModel.fromJson(response);
+      unReadData = LeadListModel.fromJson(response);
 
       if (isLoadMore) {
-        notificationList.addAll(unReadData?.records??[]);
+        notificationList.addAll(unReadData?.records ?? []);
       } else {
-        notificationList = unReadData?.records??[];
+        notificationList = unReadData?.records ?? [];
       }
 
       offset += limit;
 
-      hasMoreData = unReadData?.hasMore??false;
+      hasMoreData = unReadData?.hasMore ?? false;
     } catch (e, StackTrace) {
       print("Fetch Error: $e.  ${StackTrace}");
     } finally {
@@ -125,5 +130,4 @@ class HomeSummaryController extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 }

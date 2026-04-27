@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
 import 'package:whatsapp/models/user_model/user_model.dart';
+import 'package:whatsapp/react_side/home/pages/home_page_screen.dart';
+import 'package:whatsapp/react_side/lead/page/lead_list_page.dart';
 import 'package:whatsapp/salesforce/controller/business_number_controller.dart';
 import 'package:whatsapp/utils/app_utils.dart';
 import 'package:whatsapp/views/view/home_view.dart';
@@ -119,10 +121,10 @@ class _FooterNavbarPageState extends State<FooterNavbarPage> {
   Widget build(BuildContext context) {
     // ignore: no_leading_underscores_for_local_identifiers
     final _pageOptions = [
-      HomeView(),
+      HomePageScreen(),
       ProfileView(),
       if (userModelData?.userrole == "ADMIN") const UserListView(),
-      const RecentChatView(),
+      const LeadListPage(),
     ];
     // print("dsfffffffffffffffffffffffffff=>${userModelData?.userrole}");
     return WillPopScope(

@@ -269,9 +269,9 @@ class _EditProfileView extends State<EditProfileView> {
               ),
               child: Column(
                 children: [
-                  detailsHeading(
-                    title: "Profile Details",
-                  ),
+                  // detailsHeading(
+                  //   title: "Profile Details",
+                  // ),
                   Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Column(

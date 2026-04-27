@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:whatsapp/react_side/chat/controller/chat_controller.dart';
+import 'package:whatsapp/react_side/chat/page/whatsapp_chat_page.dart';
 import 'package:whatsapp/react_side/lead/controller/lead_list_controller.dart';
 import 'package:whatsapp/utils/app_color.dart';
 
 class PinnedLeadsWidget extends StatefulWidget {
-  const PinnedLeadsWidget({super.key});
+  bool isFromChat;
+   PinnedLeadsWidget({super.key,this.isFromChat=false});
 
   @override
   State<PinnedLeadsWidget> createState() => _PinnedLeadsWidgetState();
@@ -20,12 +23,11 @@ class _PinnedLeadsWidgetState extends State<PinnedLeadsWidget> {
 
     final ctrl = context.read<LeadListController>();
 
-    // Initial API call
+ 
     if (ctrl.pinnedLeadList.isEmpty) {
       ctrl.fetchPinnedLeads();
     }
 
-    // Pagination listener
     _scrollController.addListener(() {
       final controller = context.read<LeadListController>();
 
@@ -55,7 +57,7 @@ class _PinnedLeadsWidgetState extends State<PinnedLeadsWidget> {
         }
 
         if (leadCtrl.pinnedLeadList.isEmpty) {
-          return const SizedBox(); // or "No pinned leads"
+          return const SizedBox(); 
         }
 
         return Column(
@@ -79,9 +81,9 @@ class _PinnedLeadsWidgetState extends State<PinnedLeadsWidget> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 itemCount: leadCtrl.pinnedLeadList.length +
-                    (leadCtrl.hasMorePinned ? 1 : 0), // loader item
+                    (leadCtrl.hasMorePinned ? 1 : 0), 
                 itemBuilder: (context, index) {
-                  // 🔹 Loader at end
+                  
                   if (index == leadCtrl.pinnedLeadList.length) {
                     return const SizedBox(
                       width: 80,
@@ -93,38 +95,66 @@ class _PinnedLeadsWidgetState extends State<PinnedLeadsWidget> {
 
                   final lead = leadCtrl.pinnedLeadList[index];
 
-                  return Container(
-                    width: 80,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircleAvatar(
-                          radius: 32,
-                          backgroundColor:
-                              AppColor.navBarIconColor.withOpacity(0.9),
-                          child: Text(
-                            getInitial(lead.name ?? ""),
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 20,
-                              color: Colors.white,
+                  return GestureDetector(
+                    onTap:(){
+
+
+                      LeadListController ctrl=Provider.of(context,listen: false);
+                       ChatController chatCtrl=Provider.of(context,listen: false);
+              ctrl.getLeadDetail(lead.id??"");
+              chatCtrl.setSelectedLeadNumber(lead.fullNumber??"");
+              if(widget.isFromChat){
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>WhatsappChatPage(
+                leadId: lead.id??"",
+                name: lead.name??"",
+                number: lead.fullNumber??"",
+                countryCode: lead.id??"",
+              )));
+
+              }else{
+    Navigator.push(context, MaterialPageRoute(builder: (context)=>WhatsappChatPage(
+                leadId: lead.id??"",
+                name: lead.name??"",
+                number: lead.fullNumber??"",
+                countryCode: lead.id??"",
+              )));
+
+              }
+          
+                    },
+                    child: Container(
+                      width: 80,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircleAvatar(
+                            radius: 32,
+                            backgroundColor:
+                                AppColor.navBarIconColor.withOpacity(0.9),
+                            child: Text(
+                              getInitial(lead.name ?? ""),
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          lead.name ?? "",
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 12,
-                            color: Colors.black87,
+                          const SizedBox(height: 6),
+                          Text(
+                            lead.name ?? "",
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                              color: Colors.black87,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },

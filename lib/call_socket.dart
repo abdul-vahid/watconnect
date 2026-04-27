@@ -16,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:whatsapp/main.dart';
+import 'package:whatsapp/react_side/chat/controller/chat_controller.dart';
 import 'package:whatsapp/salesforce/controller/chat_message_controller.dart';
 import 'package:whatsapp/salesforce/controller/drawer_controller.dart';
 import 'package:whatsapp/utils/app_constants.dart';
@@ -237,7 +238,7 @@ class CallSocketService {
 
         await _callSalesforceApi(recFileId);
       } else {
-        final messageVM = Provider.of<MessageViewModel>(
+        final messageVM = Provider.of<ChatController>(
             navigatorKey.currentContext!,
             listen: false);
 

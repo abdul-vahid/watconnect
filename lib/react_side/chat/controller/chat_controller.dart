@@ -146,12 +146,13 @@ notifyListeners();
 
 
   Future<dynamic> sendMessage({
-    String? number,
+    // String? number,
     required Map<String, dynamic> addmsModel,
   }) async {
     try {
-    
-    String url = AppUtils.getUrl('${AppConstants.Messagesendmeta}=$number');
+       final prefs = await SharedPreferences.getInstance();
+    final phoneNumber = prefs.getString('phoneNumber')??"";
+    String url = AppUtils.getUrl('${AppConstants.Messagesendmeta}=$phoneNumber');
 
      var response= await ApiHelper.post(url: url, body: addmsModel);
      return response;
@@ -397,11 +398,37 @@ try{
 
 }catch(e){
 
+}finally{
+  refreshChat();
 }
 
 
  
 }
+
+
+Future<dynamic>  sendTemplateApiCall(tempBody) async {
+
+try{
+   final prefs = await SharedPreferences.getInstance();
+    final phoneNumber = prefs.getString('phoneNumber')??"";
+  var url = ("${AppConstants.baseUrl}${AppConstants.sendTemplate}$phoneNumber");
+
+    var responseBody= await ApiHelper.post(url: url, body: tempBody);
+    return responseBody;
+}catch(e){
+
+}finally{
+  refreshChat();
+}
+
+
+ 
+}
+
+
+
+  
 
 
 }
