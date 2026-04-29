@@ -22,7 +22,7 @@ class LeadListPage extends StatefulWidget {
 class _LeadListPageState extends State<LeadListPage>
     with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
-
+bool _isFilterSheetOpen = false;
   late TabController _tabController;
   late ScrollController _allController;
   late ScrollController _unreadController;
@@ -261,18 +261,24 @@ class _LeadListPageState extends State<LeadListPage>
               IconButton(
                 icon:
                     const Icon(Icons.filter_list, color: Colors.white),
-                onPressed: () async {
-                  await ctrl.fetchAllTags();
+              onPressed: () async {
+  if (_isFilterSheetOpen) return; // 🚫 prevent duplicate
 
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (_) => TagFilterBottomSheet(
-                      selectedTagIds: ctrl.selectedFilterTagIds,
-                      filterMode: ctrl.filterMode,
-                    ),
-                  );
-                },
+  _isFilterSheetOpen = true;
+
+  await ctrl.fetchAllTags();
+
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => TagFilterBottomSheet(
+      selectedTagIds: ctrl.selectedFilterTagIds,
+      filterMode: ctrl.filterMode,
+    ),
+  );
+
+  _isFilterSheetOpen = false; 
+},
               ),
             ],
           ),

@@ -67,6 +67,7 @@ class HomeSummaryController extends ChangeNotifier {
           }
         }
       } else {
+        prefs.setString('phoneNumber', businessNumbers.first.phone??"");
         setSelectedBusinessNum(businessNumbers.first);
       }
       print(response);

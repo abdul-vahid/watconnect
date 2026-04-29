@@ -27,7 +27,7 @@ class _AllLeadsPageState extends State<AllLeadsPage>
   late ScrollController _allController;
   late ScrollController _unreadController;
   late ScrollController _archivedController;
-
+bool _isFilterSheetOpen = false;
   String searchQuery = "";
 
   @override
@@ -265,18 +265,24 @@ class _AllLeadsPageState extends State<AllLeadsPage>
               IconButton(
                 icon:
                     const Icon(Icons.filter_list, color: Colors.white),
-                onPressed: () async {
-                  await ctrl.fetchAllTags();
+         onPressed: () async {
+  if (_isFilterSheetOpen) return; // 🚫 prevent duplicate
 
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (_) => TagFilterBottomSheet(
-                      selectedTagIds: ctrl.selectedFilterTagIds,
-                      filterMode: ctrl.filterMode,
-                    ),
-                  );
-                },
+  _isFilterSheetOpen = true;
+
+  await ctrl.fetchAllTags();
+
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => TagFilterBottomSheet(
+      selectedTagIds: ctrl.selectedFilterTagIds,
+      filterMode: ctrl.filterMode,
+    ),
+  );
+
+  _isFilterSheetOpen = false; // ✅ reset after close
+},
               ),
             ],
           ),
