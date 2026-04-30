@@ -6,11 +6,11 @@ import 'package:focus_detector/focus_detector.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/react_side/chat/controller/chat_controller.dart';
-import 'package:whatsapp/react_side/chat/page/widget/chat_bubble.dart'
-    show ChatBubble;
+import 'package:whatsapp/react_side/chat/page/widget/chat_bubble.dart';
 import 'package:whatsapp/react_side/chat/page/widget/chat_input_bar.dart';
 import 'package:whatsapp/react_side/chat/page/widget/contact_header.dart';
 import 'package:whatsapp/react_side/chat/page/widget/template_bottom_sheet.dart';
+import 'package:whatsapp/react_side/lead/controller/lead_list_controller.dart';
 import 'package:whatsapp/react_side/lead/widget/pinned_lead_item.dart';
 import 'package:whatsapp/react_side/template/controller/whatsapp_template_controller.dart';
 import 'package:whatsapp/utils/app_color.dart';
@@ -40,25 +40,31 @@ class _WhatsappChatPageState extends State<WhatsappChatPage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _messageController = TextEditingController();
 
+  final socketManager = SocketManager();
+
   String tenatCode = "";
   bool hasWallet = false;
 
   @override
   void initState() {
     super.initState();
-
+print("widget.name>>>>>${widget.name}");
     final ctrl = context.read<ChatController>();
+        final leadCtrl = context.read<LeadListController>();
     final templateCtrl = context.read<WhatsappTemplateController>();
-
+    socketManager.connectSocket(context, widget.number);
     _init();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      ctrl.setSelectedLeadNumber(widget.number);
 
+             
       await ctrl.fetchInitialChat();
       templateCtrl.getApprovedTemplates();
 
-      _scrollAfterBuild(animated: false);
+      // ✅ scroll after first load
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
     });
 
     _scrollController.addListener(_onScroll);
@@ -67,57 +73,71 @@ class _WhatsappChatPageState extends State<WhatsappChatPage> {
   @override
   void dispose() {
     socketManager.dispose();
-
+    _scrollController.dispose();
+    _messageController.dispose();
     super.dispose();
   }
 
-  final socketManager = SocketManager();
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
     hasWallet = prefs.getBool(SharedPrefsConstants.hasWalletKey) ?? false;
-    tenatCode = prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
+    tenatCode =
+        prefs.getString(SharedPrefsConstants.usertenantcodeKey) ?? "";
     setState(() {});
   }
 
-  void _scrollToBottom({bool animated = false}) {
-    if (!_scrollController.hasClients) return;
+  // ✅ simple and stable scroll
+void _scrollToBottom({bool animated = false, int retry = 0}) {
+  if (!_scrollController.hasClients) return;
 
-    final position = _scrollController.position.maxScrollExtent;
+  final bottom = _scrollController.position.maxScrollExtent;
 
-    if (animated) {
-      _scrollController.animateTo(
-        position,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    } else {
-      _scrollController.jumpTo(position);
-    }
+  if (animated) {
+    _scrollController.animateTo(
+      bottom,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  } else {
+    _scrollController.jumpTo(bottom);
   }
 
-  void _scrollAfterBuild({bool animated = true}) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _scrollToBottom(animated: animated);
-      });
+  // ✅ CRITICAL: Retry if not fully reached
+  if (retry < 5) {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (!_scrollController.hasClients) return;
+
+      final newBottom = _scrollController.position.maxScrollExtent;
+
+      if ((_scrollController.offset - newBottom).abs() > 20) {
+        _scrollToBottom(animated: animated, retry: retry + 1);
+      }
     });
   }
+}
+  bool get _isNearBottom {
+    if (!_scrollController.hasClients) return true;
+    return _scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200;
+  }
 
+  // ✅ pagination
   void _onScroll() {
     final ctrl = context.read<ChatController>();
 
-    if (!_scrollController.hasClients || ctrl.isLoading || !ctrl.hasMore)
-      return;
+    if (!_scrollController.hasClients ||
+        ctrl.isLoading ||
+        !ctrl.hasMore) return;
 
-    if (_scrollController.position.pixels <= 200) {
-      final beforeOffset = _scrollController.offset;
+    if (_scrollController.position.pixels <= 100) {
+      final oldMax = _scrollController.position.maxScrollExtent;
 
       ctrl.fetchChatHistory().then((_) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollController.jumpTo(
-            _scrollController.offset +
-                (_scrollController.position.maxScrollExtent - beforeOffset),
-          );
+          final newMax = _scrollController.position.maxScrollExtent;
+          final diff = newMax - oldMax;
+
+          _scrollController.jumpTo(_scrollController.offset + diff);
         });
       });
     }
@@ -128,13 +148,7 @@ class _WhatsappChatPageState extends State<WhatsappChatPage> {
     return SafeArea(
       child: FocusDetector(
         onFocusGained: () {
-          final ctrl = context.read<ChatController>();
-          ctrl.fetchChatHistory();
-
-          print(
-              "itssss gaining focusssss>>>>>>>>>>>>>..>.----------------------------------");
-
-          socketManager.connectSocket(context, widget.number);
+          // socketManager.connectSocket(context, widget.number);
         },
         onFocusLost: () => socketManager.disconnectSocket(),
         child: Scaffold(
@@ -143,111 +157,140 @@ class _WhatsappChatPageState extends State<WhatsappChatPage> {
             iconTheme: const IconThemeData(color: Colors.white),
             title: const Text("Chat", style: TextStyle(color: Colors.white)),
           ),
-          body: Column(
-            children: [
-              PinnedLeadsWidget(isFromChat: true),
-              ChatContactHeader(
-                name: widget.name,
-                number: widget.number,
-              ),
-              Expanded(
-                child: Consumer<ChatController>(
-                  builder: (_, ctrl, __) {
-                    _scrollAfterBuild();
-
-                    return Stack(
-                      children: [
-                        ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(10),
-                          itemCount: ctrl.chatHistoryList.length,
-                          itemBuilder: (context, index) {
-                            final previousMessage = index > 0
-                                ? ctrl.chatHistoryList[index - 1]
-                                : null;
-
-                            final chat = ctrl.chatHistoryList[index];
-
-                            return ChatBubble(
-                              key: ValueKey(chat.id),
-                              message: chat,
-                              isMe: chat.status == "Outgoing",
-                              tenetCode: tenatCode,
-                              previousMessage: previousMessage,
-                            );
-                          },
-                        ),
-                        if (ctrl.isLoading)
-                          const Positioned(
-                            top: 10,
-                            left: 0,
-                            right: 0,
-                            child: Center(
-                              child: CircularProgressIndicator(),
+          body: Consumer2<ChatController,LeadListController>(
+                      builder: (_, ctrl,leadCtrl, __) {
+              return Column(
+                children: [
+                  PinnedLeadsWidget(isFromChat: true),
+              
+                  ChatContactHeader(
+                    name: widget.name.isNotEmpty? widget.name:leadCtrl.leadDetail?.contactname??"",
+                    number: widget.number,
+                  ),
+              
+                  Expanded(
+                    child: 
+                         Stack(
+                          children: [
+                            ListView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.all(10),
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: ctrl.chatHistoryList.length,
+                              itemBuilder: (context, index) {
+                                final chat = ctrl.chatHistoryList[index];
+              
+                                final previousMessage =
+                                    index > 0
+                                        ? ctrl.chatHistoryList[index - 1]
+                                        : null;
+              
+                                return ChatBubble(
+                                  key: ValueKey(chat.id),
+                                  message: chat,
+                                  isMe: chat.status == "Outgoing",
+                                  tenetCode: tenatCode,
+                                  previousMessage: previousMessage,
+                                );
+                              },
                             ),
-                          ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-              ChatInputBar(
-                controller: _messageController,
-                onSend: _handleSendMessage,
-                onAttach: _showPicker,
-                onCodeClick: () {
-                  TemplateBottomSheet.show(
-                    context: context,
-                    leadName: widget.name,
-                    leadNumber: widget.number,
-                    leadId: widget.leadId,
-                  ).then(
-                    (value) {
-                      _scrollAfterBuild();
+              
+                            if (ctrl.isLoading)
+                              const Positioned(
+                                top: 10,
+                                left: 0,
+                                right: 0,
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                          ],
+                        )
+                      
+                  ),
+              
+                  ChatInputBar(
+                    controller: _messageController,
+                    onSend: _handleSendMessage,
+                    onAttach: _showPicker,
+                    onCodeClick: () {
+                      TemplateBottomSheet.show(
+                        context: context,
+                        leadName: widget.name,
+                        leadNumber: widget.number,
+                        leadId: widget.leadId,
+                      ).then((_) async {
+                        final ctrl = context.read<ChatController>();
+              
+                        await ctrl.fetchInitialChat();
+              
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _scrollToBottom(animated: true);
+                        });
+                      });
                     },
-                  );
-                },
-              ),
-            ],
+                  ),
+                ],
+              );
+            }
           ),
         ),
       ),
     );
   }
 
-  Future<void> _handleSendMessage() async {
-    final ctrl = context.read<ChatController>();
+  // ✅ SINGLE SOURCE OF TRUTH
+Future<void> _handleSendMessage() async {
+  final ctrl = context.read<ChatController>();
 
-    if (ctrl.isSending) return;
+  if (ctrl.isSending) return;
 
-    final text = _messageController.text.trim();
-    final file = ctrl.fileToSend;
+  final text = _messageController.text.trim();
+  final file = ctrl.fileToSend;
 
-    if (text.isEmpty && file == null) return;
+  if (text.isEmpty && file == null) return;
 
-    ctrl.setSending(true);
+  ctrl.setSending(true);
 
-    try {
-      if (file != null) {
-        await sendFile("document", text);
-        ctrl.clearFile();
-      } else {
-        await messagesendd(text);
-      }
+  try {
+    if (file != null) {
+      final fileType = _getFileType(file.path);
 
-      _messageController.clear();
-
-      await ctrl.refetchSamePage();
-
-      _scrollAfterBuild();
-    } finally {
-      ctrl.setSending(false);
+      await sendFile(fileType, text);
+      ctrl.clearFile();
+    } else {
+      await messagesendd(text);
     }
+
+    _messageController.clear();
+
+    await ctrl.fetchInitialChat();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom(animated: true);
+    });
+
+  } finally {
+    ctrl.setSending(false);
   }
+}
+
+String _getFileType(String path) {
+  final extension = path.split('.').last.toLowerCase();
+
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+  if (imageExtensions.contains(extension)) {
+    return "image";
+  }
+
+  return "document";
+}
 
   void _showPicker() async {
     File? pickedFile = await ImagePickerBottomSheet.show(context);
     if (pickedFile != null) {
+      context.read<ChatController>().setFileToSend(null);
       context.read<ChatController>().setFileToSend(pickedFile);
     }
   }
@@ -260,7 +303,9 @@ class _WhatsappChatPageState extends State<WhatsappChatPage> {
     final file = messageVM.fileToSend;
     if (file == null) return;
 
-    final uploadResponse = await messageVM.uploadFile(file, phoneNumber);
+    final uploadResponse =
+        await messageVM.uploadFile(file, phoneNumber);
+
     final documentId = jsonDecode(uploadResponse)['id'];
 
     final payload = {
@@ -272,8 +317,6 @@ class _WhatsappChatPageState extends State<WhatsappChatPage> {
     };
 
     await messageVM.uploadimagewithdoucmentid(payload, phoneNumber);
-
-    _scrollAfterBuild();
   }
 
   Future<void> messagesendd(String text) async {
@@ -309,7 +352,5 @@ class _WhatsappChatPageState extends State<WhatsappChatPage> {
         "interactive_id": null
       },
     );
-
-    _scrollAfterBuild();
   }
 }

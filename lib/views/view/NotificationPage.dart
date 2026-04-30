@@ -3,8 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:whatsapp/react_side/chat/controller/chat_controller.dart';
 import 'package:whatsapp/react_side/chat/page/whatsapp_chat_page.dart';
 import 'package:whatsapp/react_side/home/controller/home_summary_controller.dart';
+import 'package:whatsapp/react_side/lead/controller/lead_list_controller.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/views/view/chat/whatsapp_chat_screen.dart';
@@ -165,7 +167,12 @@ class _NotificationPageState extends State<NotificationPage> {
         ),
       ),
       child: ListTile(
-        onTap: () {
+        onTap: () async {
+
+                    final ctrl = context.read<ChatController>();
+        final leadCtrl = context.read<LeadListController>();
+               await ctrl.setSelectedLeadNumber( record.whatsappNumber );
+   await leadCtrl.getLeadDetail(record.parentId ?? "");
           Navigator.push(
             context,
             MaterialPageRoute(

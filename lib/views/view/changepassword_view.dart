@@ -31,6 +31,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
+@override
+void dispose() {
+  _newPasswordController.dispose();
+  _confirmPasswordController.dispose();
+  super.dispose();
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,10 +118,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           EasyLoading.showToast(
                               "Password and confirm password must match.",
                               toastPosition: EasyLoadingToastPosition.bottom);
-                        } else if (_newPasswordController.text.trim().length !=
+                        } else if (_newPasswordController.text.trim().length <
                             6) {
                           EasyLoading.showToast(
-                              "Your password should have 6 characters.",
+                              "Your password should have atleast 6 characters.",
                               toastPosition: EasyLoadingToastPosition.bottom);
                         } else {
                           var id = widget.userId;

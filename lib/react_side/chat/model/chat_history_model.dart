@@ -331,7 +331,7 @@ class ChatButton {
   final String? type;
   final String? url;
   final String? phoneNumber;
-final String?  example;
+final List<String>?  example;
   ChatButton({
     this.text,
     this.type,
@@ -346,16 +346,18 @@ final String?  example;
       type: json['type'],
       url: json['url'],
       phoneNumber: json['phone_number'],
-       example: json['example'],
+      example: json['example'] != null
+    ? List<String>.from(json['example'])
+    : [],
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'text': text,
-      'type': type,
-      'url': url,
-      'phone_number': phoneNumber,
-    };
-  }
+  // Map<String, dynamic> toJson() {
+  //   return {
+  //     'text': text,
+  //     'type': type,
+  //     'url': url,
+  //     'phone_number': phoneNumber,
+  //   };
+  // }
 }

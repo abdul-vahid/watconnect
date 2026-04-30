@@ -112,6 +112,7 @@ class _PinnedLeadsWidgetState extends State<PinnedLeadsWidget> {
               )));
 
               }else{
+                
     Navigator.push(context, MaterialPageRoute(builder: (context)=>WhatsappChatPage(
                 leadId: lead.id??"",
                 name: lead.name??"",

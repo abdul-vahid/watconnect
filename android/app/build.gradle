@@ -35,8 +35,8 @@ android {
         // versionCode flutter.versionCode
         // versionName flutter.versionName
 
-        versionCode = 41
-        versionName = '1.0.41'
+        versionCode = 42
+        versionName = '1.0.42'
 
         manifestPlaceholders += [
                 'appAuthRedirectScheme': 'com.wat.connect'

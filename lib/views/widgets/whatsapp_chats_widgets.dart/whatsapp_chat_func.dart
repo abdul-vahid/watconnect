@@ -5,8 +5,8 @@ import 'dart:convert';
 import 'dart:developer';
 
 String replacePlaceholders(String messageBody, String? bodyTextParamsString) {
-  print("Incoming messageBody: $messageBody");
-  print("Incoming bodyTextParamsString: $bodyTextParamsString");
+  // print("Incoming messageBody: $messageBody");
+  // print("Incoming bodyTextParamsString: $bodyTextParamsString");
 
   if (bodyTextParamsString == null || bodyTextParamsString.isEmpty) {
     print(
@@ -15,14 +15,12 @@ String replacePlaceholders(String messageBody, String? bodyTextParamsString) {
   }
 
   try {
-    // Try decoding as JSON directly
     Map<String, dynamic> params = jsonDecode(bodyTextParamsString);
 
     for (var entry in params.entries) {
       final key = entry.key;
       final value = entry.value;
 
-      // Skip keys that are not string-number based placeholders
       if (!RegExp(r'^\d+$').hasMatch(key)) continue;
 
       final placeholder = '{{$key}}';
@@ -31,7 +29,6 @@ String replacePlaceholders(String messageBody, String? bodyTextParamsString) {
     }
   } catch (e) {
     log("Error decoding bodyTextParamsString: $e          $messageBody   $bodyTextParamsString  ");
-    // Optional: Show a fallback message or keep the original
     return messageBody;
   }
 

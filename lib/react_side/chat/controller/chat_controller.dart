@@ -74,8 +74,8 @@ notifyListeners();
       } else {
         offset += limit;
       }
-    } catch (e) {
-      print("Error: $e");
+    } catch (e,StackTrace) {
+      print("Error in chat fetch:  $StackTrace  $e");
     } finally {
       isLoading = false;
       notifyListeners();
@@ -117,8 +117,8 @@ notifyListeners();
       }
 
       hasMore = newData.length == limit;
-    } catch (e) {
-      print("Refetch Error: $e");
+    } catch (e,StackTrace) {
+      print("Refetch Error: $e.  $StackTrace");
     } finally {
       isLoading = false;
       notifyListeners();
@@ -415,6 +415,7 @@ try{
   var url = ("${AppConstants.baseUrl}${AppConstants.sendTemplate}$phoneNumber");
 
     var responseBody= await ApiHelper.post(url: url, body: tempBody);
+    print("sendTemplateApiCall responseBody. >>>>. $responseBody");
     return responseBody;
 }catch(e){
 
