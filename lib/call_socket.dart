@@ -396,7 +396,7 @@ class CallSocketService {
           'business_numbers': leadCtrl.allBusinessNumbers,
         });
 
-        log("before we connect socket userdata::::   $userData   devi id :::  $devId busNum:::  $busNum ");
+        // log("before we connect socket userdata::::   $userData   devi id :::  $devId busNum:::  $busNum ");
 
         _socket?.emit("setup", userData);
       })

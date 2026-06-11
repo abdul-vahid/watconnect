@@ -171,7 +171,7 @@ class _NotificationPageState extends State<NotificationPage> {
 
                     final ctrl = context.read<ChatController>();
         final leadCtrl = context.read<LeadListController>();
-               await ctrl.setSelectedLeadNumber( record.whatsappNumber );
+               await ctrl.setSelectedLeadNumber( record.fullNumber );
    await leadCtrl.getLeadDetail(record.parentId ?? "");
           Navigator.push(
             context,
@@ -180,13 +180,13 @@ class _NotificationPageState extends State<NotificationPage> {
               WhatsappChatPage(
 
                 name: record.contactName ?? "",
-                number: record.whatsappNumber ?? "",
+                number: record.fullNumber ?? "",
                 leadId: record.parentId ?? "",
                 // countryCode: "+91",
               ),
             ),
           ).then((_) {
-            context.read<HomeSummaryController>().fetchUnreadList();
+            _init();
           });
         },
 
@@ -202,8 +202,8 @@ class _NotificationPageState extends State<NotificationPage> {
 
         subtitle: Text(
           shouldHideLeadNumber
-              ? "*******${record.whatsappNumber?.substring(record.whatsappNumber!.length - 5)}"
-              : record.whatsappNumber ?? "",
+              ? "*******${record.fullNumber?.substring(record.fullNumber!.length - 5)}"
+              : record.fullNumber ?? "",
         ),
 
         trailing: Container(

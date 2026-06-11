@@ -51,7 +51,6 @@ class _DashBoardState extends State<DashBoard>
       duration: const Duration(milliseconds: 1200),
     )..forward();
 
-    NotificationUtil(context).initialize();
 
     _init();
   }

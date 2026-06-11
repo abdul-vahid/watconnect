@@ -27,11 +27,11 @@ class NotificationUtil {
     if (isInitialized) return;
 
     // LocalNotificationService.initialize();
-    registerToken();
+   
 
     _firebaseMessaging = FirebaseMessaging.instance;
     _firebaseMessaging?.requestPermission();
-
+ registerToken();
     // _setupMessageHandlers();
     // isInitialized = true;
   }

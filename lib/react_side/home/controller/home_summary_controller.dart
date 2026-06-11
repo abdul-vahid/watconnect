@@ -67,7 +67,7 @@ class HomeSummaryController extends ChangeNotifier {
           }
         }
       } else {
-        prefs.setString('phoneNumber', businessNumbers.first.phone??"");
+        prefs.setString('phoneNumber', businessNumbers.first.phone ?? "");
         setSelectedBusinessNum(businessNumbers.first);
       }
       print(response);
@@ -104,14 +104,22 @@ class HomeSummaryController extends ChangeNotifier {
         isLoading = true;
       }
 
-      notifyListeners();
+      notify();
 
       var url = AppUtils.getUrl(AppConstants.leadList);
 
-      String apiUrl = "${url}unread&limit=$limit&offset=$offset";
+      // String apiUrl = "${url}unread&limit=$limit&offset=$offset";
 
-      final response = await ApiHelper.get(url: apiUrl);
-
+      final prefs = await SharedPreferences.getInstance();
+      final phoneNumber = prefs.getString('phoneNumber') ?? "";
+      final response = await ApiHelper.post(body: {
+        "textName": "",
+        "recordType": "unread",
+        "limit": limit,
+        "offset": offset,
+        "tagFilterLogic": "OR",
+        "business_number": phoneNumber
+      }, url: url);
       unReadData = LeadListModel.fromJson(response);
 
       if (isLoadMore) {

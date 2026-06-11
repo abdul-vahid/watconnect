@@ -15,6 +15,7 @@ import 'package:whatsapp/react_side/home/widgets/top_section.dart';
 import 'package:whatsapp/utils/app_color.dart';
 import 'package:whatsapp/utils/app_constants.dart';
 import 'package:whatsapp/utils/app_utils.dart';
+import 'package:whatsapp/utils/notification_utils.dart';
 import 'package:whatsapp/view_models/get_user_vm.dart';
 import 'package:whatsapp/view_models/lead_controller.dart';
 import 'package:whatsapp/views/view/NotificationPage.dart';
@@ -34,6 +35,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
   void initState() {
     getChartData();
     
+    NotificationUtil(context).initialize();
     super.initState();
   }
 

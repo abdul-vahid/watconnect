@@ -132,8 +132,11 @@ notifyListeners();
         "whatsapp_number": number,
       };
 
+         final prefs = await SharedPreferences.getInstance();
+    final phoneNumber = prefs.getString('phoneNumber')??"";
+
       String url =
-          AppUtils.getUrl("${AppConstants.marksreadmsg}$number");
+          AppUtils.getUrl("${AppConstants.marksreadmsg}$phoneNumber");
 
       await ApiHelper.post(url: url, body: body);
     } catch (e) {

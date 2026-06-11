@@ -60,6 +60,10 @@ print("widget.name>>>>>${widget.name}");
              
       await ctrl.fetchInitialChat();
       templateCtrl.getApprovedTemplates();
+                       ChatController chatCtrl=Provider.of(context,listen: false);
+
+                      chatCtrl.markChatAsRead(widget.number);
+
 
       // ✅ scroll after first load
       WidgetsBinding.instance.addPostFrameCallback((_) {

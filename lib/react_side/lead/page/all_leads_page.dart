@@ -27,7 +27,7 @@ class _AllLeadsPageState extends State<AllLeadsPage>
   late ScrollController _allController;
   late ScrollController _unreadController;
   late ScrollController _archivedController;
-bool _isFilterSheetOpen = false;
+  bool _isFilterSheetOpen = false;
   String searchQuery = "";
 
   @override
@@ -113,7 +113,6 @@ bool _isFilterSheetOpen = false;
     super.dispose();
   }
 
-  
   List<LeadRecord> _getFilteredLeads(List<LeadRecord> leads) {
     if (searchQuery.isEmpty) return leads;
 
@@ -126,11 +125,8 @@ bool _isFilterSheetOpen = false;
     }).toList();
   }
 
-  
   List<LeadRecord> _getFilteredPinnedLeads(List<LeadRecord> leads) {
-    return _getFilteredLeads(leads)
-        .where((e) => e.pinned == true)
-        .toList();
+    return _getFilteredLeads(leads).where((e) => e.pinned == true).toList();
   }
 
   Widget _buildEmptyState(String message, IconData icon) {
@@ -164,7 +160,6 @@ bool _isFilterSheetOpen = false;
       return const Center(child: CircularProgressIndicator());
     }
 
-  
     if (filteredLeads.isEmpty) {
       final isFilterApplied = ctrl.selectedFilterTagIds.isNotEmpty;
 
@@ -208,20 +203,33 @@ bool _isFilterSheetOpen = false;
         itemCount: filteredLeads.length + 1,
         itemBuilder: (context, index) {
           if (index < filteredLeads.length) {
-            return LeadItem(data: filteredLeads[index],onTap: (){
-              ChatController chatCtrl=Provider.of(context,listen: false);
-              if(int.parse(filteredLeads[index].unreadCount??"0")>0){
-                chatCtrl.markChatAsRead(filteredLeads[index].fullNumber??"");
-              }
-              ctrl.getLeadDetail(filteredLeads[index].leadId??"");
-              chatCtrl.setSelectedLeadNumber(filteredLeads[index].fullNumber??"");
-              Navigator.push(context, MaterialPageRoute(builder: (context)=>WhatsappChatPage(
-                leadId: filteredLeads[index].leadId??"",
-                name: filteredLeads[index].contactName??"",
-                number: filteredLeads[index].fullNumber??"",
-                countryCode: filteredLeads[index].countryCode??"",
-              )));
-            },);
+            return LeadItem(
+              data: filteredLeads[index],
+              onTap: () {
+                ChatController chatCtrl = Provider.of(context, listen: false);
+                // if(int.parse(filteredLeads[index].unreadCount??"0")>0){
+                chatCtrl.markChatAsRead(filteredLeads[index].fullNumber ?? "");
+                // }
+                ctrl.getLeadDetail(filteredLeads[index].leadId ?? "");
+                chatCtrl.setSelectedLeadNumber(
+                    filteredLeads[index].fullNumber ?? "");
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => WhatsappChatPage(
+                              leadId: filteredLeads[index].leadId ?? "",
+                              name: filteredLeads[index].contactName ?? "",
+                              number: filteredLeads[index].fullNumber ?? "",
+                              countryCode:
+                                  filteredLeads[index].countryCode ?? "",
+                            ))).then((_) {
+                  print("back tot the lead page leades >>>. ${context.mounted}");
+                  if (context.mounted) {
+                    ctrl.refresh();
+                  }
+                });
+              },
+            );
           }
 
           if (ctrl.isPaginationLoading) {
@@ -240,59 +248,52 @@ bool _isFilterSheetOpen = false;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         FocusScope.of(context).unfocus();
       },
       child: Consumer<LeadListController>(
         builder: (context, ctrl, child) {
           final filteredPinnedLeads =
               _getFilteredPinnedLeads(ctrl.filteredLeadList);
-      
+
           return Scaffold(
             backgroundColor: Colors.white,
             appBar: AppBar(
               backgroundColor: AppColor.navBarIconColor,
               iconTheme: IconThemeData(color: Colors.white),
               centerTitle: true,
-              title: const Text("Leads",
-                  style: TextStyle(color: Colors.white)),
+              title: const Text("Leads", style: TextStyle(color: Colors.white)),
               actions: [
-               
                 if (ctrl.selectedFilterTagIds.isNotEmpty)
                   IconButton(
-                    icon: const Icon(Icons.filter_alt_off,
-                        color: Colors.white),
+                    icon: const Icon(Icons.filter_alt_off, color: Colors.white),
                     onPressed: () => ctrl.clearFilter(),
                   ),
-      
-               
                 IconButton(
-                  icon:
-                      const Icon(Icons.filter_list, color: Colors.white),
-           onPressed: () async {
-        if (_isFilterSheetOpen) return; // 🚫 prevent duplicate
-      
-        _isFilterSheetOpen = true;
-      
-        await ctrl.fetchAllTags();
-      
-        await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => TagFilterBottomSheet(
-        selectedTagIds: ctrl.selectedFilterTagIds,
-        filterMode: ctrl.filterMode,
-      ),
-        );
-      
-        _isFilterSheetOpen = false; // ✅ reset after close
-      },
+                  icon: const Icon(Icons.filter_list, color: Colors.white),
+                  onPressed: () async {
+                    if (_isFilterSheetOpen) return;
+
+                    _isFilterSheetOpen = true;
+
+                    await ctrl.fetchAllTags();
+
+                    await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => TagFilterBottomSheet(
+                        selectedTagIds: ctrl.selectedFilterTagIds,
+                        filterMode: ctrl.filterMode,
+                      ),
+                    );
+
+                    _isFilterSheetOpen = false;
+                  },
                 ),
               ],
             ),
             body: Column(
               children: [
-              
                 Padding(
                   padding: const EdgeInsets.all(10),
                   child: TextField(
@@ -319,153 +320,142 @@ bool _isFilterSheetOpen = false;
                     ),
                   ),
                 ),
-      
-               if (ctrl.selectedFilterTagIds.isNotEmpty)
-        Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: AppColor.navBarIconColor.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-         
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "Active Filters",
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColor.navBarIconColor,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => ctrl.clearFilter(),
-                child: const Text(
-                  "Clear all",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColor.navBarIconColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-      
-          const SizedBox(height: 8),
-      
-       
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: ctrl.selectedFilterTagIds.map((id) {
-              final tag = ctrl.allTagList.firstWhere(
-                (e) => e.id == id,
-                orElse: () => TagRecord(
-                  id: id,
-                  name: id,
-                  status: false,
-                  createddate: '',
-                  lastmodifieddate: '',
-                  createdbyid: '',
-                  lastmodifiedbyid: '',
-                  firstMessage: '',
-                  autoTagRules: [],
-                ),
-              );
-      
-              return Container(
-                decoration: BoxDecoration(
-                  color: AppColor.navBarIconColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColor.navBarIconColor.withOpacity(0.3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-              
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      child: Text(
-                        tag.name,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: AppColor.navBarIconColor,
-                        ),
-                      ),
+                if (ctrl.selectedFilterTagIds.isNotEmpty)
+                  Container(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColor.navBarIconColor.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-      
-                
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal:4.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          final updated =
-                              List<String>.from(ctrl.selectedFilterTagIds)
-                                ..remove(id);
-                      
-                          ctrl.updateFilter(
-                            tagIds: updated,
-                            mode: ctrl.filterMode,
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: AppColor.navBarIconColor,
-                            borderRadius: BorderRadius.circular(8)
-                         
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            size: 14,
-                            color: Colors.white,
-                          ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Active Filters",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColor.navBarIconColor,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => ctrl.clearFilter(),
+                              child: const Text(
+                                "Clear all",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColor.navBarIconColor,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: ctrl.selectedFilterTagIds.map((id) {
+                            final tag = ctrl.allTagList.firstWhere(
+                              (e) => e.id == id,
+                              orElse: () => TagRecord(
+                                id: id,
+                                name: id,
+                                status: false,
+                                createddate: '',
+                                lastmodifieddate: '',
+                                createdbyid: '',
+                                lastmodifiedbyid: '',
+                                firstMessage: '',
+                                autoTagRules: [],
+                              ),
+                            );
+
+                            return Container(
+                              decoration: BoxDecoration(
+                                color:
+                                    AppColor.navBarIconColor.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color:
+                                      AppColor.navBarIconColor.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 6),
+                                    child: Text(
+                                      tag.name,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColor.navBarIconColor,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4.0),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        final updated = List<String>.from(
+                                            ctrl.selectedFilterTagIds)
+                                          ..remove(id);
+
+                                        ctrl.updateFilter(
+                                          tagIds: updated,
+                                          mode: ctrl.filterMode,
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                            color: AppColor.navBarIconColor,
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
+                                        child: const Icon(
+                                          Icons.close,
+                                          size: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-        ),
-      
-                if (ctrl.pinnedLeadList.isNotEmpty)
-                  PinnedLeadsWidget(
-                     
-                      ),
-      
+                  ),
+                if (ctrl.pinnedLeadList.isNotEmpty) PinnedLeadsWidget(),
                 const SizedBox(height: 10),
-      
-               
                 Container(
                   color: AppColor.navBarIconColor,
                   child: TabBar(
                     controller: _tabController,
                     tabs: const [
-                      Tab(text: "All",),
+                      Tab(
+                        text: "All",
+                      ),
                       Tab(text: "Unread"),
                       Tab(text: "Archived"),
                     ],
-                    unselectedLabelStyle: const TextStyle(color: Colors.white30),
+                    unselectedLabelStyle:
+                        const TextStyle(color: Colors.white30),
                     labelStyle: const TextStyle(color: Colors.white),
                     indicatorColor: Colors.white,
                   ),
                 ),
-      
-           
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
@@ -483,8 +473,4 @@ bool _isFilterSheetOpen = false;
       ),
     );
   }
-
-
-
-  
 }

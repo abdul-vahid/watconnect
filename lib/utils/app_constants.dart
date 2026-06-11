@@ -203,7 +203,7 @@ abstract class AppConstants {
 
 
 
-      static const String leadList='/api/whatsapp/chat/conversations?textName=&recordType=';
+      static const String leadList='/api/whatsapp/chat/conversations';
 
   static const String imagesendhistoy = "/api/whatsapp/files?id";
   static const String notificationfcm = "/api/user_device/submitToken";

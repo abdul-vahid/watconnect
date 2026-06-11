@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/models/tags_list_model.dart'
     show TagRecord, AllTagsModel;
 import 'package:whatsapp/network/api_call.dart';
@@ -28,7 +29,6 @@ class LeadListController extends ChangeNotifier {
 
   LeadTabType currentTab = LeadTabType.recentlyMessage;
 
-
   String _getTypeParam() {
     switch (currentTab) {
       case LeadTabType.recentlyMessage:
@@ -42,14 +42,12 @@ class LeadListController extends ChangeNotifier {
     }
   }
 
-
   void resetPagination() {
     leadList.clear();
     offset = 0;
     hasMoreData = true;
   }
 
-  
   Future<void> changeTab(LeadTabType tab) async {
     if (currentTab == tab) return;
 
@@ -69,6 +67,11 @@ class LeadListController extends ChangeNotifier {
     notifyListeners();
   }
 
+    Future<void> notify() async {
+    await Future.delayed(Duration.zero);
+    notifyListeners();
+  }
+
   Future<void> fetchPinnedLeads(
       {bool isLoadMore = false, showLoader = true}) async {
     if (isPinnedLoading) return;
@@ -84,7 +87,7 @@ class LeadListController extends ChangeNotifier {
         pinnedLeadList.clear();
       }
 
-      notifyListeners();
+      notify();
 
       var url = AppUtils.getUrl(AppConstants.pinnedLeads);
       var apiUrl = "$url?page=$pageNo&pageSize=25";
@@ -144,12 +147,19 @@ class LeadListController extends ChangeNotifier {
 
       var url = AppUtils.getUrl(AppConstants.leadList);
 
-      String apiUrl = "${url}${_getTypeParam()}&limit=$limit&offset=$offset";
-
-      final response = await ApiHelper.get(url: apiUrl);
+      final prefs = await SharedPreferences.getInstance();
+      final phoneNumber = prefs.getString('phoneNumber') ?? "";
+      final response = await ApiHelper.post(body: {
+        "textName": "",
+        "recordType": _getTypeParam(),
+        "limit": limit,
+        "offset": offset,
+        "tagFilterLogic": "OR",
+        "business_number": phoneNumber
+      }, url: url);
 
       LeadListModel data = LeadListModel.fromJson(response);
-
+ print("");
       if (isLoadMore) {
         leadList.addAll(data.records);
       } else {
@@ -182,9 +192,9 @@ class LeadListController extends ChangeNotifier {
       final response = await ApiHelper.post(url: url, body: {});
       EasyLoading.showToast("Un Pinned Successfully");
     } catch (e) {
-         EasyLoading.dismiss();
+      EasyLoading.dismiss();
     } finally {
-         EasyLoading.dismiss();
+      EasyLoading.dismiss();
       resetPinnedLead();
       fetchPinnedLeads(showLoader: false);
       refetchSamePage();
@@ -246,11 +256,20 @@ class LeadListController extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
+      // String apiUrl = "${url}${_getTypeParam()}&limit=${offset}&offset=0";
+
       var url = AppUtils.getUrl(AppConstants.leadList);
 
-      String apiUrl = "${url}${_getTypeParam()}&limit=${offset}&offset=0";
-
-      final response = await ApiHelper.get(url: apiUrl);
+      final prefs = await SharedPreferences.getInstance();
+      final phoneNumber = prefs.getString('phoneNumber') ?? "";
+      final response = await ApiHelper.post(body: {
+        "textName": "",
+        "recordType": _getTypeParam(),
+        "limit": limit,
+        "offset": 0,
+        "tagFilterLogic": "OR",
+        "business_number": phoneNumber
+      }, url: url);
 
       LeadListModel data = LeadListModel.fromJson(response);
 
@@ -321,28 +340,23 @@ class LeadListController extends ChangeNotifier {
     notifyListeners();
   }
 
+  LeadDetail? leadDetail;
 
-
-
-LeadDetail? leadDetail;
-
-
-  getLeadDetail(String leadId,) async {
+  getLeadDetail(
+    String leadId,
+  ) async {
     try {
-    
-
       String url = AppUtils.getUrl(AppConstants.leadAPIPath);
       String apiUrl = "$url/$leadId";
 
-      final response = await ApiHelper.get(url: apiUrl,);
-          LeadDetailModel data = LeadDetailModel.fromJson(response);
-          leadDetail=data.records;
+      final response = await ApiHelper.get(
+        url: apiUrl,
+      );
+      LeadDetailModel data = LeadDetailModel.fromJson(response);
+      leadDetail = data.records;
     } catch (e) {
     } finally {
       notifyListeners();
     }
   }
-
-
-
 }
