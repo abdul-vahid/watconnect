@@ -30,18 +30,15 @@ class _SplashViewState extends State<SplashView> {
   @override
   void initState() {
     super.initState();
-     print("✅ SplashView build called");
-       print("✅ SplashView initState");
-
     // registerToken();
-    // startTimer();
+    startTimer();
     // setupFirebase();
   }
 
-  // void startTimer() async {
-  //   const duration = Duration(seconds: 3);
-  //   Timer(duration, _isLoggedIn);
-  // }
+  void startTimer() async {
+    const duration = Duration(seconds: 3);
+    Timer(duration, _isLoggedIn);
+  }
 
   void _isLoggedIn() async {
     String signature = await SmsAutoFill().getAppSignature;
@@ -49,12 +46,11 @@ class _SplashViewState extends State<SplashView> {
         " for sms autofill this is right now for test>>>>>>>>>>>>>>>>>>>. $signature");
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print("1");
     String sfAccessToken =
-        prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";print("2");
-    String user = prefs.getString(SharedPrefsConstants.userKey) ?? "";print("3");
+        prefs.getString(SharedPrefsConstants.sfAccessToken) ?? "";
+    String user = prefs.getString(SharedPrefsConstants.userKey) ?? "";
     String sfNodeToken =
-        prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";print("4");
+        prefs.getString(SharedPrefsConstants.sfNodeToken) ?? "";
 
     log("🔍 Splash screen token check:");
     log("   SF Access Token: '${sfAccessToken}' (length: ${sfAccessToken.length})");
@@ -84,60 +80,47 @@ class _SplashViewState extends State<SplashView> {
     }
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //        print("✅ SplashView build called");
-
-  //   return Scaffold(
-  //     backgroundColor: AppColor.pageBgGrey,
-  //     body: Center(
-  //       child: Column(
-  //         mainAxisAlignment: MainAxisAlignment.center,
-  //         children: <Widget>[
-  //           Row(
-  //             mainAxisAlignment: MainAxisAlignment.center,
-  //             children: [
-  //               SizedBox(
-  //                 width: 150,
-  //                 child: ClipRRect(
-  //                   borderRadius: BorderRadius.circular(20),
-  //                   child: Image.asset(
-  //                     "assets/images/whatsapp.png",
-  //                     fit: BoxFit.fitWidth,
-  //                   ),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //           const SizedBox(height: 8),
-  //           const Row(
-  //             mainAxisAlignment: MainAxisAlignment.center,
-  //             children: [
-  //               SizedBox(
-  //                 width: 160,
-  //                 child: LinearProgressIndicator(
-  //                   backgroundColor: Colors.white,
-  //                   valueColor:
-  //                       AlwaysStoppedAnimation(AppColor.navBarIconColor),
-  //                   minHeight: 5,
-  //                 ),
-  //               )
-  //             ],
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
   @override
-Widget build(BuildContext context) {
-  return const Scaffold(
-    body: Center(
-      child: Text(
-        "SPLASH TEST",
-        style: TextStyle(fontSize: 30),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColor.pageBgGrey,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 150,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset(
+                      "assets/images/whatsapp.png",
+                      fit: BoxFit.fitWidth,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 160,
+                  child: LinearProgressIndicator(
+                    backgroundColor: Colors.white,
+                    valueColor:
+                        AlwaysStoppedAnimation(AppColor.navBarIconColor),
+                    minHeight: 5,
+                  ),
+                )
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
