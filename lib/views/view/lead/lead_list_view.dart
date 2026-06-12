@@ -282,7 +282,7 @@ class _LeadListViewState extends State<LeadListView> with RouteAware {
                         child: CircleAvatar(
                           backgroundColor: AppColor.navBarIconColor,
                           child: IconButton(
-                            icon: const Icon(
+                            icon: const FaIcon(
                               FontAwesomeIcons.add,
                               size: 25,
                               color: Colors.white,

@@ -36,6 +36,8 @@ class _LoginViewState extends State<LoginView> {
     // _passwordController.text = 'Admin@123';
     // _tcodeController.text = 'demo';
     super.initState();
+      print("✅ LoginView initState called");
+
   }
 
   @override
@@ -48,6 +50,7 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    print("✅ LoginView build called");
     return GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();

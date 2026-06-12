@@ -301,7 +301,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                             _showTagsBottomSheet(
                                 context, currentLeadForTagEditing!);
                           },
-                          child: const Icon(
+                          child: const FaIcon(
                             FontAwesomeIcons.tags,
                             color: Colors.white,
                             size: 24,
@@ -675,7 +675,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  const Icon(
+                                                  const FaIcon(
                                                     FontAwesomeIcons.filter,
                                                     color: Colors.grey,
                                                     size: 16,
@@ -1145,7 +1145,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  Icon(
+                                                  FaIcon(
                                                     FontAwesomeIcons.tag,
                                                     size: 20,
                                                     color: tagIconColor,
@@ -1279,7 +1279,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                               value: 'tags',
                               child: Row(
                                 children: [
-                                  Icon(
+                                  FaIcon(
                                     FontAwesomeIcons.tags,
                                     color: tagIconColor,
                                     size: 14,
@@ -1646,7 +1646,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
+                                  FaIcon(
                                     FontAwesomeIcons.tag,
                                     size: 2,
                                     color: tag['color'],
@@ -1731,7 +1731,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
+                                FaIcon(
                                   FontAwesomeIcons.tags,
                                   size: 48,
                                   color: Colors.grey,
@@ -1767,7 +1767,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                     color: tag['color'].withOpacity(0.15),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: Icon(
+                                  child: FaIcon(
                                     FontAwesomeIcons.tag,
                                     size: 20,
                                     color: tag['color'],
@@ -2183,7 +2183,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
+                                FaIcon(
                                   FontAwesomeIcons.tags,
                                   size: 48,
                                   color: Colors.grey,
@@ -2227,7 +2227,7 @@ class _RecentChatViewState extends State<RecentChatView> {
                                     color: tag['color'].withOpacity(0.15),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: Icon(
+                                  child: FaIcon(
                                     FontAwesomeIcons.tag,
                                     size: 20,
                                     color: tag['color'],

@@ -823,7 +823,7 @@ class _MyAppState extends State<MyApp> {
                 backgroundColor: AppColor.navBarIconColor,
               ),
             ),
-            builder: EasyLoading.init(),
+            // builder: EasyLoading.init(),
             home: const SplashView(),
           );
         },

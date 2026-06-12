@@ -83,7 +83,7 @@ Future<void> showCallDialog(
                                 horizontal: 4, vertical: 4),
                             leading: Transform.rotate(
                               angle: call.status == "Incoming" ? 45 : 180,
-                              child: Icon(
+                              child: FaIcon(
                                 FontAwesomeIcons.arrowDown,
                                 color: call.status == "Incoming"
                                     ? Colors.green

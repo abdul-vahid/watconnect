@@ -87,9 +87,9 @@ void showSfCallDialog(
                           final call = sfcallHistoryList[index];
 
                           bool isIncoming = call.statusC == "Incoming";
-                          IconData icon = isIncoming
-                              ? FontAwesomeIcons.arrowDown
-                              : FontAwesomeIcons.arrowUp;
+                          FaIconData icon = isIncoming
+    ? FontAwesomeIcons.arrowDown
+    : FontAwesomeIcons.arrowUp;
 
                           Color iconColor =
                               isIncoming ? Colors.green : Colors.red;
@@ -103,7 +103,7 @@ void showSfCallDialog(
                             leading: CircleAvatar(
                               radius: 18,
                               backgroundColor: iconColor.withOpacity(0.1),
-                              child: Icon(icon, size: 16, color: iconColor),
+                              child: FaIcon(icon, size: 16, color: iconColor),
                             ),
                             title: Text(
                               isIncoming ? "Incoming Call" : "Outgoing Call",
