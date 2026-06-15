@@ -82,7 +82,7 @@ class _CallHistoryScreenState extends State<CallHistoryScreen> {
                               angle: callHistoryList[index].status == "Incoming"
                                   ? 45
                                   : 180,
-                              child: Icon(
+                              child: FaIcon(
                                 FontAwesomeIcons.arrowDown,
                                 color:
                                     callHistoryList[index].status == "Incoming"

@@ -202,7 +202,7 @@ class _TagsBottomSheetState extends State<TagsBottomSheet> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FontAwesomeIcons.tags, size: 48, color: Colors.grey),
+            FaIcon(FontAwesomeIcons.tags, size: 48, color: Colors.grey),
             SizedBox(height: 16),
             Text('No labels available', style: TextStyle(fontSize: 16, color: Colors.grey)),
             SizedBox(height: 8),
@@ -227,7 +227,7 @@ class _TagsBottomSheetState extends State<TagsBottomSheet> {
               color: (tag['color'] as Color).withOpacity(0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(FontAwesomeIcons.tag, size: 20, color: tag['color'] as Color),
+            child: FaIcon(FontAwesomeIcons.tag, size: 20, color: tag['color'] as Color),
           ),
           title: Text(tag['name'], style: const TextStyle(fontSize: 16)),
           trailing: Checkbox(

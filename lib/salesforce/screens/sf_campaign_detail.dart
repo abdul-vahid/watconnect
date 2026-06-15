@@ -47,7 +47,7 @@ class _SfCampaignDetailScreenState extends State<SfCampaignDetailScreen> {
                       TextSpan(
                         children: [
                           WidgetSpan(
-                            child: Icon(
+                            child: FaIcon(
                               FontAwesomeIcons.message,
                               color: Colors.white,
                               size: 24,

@@ -133,7 +133,7 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
               : SizedBox(),
           modules.contains("Campaign") || modules.contains("Campaigns")
               ? ListTile(
-                  leading: Icon(
+                  leading: FaIcon(
                     FontAwesomeIcons.bandcamp,
                     color: AppColor.navBarIconColor,
                   ),
@@ -237,7 +237,7 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
               : SizedBox(),
           modules.contains("Tags") || modules.contains("Tag")
               ? ListTile(
-                  leading: Icon(
+                  leading: FaIcon(
                     FontAwesomeIcons.tags,
                     color: AppColor.navBarIconColor,
                   ),
@@ -256,7 +256,7 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
           hasWallet ? Divider() : SizedBox(),
           hasWallet
               ? ListTile(
-                  leading: Icon(
+                  leading: FaIcon(
                     FontAwesomeIcons.wallet,
                     color: AppColor.navBarIconColor,
                   ),
@@ -275,7 +275,7 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
 
           Divider(),
           ListTile(
-            leading: Icon(
+            leading: FaIcon(
               FontAwesomeIcons.gear,
               color: AppColor.navBarIconColor,
             ),

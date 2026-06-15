@@ -68,7 +68,7 @@ class FilterChips extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(FontAwesomeIcons.filter, color: Colors.grey, size: 16),
+                      const FaIcon(FontAwesomeIcons.filter, color: Colors.grey, size: 16),
                       const SizedBox(width: 6),
                       const Text(
                         'Filter',

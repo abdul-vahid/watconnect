@@ -168,51 +168,55 @@ NotificationUtil.registerToken();
                       padding: const EdgeInsets.symmetric(horizontal: 0.0),
                       child: Row(
                         children: [
-                          HomePageCard(
-                            title: "All Campaigns",
-                            subtitle: dbController.totalCamp,
-                            icon: Icons.leaderboard_rounded,
-                            polygonAsset: "assets/images/home_polygon.png",
-                            tap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const SfCampaignScreen()),
-                              );
-                            },
+                          Expanded(
+                            child: HomePageCard(
+                              title: "All Campaigns",
+                              subtitle: dbController.totalCamp,
+                              icon: Icons.leaderboard_rounded,
+                              polygonAsset: "assets/images/home_polygon.png",
+                              tap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SfCampaignScreen()),
+                                );
+                              },
+                            ),
                           ),
                           const SizedBox(
                             width: 10,
                           ),
                           dbController.drawerItems.isEmpty
                               ? SizedBox()
-                              : HomePageCard(
-                                  title: dbController
-                                          .drawerItems.first.sObjectName ??
-                                      "",
-                                  subtitle: dbController.totalLead,
-                                  icon: Icons.bolt,
-                                  polygonAsset:
-                                      "assets/images/home_polygon.png",
-                                  tap: () {
-                                    // dbController.setSelectedTitle("Lead");
-                                    dbController.drawerListApiCall(
-                                        type: dbController.drawerItems.first
-                                                .sObjectName ??
-                                            "");
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            ConfigListingScreen(
-                                                type: dbController.drawerItems
-                                                        .first.sObjectName ??
-                                                    ""),
-                                      ),
-                                    );
-                                  },
-                                ),
+                              : Expanded(
+                                child: HomePageCard(
+                                    title: dbController
+                                            .drawerItems.first.sObjectName ??
+                                        "",
+                                    subtitle: dbController.totalLead,
+                                    icon: Icons.bolt,
+                                    polygonAsset:
+                                        "assets/images/home_polygon.png",
+                                    tap: () {
+                                      // dbController.setSelectedTitle("Lead");
+                                      dbController.drawerListApiCall(
+                                          type: dbController.drawerItems.first
+                                                  .sObjectName ??
+                                              "");
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ConfigListingScreen(
+                                                  type: dbController.drawerItems
+                                                          .first.sObjectName ??
+                                                      ""),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                              ),
                         ],
                       ),
                     ),

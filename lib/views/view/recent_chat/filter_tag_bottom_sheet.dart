@@ -93,7 +93,7 @@ class _FilterTagsBottomSheetState extends State<FilterTagsBottomSheet> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(FontAwesomeIcons.tag, size: 12, color: tag['color'] as Color),
+                  FaIcon(FontAwesomeIcons.tag, size: 12, color: tag['color'] as Color),
                   const SizedBox(width: 6),
                   Text(tag['name'], style: TextStyle(fontSize: 12, color: tag['color'] as Color, fontWeight: FontWeight.w500)),
                   const SizedBox(width: 6),
@@ -136,7 +136,7 @@ class _FilterTagsBottomSheetState extends State<FilterTagsBottomSheet> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FontAwesomeIcons.tags, size: 48, color: Colors.grey),
+            FaIcon(FontAwesomeIcons.tags, size: 48, color: Colors.grey),
             SizedBox(height: 16),
             Text('No labels available', style: TextStyle(fontSize: 16, color: Colors.grey)),
           ],
@@ -159,7 +159,7 @@ class _FilterTagsBottomSheetState extends State<FilterTagsBottomSheet> {
               color: (tag['color'] as Color).withOpacity(0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(FontAwesomeIcons.tag, size: 20, color: tag['color'] as Color),
+            child: FaIcon(FontAwesomeIcons.tag, size: 20, color: tag['color'] as Color),
           ),
           title: Text(tag['name'], style: const TextStyle(fontSize: 16)),
           trailing: Checkbox(

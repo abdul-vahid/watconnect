@@ -171,7 +171,7 @@ class LeadRecordItem extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(FontAwesomeIcons.tag, size: 20, color: tagIconColor),
+                                FaIcon(FontAwesomeIcons.tag, size: 20, color: tagIconColor),
                                 Padding(
                                   padding: const EdgeInsets.only(left: 4),
                                   child: Text(
@@ -249,7 +249,7 @@ class LeadRecordItem extends StatelessWidget {
               value: 'tags',
               child: Row(
                 children: [
-                  Icon(FontAwesomeIcons.tags, color: tagIconColor, size: 14),
+                  FaIcon(FontAwesomeIcons.tags, color: tagIconColor, size: 14),
                   const SizedBox(width: 8),
                   const Text('Manage Tags', style: TextStyle(fontSize: 14)),
                 ],

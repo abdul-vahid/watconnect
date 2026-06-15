@@ -527,7 +527,7 @@ class _CampaignDetailViewState extends State<CampaignDetailView> {
               TextSpan(
                 children: [
                   WidgetSpan(
-                    child: Icon(
+                    child: FaIcon(
                       FontAwesomeIcons.message,
                       color: AppColor.navBarIconColor,
                       size: 24,
