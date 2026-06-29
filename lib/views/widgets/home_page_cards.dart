@@ -8,47 +8,59 @@ class HomePageCard extends StatelessWidget {
   final VoidCallback tap;
 
   const HomePageCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
     required this.icon,
     required this.polygonAsset,
     required this.tap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        InkWell(
-          onTap: tap,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(10, 12, 35, 12),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                colors: [
-                  Color(0xFFCFEAFF),
-                  Color(0xFFB8DFFF),
-                  Color(0xFFEAF6FF),
-                  Colors.white,
-                ],
-                stops: [0.0, 0.2, 0.4, 1.0],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  blurRadius: 6,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Expanded(
+    return SizedBox(
+      width: double.infinity,
+      height: 95,
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: tap,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(10, 12, 60, 12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topRight,
+                      end: Alignment.bottomLeft,
+                      colors: [
+                        Color(0xFFCFEAFF),
+                        Color(0xFFB8DFFF),
+                        Color(0xFFEAF6FF),
+                        Colors.white,
+                      ],
+                      stops: [
+                        0.0,
+                        0.35,
+                        0.7,
+                        1.0,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(12),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 6,
+                        spreadRadius: 2,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -63,7 +75,9 @@ class HomePageCard extends StatelessWidget {
                           color: Colors.black87,
                         ),
                       ),
+
                       const SizedBox(height: 4),
+
                       Text(
                         subtitle,
                         style: const TextStyle(
@@ -75,31 +89,36 @@ class HomePageCard extends StatelessWidget {
                     ],
                   ),
                 ),
+              ),
+            ),
+          ),
+
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Image.asset(
+                  polygonAsset,
+                  width: 50,
+                  height: 50,
+                ),
+
+                Positioned(
+                  bottom: 18,
+                  left: 15,
+                  child: Icon(
+                    icon,
+                    size: 24,
+                    color: Colors.black87,
+                  ),
+                ),
               ],
             ),
           ),
-        ),
-
-        Positioned(
-          top: 0,
-          right: 0,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Image.asset(polygonAsset, width: 50, height: 50),
-              const Positioned(
-                bottom: 18,
-                left: 15,
-                child: Icon(
-                  Icons.leaderboard_rounded,
-                  size: 24,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

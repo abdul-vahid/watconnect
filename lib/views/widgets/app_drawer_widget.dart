@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:whatsapp/react_side/dashboard/dashboard.dart';
 import 'package:whatsapp/react_side/lead/page/all_leads_page.dart';
+import 'package:whatsapp/react_side/template/screen/template_list.dart';
 import 'package:whatsapp/views/view/balance_transaction_list_screen.dart';
 import 'package:whatsapp/views/view/call_history_screen.dart';
 import 'package:whatsapp/views/view/lead/lead_list_view.dart';
@@ -188,7 +189,7 @@ class _AppDrawerWidgetState extends State<AppDrawerWidget> {
             ),
             onTap: () {
               Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => TempleteListView()));
+                  MaterialPageRoute(builder: (context) => TempleteListPage()));
             },
           ),
           // Divider(),

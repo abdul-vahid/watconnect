@@ -53,8 +53,9 @@ class NetworkService {
         default:
           throw Exception('Unsupported HTTP method: $method');
       }
+      print("response>>>>>>> >>>>>> >>>>>>> >>>>> ${response.body} ${response.statusCode}");
 
-      // Handle responses
+      // Handle responsesz
       switch (response.statusCode) {
         case 200:
           log("=====================================================================================================================================================================================================================");
